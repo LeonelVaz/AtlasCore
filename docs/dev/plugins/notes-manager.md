@@ -7,27 +7,24 @@ El plugin Notes Manager permite asociar notas a fechas específicas o eventos de
 El plugin se integra con el calendario principal de Atlas, añadiendo una capa de notas que complementa los eventos existentes. Utiliza su propio almacenamiento para mantener las notas, pero establece referencias a los eventos y fechas del calendario.
 
 ```
-Notes Manager
-│
-├── Componentes UI
-│   ├── NotesList (Panel de lista de notas)
-│   ├── NoteEditor (Editor de texto enriquecido)
-│   └── NotesPanel (Contenedor principal)
-│
-├── Gestión de Estado
-│   └── NotesContext (Estado global de notas)
-│
-├── Utilidades
-│   └── notesUtils (Funciones de procesamiento y formateo)
-│
-├── Estilos
-│   └── notes.css (Estilos específicos del plugin)
-│
-└── Traducciones
-    ├── es/ (Español)
-    │   └── notes.json
-    └── en/ (Inglés)
-        └── notes.json
+notes-manager/
+├── index.js                 # Punto de entrada del plugin
+├── components/              # (Componentes UI)
+│   ├── notes-list.jsx       # (Lista de notas)
+│   ├── note-editor.jsx      # (Editor de notas)
+│   └── notes-panel.jsx      # (Panel principal)
+├── contexts/                # (Contextos)
+│   └── notes-context.jsx    # (Estado global de notas)
+├── utils/                   # (Utilidades)
+│   └── notes-utils.js       # (Funciones de procesamiento y formateo)
+├── styles/                  # (Estilos)
+│   └── notes.css            # (Estilos específicos del plugin)
+├── locales/                 # (Traducciones)
+│   ├── es/                  # (Español)
+│   │   └── notes.json
+│   └── en/                  # (Inglés)
+│       └── notes.json
+└── README.md                # (Documentación del plugin)
 ```
 
 ## API y Interfaces

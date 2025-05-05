@@ -7,28 +7,25 @@ El plugin Reminder System proporciona un sistema avanzado de recordatorios y not
 El plugin se estructura en torno a un sistema central de programación de recordatorios que se integra con los mecanismos de notificación nativos tanto para web como para escritorio.
 
 ```
-Reminder System
-│
-├── Componentes UI
-│   ├── ReminderSettings (Configuración de recordatorios)
-│   ├── NotificationPanel (Panel de notificaciones)
-│   └── ReminderForm (Formulario para crear recordatorios)
-│
-├── Servicios
-│   ├── notificationService (Gestión de notificaciones)
-│   └── schedulerService (Programación de recordatorios)
-│
-├── Utilidades
-│   └── reminderUtils (Funciones de procesamiento y formateo)
-│
-├── Estilos
-│   └── reminders.css (Estilos específicos del plugin)
-│
-└── Traducciones
-    ├── es/ (Español)
-    │   └── reminders.json
-    └── en/ (Inglés)
-        └── reminders.json
+reminder-system/
+├── index.js                 # Punto de entrada del plugin
+├── components/              # (Componentes UI)
+│   ├── reminder-settings.jsx # (Configuración de recordatorios)
+│   ├── notification-panel.jsx # (Panel de notificaciones)
+│   └── reminder-form.jsx    # (Formulario para crear recordatorios)
+├── services/                # (Servicios)
+│   ├── notification-service.js # (Gestión de notificaciones)
+│   └── scheduler-service.js # (Programación de recordatorios)
+├── utils/                   # (Utilidades)
+│   └── reminder-utils.js    # (Funciones de procesamiento y formateo)
+├── styles/                  # (Estilos)
+│   └── reminders.css        # (Estilos específicos del plugin)
+├── locales/                 # (Traducciones)
+│   ├── es/                  # (Español)
+│   │   └── reminders.json
+│   └── en/                  # (Inglés)
+│       └── reminders.json
+└── README.md                # (Documentación)
 ```
 
 ## API y Interfaces

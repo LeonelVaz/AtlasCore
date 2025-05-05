@@ -7,27 +7,24 @@ El plugin Weather Integration incorpora información meteorológica directamente
 El plugin se estructura en torno a un conjunto de componentes de visualización y un servicio de conexión a APIs meteorológicas externas.
 
 ```
-Weather Integration
-│
-├── Componentes UI
-│   ├── WeatherWidget (Widget para la UI principal)
-│   ├── ForecastDay (Previsión diaria)
-│   └── EventWeather (Componente para eventos)
-│
-├── Servicios
-│   └── weatherAPI (Servicio de conexión a API externa)
-│
-├── Utilidades
-│   └── weatherUtils (Funciones de procesamiento y formateo)
-│
-├── Estilos
-│   └── weather.css (Estilos específicos del plugin)
-│
-└── Traducciones
-    ├── es/ (Español)
-    │   └── weather.json
-    └── en/ (Inglés)
-        └── weather.json
+weather-integration/
+├── index.js                 # Punto de entrada
+├── components/              # (Componentes UI)
+│   ├── weather-widget.jsx   # (Widget para la UI principal)
+│   ├── forecast-day.jsx     # (Previsión diaria)
+│   └── event-weather.jsx    # (Componente para eventos)
+├── services/                # (Servicios)
+│   └── weather-api.js       # (Servicio de conexión a API externa)
+├── utils/                   # (Utilidades)
+│   └── weather-utils.js     # (Funciones de procesamiento y formateo)
+├── styles/                  # (Estilos)
+│   └── weather.css          # (Estilos específicos del plugin)
+├── locales/                 # (Traducciones)
+│   ├── es/                  # (Español)
+│   │   └── weather.json
+│   └── en/                  # (Inglés)
+│       └── weather.json
+└── README.md                # (Documentación)
 ```
 
 ## API y Interfaces

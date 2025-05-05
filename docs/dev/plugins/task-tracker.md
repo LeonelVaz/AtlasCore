@@ -7,29 +7,26 @@ El plugin Task Tracker implementa un sistema completo de gestión de tareas inte
 El plugin se integra con el núcleo de Atlas a través de eventos y el registro de módulos, manteniendo su propio almacenamiento y lógica de negocio.
 
 ```
-Task Tracker
-│
-├── Componentes UI
-│   ├── TaskBoard (Vista tablero Kanban)
-│   ├── TaskList (Vista de lista)
-│   ├── TaskItem (Componente de tarea individual)
-│   └── TaskForm (Formulario para crear/editar)
-│
-├── Gestión de Estado
-│   └── TaskContext (Estado global de tareas)
-│
-├── Utilidades
-│   ├── taskUtils (Funciones de procesamiento y formateo)
-│   └── taskToEvent (Convertidor bidireccional)
-│
-├── Estilos
-│   └── tasks.css (Estilos específicos del plugin)
-│
-└── Traducciones
-    ├── es/ (Español)
-    │   └── tasks.json
-    └── en/ (Inglés)
-        └── tasks.json
+task-tracker/
+├── index.js                 # Punto de entrada del plugin
+├── components/              # (Componentes UI)
+│   ├── task-board.jsx       # (Vista tablero Kanban)
+│   ├── task-list.jsx        # (Vista de lista)
+│   ├── task-item.jsx        # (Componente de tarea individual)
+│   └── task-form.jsx        # (Formulario para crear/editar tareas)
+├── contexts/                # (Contextos)
+│   └── task-context.jsx     # (Contexto global de tareas)
+├── utils/                   # (Utilidades)
+│   ├── task-utils.js        # (Utilidades específicas)
+│   └── task-to-event.js     # (Conversión entre tareas y eventos)
+├── styles/                  # (Estilos)
+│   └── tasks.css            # (Estilos específicos)
+├── locales/                 # (Traducciones)
+│   ├── es/                  # (Español)
+│   │   └── tasks.json
+│   └── en/                  # (Inglés)
+│       └── tasks.json
+└── README.md                # (Documentación)
 ```
 
 ## API y Interfaces

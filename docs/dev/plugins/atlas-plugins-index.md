@@ -61,19 +61,25 @@ El sistema de plugins gestiona de forma centralizada:
 Para los desarrolladores interesados en crear nuevos plugins para Atlas, cada plugin debe seguir una estructura estandarizada:
 
 ```
-plugin-name/
-├── index.js                 # Punto de entrada y registro del plugin
-├── components/              # Componentes React del plugin
-├── contexts/                # Contextos de React (si es necesario)
-├── services/                # Servicios específicos del plugin (si es necesario)
-├── utils/                   # Utilidades y helpers
-├── styles/                  # Estilos CSS específicos
-├── locales/                 # Traducciones específicas del plugin
-│   ├── es/                  # Español
+plugin-name/ 
+├── index.js                 # Punto de entrada del plugin
+├── components/              # (Componentes UI)
+│   ├── component-name.jsx
+│   └── ...
+├── contexts/               # (Contextos del plugin, si aplica)
+│   └── context-name.jsx
+├── services/               # (Servicios del plugin, si aplica)
+│   └── service-name.js
+├── utils/                  # (Utilidades)
+│   └── utility-name.js
+├── styles/                 # (Estilos)
+│   └── plugin-styles.css
+├── locales/                # (Traducciones)
+│   ├── es/                 # (Español)
 │   │   └── plugin.json
-│   └── en/                  # Inglés
+│   └── en/                 # (Inglés)
 │       └── plugin.json
-└── README.md                # Documentación del plugin
+└── README.md               # (Documentación del plugin)
 ```
 
 Para más detalles sobre cómo desarrollar un plugin, consulte la [Guía de Desarrollo de Plugins](../plugin-development.md).

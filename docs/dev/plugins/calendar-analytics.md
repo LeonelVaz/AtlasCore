@@ -7,30 +7,27 @@ El plugin Calendar Analytics proporciona análisis exhaustivo y estadísticas so
 El plugin se estructura en torno a un motor de análisis de datos que procesa los eventos del calendario y genera visualizaciones a través de componentes especializados.
 
 ```
-Calendar Analytics
-│
-├── Componentes UI
-│   ├── AnalyticsDashboard (Panel principal)
-│   ├── TimeDistribution (Gráfico de distribución)
-│   ├── CategoryPieChart (Gráfico circular por categorías)
-│   └── ActivityTimeline (Línea de tiempo de actividad)
-│
-├── Servicios
-│   ├── dataProcessor (Procesamiento de datos)
-│   └── reportGenerator (Generación de informes)
-│
-├── Utilidades
-│   ├── analyticsUtils (Funciones de procesamiento y formateo)
-│   └── dataProcessing (Procesamiento avanzado de datos)
-│
-├── Estilos
-│   └── analytics.css (Estilos específicos del plugin)
-│
-└── Traducciones
-    ├── es/ (Español)
-    │   └── analytics.json
-    └── en/ (Inglés)
-        └── analytics.json
+calendar-analytics/
+├── index.js                 # Punto de entrada
+├── components/              # (Componentes UI)
+│   ├── analytics-dashboard.jsx # (Panel principal)
+│   ├── time-distribution.jsx # (Gráfico de distribución)
+│   ├── category-pie-chart.jsx # (Gráfico circular por categorías)
+│   └── activity-timeline.jsx # (Línea de tiempo de actividad)
+├── services/                # (Servicios)
+│   ├── data-processor.js    # (Procesamiento de datos)
+│   └── report-generator.js  # (Generación de informes)
+├── utils/                   # (Utilidades)
+│   ├── analytics-utils.js   # (Funciones de procesamiento y formateo)
+│   └── data-processing.js   # (Procesamiento avanzado de datos)
+├── styles/                  # (Estilos)
+│   └── analytics.css        # (Estilos específicos del plugin)
+├── locales/                 # (Traducciones)
+│   ├── es/                  # (Español)
+│   │   └── analytics.json
+│   └── en/                  # (Inglés)
+│       └── analytics.json
+└── README.md                # (Documentación)
 ```
 
 ## API y Interfaces

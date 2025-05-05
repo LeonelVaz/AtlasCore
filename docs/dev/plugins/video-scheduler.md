@@ -7,29 +7,26 @@ El plugin Video Scheduler está diseñado para creadores de contenido que necesi
 El plugin se estructura en torno a un sistema de franjas horarias dedicadas a la producción de video, con integración directa al calendario principal.
 
 ```
-Video Scheduler
-│
-├── Componentes UI
-│   ├── VideoScheduler (Componente principal)
-│   ├── VideoSlot (Franja individual de video)
-│   ├── StatusSelector (Selector de estado de producción)
-│   └── EarningsTracker (Seguimiento de ingresos)
-│
-├── Gestión de Estado
-│   └── VideoContext (Contexto de producción de videos)
-│
-├── Utilidades
-│   ├── videoUtils (Funciones de procesamiento y formateo)
-│   └── eventConverter (Conversión entre eventos y videos)
-│
-├── Estilos
-│   └── videoScheduler.css (Estilos específicos del plugin)
-│
-└── Traducciones
-    ├── es/ (Español)
-    │   └── video.json
-    └── en/ (Inglés)
-        └── video.json
+video-scheduler/
+├── index.js                 # Punto de entrada del plugin
+├── components/              # (Componentes UI)
+│   ├── video-scheduler.jsx  # (Componente principal)
+│   ├── video-slot.jsx       # (Slot individual de video)
+│   ├── status-selector.jsx  # (Selector de estado de producción)
+│   └── earnings-tracker.jsx # (Seguimiento de ingresos)
+├── contexts/                # (Contextos)
+│   └── video-context.jsx    # (Contexto del programador)
+├── utils/                   # (Utilidades)
+│   ├── video-utils.js       # (Utilidades específicas)
+│   └── event-converter.js   # (Conversión entre eventos y videos)
+├── styles/                  # (Estilos)
+│   └── video-scheduler.css  # (Estilos específicos)
+├── locales/                 # (Traducciones)
+│   ├── es/                  # (Español)
+│   │   └── video.json
+│   └── en/                  # (Inglés)
+│       └── video.json
+└── README.md                # (Documentación)
 ```
 
 ## API y Interfaces
