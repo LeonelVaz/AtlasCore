@@ -3,38 +3,42 @@
 ## Índice de Funcionalidades
 
 1. **Arquitectura Base y Sistema de Plugins**
-   - Estructura Modular
-   - Sistema de Bus de Eventos
-   - Registro de Módulos e Interoperabilidad
-   - Integración Electron para Aplicación de Escritorio
+   - [Estructura Modular](#estructura-modular)
+   - [Sistema de Bus de Eventos](#sistema-de-bus-de-eventos)
+   - [Registro de Módulos e Interoperabilidad](#registro-de-módulos-e-interoperabilidad)
+   - [Integración Electron para Aplicación de Escritorio](#integración-electron-para-aplicación-de-escritorio)
 
 2. **Aplicación Principal - Atlas**
-   - Vistas y Navegación
-   - Gestión de Eventos
-   - Interacciones Avanzadas
-   - Sistema de Escalas de Tiempo
-   - Personalización de Horarios
+   - [Vistas y Navegación](#vistas-y-navegación)
+   - [Gestión de Eventos](#gestión-de-eventos)
+   - [Interacciones Avanzadas](#interacciones-avanzadas)
+   - [Sistema de Escalas de Tiempo](#sistema-de-escalas-de-tiempo)
+   - [Personalización de Horarios](#personalización-de-horarios)
 
 3. **Sistema de Administración y Monitoreo**
-   - Panel de Administración
-   - Visor de Logs
-   - Gestión de Errores
-   - Utilidades UI Modernas
+   - [Panel de Administración](#panel-de-administración)
+   - [Visor de Logs](#visor-de-logs)
+   - [Gestión de Errores](#gestión-de-errores)
+   - [Utilidades UI Modernas](#utilidades-ui-modernas)
 
 4. **Gestión de Datos y Almacenamiento**
-   - Sistema de Almacenamiento Abstracto
-   - Exportación e Importación
-   - Copias de Seguridad
+   - [Sistema de Almacenamiento Abstracto](#sistema-de-almacenamiento-abstracto)
+   - [Exportación e Importación](#exportación-e-importación)
+   - [Copias de Seguridad](#copias-de-seguridad)
 
 5. **Sistema de Temas y Personalización Visual**
-   - Temas Predefinidos y Personalización
-   - Configuración de Elementos Visuales
-   - Firma Personalizada
+   - [Temas Predefinidos y Personalización](#temas-predefinidos-y-personalización)
+   - [Configuración de Elementos Visuales](#configuración-de-elementos-visuales)
+   - [Firma Personalizada](#firma-personalizada)
 
 6. **Sistema de Plugins**
-   - Integración con el Núcleo
-   - Comunicación entre Plugins y Core
-   - Ejemplos de Plugins
+   - [Integración con el Núcleo](#integración-con-el-núcleo)
+   - [Comunicación entre Plugins y Core](#comunicación-entre-plugins-y-core)
+   - [Plugins Disponibles](#plugins-disponibles)
+
+7. **Internacionalización**
+   - [Soporte Multilingüe](#soporte-multilingüe)
+   - [Estructura de Traducciones](#estructura-de-traducciones)
 
 ## 1. Arquitectura Base y Sistema de Plugins
 
@@ -185,228 +189,33 @@
 - Métodos para comprobar conflictos entre módulos
 - Conversión automática de datos entre formatos de diferentes módulos
 
-## Ejemplos de Plugins
+### Plugins Disponibles
+Atlas incluye un ecosistema de plugins que extienden su funcionalidad base. Para más detalles sobre cada plugin, consulte su documentación específica:
 
-### 1. Plugin de Programador de Videos (plugins/video-scheduler)
+1. [Notes Manager](plugins/notes-manager.md) - Gestión de notas vinculadas a fechas y eventos
+2. [Task Tracker](plugins/task-tracker.md) - Sistema de seguimiento de tareas con vista Kanban
+3. [Reminder System](plugins/reminder-system.md) - Sistema avanzado de recordatorios
+4. [Calendar Analytics](plugins/calendar-analytics.md) - Análisis y estadísticas del uso del calendario
+5. [Video Scheduler](plugins/video-scheduler.md) - Planificación de producción de videos
+6. [Weather Integration](plugins/weather-integration.md) - Integración de datos meteorológicos
 
-**Descripción:** Plugin para planificar la creación, producción y publicación de videos en diferentes franjas horarias.
+Para una visión general de la interacción entre plugins, consulte la [documentación de interacción entre plugins](plugins/index.md).
 
-**Estructura de carpetas:**
-```
-plugins/video-scheduler/
-  ├── index.js                 # Punto de entrada del plugin
-  ├── components/              # Componentes React
-  │   ├── VideoScheduler.jsx   # Componente principal
-  │   ├── VideoSlot.jsx        # Slot individual de video
-  │   ├── StatusSelector.jsx   # Selector de estado de producción
-  │   └── EarningsTracker.jsx  # Seguimiento de ingresos
-  ├── contexts/
-  │   └── VideoContext.jsx     # Contexto del programador
-  ├── utils/
-  │   ├── videoUtils.js        # Utilidades específicas
-  │   └── eventConverter.js    # Conversión entre eventos y videos
-  ├── styles/
-  │   └── videoScheduler.css   # Estilos específicos
-  └── README.md                # Documentación
-```
+## 7. Internacionalización
 
-**Funcionalidades:**
-- Programación de videos en tres slots diarios (mañana, tarde, noche)
-- Estados de producción configurables (pendiente, desarrollo, producción, publicado)
-- Seguimiento de ingresos por video con soporte multi-divisa
-- Vista mensual para planificación
-- Sincronización automática con eventos de calendario
-- Estadísticas de producción e ingresos
+### Soporte Multilingüe
+- Sistema completo de internacionalización para todas las interfaces
+- Soporte inicial para español e inglés (desde v1.0.0)
+- Detección automática del idioma preferido del sistema
+- Selección manual de idioma en configuración
 
-**Integración:**
-- Registro mediante `registerModule('video-scheduler', videoSchedulerAPI)`
-- Conversión bidireccional entre eventos de calendario y slots de video
-- Verificación de conflictos con otros eventos del calendario
-- Almacenamiento independiente en `videoSchedulerData`
+### Estructura de Traducciones
+- Archivos de traducción organizados por módulos
+- Sistema extensible para añadir nuevos idiomas
+- Integración con plugins para mantener coherencia
+- Herramientas de administración para gestionar traducciones
 
-### 2. Plugin de Notas (plugins/notes-manager)
-
-**Descripción:** Permite asociar notas a fechas específicas o eventos del calendario. Las notas pueden contener texto formateado, listas y contenido enriquecido.
-
-**Estructura de carpetas:**
-```
-plugins/notes-manager/
-  ├── index.js             # Punto de entrada del plugin
-  ├── components/          # Componentes React del plugin
-  │   ├── NotesList.jsx    # Lista de notas
-  │   ├── NoteEditor.jsx   # Editor de notas
-  │   └── NotesPanel.jsx   # Panel principal
-  ├── contexts/
-  │   └── NotesContext.jsx # Estado global de notas
-  ├── utils/
-  │   └── notesUtils.js    # Utilidades específicas
-  ├── styles/
-  │   └── notes.css        # Estilos específicos del plugin
-  └── README.md            # Documentación del plugin
-```
-
-**Funcionalidades:**
-- Notas vinculadas a fechas específicas o eventos del calendario
-- Editor de texto enriquecido con formato básico
-- Categorización por etiquetas y colores
-- Búsqueda rápida de notas
-- Creación de notas desde eventos de calendario
-- Indicador visual en el calendario para días con notas
-
-**Integración:**
-- Registro del módulo mediante `registerModule('notes-manager', notesManagerAPI)`
-- Suscripción a eventos de calendario como `CALENDAR.DATE_SELECTED` y `CALENDAR.EVENT_CREATED`
-- Extensión de la UI añadiendo un icono de notas en la barra de herramientas
-- Almacenamiento independiente en `notesData` usando `storageService`
-
-### 3. Plugin de Tareas (plugins/task-tracker)
-
-**Descripción:** Sistema de gestión de tareas integrado con el calendario. Permite crear tareas con fechas de vencimiento, prioridades y estados de progreso.
-
-**Estructura de carpetas:**
-```
-plugins/task-tracker/
-  ├── index.js                # Punto de entrada del plugin
-  ├── components/             # Componentes React
-  │   ├── TaskBoard.jsx       # Vista de tablero Kanban
-  │   ├── TaskList.jsx        # Vista de lista de tareas
-  │   ├── TaskItem.jsx        # Componente de tarea individual
-  │   └── TaskForm.jsx        # Formulario para crear/editar tareas
-  ├── contexts/
-  │   └── TaskContext.jsx     # Contexto global de tareas
-  ├── utils/
-  │   ├── taskUtils.js        # Utilidades específicas
-  │   └── taskToEvent.js      # Conversión entre tareas y eventos
-  ├── styles/
-  │   └── tasks.css           # Estilos específicos
-  └── README.md               # Documentación
-```
-
-**Funcionalidades:**
-- Creación de tareas con título, descripción, prioridad y fecha de vencimiento
-- Estados configurables (pendiente, en progreso, completada)
-- Vista de tablero Kanban y vista de lista
-- Filtrado por estado, prioridad y fecha
-- Conversión bidireccional entre tareas y eventos de calendario
-- Recordatorios de tareas próximas a vencer
-
-**Integración:**
-- Registro mediante `registerModule('task-tracker', taskTrackerAPI)`
-- Creación automática de eventos en calendario para tareas con fecha
-- Publicación de eventos como `TASK_TRACKER.TASK_COMPLETED` para notificar cambios
-- Almacenamiento independiente en `taskTrackerData`
-
-### 4. Plugin de Estadísticas (plugins/calendar-analytics)
-
-**Descripción:** Proporciona análisis y estadísticas de uso del calendario, generando informes visuales sobre cómo se distribuye el tiempo.
-
-**Estructura de carpetas:**
-```
-plugins/calendar-analytics/
-  ├── index.js                   # Punto de entrada
-  ├── components/                # Componentes React
-  │   ├── AnalyticsDashboard.jsx # Panel principal
-  │   ├── TimeDistribution.jsx   # Gráfico de distribución
-  │   ├── CategoryPieChart.jsx   # Gráfico circular por categorías
-  │   └── ActivityTimeline.jsx   # Línea de tiempo de actividad
-  ├── utils/
-  │   ├── analyticsUtils.js      # Utilidades de análisis
-  │   └── dataProcessing.js      # Procesamiento de datos
-  ├── styles/
-  │   └── analytics.css          # Estilos específicos
-  └── README.md                  # Documentación
-```
-
-**Funcionalidades:**
-- Análisis de distribución del tiempo por categorías/colores
-- Estadísticas de horas productivas y descansos
-- Informes diarios, semanales y mensuales
-- Visualización de tendencias a lo largo del tiempo
-- Exportación de informes en PDF o CSV
-- Sugerencias de optimización basadas en patrones
-
-**Integración:**
-- Registro mediante `registerModule('calendar-analytics', analyticsAPI)`
-- Acceso de solo lectura a datos del calendario para análisis
-- Pestaña dedicada en la interfaz principal
-- Almacenamiento propio para configuraciones de informes y preferencias
-
-### 5. Plugin de Recordatorios (plugins/reminder-system)
-
-**Descripción:** Sistema avanzado de recordatorios y notificaciones para eventos del calendario, con opciones de personalización y notificaciones en la aplicación y el sistema.
-
-**Estructura de carpetas:**
-```
-plugins/reminder-system/
-  ├── index.js                   # Punto de entrada
-  ├── components/                # Componentes React
-  │   ├── ReminderSettings.jsx   # Configuración de recordatorios
-  │   ├── NotificationPanel.jsx  # Panel de notificaciones
-  │   └── ReminderForm.jsx       # Formulario para crear recordatorios
-  ├── services/
-  │   ├── notificationService.js # Servicio de notificaciones
-  │   └── schedulerService.js    # Programación de recordatorios
-  ├── utils/
-  │   └── reminderUtils.js       # Utilidades específicas
-  ├── styles/
-  │   └── reminders.css          # Estilos específicos
-  └── README.md                  # Documentación
-```
-
-**Funcionalidades:**
-- Recordatorios personalizables para eventos (5 min, 15 min, 1 hora, 1 día antes)
-- Notificaciones nativas del sistema en aplicación de escritorio
-- Notificaciones en la aplicación para versión web
-- Sonidos personalizables para diferentes tipos de alertas
-- Recordatorios recurrentes para eventos periódicos
-- Snooze (posponer) para recordatorios
-
-**Integración:**
-- Registro mediante `registerModule('reminder-system', reminderAPI)`
-- Extensión del panel de detalles de eventos con opciones de recordatorio
-- Suscripción a eventos del calendario y reloj del sistema
-- Almacenamiento propio para configuraciones de recordatorios
-
-### 6. Plugin de Clima (plugins/weather-integration)
-
-**Descripción:** Integra información meteorológica con el calendario, mostrando previsiones para los días de la vista actual y para eventos programados al aire libre.
-
-**Estructura de carpetas:**
-```
-plugins/weather-integration/
-  ├── index.js                  # Punto de entrada
-  ├── components/               # Componentes React
-  │   ├── WeatherWidget.jsx     # Widget para la UI principal
-  │   ├── ForecastDay.jsx       # Previsión diaria
-  │   └── EventWeather.jsx      # Componente para eventos
-  ├── services/
-  │   └── weatherAPI.js         # Servicio de conexión a API externa
-  ├── utils/
-  │   └── weatherUtils.js       # Utilidades específicas
-  ├── styles/
-  │   └── weather.css           # Estilos específicos
-  └── README.md                 # Documentación
-```
-
-**Funcionalidades:**
-- Visualización de clima actual en la interfaz del calendario
-- Previsión meteorológica para los próximos días
-- Indicadores meteorológicos en eventos marcados como "exterior"
-- Alertas para condiciones adversas en días con eventos
-- Ajuste de ubicación manual o automático por geolocalización
-- Personalización de unidades (celsius/fahrenheit)
-
-**Integración:**
-- Registro mediante `registerModule('weather-integration', weatherAPI)`
-- Extensión de encabezados de día con iconos de clima
-- Extensión del formulario de eventos con opción "evento exterior"
-- Almacenamiento propio para configuraciones y caché de datos meteorológicos
-
----
-
-La aplicación está diseñada para que todos estos plugins sean completamente opcionales. Si se elimina cualquier carpeta de plugin, la aplicación principal continuará funcionando sin problemas. El sistema de detección de plugins verifica la existencia de las carpetas en el directorio plugins/ y solo carga aquellos que estén presentes.
-
-Cada plugin se comunica con el núcleo a través del sistema de bus de eventos y el registro de módulos, manteniendo un acoplamiento débil que permite añadir o eliminar funcionalidades sin afectar al sistema principal.
+Para detalles completos sobre el sistema de internacionalización, consulte la [documentación de internacionalización](internationalization.md).
 
 ---
 
@@ -451,7 +260,8 @@ atlas/
 │   │   ├── backupService.js     # Servicio de copias de seguridad
 │   │   ├── importExportService.js # Servicio de importación/exportación
 │   │   ├── logService.js        # Servicio de logging
-│   │   └── themeService.js      # Servicio de gestión de temas
+│   │   ├── themeService.js      # Servicio de gestión de temas
+│   │   └── i18nService.js       # Servicio de internacionalización
 │   │
 │   ├── components/              # Componentes de la aplicación
 │   │   ├── calendar/            # Componentes del calendario
@@ -501,6 +311,13 @@ atlas/
 │   │   ├── eventUtils.js        # Utilidades para eventos
 │   │   ├── storageUtils.js      # Utilidades de almacenamiento
 │   │   └── validationUtils.js   # Utilidades de validación
+│   │
+│   ├── i18n/                    # Internacionalización
+│   │   ├── index.js             # Configuración de i18n
+│   │   ├── config.js            # Configuración global
+│   │   └── locales/             # Archivos de traducción
+│   │       ├── es/              # Español
+│   │       └── en/              # Inglés
 │   │
 │   ├── styles/                  # Estilos
 │   │   ├── index.css            # Estilos globales
@@ -626,15 +443,27 @@ atlas/
     ├── dev/                     # Documentación para desarrolladores
     │   ├── atlas-overview.md    # Visión general de Atlas
     │   ├── atlas-stages.md      # Documento principal de etapas (redirige a index)
+    │   ├── atlas-visual-design.md # Diseño visual
+    │   ├── internationalization.md # Documentación de internacionalización
+    │   ├── guide-versions.md    # Guía de versionado
     │   ├── comandos.md          # Comandos útiles
+    │   ├── plugins/             # Documentación detallada de plugins
+    │   │   ├── index.md         # Índice de plugins e interacciones
+    │   │   ├── notes-manager.md # Documentación del plugin de notas
+    │   │   ├── task-tracker.md  # Documentación del plugin de tareas
+    │   │   ├── reminder-system.md # Documentación del plugin de recordatorios
+    │   │   ├── calendar-analytics.md # Documentación del plugin de estadísticas
+    │   │   ├── video-scheduler.md # Documentación del plugin de videos
+    │   │   └── weather-integration.md # Documentación del plugin de clima
+    │   │
     │   └── stages/              # Documentación detallada por etapas
     │       ├── atlas-stages-index.md    # Índice de las etapas de desarrollo
-    │       ├── stage-1.md       # Documentación de la Etapa 1
-    │       ├── stage-2.md       # Documentación de la Etapa 2
-    │       ├── stage-3.md       # Documentación de la Etapa 3
-    │       ├── stage-4.md       # Documentación de la Etapa 4
-    │       ├── stage-5.md       # Documentación de la Etapa 5
-    │       └── stage-6.md       # Documentación de la Etapa 6
+    │       ├── stage-1.md       # Documentación del Stage 1
+    │       ├── stage-2.md       # Documentación del Stage 2
+    │       ├── stage-3.md       # Documentación del Stage 3
+    │       ├── stage-4.md       # Documentación del Stage 4
+    │       ├── stage-5.md       # Documentación del Stage 5
+    │       └── stage-6.md       # Documentación del Stage 6
     │
     └── brand-assets/            # Recursos de marca
         ├── logos/               # Logos de la aplicación
