@@ -35,6 +35,8 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 - Interfaz de usuario minimalista pero funcional
 - Capacidad de almacenar y recuperar eventos
 
+*Para la estructura de archivos detallada, consulte [stage-1.md](stage-1.md)*
+
 ### Etapa 2 - Mejoras de Interacción y Persistencia (Versión 0.2.0)
 **Enfoque**: Mejorar la experiencia de usuario y robustez del sistema
 
@@ -64,6 +66,8 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 - Persistencia de datos robusta con manejo de errores
 - Transición fluida entre vistas de día y semana
 - Base para el sistema de plugins implementada
+
+*Para la estructura de archivos detallada, consulte [stage-2.md](stage-2.md)*
 
 ### Etapa 3 - Personalización y Primeros Plugins (Versión 0.3.0)
 **Enfoque**: Implementar el sistema de temas y los primeros plugins básicos
@@ -95,6 +99,8 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 - Primer plugin (Notas) funcional e integrado
 - Panel de configuración para gestionar las nuevas opciones
 
+*Para la estructura de archivos detallada, consulte [stage-3.md](stage-3.md)*
+
 ### Etapa 4 - Robustez y Plugins Esenciales (Versión 0.4.0)
 **Enfoque**: Ampliar las capacidades del sistema y mejorar la gestión de datos
 
@@ -124,6 +130,8 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 - Funcionalidades robustas de importación/exportación de datos
 - Dos nuevos plugins (Tareas y Recordatorios) completamente funcionales
 - Mayor estabilidad general del sistema
+
+*Para la estructura de archivos detallada, consulte [stage-4.md](stage-4.md)*
 
 ### Etapa 5 - Análisis y Ecosistema Completo (Versión 0.5.0)
 **Enfoque**: Completar el ecosistema de plugins y añadir capacidades analíticas
@@ -155,6 +163,8 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 - Sistema robusto de respaldo y recuperación
 - Integración completa entre todos los módulos
 
+*Para la estructura de archivos detallada, consulte [stage-5.md](stage-5.md)*
+
 ### Etapa 6 - Pulido y Lanzamiento (Versión 1.0.0)
 **Enfoque**: Refinamiento general, optimización y preparación para lanzamiento
 
@@ -185,6 +195,8 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 - Documentación completa para usuarios y desarrolladores
 - Producto listo para su lanzamiento público como versión 1.0.0
 
+*Para la estructura de archivos detallada, consulte [stage-6.md](stage-6.md)*
+
 ## Consideraciones para Cada Etapa
 
 Para cada etapa, se deben considerar los siguientes aspectos:
@@ -208,3 +220,16 @@ Este plan de desarrollo por etapas está alineado con los valores fundamentales 
 - **Privacidad y Control**: Desde las primeras etapas se prioriza el almacenamiento local y el control del usuario.
 
 Este plan proporciona una hoja de ruta clara para el desarrollo de Atlas, permitiendo un progreso medible y la entrega de valor en cada etapa del proceso.
+
+---
+
+### Documentación Detallada de Etapas
+
+La documentación detallada de cada etapa, incluyendo la estructura completa de archivos y directorios al finalizar cada fase, está disponible en los siguientes archivos:
+
+- [Etapa 1 - Fundamentos (Versión 0.1.0)](stage-1.md)
+- [Etapa 2 - Mejoras de Interacción y Persistencia (Versión 0.2.0)](stage-2.md)
+- [Etapa 3 - Personalización y Primeros Plugins (Versión 0.3.0)](stage-3.md)
+- [Etapa 4 - Robustez y Plugins Esenciales (Versión 0.4.0)](stage-4.md)
+- [Etapa 5 - Análisis y Ecosistema Completo (Versión 0.5.0)](stage-5.md)
+- [Etapa 6 - Pulido y Lanzamiento (Versión 1.0.0)](stage-6.md)

@@ -1,4 +1,4 @@
-# Documentación Completa de Calendario App
+# Documentación Completa de Atlas
 
 ## Índice de Funcionalidades
 
@@ -8,7 +8,7 @@
    - Registro de Módulos e Interoperabilidad
    - Integración Electron para Aplicación de Escritorio
 
-2. **Aplicación Principal - Calendario**
+2. **Aplicación Principal - Atlas**
    - Vistas y Navegación
    - Gestión de Eventos
    - Interacciones Avanzadas
@@ -63,7 +63,7 @@
 - Controles de ventana personalizados (minimizar, maximizar, cerrar)
 - Sistema de comunicación IPC entre procesos principal y renderer
 
-## 2. Aplicación Principal - Calendario
+## 2. Aplicación Principal - Atlas
 
 ### Vistas y Navegación
 - Vistas de semana y día con navegación intuitiva
@@ -413,7 +413,7 @@ Cada plugin se comunica con el núcleo a través del sistema de bus de eventos y
 # Estructura de Carpetas y Archivos
 
 ```
-calendario-app/
+atlas/
 ├── package.json
 ├── README.md
 ├── vite.config.js               # Configuración de Vite para desarrollo
@@ -625,8 +625,16 @@ calendario-app/
 └── docs/                        # Documentación del proyecto
     ├── dev/                     # Documentación para desarrolladores
     │   ├── atlas-overview.md    # Visión general de Atlas
-    │   ├── atlas-stages.md      # Etapas de desarrollo
-    │   └── comandos.md          # Comandos útiles
+    │   ├── atlas-stages.md      # Documento principal de etapas (redirige a index)
+    │   ├── comandos.md          # Comandos útiles
+    │   └── stages/              # Documentación detallada por etapas
+    │       ├── atlas-stages-index.md    # Índice de las etapas de desarrollo
+    │       ├── stage-1.md       # Documentación de la Etapa 1
+    │       ├── stage-2.md       # Documentación de la Etapa 2
+    │       ├── stage-3.md       # Documentación de la Etapa 3
+    │       ├── stage-4.md       # Documentación de la Etapa 4
+    │       ├── stage-5.md       # Documentación de la Etapa 5
+    │       └── stage-6.md       # Documentación de la Etapa 6
     │
     └── brand-assets/            # Recursos de marca
         ├── logos/               # Logos de la aplicación
