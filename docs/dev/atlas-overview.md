@@ -222,7 +222,7 @@ Para detalles completos sobre el sistema de internacionalización, consulte la [
 # Estructura de Carpetas y Archivos
 
 ```
-atlas/
+atlas-core/
 ├── package.json
 ├── README.md
 ├── vite.config.js               # Configuración de Vite para desarrollo
@@ -230,7 +230,7 @@ atlas/
 ├── electron/                    # Configuración para la app de escritorio
 │   ├── main.js                  # Proceso principal de Electron
 │   ├── preload.js               # Script de precarga para Electron
-│   └── windowManager.js         # Gestión de ventanas
+│   └── window-manager.js        # Gestión de ventanas
 │
 ├── public/                      # Archivos estáticos
 │   ├── favicon.ico
@@ -244,24 +244,24 @@ atlas/
 │   │
 │   ├── core/                    # Núcleo de la aplicación
 │   │   ├── bus/                 # Sistema de bus de eventos
-│   │   │   ├── EventBus.js      # Implementación del bus de eventos
+│   │   │   ├── event-bus.js     # Implementación del bus de eventos
 │   │   │   └── events.js        # Definición de eventos del sistema
 │   │   │
 │   │   ├── module/              # Sistema de registro de módulos
-│   │   │   ├── ModuleRegistry.js   # Registro de módulos
-│   │   │   └── moduleUtils.js   # Utilidades para módulos
+│   │   │   ├── module-registry.js  # Registro de módulos
+│   │   │   └── module-utils.js  # Utilidades para módulos
 │   │   │
 │   │   └── config/              # Configuración global
-│   │       ├── appConfig.js     # Configuración de la app
+│   │       ├── app-config.js    # Configuración de la app
 │   │       └── constants.js     # Constantes globales
 │   │
 │   ├── services/                # Servicios de la aplicación
-│   │   ├── storageService.js    # Abstracción de almacenamiento
-│   │   ├── backupService.js     # Servicio de copias de seguridad
-│   │   ├── importExportService.js # Servicio de importación/exportación
-│   │   ├── logService.js        # Servicio de logging
-│   │   ├── themeService.js      # Servicio de gestión de temas
-│   │   └── i18nService.js       # Servicio de internacionalización
+│   │   ├── storage-service.js   # Abstracción de almacenamiento
+│   │   ├── backup-service.js    # Servicio de copias de seguridad
+│   │   ├── import-export-service.js # Servicio de importación/exportación
+│   │   ├── log-service.js       # Servicio de logging
+│   │   ├── theme-service.js     # Servicio de gestión de temas
+│   │   └── i18n-service.js      # Servicio de internacionalización
 │   │
 │   ├── components/              # Componentes de la aplicación
 │   │   ├── calendar/            # Componentes del calendario
@@ -306,11 +306,11 @@ atlas/
 │   │   └── useUIUtils.jsx       # Hook para utilidades UI
 │   │
 │   ├── utils/                   # Utilidades
-│   │   ├── dateUtils.js         # Utilidades de fechas
-│   │   ├── timeUtils.js         # Utilidades de tiempo
-│   │   ├── eventUtils.js        # Utilidades para eventos
-│   │   ├── storageUtils.js      # Utilidades de almacenamiento
-│   │   └── validationUtils.js   # Utilidades de validación
+│   │   ├── date-utils.js        # Utilidades de fechas
+│   │   ├── time-utils.js        # Utilidades de tiempo
+│   │   ├── event-utils.js       # Utilidades para eventos
+│   │   ├── storage-utils.js     # Utilidades de almacenamiento
+│   │   └── validation-utils.js  # Utilidades de validación
 │   │
 │   ├── i18n/                    # Internacionalización
 │   │   ├── index.js             # Configuración de i18n
@@ -326,7 +326,7 @@ atlas/
 │   │   ├── themes/              # Archivos de temas
 │   │   │   ├── light.css        # Tema claro
 │   │   │   ├── dark.css         # Tema oscuro
-│   │   │   └── purpleNight.css  # Tema púrpura nocturno
+│   │   │   └── purple-night.css # Tema púrpura nocturno
 │   │   │
 │   │   ├── components/          # Estilos de componentes
 │   │   │   ├── calendar.css     # Estilos del calendario
@@ -334,11 +334,11 @@ atlas/
 │   │   │   └── admin.css        # Estilos de administración
 │   │   │
 │   │   └── calendar/            # Estilos específicos del calendario
-│   │       └── CalendarMain.css # Estilos para CalendarMain.jsx
+│   │       └── calendar-main.css # Estilos para CalendarMain.jsx
 │   │
 │   └── plugins/                 # Sistema de plugins
-│       ├── pluginLoader.js      # Cargador de plugins
-│       ├── pluginRegistry.js    # Registro de plugins
+│       ├── plugin-loader.js     # Cargador de plugins
+│       ├── plugin-registry.js   # Registro de plugins
 │       │
 │       ├── video-scheduler/     # Plugin de programador de videos
 │       │   ├── index.js         # Punto de entrada del plugin
@@ -430,7 +430,7 @@ atlas/
 └── docs/                        # Documentación del proyecto
     ├── dev/                     # Documentación para desarrolladores
     │   ├── atlas-overview.md    # Visión general de Atlas
-    │   ├── atlas-stages.md      # Documento principal de stages (redirige a index)
+    │   ├── atlas-stages.md      # Documento principal de stages
     │   ├── atlas-visual-design.md # Diseño visual
     │   ├── internationalization.md # Documentación de internacionalización
     │   ├── guide-versions.md    # Guía de versionado
@@ -458,5 +458,8 @@ atlas/
         │   └── atlas-logo.svg   # Logo SVG principal
         │
         └── documentation/       # Documentación de marca
-            └── atlas-brand-guide.md # Guía de identidad de marca
+            ├── atlas-brand-guide.md # Guía de identidad de marca
+            └── atlas-logo-guidelines.md # Directrices del logotipo
 ```
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.

@@ -9,22 +9,22 @@ El plugin se integra con el calendario principal de Atlas, añadiendo una capa d
 ```
 notes-manager/
 ├── index.js                 # Punto de entrada del plugin
-├── components/              # (Componentes UI)
-│   ├── notes-list.jsx       # (Lista de notas)
-│   ├── note-editor.jsx      # (Editor de notas)
-│   └── notes-panel.jsx      # (Panel principal)
-├── contexts/                # (Contextos)
-│   └── notes-context.jsx    # (Estado global de notas)
-├── utils/                   # (Utilidades)
-│   └── notes-utils.js       # (Funciones de procesamiento y formateo)
-├── styles/                  # (Estilos)
-│   └── notes.css            # (Estilos específicos del plugin)
-├── locales/                 # (Traducciones)
-│   ├── es/                  # (Español)
+├── components/              # Componentes UI
+│   ├── notes-list.jsx       # Lista de notas
+│   ├── note-editor.jsx      # Editor de notas
+│   └── notes-panel.jsx      # Panel principal
+├── contexts/                # Contextos
+│   └── notes-context.jsx    # Estado global de notas
+├── utils/                   # Utilidades
+│   └── notes-utils.js       # Funciones de procesamiento y formateo
+├── styles/                  # Estilos
+│   └── notes.css            # Estilos específicos del plugin
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── notes.json
-│   └── en/                  # (Inglés)
+│   └── en/                  # Inglés
 │       └── notes.json
-└── README.md                # (Documentación del plugin)
+└── README.md                # Documentación del plugin
 ```
 
 ## API y Interfaces
@@ -84,8 +84,8 @@ const noteExample = {
   id: 'note-123456',
   title: 'Título de la nota',
   content: '<p>Contenido formateado de la <strong>nota</strong></p>',
-  createdAt: '2025-01-15T10:30:00Z',
-  updatedAt: '2025-01-16T08:45:00Z',
+  createdAt: '2023-01-15T10:30:00Z',
+  updatedAt: '2023-01-16T08:45:00Z',
   color: '#26A69A',
   categoryId: 'category-work',
   references: {
@@ -198,7 +198,7 @@ function CustomNotesPanel({ moduleId, itemId }) {
 
 ## Dependencias
 - **Editor de texto enriquecido**: Utiliza un componente personalizado basado en `contenteditable`
-- **Almacenamiento**: Depende del `storageService` de Atlas
+- **Almacenamiento**: Depende del `storage-service` de Atlas
 - **UI**: Comparte componentes de UI reutilizables del núcleo de Atlas
 - **Internacionalización**: Utiliza el servicio de i18n para traducciones
 
@@ -224,3 +224,5 @@ function CustomNotesPanel({ moduleId, itemId }) {
 | 0.4.0   | Mejorado editor de texto con soporte para imágenes |
 | 0.5.0   | Integración con búsqueda global y filtros avanzados |
 | 1.0.0   | Soporte completo para internacionalización y nuevos temas |
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

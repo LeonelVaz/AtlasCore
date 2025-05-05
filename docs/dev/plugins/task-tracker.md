@@ -9,24 +9,24 @@ El plugin se integra con el núcleo de Atlas a través de eventos y el registro 
 ```
 task-tracker/
 ├── index.js                 # Punto de entrada del plugin
-├── components/              # (Componentes UI)
-│   ├── task-board.jsx       # (Vista tablero Kanban)
-│   ├── task-list.jsx        # (Vista de lista)
-│   ├── task-item.jsx        # (Componente de tarea individual)
-│   └── task-form.jsx        # (Formulario para crear/editar tareas)
-├── contexts/                # (Contextos)
-│   └── task-context.jsx     # (Contexto global de tareas)
-├── utils/                   # (Utilidades)
-│   ├── task-utils.js        # (Utilidades específicas)
-│   └── task-to-event.js     # (Conversión entre tareas y eventos)
-├── styles/                  # (Estilos)
-│   └── tasks.css            # (Estilos específicos)
-├── locales/                 # (Traducciones)
-│   ├── es/                  # (Español)
+├── components/              # Componentes UI
+│   ├── task-board.jsx       # Vista tablero Kanban
+│   ├── task-list.jsx        # Vista de lista
+│   ├── task-item.jsx        # Componente de tarea individual
+│   └── task-form.jsx        # Formulario para crear/editar tareas
+├── contexts/                # Contextos
+│   └── task-context.jsx     # Contexto global de tareas
+├── utils/                   # Utilidades
+│   ├── task-utils.js        # Utilidades específicas
+│   └── task-to-event.js     # Conversión entre tareas y eventos
+├── styles/                  # Estilos
+│   └── tasks.css            # Estilos específicos
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── tasks.json
-│   └── en/                  # (Inglés)
+│   └── en/                  # Inglés
 │       └── tasks.json
-└── README.md                # (Documentación)
+└── README.md                # Documentación
 ```
 
 ## API y Interfaces
@@ -93,9 +93,9 @@ const taskExample = {
   description: 'Detalles sobre la implementación...',
   status: 'in-progress',
   priority: 2, // 1-3, donde 3 es la más alta
-  dueDate: '2025-02-20T18:00:00Z',
-  createdAt: '2025-02-15T10:30:00Z',
-  updatedAt: '2025-02-16T14:45:00Z',
+  dueDate: '2023-02-20T18:00:00Z',
+  createdAt: '2023-02-15T10:30:00Z',
+  updatedAt: '2023-02-16T14:45:00Z',
   tags: ['desarrollo', 'frontend'],
   color: '#26A69A',
   assignee: 'user1',
@@ -265,7 +265,7 @@ function TaskSummaryWidget() {
 
 ## Dependencias
 - **Drag and Drop**: Utiliza un sistema personalizado para manipular el tablero Kanban
-- **Almacenamiento**: Depende del `storageService` de Atlas
+- **Almacenamiento**: Depende del `storage-service` de Atlas
 - **Calendario**: Integración opcional con el módulo de calendario
 - **Internacionalización**: Utiliza el servicio de i18n para traducciones
 
@@ -292,3 +292,5 @@ function TaskSummaryWidget() {
 | 0.5.0   | Mejoras en integración con calendario y sincronización bidireccional |
 | 0.6.0   | Soporte para múltiples tableros Kanban y categorización |
 | 1.0.0   | Soporte completo para internacionalización y accesibilidad |
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

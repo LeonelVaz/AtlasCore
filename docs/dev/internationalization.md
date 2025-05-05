@@ -55,7 +55,8 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: 'es',
+    fallbackLng: 'es', // Idioma de respaldo
+    defaultLng: 'es',  // Idioma predeterminado
     supportedLngs: ['es', 'en'],
     ns: ['common', 'calendar', 'settings'],
     defaultNS: 'common',
@@ -142,21 +143,39 @@ Los colaboradores pueden añadir nuevos idiomas siguiendo estos pasos:
 
 ## Plan de Implementación
 
+La implementación del sistema de internacionalización sigue un enfoque gradual a lo largo del desarrollo de Atlas:
+
 ### Stage 4 (v0.4.0)
-- Implementación de la estructura básica de i18n
+- Implementación de la estructura básica del sistema de i18n
 - Preparación de componentes core para internacionalización
 - Configuración inicial y pruebas básicas
 
 ### Stage 5 (v0.5.0)
 - Implementación parcial de traducciones español/inglés
 - Extensión del sistema a plugins esenciales (Notes Manager, Task Tracker)
-- Implementación de detección de idioma
+- Implementación de detección de idioma y selección manual
 
 ### Stage 6 (v1.0.0)
 - Finalización de todas las traducciones (español/inglés)
-- Extensión a todos los plugins y componentes
+- Internacionalización completa de todos los plugins y componentes
 - Implementación de herramientas de administración de traducciones
-- Pruebas completas y optimización del sistema
-- Documentación para añadir nuevos idiomas
+- Pruebas exhaustivas y optimización del sistema
+- Documentación completa para añadir nuevos idiomas
+
+## Consideraciones Especiales
+
+### Formatos de Fecha y Hora
+- Adaptación automática al formato regional (DD/MM/YYYY vs MM/DD/YYYY)
+- Soporte para formatos de 12h y 24h según preferencias regionales
+- Manejo de nombres de días y meses localizados
+
+### Pluralización
+- Soporte para reglas de pluralización específicas de cada idioma
+- Uso del sistema de pluralización de i18next para manejar casos complejos
+
+### Dirección del Texto
+- Aunque la versión 1.0.0 no incluye idiomas RTL (derecha a izquierda), la estructura está preparada para soportarlos en futuras versiones
 
 Esta estructura de implementación progresiva asegura que al llegar a la versión 1.0.0, Atlas tenga un sistema de internacionalización completo y robusto, preparado para expandirse a más idiomas en el futuro.
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.

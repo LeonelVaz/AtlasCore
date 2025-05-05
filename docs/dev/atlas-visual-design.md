@@ -248,21 +248,7 @@ Accesible desde el ícono en la esquina inferior derecha:
 
 Cada plugin mantiene la coherencia visual con el sistema principal, pero tiene elementos distintivos:
 
-1. **Programador de Videos**
-   - **Vistas principales**:
-     - Vista de franjas horarias (mañana, tarde, noche)
-     - Calendario de producción mensual
-     - Panel de seguimiento de ingresos
-   - **Elementos visuales clave**:
-     - Códigos de color para estados (pendiente, desarrollo, producción, publicado)
-     - Tarjetas de video con miniatura y metadatos
-     - Gráficos de rendimiento e ingresos
-   - **Interacciones especiales**:
-     - Arrastrar videos entre franjas horarias
-     - Actualización rápida de estado con menú contextual
-     - Filtrado por estado o categoría
-
-2. **Gestor de Notas**
+1. **Notes Manager**
    - **Vistas principales**:
      - Lista de notas con vista previa
      - Editor de texto enriquecido
@@ -276,7 +262,7 @@ Cada plugin mantiene la coherencia visual con el sistema principal, pero tiene e
      - Búsqueda rápida por contenido
      - Opciones de exportación (PDF, texto)
 
-3. **Seguimiento de Tareas**
+2. **Task Tracker**
    - **Vistas principales**:
      - Tablero Kanban con columnas personalizables
      - Vista de lista con opciones de filtrado
@@ -290,21 +276,7 @@ Cada plugin mantiene la coherencia visual con el sistema principal, pero tiene e
      - Convertir eventos en tareas y viceversa
      - Checklist de subtareas
 
-4. **Estadísticas del Calendario**
-   - **Vistas principales**:
-     - Dashboard con widgets configurables
-     - Informes detallados por periodo
-     - Análisis de distribución de tiempo
-   - **Elementos visuales clave**:
-     - Gráficos circulares para distribución de categorías
-     - Gráficos de barras para comparativa temporal
-     - Mapas de calor para patrones de actividad
-   - **Interacciones especiales**:
-     - Filtros por rango de fechas
-     - Drill-down para análisis detallado
-     - Exportación de informes
-
-5. **Sistema de Recordatorios**
+3. **Reminder System**
    - **Vistas principales**:
      - Panel de configuración de recordatorios
      - Centro de notificaciones
@@ -318,7 +290,35 @@ Cada plugin mantiene la coherencia visual con el sistema principal, pero tiene e
      - Ajustes rápidos de tiempo
      - Configuración de sonidos personalizados
 
-6. **Integración de Clima**
+4. **Calendar Analytics**
+   - **Vistas principales**:
+     - Dashboard con widgets configurables
+     - Informes detallados por periodo
+     - Análisis de distribución de tiempo
+   - **Elementos visuales clave**:
+     - Gráficos circulares para distribución de categorías
+     - Gráficos de barras para comparativa temporal
+     - Mapas de calor para patrones de actividad
+   - **Interacciones especiales**:
+     - Filtros por rango de fechas
+     - Drill-down para análisis detallado
+     - Exportación de informes
+
+5. **Video Scheduler**
+   - **Vistas principales**:
+     - Vista de franjas horarias (mañana, tarde, noche)
+     - Calendario de producción mensual
+     - Panel de seguimiento de ingresos
+   - **Elementos visuales clave**:
+     - Códigos de color para estados (pendiente, desarrollo, producción, publicado)
+     - Tarjetas de video con miniatura y metadatos
+     - Gráficos de rendimiento e ingresos
+   - **Interacciones especiales**:
+     - Arrastrar videos entre franjas horarias
+     - Actualización rápida de estado con menú contextual
+     - Filtrado por estado o categoría
+
+6. **Weather Integration**
    - **Vistas principales**:
      - Widget de clima en encabezados de día
      - Previsión extendida en panel lateral
@@ -498,3 +498,5 @@ La versión móvil de Atlas mantiene la estética y funcionalidad, adaptada a pa
 ---
 
 Este diseño visual para Atlas v1.0.0 representa una implementación completa de todas las características descritas en la documentación, con especial atención a las funcionalidades avanzadas como el sistema de imán (snap), escalas de tiempo independientes y la integración detallada de todos los plugins. La interfaz está diseñada para ser modular, adaptable y potente sin sacrificar la simplicidad, alineándose perfectamente con los valores fundamentales de la marca Atlas.
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.

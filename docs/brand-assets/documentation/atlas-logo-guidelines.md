@@ -287,10 +287,14 @@ Ejemplos:
 
 ### 9.3 Acceso a los Archivos
 
-Todos los archivos oficiales del logo se encuentran disponibles en el repositorio corporativo `AtlasCore/brand-assets/logos/` y deben ser utilizados sin modificaciones.
+Todos los archivos oficiales del logo se encuentran disponibles en el repositorio corporativo `atlas-core/brand-assets/logos/` y deben ser utilizados sin modificaciones.
 
 ---
 
 Este manual de identidad visual ha sido creado para asegurar una aplicación correcta y consistente del logo de Atlas en todas sus manifestaciones. Cualquier uso no contemplado en este documento debe ser consultado con el departamento de marca.
 
+**Nota**: Las imágenes referenciadas en este manual están disponibles en el repositorio `atlas-core/brand-assets/images/` y son parte integral de la documentación de la marca.
+
 © 2025 Atlas - Todos los derechos reservados
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.

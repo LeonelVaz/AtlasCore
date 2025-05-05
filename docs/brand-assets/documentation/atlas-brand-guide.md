@@ -136,7 +136,7 @@ Atlas combina principalmente dos arquetipos:
 ## 9. Ecosistema de Marca
 
 ### Productos de la Marca
-- **AtlasCore**: El núcleo de la aplicación, disponible en web y escritorio
+- **Atlas Core**: El núcleo de la aplicación, disponible en web y escritorio
 - **Atlas Marketplace**: Plataforma para descubrir y compartir plugins
 - **Atlas Developer Hub**: Recursos para desarrolladores de plugins
 
@@ -162,3 +162,5 @@ Atlas fomenta una comunidad activa de usuarios y desarrolladores que:
 ---
 
 Este documento representa la visión fundacional de Atlas como marca y producto. Está diseñado para evolucionar junto con la aplicación, manteniendo sus valores fundamentales mientras se adapta a nuevas oportunidades y desafíos.
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.

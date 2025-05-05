@@ -9,23 +9,23 @@ El plugin se estructura en torno a un sistema central de programación de record
 ```
 reminder-system/
 ├── index.js                 # Punto de entrada del plugin
-├── components/              # (Componentes UI)
-│   ├── reminder-settings.jsx # (Configuración de recordatorios)
-│   ├── notification-panel.jsx # (Panel de notificaciones)
-│   └── reminder-form.jsx    # (Formulario para crear recordatorios)
-├── services/                # (Servicios)
-│   ├── notification-service.js # (Gestión de notificaciones)
-│   └── scheduler-service.js # (Programación de recordatorios)
-├── utils/                   # (Utilidades)
-│   └── reminder-utils.js    # (Funciones de procesamiento y formateo)
-├── styles/                  # (Estilos)
-│   └── reminders.css        # (Estilos específicos del plugin)
-├── locales/                 # (Traducciones)
-│   ├── es/                  # (Español)
+├── components/              # Componentes UI
+│   ├── reminder-settings.jsx # Configuración de recordatorios
+│   ├── notification-panel.jsx # Panel de notificaciones
+│   └── reminder-form.jsx    # Formulario para crear recordatorios
+├── services/                # Servicios
+│   ├── notification-service.js # Gestión de notificaciones
+│   └── scheduler-service.js # Programación de recordatorios
+├── utils/                   # Utilidades
+│   └── reminder-utils.js    # Funciones de procesamiento y formateo
+├── styles/                  # Estilos
+│   └── reminders.css        # Estilos específicos del plugin
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── reminders.json
-│   └── en/                  # (Inglés)
+│   └── en/                  # Inglés
 │       └── reminders.json
-└── README.md                # (Documentación)
+└── README.md                # Documentación
 ```
 
 ## API y Interfaces
@@ -92,15 +92,15 @@ const reminderExample = {
   id: 'reminder-123456',
   eventId: 'event-789',
   type: 'time-based', // 'time-based' o 'location-based'
-  triggerTime: '2025-03-15T13:45:00Z', // Momento exacto de activación
+  triggerTime: '2023-03-15T13:45:00Z', // Momento exacto de activación
   advance: {
     value: 15,
     unit: 'minutes' // 'minutes', 'hours', 'days'
   },
   status: 'pending', // 'pending', 'triggered', 'dismissed', 'snoozed'
   snoozeUntil: null, // Si está pospuesto, hora hasta la que se pospone
-  createdAt: '2025-03-10T09:30:00Z',
-  updatedAt: '2025-03-10T09:30:00Z',
+  createdAt: '2023-03-10T09:30:00Z',
+  updatedAt: '2023-03-10T09:30:00Z',
   sound: 'chime', // Sonido a reproducir
   message: 'Personalizado', // Mensaje personalizado (opcional)
   repeats: false // Si el recordatorio se repite con el evento
@@ -320,7 +320,7 @@ function NotificationCenter() {
 - **Notificaciones Nativas**: Usa las API de notificación de Electron para la versión de escritorio
 - **Temporizadores**: Sistema personalizado de programación basado en tiempos
 - **Calendario**: Integración profunda con el módulo de calendario para eventos
-- **Almacenamiento**: Depende del `storageService` de Atlas
+- **Almacenamiento**: Depende del `storage-service` de Atlas
 - **Internacionalización**: Utiliza el servicio de i18n para traducciones
 
 ## Consideraciones de Rendimiento
@@ -347,3 +347,5 @@ function NotificationCenter() {
 | 0.5.0   | Implementado sistema de sonidos personalizados |
 | 0.6.0   | Añadidas notificaciones push para PWA |
 | 1.0.0   | Soporte completo para internacionalización y accesibilidad |
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

@@ -9,24 +9,24 @@ El plugin se estructura en torno a un sistema de franjas horarias dedicadas a la
 ```
 video-scheduler/
 ├── index.js                 # Punto de entrada del plugin
-├── components/              # (Componentes UI)
-│   ├── video-scheduler.jsx  # (Componente principal)
-│   ├── video-slot.jsx       # (Slot individual de video)
-│   ├── status-selector.jsx  # (Selector de estado de producción)
-│   └── earnings-tracker.jsx # (Seguimiento de ingresos)
-├── contexts/                # (Contextos)
-│   └── video-context.jsx    # (Contexto del programador)
-├── utils/                   # (Utilidades)
-│   ├── video-utils.js       # (Utilidades específicas)
-│   └── event-converter.js   # (Conversión entre eventos y videos)
-├── styles/                  # (Estilos)
-│   └── video-scheduler.css  # (Estilos específicos)
-├── locales/                 # (Traducciones)
-│   ├── es/                  # (Español)
+├── components/              # Componentes UI
+│   ├── video-scheduler.jsx  # Componente principal
+│   ├── video-slot.jsx       # Slot individual de video
+│   ├── status-selector.jsx  # Selector de estado de producción
+│   └── earnings-tracker.jsx # Seguimiento de ingresos
+├── contexts/                # Contextos
+│   └── video-context.jsx    # Contexto del programador
+├── utils/                   # Utilidades
+│   ├── video-utils.js       # Utilidades específicas
+│   └── event-converter.js   # Conversión entre eventos y videos
+├── styles/                  # Estilos
+│   └── video-scheduler.css  # Estilos específicos
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── video.json
-│   └── en/                  # (Inglés)
+│   └── en/                  # Inglés
 │       └── video.json
-└── README.md                # (Documentación)
+└── README.md                # Documentación
 ```
 
 ## API y Interfaces
@@ -97,7 +97,7 @@ const videoExample = {
   title: 'Cómo usar Atlas efectivamente',
   description: 'Tutorial sobre las funcionalidades principales de Atlas',
   slot: {
-    date: '2025-04-15',
+    date: '2023-04-15',
     timeSlot: 'morning' // 'morning', 'afternoon', 'evening'
   },
   status: 'in-production', // 'planned', 'scripting', 'in-production', 'editing', 'published'
@@ -106,8 +106,8 @@ const videoExample = {
   tags: ['tutorial', 'productividad', 'atlas'],
   thumbnail: 'thumbnail-url.jpg', // URL de la miniatura (opcional)
   eventId: 'event-789', // ID del evento vinculado (opcional)
-  createdAt: '2025-04-01T10:30:00Z',
-  updatedAt: '2025-04-10T14:45:00Z',
+  createdAt: '2023-04-01T10:30:00Z',
+  updatedAt: '2023-04-10T14:45:00Z',
   publishedAt: null, // fecha de publicación (si está publicado)
   productionMetadata: {
     scriptComplete: true,
@@ -123,14 +123,14 @@ const videoExample = {
       'adsense': 95.20,
       'sponsorships': 29.30
     },
-    lastUpdated: '2025-04-20T08:15:00Z'
+    lastUpdated: '2023-04-20T08:15:00Z'
   }
 };
 
 // Estructura de una franja horaria
 const slotExample = {
-  id: 'slot-20250415-morning',
-  date: '2025-04-15',
+  id: 'slot-20230415-morning',
+  date: '2023-04-15',
   timeSlot: 'morning',
   videoId: 'video-123456',
   isAvailable: false, // false si hay un video asignado
@@ -156,7 +156,7 @@ Para integrar con el plugin Video Scheduler:
 2. Acceda a los videos y franjas horarias
    ```javascript
    // Obtener videos para una fecha específica
-   const date = new Date('2025-04-15');
+   const date = new Date('2023-04-15');
    const videos = videoScheduler.getVideosByDate(date);
    
    // Crear un nuevo video
@@ -164,7 +164,7 @@ Para integrar con el plugin Video Scheduler:
      title: 'Nuevo tutorial',
      description: 'Descripción del video',
      slot: {
-       date: '2025-04-20',
+       date: '2023-04-20',
        timeSlot: 'afternoon'
      },
      status: 'planned',
@@ -594,3 +594,5 @@ function navigateToCalendarEvent(video) {
 | 0.6.0   | Mejorada integración con calendario y sincronización |
 | 0.8.0   | Implementadas visualizaciones de análisis e ingresos |
 | 1.0.0   | Soporte completo para internacionalización y accesibilidad |
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

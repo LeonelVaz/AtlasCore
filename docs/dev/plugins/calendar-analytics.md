@@ -9,25 +9,25 @@ El plugin se estructura en torno a un motor de análisis de datos que procesa lo
 ```
 calendar-analytics/
 ├── index.js                 # Punto de entrada
-├── components/              # (Componentes UI)
-│   ├── analytics-dashboard.jsx # (Panel principal)
-│   ├── time-distribution.jsx # (Gráfico de distribución)
-│   ├── category-pie-chart.jsx # (Gráfico circular por categorías)
-│   └── activity-timeline.jsx # (Línea de tiempo de actividad)
-├── services/                # (Servicios)
-│   ├── data-processor.js    # (Procesamiento de datos)
-│   └── report-generator.js  # (Generación de informes)
-├── utils/                   # (Utilidades)
-│   ├── analytics-utils.js   # (Funciones de procesamiento y formateo)
-│   └── data-processing.js   # (Procesamiento avanzado de datos)
-├── styles/                  # (Estilos)
-│   └── analytics.css        # (Estilos específicos del plugin)
-├── locales/                 # (Traducciones)
-│   ├── es/                  # (Español)
+├── components/              # Componentes UI
+│   ├── analytics-dashboard.jsx # Panel principal
+│   ├── time-distribution.jsx # Gráfico de distribución
+│   ├── category-pie-chart.jsx # Gráfico circular por categorías
+│   └── activity-timeline.jsx # Línea de tiempo de actividad
+├── services/                # Servicios
+│   ├── data-processor.js    # Procesamiento de datos
+│   └── report-generator.js  # Generación de informes
+├── utils/                   # Utilidades
+│   ├── analytics-utils.js   # Funciones de procesamiento y formateo
+│   └── data-processing.js   # Procesamiento avanzado de datos
+├── styles/                  # Estilos
+│   └── analytics.css        # Estilos específicos del plugin
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── analytics.json
-│   └── en/                  # (Inglés)
+│   └── en/                  # Inglés
 │       └── analytics.json
-└── README.md                # (Documentación)
+└── README.md                # Documentación
 ```
 
 ## API y Interfaces
@@ -89,8 +89,8 @@ subscribeToEvent(EVENT_TYPES.CALENDAR.EVENT_DELETED, handleEventChange);
 // Opciones de análisis
 const analyticsOptionsExample = {
   timeRange: {
-    start: '2025-01-01T00:00:00Z',
-    end: '2025-03-31T23:59:59Z'
+    start: '2023-01-01T00:00:00Z',
+    end: '2023-03-31T23:59:59Z'
   },
   groupBy: 'day', // 'hour', 'day', 'week', 'month'
   filters: {
@@ -99,8 +99,8 @@ const analyticsOptionsExample = {
     excludeAllDay: true
   },
   compareWith: { // Opcional, para comparaciones
-    start: '2024-10-01T00:00:00Z',
-    end: '2024-12-31T23:59:59Z'
+    start: '2022-10-01T00:00:00Z',
+    end: '2022-12-31T23:59:59Z'
   }
 };
 
@@ -133,11 +133,11 @@ const timeDistributionExample = {
 // Informe generado
 const reportExample = {
   id: 'report-123456',
-  title: 'Análisis Trimestral Q1 2025',
-  generatedAt: '2025-04-01T10:30:00Z',
+  title: 'Análisis Trimestral Q1 2023',
+  generatedAt: '2023-04-01T10:30:00Z',
   timeRange: {
-    start: '2025-01-01T00:00:00Z',
-    end: '2025-03-31T23:59:59Z'
+    start: '2023-01-01T00:00:00Z',
+    end: '2023-03-31T23:59:59Z'
   },
   sections: [
     {
@@ -548,3 +548,5 @@ function formatPercentage(value) {
 | 0.6.0   | Implementadas sugerencias de optimización basadas en patrones |
 | 0.8.0   | Añadido análisis predictivo y comparación de períodos |
 | 1.0.0   | Soporte completo para internacionalización y accesibilidad |
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

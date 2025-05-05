@@ -63,26 +63,26 @@ Para los desarrolladores interesados en crear nuevos plugins para Atlas, cada pl
 ```
 plugin-name/ 
 ├── index.js                 # Punto de entrada del plugin
-├── components/              # (Componentes UI)
+├── components/              # Componentes UI
 │   ├── component-name.jsx
 │   └── ...
-├── contexts/               # (Contextos del plugin, si aplica)
+├── contexts/                # Contextos del plugin (si aplica)
 │   └── context-name.jsx
-├── services/               # (Servicios del plugin, si aplica)
+├── services/                # Servicios del plugin (si aplica)
 │   └── service-name.js
-├── utils/                  # (Utilidades)
+├── utils/                   # Utilidades
 │   └── utility-name.js
-├── styles/                 # (Estilos)
+├── styles/                  # Estilos
 │   └── plugin-styles.css
-├── locales/                # (Traducciones)
-│   ├── es/                 # (Español)
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── plugin.json
-│   └── en/                 # (Inglés)
+│   └── en/                  # Inglés
 │       └── plugin.json
-└── README.md               # (Documentación del plugin)
+└── README.md                # Documentación del plugin
 ```
 
-Para más detalles sobre cómo desarrollar un plugin, consulte la [Guía de Desarrollo de Plugins](../plugin-development.md).
+Para más detalles sobre cómo desarrollar un plugin, consulte la documentación dedicada al desarrollo de plugins en la sección de desarrollo de la documentación principal.
 
 ## Gestión de Plugins
 
@@ -110,7 +110,7 @@ locales/
     └── plugin.json          # Traducciones en inglés
 ```
 
-Para más información sobre la internacionalización de plugins, consulte la [documentación de internacionalización](../internationalization.md).
+Para más información sobre la internacionalización de plugins, consulte la documentación de internacionalización.
 
 ## Proceso de Carga de Plugins
 
@@ -124,3 +124,5 @@ El proceso de carga de plugins sigue estos pasos:
 6. **Integración UI**: Se añaden los componentes del plugin a la interfaz
 
 Este proceso garantiza que los plugins se integren de manera segura y consistente con el resto de la aplicación.
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.
