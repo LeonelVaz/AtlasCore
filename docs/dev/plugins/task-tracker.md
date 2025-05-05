@@ -18,8 +18,18 @@ Task Tracker
 ├── Gestión de Estado
 │   └── TaskContext (Estado global de tareas)
 │
-└── Sincronización
-    └── taskToEvent.js (Convertidor bidireccional)
+├── Utilidades
+│   ├── taskUtils (Funciones de procesamiento y formateo)
+│   └── taskToEvent (Convertidor bidireccional)
+│
+├── Estilos
+│   └── tasks.css (Estilos específicos del plugin)
+│
+└── Traducciones
+    ├── es/ (Español)
+    │   └── tasks.json
+    └── en/ (Inglés)
+        └── tasks.json
 ```
 
 ## API y Interfaces
