@@ -58,16 +58,21 @@ El sistema de plugins gestiona de forma centralizada:
 
 ## Desarrollo de Plugins
 
-Para los desarrolladores interesados en crear nuevos plugins para Atlas, cada plugin debe seguir una estructura específica:
+Para los desarrolladores interesados en crear nuevos plugins para Atlas, cada plugin debe seguir una estructura estandarizada:
 
 ```
 plugin-name/
 ├── index.js                 # Punto de entrada y registro del plugin
 ├── components/              # Componentes React del plugin
-├── contexts/                # Contextos de React (opcional)
-├── services/                # Servicios específicos del plugin
+├── contexts/                # Contextos de React (si es necesario)
+├── services/                # Servicios específicos del plugin (si es necesario)
 ├── utils/                   # Utilidades y helpers
 ├── styles/                  # Estilos CSS específicos
+├── locales/                 # Traducciones específicas del plugin
+│   ├── es/                  # Español
+│   │   └── plugin.json
+│   └── en/                  # Inglés
+│       └── plugin.json
 └── README.md                # Documentación del plugin
 ```
 
@@ -89,4 +94,27 @@ Todos los plugins incorporan soporte para múltiples idiomas. A partir de la ver
 - Español (idioma predeterminado)
 - Inglés
 
+Cada plugin debe proporcionar sus propios archivos de traducción siguiendo la estructura estandarizada:
+
+```
+locales/
+├── es/
+│   └── plugin.json          # Traducciones en español
+└── en/
+    └── plugin.json          # Traducciones en inglés
+```
+
 Para más información sobre la internacionalización de plugins, consulte la [documentación de internacionalización](../internationalization.md).
+
+## Proceso de Carga de Plugins
+
+El proceso de carga de plugins sigue estos pasos:
+
+1. **Detección**: El sistema escanea el directorio de plugins
+2. **Validación**: Se verifica que el plugin cumpla con la estructura requerida
+3. **Registro**: El plugin se registra en el sistema principal
+4. **Inicialización**: Se ejecuta el método `init()` del plugin
+5. **Carga de Recursos**: Se cargan traducciones y otros recursos
+6. **Integración UI**: Se añaden los componentes del plugin a la interfaz
+
+Este proceso garantiza que los plugins se integren de manera segura y consistente con el resto de la aplicación.
