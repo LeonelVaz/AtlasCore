@@ -18,8 +18,17 @@ Reminder System
 │   ├── notificationService (Gestión de notificaciones)
 │   └── schedulerService (Programación de recordatorios)
 │
-└── Sincronización
-    └── Temporizador y verificación periódica
+├── Utilidades
+│   └── reminderUtils (Funciones de procesamiento y formateo)
+│
+├── Estilos
+│   └── reminders.css (Estilos específicos del plugin)
+│
+└── Traducciones
+    ├── es/ (Español)
+    │   └── reminders.json
+    └── en/ (Inglés)
+        └── reminders.json
 ```
 
 ## API y Interfaces
