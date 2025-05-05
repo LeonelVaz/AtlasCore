@@ -142,15 +142,21 @@ Los colaboradores pueden añadir nuevos idiomas siguiendo estos pasos:
 
 ## Plan de Implementación
 
-### Fase 1 (v0.6.0)
-- Implementar la estructura básica de i18n
-- Completar traducciones español/inglés para componentes principales
+### Stage 4 (v0.4.0)
+- Implementación de la estructura básica de i18n
+- Preparación de componentes core para internacionalización
+- Configuración inicial y pruebas básicas
 
-### Fase 2 (v0.7.0-v0.9.0)
-- Extender traducciones a todos los plugins
-- Implementar herramientas de administración de traducciones
+### Stage 5 (v0.5.0)
+- Implementación parcial de traducciones español/inglés
+- Extensión del sistema a plugins esenciales (Notes Manager, Task Tracker)
+- Implementación de detección de idioma
 
-### Fase 3 (v1.0.0)
-- Finalizar y pulir todas las traducciones
-- Implementar la detección automática de idioma
-- Completar las pruebas de todos los componentes en todos los idiomas
+### Stage 6 (v1.0.0)
+- Finalización de todas las traducciones (español/inglés)
+- Extensión a todos los plugins y componentes
+- Implementación de herramientas de administración de traducciones
+- Pruebas completas y optimización del sistema
+- Documentación para añadir nuevos idiomas
+
+Esta estructura de implementación progresiva asegura que al llegar a la versión 1.0.0, Atlas tenga un sistema de internacionalización completo y robusto, preparado para expandirse a más idiomas en el futuro.
