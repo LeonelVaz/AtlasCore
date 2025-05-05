@@ -17,8 +17,17 @@ Notes Manager
 ├── Gestión de Estado
 │   └── NotesContext (Estado global de notas)
 │
-└── Almacenamiento
-    └── Notas asociadas a fechas/eventos
+├── Utilidades
+│   └── notesUtils (Funciones de procesamiento y formateo)
+│
+├── Estilos
+│   └── notes.css (Estilos específicos del plugin)
+│
+└── Traducciones
+    ├── es/ (Español)
+    │   └── notes.json
+    └── en/ (Inglés)
+        └── notes.json
 ```
 
 ## API y Interfaces
