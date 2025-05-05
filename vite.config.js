@@ -17,7 +17,7 @@ export default defineConfig({
   },
   server: {
     host: true, // Escucha en todas las direcciones de red, incluyendo 0.0.0.0
-    port: 3000,
+    port: 5174,
     strictPort: true, // Falla si el puerto ya está en uso
     open: true, // Abre automáticamente el navegador
   },
