@@ -43,6 +43,7 @@
 - Sistema de directorios organizado por funcionalidad
 - Componentes reutilizables en módulo common
 - Soporte para entorno web y aplicación de escritorio (Electron)
+- Implementación con React usando JSX para componentes
 
 ### Sistema de Bus de Eventos
 - Bus de eventos centralizado para comunicación desacoplada entre módulos
@@ -195,12 +196,12 @@
 plugins/video-scheduler/
   ├── index.js                 # Punto de entrada del plugin
   ├── components/              # Componentes React
-  │   ├── VideoScheduler.js    # Componente principal
-  │   ├── VideoSlot.js         # Slot individual de video
-  │   ├── StatusSelector.js    # Selector de estado de producción
-  │   └── EarningsTracker.js   # Seguimiento de ingresos
+  │   ├── VideoScheduler.jsx   # Componente principal
+  │   ├── VideoSlot.jsx        # Slot individual de video
+  │   ├── StatusSelector.jsx   # Selector de estado de producción
+  │   └── EarningsTracker.jsx  # Seguimiento de ingresos
   ├── contexts/
-  │   └── VideoContext.js      # Contexto del programador
+  │   └── VideoContext.jsx     # Contexto del programador
   ├── utils/
   │   ├── videoUtils.js        # Utilidades específicas
   │   └── eventConverter.js    # Conversión entre eventos y videos
@@ -230,18 +231,18 @@ plugins/video-scheduler/
 **Estructura de carpetas:**
 ```
 plugins/notes-manager/
-  ├── index.js            # Punto de entrada del plugin
-  ├── components/         # Componentes React del plugin
-  │   ├── NotesList.js    # Lista de notas
-  │   ├── NoteEditor.js   # Editor de notas
-  │   └── NotesPanel.js   # Panel principal
+  ├── index.js             # Punto de entrada del plugin
+  ├── components/          # Componentes React del plugin
+  │   ├── NotesList.jsx    # Lista de notas
+  │   ├── NoteEditor.jsx   # Editor de notas
+  │   └── NotesPanel.jsx   # Panel principal
   ├── contexts/
-  │   └── NotesContext.js # Estado global de notas
+  │   └── NotesContext.jsx # Estado global de notas
   ├── utils/
-  │   └── notesUtils.js   # Utilidades específicas
+  │   └── notesUtils.js    # Utilidades específicas
   ├── styles/
-  │   └── notes.css       # Estilos específicos del plugin
-  └── README.md           # Documentación del plugin
+  │   └── notes.css        # Estilos específicos del plugin
+  └── README.md            # Documentación del plugin
 ```
 
 **Funcionalidades:**
@@ -267,12 +268,12 @@ plugins/notes-manager/
 plugins/task-tracker/
   ├── index.js                # Punto de entrada del plugin
   ├── components/             # Componentes React
-  │   ├── TaskBoard.js        # Vista de tablero Kanban
-  │   ├── TaskList.js         # Vista de lista de tareas
-  │   ├── TaskItem.js         # Componente de tarea individual
-  │   └── TaskForm.js         # Formulario para crear/editar tareas
+  │   ├── TaskBoard.jsx       # Vista de tablero Kanban
+  │   ├── TaskList.jsx        # Vista de lista de tareas
+  │   ├── TaskItem.jsx        # Componente de tarea individual
+  │   └── TaskForm.jsx        # Formulario para crear/editar tareas
   ├── contexts/
-  │   └── TaskContext.js      # Contexto global de tareas
+  │   └── TaskContext.jsx     # Contexto global de tareas
   ├── utils/
   │   ├── taskUtils.js        # Utilidades específicas
   │   └── taskToEvent.js      # Conversión entre tareas y eventos
@@ -302,18 +303,18 @@ plugins/task-tracker/
 **Estructura de carpetas:**
 ```
 plugins/calendar-analytics/
-  ├── index.js                  # Punto de entrada
-  ├── components/               # Componentes React
-  │   ├── AnalyticsDashboard.js # Panel principal
-  │   ├── TimeDistribution.js   # Gráfico de distribución
-  │   ├── CategoryPieChart.js   # Gráfico circular por categorías
-  │   └── ActivityTimeline.js   # Línea de tiempo de actividad
+  ├── index.js                   # Punto de entrada
+  ├── components/                # Componentes React
+  │   ├── AnalyticsDashboard.jsx # Panel principal
+  │   ├── TimeDistribution.jsx   # Gráfico de distribución
+  │   ├── CategoryPieChart.jsx   # Gráfico circular por categorías
+  │   └── ActivityTimeline.jsx   # Línea de tiempo de actividad
   ├── utils/
-  │   ├── analyticsUtils.js     # Utilidades de análisis
-  │   └── dataProcessing.js     # Procesamiento de datos
+  │   ├── analyticsUtils.js      # Utilidades de análisis
+  │   └── dataProcessing.js      # Procesamiento de datos
   ├── styles/
-  │   └── analytics.css         # Estilos específicos
-  └── README.md                 # Documentación
+  │   └── analytics.css          # Estilos específicos
+  └── README.md                  # Documentación
 ```
 
 **Funcionalidades:**
@@ -337,19 +338,19 @@ plugins/calendar-analytics/
 **Estructura de carpetas:**
 ```
 plugins/reminder-system/
-  ├── index.js                  # Punto de entrada
-  ├── components/               # Componentes React
-  │   ├── ReminderSettings.js   # Configuración de recordatorios
-  │   ├── NotificationPanel.js  # Panel de notificaciones
-  │   └── ReminderForm.js       # Formulario para crear recordatorios
+  ├── index.js                   # Punto de entrada
+  ├── components/                # Componentes React
+  │   ├── ReminderSettings.jsx   # Configuración de recordatorios
+  │   ├── NotificationPanel.jsx  # Panel de notificaciones
+  │   └── ReminderForm.jsx       # Formulario para crear recordatorios
   ├── services/
   │   ├── notificationService.js # Servicio de notificaciones
   │   └── schedulerService.js    # Programación de recordatorios
   ├── utils/
-  │   └── reminderUtils.js      # Utilidades específicas
+  │   └── reminderUtils.js       # Utilidades específicas
   ├── styles/
-  │   └── reminders.css         # Estilos específicos
-  └── README.md                 # Documentación
+  │   └── reminders.css          # Estilos específicos
+  └── README.md                  # Documentación
 ```
 
 **Funcionalidades:**
@@ -375,9 +376,9 @@ plugins/reminder-system/
 plugins/weather-integration/
   ├── index.js                  # Punto de entrada
   ├── components/               # Componentes React
-  │   ├── WeatherWidget.js      # Widget para la UI principal
-  │   ├── ForecastDay.js        # Previsión diaria
-  │   └── EventWeather.js       # Componente para eventos
+  │   ├── WeatherWidget.jsx     # Widget para la UI principal
+  │   ├── ForecastDay.jsx       # Previsión diaria
+  │   └── EventWeather.jsx      # Componente para eventos
   ├── services/
   │   └── weatherAPI.js         # Servicio de conexión a API externa
   ├── utils/
@@ -415,21 +416,22 @@ Cada plugin se comunica con el núcleo a través del sistema de bus de eventos y
 calendario-app/
 ├── package.json
 ├── README.md
+├── vite.config.js               # Configuración de Vite para desarrollo
+├── index.html                   # Archivo HTML principal
 ├── electron/                    # Configuración para la app de escritorio
 │   ├── main.js                  # Proceso principal de Electron
 │   ├── preload.js               # Script de precarga para Electron
 │   └── windowManager.js         # Gestión de ventanas
 │
 ├── public/                      # Archivos estáticos
-│   ├── index.html
 │   ├── favicon.ico
 │   └── assets/
 │       ├── fonts/
 │       └── images/
 │
 ├── src/
-│   ├── index.js                 # Punto de entrada principal
-│   ├── App.js                   # Componente raíz de la aplicación
+│   ├── index.jsx                # Punto de entrada principal
+│   ├── App.jsx                  # Componente raíz de la aplicación
 │   │
 │   ├── core/                    # Núcleo de la aplicación
 │   │   ├── bus/                 # Sistema de bus de eventos
@@ -453,45 +455,45 @@ calendario-app/
 │   │
 │   ├── components/              # Componentes de la aplicación
 │   │   ├── calendar/            # Componentes del calendario
-│   │   │   ├── CalendarMain.js  # Componente principal del calendario
-│   │   │   ├── CalendarHeader.js # Encabezado del calendario
-│   │   │   ├── DayView.js       # Vista de día
-│   │   │   ├── WeekView.js      # Vista de semana
-│   │   │   ├── EventItem.js     # Elemento de evento
-│   │   │   ├── TimeGrid.js      # Rejilla temporal
-│   │   │   ├── TimeSlot.js      # Franja horaria
-│   │   │   └── EventForm.js     # Formulario de eventos
+│   │   │   ├── CalendarMain.jsx # Componente principal del calendario
+│   │   │   ├── CalendarHeader.jsx # Encabezado del calendario
+│   │   │   ├── DayView.jsx      # Vista de día
+│   │   │   ├── WeekView.jsx     # Vista de semana
+│   │   │   ├── EventItem.jsx    # Elemento de evento
+│   │   │   ├── TimeGrid.jsx     # Rejilla temporal
+│   │   │   ├── TimeSlot.jsx     # Franja horaria
+│   │   │   └── EventForm.jsx    # Formulario de eventos
 │   │   │
 │   │   ├── admin/               # Componentes de administración
-│   │   │   ├── AdminPanel.js    # Panel de administración
-│   │   │   ├── LogViewer.js     # Visor de logs
-│   │   │   └── ErrorDisplay.js  # Visualizador de errores
+│   │   │   ├── AdminPanel.jsx   # Panel de administración
+│   │   │   ├── LogViewer.jsx    # Visor de logs
+│   │   │   └── ErrorDisplay.jsx # Visualizador de errores
 │   │   │
 │   │   ├── ui/                  # Componentes de UI reutilizables
-│   │   │   ├── Button.js        # Botón personalizado
-│   │   │   ├── Dialog.js        # Diálogo moderno
-│   │   │   ├── Toast.js         # Notificaciones toast
-│   │   │   ├── Dropdown.js      # Menú desplegable
-│   │   │   ├── ErrorBoundary.js # Captura de errores React
-│   │   │   └── ThemeSelector.js # Selector de temas
+│   │   │   ├── Button.jsx       # Botón personalizado
+│   │   │   ├── Dialog.jsx       # Diálogo moderno
+│   │   │   ├── Toast.jsx        # Notificaciones toast
+│   │   │   ├── Dropdown.jsx     # Menú desplegable
+│   │   │   ├── ErrorBoundary.jsx # Captura de errores React
+│   │   │   └── ThemeSelector.jsx # Selector de temas
 │   │   │
 │   │   └── settings/            # Componentes de configuración
-│   │       ├── SettingsPanel.js # Panel de configuración
-│   │       ├── TimeScaleConfig.js # Configuración de escala de tiempo
-│   │       ├── ThemeConfig.js   # Configuración de temas
-│   │       └── CustomSignature.js # Configuración de firma
+│   │       ├── SettingsPanel.jsx # Panel de configuración
+│   │       ├── TimeScaleConfig.jsx # Configuración de escala de tiempo
+│   │       ├── ThemeConfig.jsx  # Configuración de temas
+│   │       └── CustomSignature.jsx # Configuración de firma
 │   │
 │   ├── contexts/                # Contextos de React
-│   │   ├── CalendarContext.js   # Contexto del calendario
-│   │   ├── ThemeContext.js      # Contexto de temas
-│   │   └── SettingsContext.js   # Contexto de configuraciones
+│   │   ├── CalendarContext.jsx  # Contexto del calendario
+│   │   ├── ThemeContext.jsx     # Contexto de temas
+│   │   └── SettingsContext.jsx  # Contexto de configuraciones
 │   │
 │   ├── hooks/                   # Hooks personalizados
-│   │   ├── useCalendarEvents.js # Hook para eventos del calendario
-│   │   ├── useTimeGrid.js       # Hook para rejilla temporal
-│   │   ├── useEventDrag.js      # Hook para arrastrar eventos
-│   │   ├── useEventResize.js    # Hook para redimensionar eventos
-│   │   └── useUIUtils.js        # Hook para utilidades UI
+│   │   ├── useCalendarEvents.jsx # Hook para eventos del calendario
+│   │   ├── useTimeGrid.jsx      # Hook para rejilla temporal
+│   │   ├── useEventDrag.jsx     # Hook para arrastrar eventos
+│   │   ├── useEventResize.jsx   # Hook para redimensionar eventos
+│   │   └── useUIUtils.jsx       # Hook para utilidades UI
 │   │
 │   ├── utils/                   # Utilidades
 │   │   ├── dateUtils.js         # Utilidades de fechas
@@ -501,6 +503,8 @@ calendario-app/
 │   │   └── validationUtils.js   # Utilidades de validación
 │   │
 │   ├── styles/                  # Estilos
+│   │   ├── index.css            # Estilos globales
+│   │   ├── App.css              # Estilos para App.jsx
 │   │   ├── variables.css        # Variables CSS globales
 │   │   ├── themes/              # Archivos de temas
 │   │   │   ├── light.css        # Tema claro
@@ -512,7 +516,8 @@ calendario-app/
 │   │   │   ├── events.css       # Estilos de eventos
 │   │   │   └── admin.css        # Estilos de administración
 │   │   │
-│   │   └── global.css           # Estilos globales
+│   │   └── calendar/            # Estilos específicos del calendario
+│   │       └── CalendarMain.css # Estilos para CalendarMain.jsx
 │   │
 │   └── plugins/                 # Sistema de plugins
 │       ├── pluginLoader.js      # Cargador de plugins
@@ -521,12 +526,12 @@ calendario-app/
 │       ├── video-scheduler/     # Plugin de programador de videos
 │       │   ├── index.js         # Punto de entrada del plugin
 │       │   ├── components/      # Componentes del plugin
-│       │   │   ├── VideoScheduler.js
-│       │   │   ├── VideoSlot.js
-│       │   │   ├── StatusSelector.js
-│       │   │   └── EarningsTracker.js
+│       │   │   ├── VideoScheduler.jsx
+│       │   │   ├── VideoSlot.jsx
+│       │   │   ├── StatusSelector.jsx
+│       │   │   └── EarningsTracker.jsx
 │       │   ├── contexts/
-│       │   │   └── VideoContext.js
+│       │   │   └── VideoContext.jsx
 │       │   ├── utils/
 │       │   │   ├── videoUtils.js
 │       │   │   └── eventConverter.js
@@ -537,11 +542,11 @@ calendario-app/
 │       ├── notes-manager/       # Plugin de notas
 │       │   ├── index.js
 │       │   ├── components/
-│       │   │   ├── NotesList.js
-│       │   │   ├── NoteEditor.js
-│       │   │   └── NotesPanel.js
+│       │   │   ├── NotesList.jsx
+│       │   │   ├── NoteEditor.jsx
+│       │   │   └── NotesPanel.jsx
 │       │   ├── contexts/
-│       │   │   └── NotesContext.js
+│       │   │   └── NotesContext.jsx
 │       │   ├── utils/
 │       │   │   └── notesUtils.js
 │       │   ├── styles/
@@ -551,12 +556,12 @@ calendario-app/
 │       ├── task-tracker/        # Plugin de seguimiento de tareas
 │       │   ├── index.js
 │       │   ├── components/
-│       │   │   ├── TaskBoard.js
-│       │   │   ├── TaskList.js
-│       │   │   ├── TaskItem.js
-│       │   │   └── TaskForm.js
+│       │   │   ├── TaskBoard.jsx
+│       │   │   ├── TaskList.jsx
+│       │   │   ├── TaskItem.jsx
+│       │   │   └── TaskForm.jsx
 │       │   ├── contexts/
-│       │   │   └── TaskContext.js
+│       │   │   └── TaskContext.jsx
 │       │   ├── utils/
 │       │   │   ├── taskUtils.js
 │       │   │   └── taskToEvent.js
@@ -567,10 +572,10 @@ calendario-app/
 │       ├── calendar-analytics/  # Plugin de estadísticas
 │       │   ├── index.js
 │       │   ├── components/
-│       │   │   ├── AnalyticsDashboard.js
-│       │   │   ├── TimeDistribution.js
-│       │   │   ├── CategoryPieChart.js
-│       │   │   └── ActivityTimeline.js
+│       │   │   ├── AnalyticsDashboard.jsx
+│       │   │   ├── TimeDistribution.jsx
+│       │   │   ├── CategoryPieChart.jsx
+│       │   │   └── ActivityTimeline.jsx
 │       │   ├── utils/
 │       │   │   ├── analyticsUtils.js
 │       │   │   └── dataProcessing.js
@@ -581,9 +586,9 @@ calendario-app/
 │       ├── reminder-system/     # Plugin de recordatorios
 │       │   ├── index.js
 │       │   ├── components/
-│       │   │   ├── ReminderSettings.js
-│       │   │   ├── NotificationPanel.js
-│       │   │   └── ReminderForm.js
+│       │   │   ├── ReminderSettings.jsx
+│       │   │   ├── NotificationPanel.jsx
+│       │   │   └── ReminderForm.jsx
 │       │   ├── services/
 │       │   │   ├── notificationService.js
 │       │   │   └── schedulerService.js
@@ -596,9 +601,9 @@ calendario-app/
 │       └── weather-integration/ # Plugin de integración con el clima
 │           ├── index.js
 │           ├── components/
-│           │   ├── WeatherWidget.js
-│           │   ├── ForecastDay.js
-│           │   └── EventWeather.js
+│           │   ├── WeatherWidget.jsx
+│           │   ├── ForecastDay.jsx
+│           │   └── EventWeather.jsx
 │           ├── services/
 │           │   └── weatherAPI.js
 │           ├── utils/
@@ -617,8 +622,16 @@ calendario-app/
 │       ├── calendar/            # Tests del calendario
 │       └── plugins/             # Tests de plugins
 │
-└── config/                      # Configuración del proyecto
-    ├── webpack.config.js        # Configuración de webpack
-    ├── electron.config.js       # Configuración de Electron
-    └── jest.config.js           # Configuración de tests
+└── docs/                        # Documentación del proyecto
+    ├── dev/                     # Documentación para desarrolladores
+    │   ├── atlas-overview.md    # Visión general de Atlas
+    │   ├── atlas-stages.md      # Etapas de desarrollo
+    │   └── comandos.md          # Comandos útiles
+    │
+    └── brand-assets/            # Recursos de marca
+        ├── logos/               # Logos de la aplicación
+        │   └── atlas-logo.svg   # Logo SVG principal
+        │
+        └── documentation/       # Documentación de marca
+            └── atlas-brand-guide.md # Guía de identidad de marca
 ```
