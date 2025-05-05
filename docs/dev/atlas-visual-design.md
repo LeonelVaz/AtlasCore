@@ -250,7 +250,7 @@ Cada plugin mantiene la coherencia visual con el sistema principal, pero tiene e
 
 1. **Programador de Videos**
    - **Vistas principales**:
-     - Vista de slots de tiempo (mañana, tarde, noche)
+     - Vista de franjas horarias (mañana, tarde, noche)
      - Calendario de producción mensual
      - Panel de seguimiento de ingresos
    - **Elementos visuales clave**:
@@ -258,7 +258,7 @@ Cada plugin mantiene la coherencia visual con el sistema principal, pero tiene e
      - Tarjetas de video con miniatura y metadatos
      - Gráficos de rendimiento e ingresos
    - **Interacciones especiales**:
-     - Arrastrar videos entre slots
+     - Arrastrar videos entre franjas horarias
      - Actualización rápida de estado con menú contextual
      - Filtrado por estado o categoría
 
@@ -393,6 +393,11 @@ El panel de configuración se divide en secciones claramente definidas:
    - Secciones específicas para cada plugin activado
    - Opciones de integración entre plugins
    - Activación/desactivación de plugins
+
+6. **Internacionalización**
+   - Selección de idioma (español o inglés)
+   - Formatos de fecha y hora según región
+   - Previsualización de traducciones
 
 ## Versión Móvil
 
