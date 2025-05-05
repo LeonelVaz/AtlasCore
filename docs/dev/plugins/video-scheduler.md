@@ -4,22 +4,32 @@
 El plugin Video Scheduler está diseñado para creadores de contenido que necesitan planificar, organizar y dar seguimiento a su producción de videos. Permite programar la creación, producción y publicación de videos en diferentes franjas horarias, gestionar estados de producción y hacer seguimiento de métricas e ingresos asociados.
 
 ## Arquitectura
-El plugin se estructura en torno a un sistema de slots de tiempo dedicados a la producción de video, con integración directa al calendario principal.
+El plugin se estructura en torno a un sistema de franjas horarias dedicadas a la producción de video, con integración directa al calendario principal.
 
 ```
 Video Scheduler
 │
 ├── Componentes UI
 │   ├── VideoScheduler (Componente principal)
-│   ├── VideoSlot (Slot individual de video)
+│   ├── VideoSlot (Franja individual de video)
 │   ├── StatusSelector (Selector de estado de producción)
 │   └── EarningsTracker (Seguimiento de ingresos)
 │
 ├── Gestión de Estado
 │   └── VideoContext (Contexto de producción de videos)
 │
-└── Sincronización
-    └── eventConverter.js (Conversión entre eventos y videos)
+├── Utilidades
+│   ├── videoUtils (Funciones de procesamiento y formateo)
+│   └── eventConverter (Conversión entre eventos y videos)
+│
+├── Estilos
+│   └── videoScheduler.css (Estilos específicos del plugin)
+│
+└── Traducciones
+    ├── es/ (Español)
+    │   └── video.json
+    └── en/ (Inglés)
+        └── video.json
 ```
 
 ## API y Interfaces
@@ -76,7 +86,7 @@ subscribeToEvent(EVENT_TYPES.CALENDAR.EVENT_DELETED, handleEventDeleted);
 
 ## Estados y Ciclo de Vida
 1. **Inicialización**: Carga de videos programados y configuración
-2. **Planificación**: Creación y asignación de videos a slots de tiempo
+2. **Planificación**: Creación y asignación de videos a franjas horarias
 3. **Producción**: Seguimiento del estado de producción de cada video
 4. **Publicación**: Registro de publicación y configuración de seguimiento
 5. **Análisis**: Seguimiento de métricas e ingresos por video
@@ -120,7 +130,7 @@ const videoExample = {
   }
 };
 
-// Estructura de un slot de tiempo
+// Estructura de una franja horaria
 const slotExample = {
   id: 'slot-20250415-morning',
   date: '2025-04-15',
@@ -146,7 +156,7 @@ Para integrar con el plugin Video Scheduler:
    }
    ```
 
-2. Acceda a los videos y slots
+2. Acceda a los videos y franjas horarias
    ```javascript
    // Obtener videos para una fecha específica
    const date = new Date('2025-04-15');
@@ -185,7 +195,7 @@ function convertEventToVideo(eventId) {
   const event = calendar.getEvent(eventId);
   if (!event) return null;
   
-  // Determinar el slot basado en la hora del evento
+  // Determinar la franja horaria basada en la hora del evento
   const date = new Date(event.start);
   const hour = date.getHours();
   let timeSlot = 'afternoon';
@@ -405,7 +415,7 @@ function ProductionTrackingPanel() {
               <tr>
                 <th>Título</th>
                 <th>Fecha</th>
-                <th>Slot</th>
+                <th>Franja</th>
                 <th>Estado</th>
                 <th>Progreso</th>
                 <th>Ingresos</th>
@@ -574,7 +584,7 @@ function navigateToCalendarEvent(video) {
 | Problema | Causa | Solución |
 |----------|-------|----------|
 | Videos no aparecen en calendario | Sincronización desactivada | Activar "Mostrar videos en calendario" en configuración |
-| Conflictos de slot | Múltiples videos en mismo slot | Usar función "Resolver conflictos" en panel de gestión |
+| Conflictos de franja horaria | Múltiples videos en misma franja | Usar función "Resolver conflictos" en panel de gestión |
 | Ingresos no actualizados | Datos no sincronizados | Actualizar manualmente o recargar datos |
 | Estados de producción incorrectos | Desincronización con sistema externo | Usar la función "Sincronizar estados" en configuración |
 | Visualización incorrecta en móvil | Pantalla pequeña para tabla completa | Activar "Vista compacta para móvil" en preferencias |
