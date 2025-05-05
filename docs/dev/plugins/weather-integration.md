@@ -17,8 +17,17 @@ Weather Integration
 ├── Servicios
 │   └── weatherAPI (Servicio de conexión a API externa)
 │
-└── Configuración
-    └── Preferencias de ubicación y unidades
+├── Utilidades
+│   └── weatherUtils (Funciones de procesamiento y formateo)
+│
+├── Estilos
+│   └── weather.css (Estilos específicos del plugin)
+│
+└── Traducciones
+    ├── es/ (Español)
+    │   └── weather.json
+    └── en/ (Inglés)
+        └── weather.json
 ```
 
 ## API y Interfaces
