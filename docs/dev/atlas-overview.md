@@ -13,7 +13,7 @@
    - [Gestión de Eventos](#gestión-de-eventos)
    - [Interacciones Avanzadas](#interacciones-avanzadas)
    - [Sistema de Escalas de Tiempo](#sistema-de-escalas-de-tiempo)
-   - [Personalización de Horarios](#personalización-de-horarios)
+   - [Personalización de Franjas Horarias](#personalización-de-franjas-horarias)
 
 3. **Sistema de Administración y Monitoreo**
    - [Panel de Administración](#panel-de-administración)
@@ -97,7 +97,7 @@
 - Cálculo automático de tamaños y posiciones según escala
 - Restauración de escala a valores predeterminados
 
-### Personalización de Horarios
+### Personalización de Franjas Horarias
 - Franjas horarias estándar (hora en hora) y personalizadas
 - Creación de tiempos intermedios con botón + entre franjas
 - Edición y eliminación de franjas personalizadas
@@ -199,7 +199,7 @@ Atlas incluye un ecosistema de plugins que extienden su funcionalidad base. Para
 5. [Video Scheduler](plugins/video-scheduler.md) - Planificación de producción de videos
 6. [Weather Integration](plugins/weather-integration.md) - Integración de datos meteorológicos
 
-Para una visión general de la interacción entre plugins, consulte la [documentación de interacción entre plugins](plugins/index.md).
+Para una visión general de la interacción entre plugins, consulte la [documentación de interacción entre plugins](plugins/atlas-plugins-index.md).
 
 ## 7. Internacionalización
 
@@ -343,91 +343,79 @@ atlas/
 │       ├── video-scheduler/     # Plugin de programador de videos
 │       │   ├── index.js         # Punto de entrada del plugin
 │       │   ├── components/      # Componentes del plugin
-│       │   │   ├── VideoScheduler.jsx
-│       │   │   ├── VideoSlot.jsx
-│       │   │   ├── StatusSelector.jsx
-│       │   │   └── EarningsTracker.jsx
-│       │   ├── contexts/
-│       │   │   └── VideoContext.jsx
-│       │   ├── utils/
-│       │   │   ├── videoUtils.js
-│       │   │   └── eventConverter.js
-│       │   ├── styles/
-│       │   │   └── videoScheduler.css
-│       │   └── README.md
+│       │   ├── contexts/        # Contextos específicos del plugin
+│       │   ├── utils/           # Utilidades específicas
+│       │   ├── styles/          # Estilos específicos
+│       │   ├── locales/         # Traducciones específicas
+│       │   │   ├── es/
+│       │   │   │   └── video.json
+│       │   │   └── en/
+│       │   │       └── video.json
+│       │   └── README.md        # Documentación del plugin
 │       │
 │       ├── notes-manager/       # Plugin de notas
-│       │   ├── index.js
-│       │   ├── components/
-│       │   │   ├── NotesList.jsx
-│       │   │   ├── NoteEditor.jsx
-│       │   │   └── NotesPanel.jsx
-│       │   ├── contexts/
-│       │   │   └── NotesContext.jsx
-│       │   ├── utils/
-│       │   │   └── notesUtils.js
-│       │   ├── styles/
-│       │   │   └── notes.css
-│       │   └── README.md
+│       │   ├── index.js         # Punto de entrada del plugin
+│       │   ├── components/      # Componentes del plugin
+│       │   ├── contexts/        # Contextos específicos del plugin
+│       │   ├── utils/           # Utilidades específicas
+│       │   ├── styles/          # Estilos específicos
+│       │   ├── locales/         # Traducciones específicas
+│       │   │   ├── es/
+│       │   │   │   └── notes.json
+│       │   │   └── en/
+│       │   │       └── notes.json
+│       │   └── README.md        # Documentación del plugin
 │       │
 │       ├── task-tracker/        # Plugin de seguimiento de tareas
-│       │   ├── index.js
-│       │   ├── components/
-│       │   │   ├── TaskBoard.jsx
-│       │   │   ├── TaskList.jsx
-│       │   │   ├── TaskItem.jsx
-│       │   │   └── TaskForm.jsx
-│       │   ├── contexts/
-│       │   │   └── TaskContext.jsx
-│       │   ├── utils/
-│       │   │   ├── taskUtils.js
-│       │   │   └── taskToEvent.js
-│       │   ├── styles/
-│       │   │   └── tasks.css
-│       │   └── README.md
+│       │   ├── index.js         # Punto de entrada del plugin
+│       │   ├── components/      # Componentes del plugin
+│       │   ├── contexts/        # Contextos específicos del plugin
+│       │   ├── utils/           # Utilidades específicas
+│       │   ├── styles/          # Estilos específicos
+│       │   ├── locales/         # Traducciones específicas
+│       │   │   ├── es/
+│       │   │   │   └── tasks.json
+│       │   │   └── en/
+│       │   │       └── tasks.json
+│       │   └── README.md        # Documentación del plugin
 │       │
 │       ├── calendar-analytics/  # Plugin de estadísticas
-│       │   ├── index.js
-│       │   ├── components/
-│       │   │   ├── AnalyticsDashboard.jsx
-│       │   │   ├── TimeDistribution.jsx
-│       │   │   ├── CategoryPieChart.jsx
-│       │   │   └── ActivityTimeline.jsx
-│       │   ├── utils/
-│       │   │   ├── analyticsUtils.js
-│       │   │   └── dataProcessing.js
-│       │   ├── styles/
-│       │   │   └── analytics.css
-│       │   └── README.md
+│       │   ├── index.js         # Punto de entrada del plugin
+│       │   ├── components/      # Componentes del plugin
+│       │   ├── utils/           # Utilidades específicas
+│       │   ├── styles/          # Estilos específicos
+│       │   ├── locales/         # Traducciones específicas
+│       │   │   ├── es/
+│       │   │   │   └── analytics.json
+│       │   │   └── en/
+│       │   │       └── analytics.json
+│       │   └── README.md        # Documentación del plugin
 │       │
 │       ├── reminder-system/     # Plugin de recordatorios
-│       │   ├── index.js
-│       │   ├── components/
-│       │   │   ├── ReminderSettings.jsx
-│       │   │   ├── NotificationPanel.jsx
-│       │   │   └── ReminderForm.jsx
-│       │   ├── services/
-│       │   │   ├── notificationService.js
-│       │   │   └── schedulerService.js
-│       │   ├── utils/
-│       │   │   └── reminderUtils.js
-│       │   ├── styles/
-│       │   │   └── reminders.css
-│       │   └── README.md
+│       │   ├── index.js         # Punto de entrada del plugin
+│       │   ├── components/      # Componentes del plugin
+│       │   ├── services/        # Servicios específicos
+│       │   ├── utils/           # Utilidades específicas
+│       │   ├── styles/          # Estilos específicos
+│       │   ├── locales/         # Traducciones específicas
+│       │   │   ├── es/
+│       │   │   │   └── reminders.json
+│       │   │   └── en/
+│       │   │       └── reminders.json
+│       │   └── README.md        # Documentación del plugin
 │       │
 │       └── weather-integration/ # Plugin de integración con el clima
-│           ├── index.js
-│           ├── components/
-│           │   ├── WeatherWidget.jsx
-│           │   ├── ForecastDay.jsx
-│           │   └── EventWeather.jsx
-│           ├── services/
-│           │   └── weatherAPI.js
-│           ├── utils/
-│           │   └── weatherUtils.js
-│           ├── styles/
-│           │   └── weather.css
-│           └── README.md
+│           ├── index.js         # Punto de entrada del plugin
+│           ├── components/      # Componentes del plugin
+│           ├── services/        # Servicios específicos
+│           ├── utils/           # Utilidades específicas
+│           ├── styles/          # Estilos específicos
+│           ├── locales/         # Traducciones específicas
+│           │   ├── es/
+│           │   │   └── weather.json
+│           │   └── en/
+│           │       └── weather.json
+│           └── README.md        # Documentación del plugin
 │
 ├── test/                        # Tests de la aplicación
 │   ├── unit/                    # Tests unitarios
@@ -442,13 +430,13 @@ atlas/
 └── docs/                        # Documentación del proyecto
     ├── dev/                     # Documentación para desarrolladores
     │   ├── atlas-overview.md    # Visión general de Atlas
-    │   ├── atlas-stages.md      # Documento principal de etapas (redirige a index)
+    │   ├── atlas-stages.md      # Documento principal de stages (redirige a index)
     │   ├── atlas-visual-design.md # Diseño visual
     │   ├── internationalization.md # Documentación de internacionalización
     │   ├── guide-versions.md    # Guía de versionado
     │   ├── comandos.md          # Comandos útiles
     │   ├── plugins/             # Documentación detallada de plugins
-    │   │   ├── index.md         # Índice de plugins e interacciones
+    │   │   ├── atlas-plugins-index.md # Índice de plugins e interacciones
     │   │   ├── notes-manager.md # Documentación del plugin de notas
     │   │   ├── task-tracker.md  # Documentación del plugin de tareas
     │   │   ├── reminder-system.md # Documentación del plugin de recordatorios
@@ -456,8 +444,8 @@ atlas/
     │   │   ├── video-scheduler.md # Documentación del plugin de videos
     │   │   └── weather-integration.md # Documentación del plugin de clima
     │   │
-    │   └── stages/              # Documentación detallada por etapas
-    │       ├── atlas-stages-index.md    # Índice de las etapas de desarrollo
+    │   └── stages/              # Documentación detallada por stages
+    │       ├── atlas-stages-index.md    # Índice de los stages de desarrollo
     │       ├── stage-1.md       # Documentación del Stage 1
     │       ├── stage-2.md       # Documentación del Stage 2
     │       ├── stage-3.md       # Documentación del Stage 3
