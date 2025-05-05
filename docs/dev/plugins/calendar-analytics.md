@@ -15,12 +15,22 @@ Calendar Analytics
 │   ├── CategoryPieChart (Gráfico circular por categorías)
 │   └── ActivityTimeline (Línea de tiempo de actividad)
 │
-├── Servicios Analíticos
+├── Servicios
 │   ├── dataProcessor (Procesamiento de datos)
 │   └── reportGenerator (Generación de informes)
 │
-└── Visualización
-    └── Componentes de gráficos interactivos
+├── Utilidades
+│   ├── analyticsUtils (Funciones de procesamiento y formateo)
+│   └── dataProcessing (Procesamiento avanzado de datos)
+│
+├── Estilos
+│   └── analytics.css (Estilos específicos del plugin)
+│
+└── Traducciones
+    ├── es/ (Español)
+    │   └── analytics.json
+    └── en/ (Inglés)
+        └── analytics.json
 ```
 
 ## API y Interfaces
