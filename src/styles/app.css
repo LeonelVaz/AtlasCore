@@ -1,0 +1,53 @@
+/**
+ * Estilos para el componente principal App
+ */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-atlas-blue);
+  color: white;
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+.app-logo h1 {
+  font-family: var(--font-family-heading);
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.app-header-controls {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.app-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--spacing-md);
+  background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .app-content {
+    padding: var(--spacing-sm);
+  }
+}
