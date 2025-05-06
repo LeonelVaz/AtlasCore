@@ -1,3 +1,7 @@
+/* Importar fuentes */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
+
+
 /**
  * Estilos globales para la aplicación Atlas
  */
@@ -28,9 +32,6 @@
   --font-family-body: 'Inter', sans-serif;
   --font-family-mono: 'Fira Mono', monospace;
 }
-
-/* Importar fuentes */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
 
 /* Reset básico */
 * {
