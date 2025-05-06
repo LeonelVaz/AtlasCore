@@ -345,7 +345,7 @@ function NotificationCenter() {
 | 0.4.0   | Versión inicial con recordatorios básicos |
 | 0.4.5   | Añadido soporte para navegadores móviles |
 | 0.5.0   | Implementado sistema de sonidos personalizados |
-| 0.6.0   | Añadidas notificaciones push para PWA |
+| 0.6.0   | Añadidas notificaciones push para PWA (**disponibles cuando Atlas implemente PWA completo en v1.0.0**) |
 | 1.0.0   | Soporte completo para internacionalización y accesibilidad |
 
 **Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

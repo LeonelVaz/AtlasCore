@@ -7,6 +7,7 @@
    - Auditoría completa de rendimiento
    - Optimización de componentes críticos
    - Mejoras de velocidad en operaciones con muchos datos
+   - Implementación completa de Progressive Web App (PWA)
 
 2. **Mejoras de usabilidad**
    - Revisión completa de UX/UI
@@ -33,6 +34,7 @@
 - Experiencia de usuario coherente y satisfactoria
 - Documentación completa para usuarios y desarrolladores
 - Sistema multilingüe completamente implementado
+- Disponible como Progressive Web App totalmente funcional
 - Producto listo para su lanzamiento público como versión 1.0.0
 
 ## Estructura de archivos al finalizar el Stage 6

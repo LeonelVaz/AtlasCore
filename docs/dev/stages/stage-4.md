@@ -12,21 +12,28 @@
    - Funcionalidad de exportación por módulos y rango de fechas
    - Importación con validación y resolución de conflictos
    - Integración con sistema de archivos nativo en Electron
+   - Configuración básica de manifest.json para soporte futuro de PWA
 
-3. **Plugin: Seguimiento de tareas**
+3. **Plugin: Task Tracker**
    - Implementación del plugin de tareas
    - Integración bidireccional con eventos del calendario
    - Vistas de tablero Kanban y lista
 
-4. **Plugin: Recordatorios**
+4. **Plugin: Reminder System**
    - Sistema de recordatorios para eventos
    - Notificaciones nativas (escritorio) y en aplicación (web)
    - Configuración personalizada de alertas
 
+5. **Estructura básica de internacionalización**
+   - Implementación de la estructura base del sistema de i18n
+   - Preparación de componentes core para internacionalización
+   - Configuración inicial y pruebas básicas
+
 **Criterios de finalización:**
 - Sistema completo de administración y diagnóstico
 - Funcionalidades robustas de importación/exportación de datos
-- Dos nuevos plugins (Tareas y Recordatorios) completamente funcionales
+- Dos nuevos plugins (Task Tracker y Reminder System) completamente funcionales
+- Estructura base para la internacionalización implementada
 - Mayor estabilidad general del sistema
 
 ## Estructura de archivos al finalizar la Stage 4

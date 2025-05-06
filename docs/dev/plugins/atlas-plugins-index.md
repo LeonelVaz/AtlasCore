@@ -95,20 +95,18 @@ Los usuarios pueden gestionar sus plugins desde el panel de configuración de At
 
 ### Estructura Estándar de Plugins
 
-Cada plugin debe seguir una estructura estandarizada, aunque algunos directorios son opcionales dependiendo de las necesidades específicas del plugin:
+Cada plugin debe seguir la siguiente estructura estandarizada:
 
 ```
-plugin-name/ 
+plugin-name/
 ├── index.js                 # Punto de entrada del plugin (OBLIGATORIO)
 ├── components/              # Componentes UI (OBLIGATORIO)
 │   ├── component-name.jsx
 │   └── ...
 ├── contexts/                # Contextos del plugin (OPCIONAL)
 │   └── context-name.jsx
-├── services/                # Servicios del plugin (OPCIONAL)
-│   └── service-name.js      # Necesario para plugins que requieren conexión a APIs
-│                            # externas o servicios específicos (como Reminder System,
-│                            # Weather Integration, Calendar Analytics)
+├── services/                # Servicios del plugin (OPCIONAL*)
+│   └── service-name.js
 ├── utils/                   # Utilidades (OBLIGATORIO)
 │   └── utility-name.js
 ├── styles/                  # Estilos (OBLIGATORIO)
@@ -121,12 +119,18 @@ plugin-name/
 └── README.md                # Documentación del plugin (OBLIGATORIO)
 ```
 
-Directrices específicas:
-- `services/`: Necesario para plugins que requieren conectividad externa o servicios complejos
-  - Presente en: Reminder System (notification-service.js), Weather Integration (weather-api.js), Calendar Analytics (data-processor.js)
-  - No requerido en: Notes Manager, Task Tracker (que operan principalmente con datos locales)
-- `contexts/`: Recomendado para plugins que manejan estado complejo o necesitan compartir datos entre componentes
-- La documentación (`README.md`) debe desarrollarse simultáneamente con el plugin para mantener la coherencia durante el desarrollo
+**Notas importantes sobre la estructura:**
+
+* **OBLIGATORIO**: Estos componentes deben estar presentes en todos los plugins.
+* **OPCIONAL**: Estos componentes pueden incluirse según las necesidades específicas del plugin.
+* **OPCIONAL***: El directorio `services/` es:
+  * **OBLIGATORIO** para plugins que requieren:
+    - Conexión a APIs externas (Weather Integration)
+    - Sistemas de notificaciones (Reminder System)
+    - Procesamiento complejo de datos (Calendar Analytics)
+  * **OPCIONAL** para plugins que operan principalmente con datos locales (Notes Manager, Task Tracker)
+
+Todos los plugins deben mantener esta estructura para garantizar la coherencia del sistema y facilitar el mantenimiento.
 
 ## Internacionalización de Plugins
 

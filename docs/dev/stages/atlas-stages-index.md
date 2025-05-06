@@ -125,7 +125,7 @@ Este documento establece un plan de desarrollo por Stages para la aplicación At
    - Notificaciones nativas (escritorio) y en aplicación (web)
    - Configuración personalizada de alertas
 
-5. **Estructura básica de internacionalización (i18n)**
+5. **Estructura básica de internacionalización**
    - Implementación de la estructura base del sistema de i18n
    - Preparación de componentes core para internacionalización
    - Configuración inicial y pruebas básicas
@@ -134,8 +134,8 @@ Este documento establece un plan de desarrollo por Stages para la aplicación At
 - Sistema completo de administración y diagnóstico
 - Funcionalidades robustas de importación/exportación de datos
 - Dos nuevos plugins (Task Tracker y Reminder System) completamente funcionales
-- Mayor estabilidad general del sistema
 - Estructura base para la internacionalización implementada
+- Mayor estabilidad general del sistema
 
 *Para la estructura de archivos detallada, consulte [stage-4.md](stage-4.md)*
 
@@ -229,8 +229,8 @@ Para cada Stage, se deben considerar los siguientes aspectos:
 
 5. **Documentación**: Actualizar la documentación técnica y de usuario con cada nueva funcionalidad.
    - **Documentación de plugins**: La documentación de cada plugin (README.md) debe desarrollarse simultáneamente con la implementación del plugin.
-   - **Documentación detallada**: La documentación completa en `docs/dev/plugins/` se debe crear durante la misma etapa en que se implementa el plugin.
-   - **Actualización de estructura**: La estructura de directorios en la documentación de cada etapa debe reflejar la adición de la documentación de los plugins.
+   - **Documentación detallada**: La documentación completa en `docs/dev/plugins/` se debe crear durante la misma Stage en que se implementa el plugin.
+   - **Actualización de estructura**: La estructura de directorios en la documentación de cada Stage debe reflejar la adición de la documentación de los plugins.
 
 ## Alineación con Valores de Marca
 
