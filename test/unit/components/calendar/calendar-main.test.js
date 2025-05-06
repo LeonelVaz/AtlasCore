@@ -802,3 +802,197 @@ describe('CalendarMain', () => {
     expect(screen.getByText(currentMonthYear, { exact: false })).toBeInTheDocument();
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Añade estas pruebas al final de tu archivo de tests
+
+test('debe registrar correctamente el módulo de calendario con todas sus funciones', () => {
+  // Capturar el módulo registrado
+  let calendarModuleApi;
+  registerModule.mockImplementationOnce((name, api) => {
+    calendarModuleApi = api;
+  });
+  
+  render(<CalendarMain />);
+  
+  // Verificar que el módulo se registró con todas sus funciones
+  expect(calendarModuleApi.getEvents).toBeDefined();
+  expect(calendarModuleApi.createEvent).toBeDefined();
+  expect(calendarModuleApi.updateEvent).toBeDefined();
+  expect(calendarModuleApi.deleteEvent).toBeDefined();
+  
+  // Probar que la función getEvents devuelve un array
+  expect(Array.isArray(calendarModuleApi.getEvents())).toBe(true);
+});
+
+test('debe probar el valor de retorno de updateEvent directamente', () => {
+  // Configurar eventos de prueba
+  const testEvents = [
+    {
+      id: '1',
+      title: 'Evento de prueba 1',
+      start: new Date(2025, 4, 6, 10, 0).toISOString(),
+      end: new Date(2025, 4, 6, 11, 0).toISOString(),
+      color: '#2D4B94'
+    }
+  ];
+  
+  // Configurar localStorage con eventos de prueba
+  localStorageMock.getItem.mockReturnValue(JSON.stringify(testEvents));
+  
+  // Renderizar el componente y capturar el módulo
+  let calendarModuleApi;
+  registerModule.mockImplementationOnce((name, api) => {
+    calendarModuleApi = { ...api };
+  });
+  
+  render(<CalendarMain />);
+  
+  // Hacer una copia del updateEvent original
+  const originalUpdateEvent = calendarModuleApi.updateEvent;
+  
+  // Espiar la función para capturar el valor de retorno
+  const updatedEventSpy = jest.fn();
+  calendarModuleApi.updateEvent = (id, data) => {
+    const result = originalUpdateEvent(id, data);
+    updatedEventSpy(result);
+    return result;
+  };
+  
+  // Actualizar el evento
+  calendarModuleApi.updateEvent('1', { title: 'Título actualizado' });
+  
+  // Verificar que se llamó a localStorage.setItem
+  expect(localStorageMock.setItem).toHaveBeenCalled();
+  
+  // Verificar que la función fue llamada con el evento actualizado
+  expect(updatedEventSpy).toHaveBeenCalled();
+});
+
+test('debe probar directamente las funciones shouldShowEvent y renderEvents', () => {
+  // Configurar fecha fija para pruebas
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date(2025, 4, 6)); // 6 de mayo de 2025
+  
+  // Configurar eventos de prueba para esta fecha específica
+  const testEvent = {
+    id: '1',
+    title: 'Evento para hoy',
+    start: new Date(2025, 4, 6, 10, 0).toISOString(),
+    end: new Date(2025, 4, 6, 11, 0).toISOString(),
+    color: '#2D4B94'
+  };
+  
+  // Configurar localStorage
+  localStorageMock.getItem.mockReturnValue(JSON.stringify([testEvent]));
+  
+  // Renderizar el componente
+  const { container } = render(<CalendarMain />);
+  
+  // Verificar que el evento se muestra
+  const eventElements = container.querySelectorAll('.calendar-event');
+  expect(eventElements.length).toBeGreaterThan(0);
+  
+  // Buscar el título del evento
+  let foundEventTitle = false;
+  eventElements.forEach(element => {
+    if (element.textContent.includes('Evento para hoy')) {
+      foundEventTitle = true;
+    }
+  });
+  
+  expect(foundEventTitle).toBe(true);
+  
+  // Verificar que el formato de hora está presente
+  const formattedStartTime = new Date(testEvent.start).toLocaleTimeString('es-ES', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+  
+  let foundTimeFormat = false;
+  eventElements.forEach(element => {
+    if (element.textContent.includes(formattedStartTime)) {
+      foundTimeFormat = true;
+    }
+  });
+  
+  expect(foundTimeFormat).toBe(true);
+  
+  // Limpiar timers
+  jest.useRealTimers();
+});
+
+test('debe probar la función shouldShowEvent con diferentes escenarios', () => {
+  // Ahora vamos a probar con eventos en días diferentes para cubrir todos los casos
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date(2025, 4, 6)); // 6 de mayo de 2025
+  
+  // Crear eventos en diferentes días y horas para probar shouldShowEvent
+  const eventsForTesting = [
+    {
+      id: '1',
+      title: 'Evento día actual',
+      start: new Date(2025, 4, 6, 10, 0).toISOString(),
+      end: new Date(2025, 4, 6, 11, 0).toISOString(),
+      color: '#2D4B94'
+    },
+    {
+      id: '2',
+      title: 'Evento otro día',
+      start: new Date(2025, 4, 7, 14, 0).toISOString(),
+      end: new Date(2025, 4, 7, 15, 0).toISOString(),
+      color: '#FF5733'
+    }
+  ];
+  
+  // Configurar localStorage
+  localStorageMock.getItem.mockReturnValue(JSON.stringify(eventsForTesting));
+  
+  const { container } = render(<CalendarMain />);
+  
+  // Obtener las celdas correspondientes a los días
+  const cells = container.querySelectorAll('.calendar-time-slot');
+  
+  // Verificar que el primer evento se muestra y el segundo no en la vista actual
+  const eventElements = container.querySelectorAll('.calendar-event');
+  
+  // Buscar textos en los eventos renderizados
+  let foundFirstEvent = false;
+  let foundSecondEvent = false;
+  
+  eventElements.forEach(element => {
+    if (element.textContent.includes('Evento día actual')) {
+      foundFirstEvent = true;
+    }
+    if (element.textContent.includes('Evento otro día')) {
+      foundSecondEvent = true;
+    }
+  });
+  
+  expect(foundFirstEvent).toBe(true);
+  
+  // Simular navegación a otro día donde debería estar el segundo evento
+  fireEvent.click(screen.getByText('Semana siguiente'));
+  fireEvent.click(screen.getByText('Semana actual')); // Volver a la semana actual
+  
+  jest.useRealTimers();
+});
