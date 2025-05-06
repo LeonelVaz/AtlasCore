@@ -48,8 +48,8 @@ atlas-core/
 ├── electron/                        # Configuración para la app de escritorio
 │   ├── main.js                      # Proceso principal de Electron optimizado
 │   ├── preload.js                   # Script de precarga optimizado
-│   ├── windowManager.js             # Gestión de ventanas avanzada
-│   └── menuBuilder.js               # Constructor de menús nativos
+│   ├── window-manager.js            # Gestión de ventanas avanzada
+│   └── menu-builder.js              # Constructor de menús nativos
 │
 ├── public/
 │   ├── favicon.ico
@@ -62,109 +62,109 @@ atlas-core/
 │
 ├── src/
 │   ├── index.jsx                    # Punto de entrada principal optimizado
-│   ├── App.jsx                      # Componente raíz optimizado
+│   ├── app.jsx                      # Componente raíz optimizado
 │   │
 │   ├── core/                        # Núcleo de la aplicación
 │   │   ├── bus/                     # Sistema de bus de eventos optimizado
-│   │   │   ├── EventBus.js          # Implementación optimizada
+│   │   │   ├── event-bus.js         # Implementación optimizada
 │   │   │   └── events.js            # Eventos del sistema completos
 │   │   │
 │   │   ├── module/                  # Sistema de registro de módulos
-│   │   │   ├── ModuleRegistry.js    # Registro de módulos optimizado
-│   │   │   └── moduleUtils.js       # Utilidades para módulos
+│   │   │   ├── module-registry.js   # Registro de módulos optimizado
+│   │   │   └── module-utils.js      # Utilidades para módulos
 │   │   │
 │   │   └── config/                  # Configuración global
-│   │       ├── appConfig.js         # Configuración completa de la app
+│   │       ├── app-config.js        # Configuración completa de la app
 │   │       └── constants.js         # Constantes globales
 │   │
 │   ├── services/                    # Servicios de la aplicación
-│   │   ├── storageService.js        # Abstracción de almacenamiento optimizada
-│   │   ├── backupService.js         # Servicio de copias de seguridad completo
-│   │   ├── importExportService.js   # Servicio de importación/exportación
-│   │   ├── logService.js            # Servicio de logging mejorado
-│   │   ├── themeService.js          # Servicio de gestión de temas
-│   │   ├── tutorialService.js       # Servicio de tutoriales interactivos
-│   │   ├── i18nService.js           # Servicio de internacionalización completo
-│   │   └── analyticsService.js      # Servicio de analíticas de uso anónimas
+│   │   ├── storage-service.js       # Abstracción de almacenamiento optimizada
+│   │   ├── backup-service.js        # Servicio de copias de seguridad completo
+│   │   ├── import-export-service.js # Servicio de importación/exportación
+│   │   ├── log-service.js           # Servicio de logging mejorado
+│   │   ├── theme-service.js         # Servicio de gestión de temas
+│   │   ├── tutorial-service.js      # Servicio de tutoriales interactivos
+│   │   ├── i18n-service.js          # Servicio de internacionalización completo
+│   │   └── analytics-service.js     # Servicio de analíticas de uso anónimas
 │   │
 │   ├── components/                  # Componentes de la aplicación
 │   │   ├── calendar/                # Componentes del calendario optimizados
-│   │   │   ├── CalendarMain.jsx     # Componente principal optimizado
-│   │   │   ├── DayView.jsx          # Vista de día optimizada
-│   │   │   ├── WeekView.jsx         # Vista de semana optimizada
-│   │   │   ├── EventItem.jsx        # Elemento de evento optimizado
-│   │   │   ├── TimeGrid.jsx         # Rejilla temporal optimizada
-│   │   │   ├── TimeSlot.jsx         # Franja horaria optimizada
-│   │   │   └── EventForm.jsx        # Formulario de eventos completo
+│   │   │   ├── calendar-main.jsx    # Componente principal optimizado
+│   │   │   ├── day-view.jsx         # Vista de día optimizada
+│   │   │   ├── week-view.jsx        # Vista de semana optimizada
+│   │   │   ├── event-item.jsx       # Elemento de evento optimizado
+│   │   │   ├── time-grid.jsx        # Rejilla temporal optimizada
+│   │   │   ├── time-slot.jsx        # Franja horaria optimizada
+│   │   │   └── event-form.jsx       # Formulario de eventos completo
 │   │   │
 │   │   ├── admin/                   # Componentes de administración
-│   │   │   ├── AdminPanel.jsx       # Panel de administración mejorado
-│   │   │   ├── LogViewer.jsx        # Visor de logs avanzado
-│   │   │   ├── ErrorDisplay.jsx     # Visualizador de errores
-│   │   │   ├── PerformanceMonitor.jsx # Monitor de rendimiento
-│   │   │   └── TranslationManager.jsx # Gestor de traducciones
+│   │   │   ├── admin-panel.jsx      # Panel de administración mejorado
+│   │   │   ├── log-viewer.jsx       # Visor de logs avanzado
+│   │   │   ├── error-display.jsx    # Visualizador de errores
+│   │   │   ├── performance-monitor.jsx # Monitor de rendimiento
+│   │   │   └── translation-manager.jsx # Gestor de traducciones
 │   │   │
 │   │   ├── ui/                      # Componentes de UI reutilizables
-│   │   │   ├── Button.jsx           # Botón personalizado
-│   │   │   ├── Dialog.jsx           # Diálogo moderno
-│   │   │   ├── Toast.jsx            # Notificaciones toast
-│   │   │   ├── Dropdown.jsx         # Menú desplegable
-│   │   │   ├── ErrorBoundary.jsx    # Captura de errores React
-│   │   │   ├── ThemeSelector.jsx    # Selector de temas
-│   │   │   ├── Tooltip.jsx          # Componente de tooltip
-│   │   │   └── AccessibleIcon.jsx   # Iconos con soporte de accesibilidad
+│   │   │   ├── button.jsx           # Botón personalizado
+│   │   │   ├── dialog.jsx           # Diálogo moderno
+│   │   │   ├── toast.jsx            # Notificaciones toast
+│   │   │   ├── dropdown.jsx         # Menú desplegable
+│   │   │   ├── error-boundary.jsx   # Captura de errores React
+│   │   │   ├── theme-selector.jsx   # Selector de temas
+│   │   │   ├── tooltip.jsx          # Componente de tooltip
+│   │   │   └── accessible-icon.jsx  # Iconos con soporte de accesibilidad
 │   │   │
 │   │   ├── onboarding/              # Componentes de onboarding
-│   │   │   ├── TutorialOverlay.jsx  # Overlay para tutoriales
-│   │   │   ├── WelcomeWizard.jsx    # Asistente de bienvenida
-│   │   │   └── FeatureHighlight.jsx # Destacado de características
+│   │   │   ├── tutorial-overlay.jsx # Overlay para tutoriales
+│   │   │   ├── welcome-wizard.jsx   # Asistente de bienvenida
+│   │   │   └── feature-highlight.jsx # Destacado de características
 │   │   │
 │   │   └── settings/                # Componentes de configuración
-│   │       ├── SettingsPanel.jsx    # Panel de configuración mejorado
-│   │       ├── TimeScaleConfig.jsx  # Configuración de escala de tiempo
-│   │       ├── ThemeConfig.jsx      # Configuración de temas
-│   │       ├── BackupConfig.jsx     # Configuración de respaldos
-│   │       ├── ExportImportPanel.jsx # Panel de exportación/importación
-│   │       ├── LanguageSelector.jsx # Selector de idioma
-│   │       ├── AccessibilityConfig.jsx # Configuración de accesibilidad
-│   │       └── CustomSignature.jsx  # Configuración de firma personalizada
+│   │       ├── settings-panel.jsx   # Panel de configuración mejorado
+│   │       ├── time-scale-config.jsx # Configuración de escala de tiempo
+│   │       ├── theme-config.jsx     # Configuración de temas
+│   │       ├── backup-config.jsx    # Configuración de respaldos
+│   │       ├── export-import-panel.jsx # Panel de exportación/importación
+│   │       ├── language-selector.jsx # Selector de idioma
+│   │       ├── accessibility-config.jsx # Configuración de accesibilidad
+│   │       └── custom-signature.jsx # Configuración de firma personalizada
 │   │
 │   ├── contexts/                    # Contextos de React
-│   │   ├── CalendarContext.jsx      # Contexto del calendario optimizado
-│   │   ├── ThemeContext.jsx         # Contexto de temas
-│   │   ├── SettingsContext.jsx      # Contexto de configuraciones
-│   │   ├── AdminContext.jsx         # Contexto de administración
-│   │   ├── TutorialContext.jsx      # Contexto para tutoriales
-│   │   ├── I18nContext.jsx          # Contexto para internacionalización
-│   │   └── AccessibilityContext.jsx # Contexto para accesibilidad
+│   │   ├── calendar-context.jsx     # Contexto del calendario optimizado
+│   │   ├── theme-context.jsx        # Contexto de temas
+│   │   ├── settings-context.jsx     # Contexto de configuraciones
+│   │   ├── admin-context.jsx        # Contexto de administración
+│   │   ├── tutorial-context.jsx     # Contexto para tutoriales
+│   │   ├── i18n-context.jsx         # Contexto para internacionalización
+│   │   └── accessibility-context.jsx # Contexto para accesibilidad
 │   │
 │   ├── hooks/                       # Hooks personalizados optimizados
-│   │   ├── useCalendarEvents.jsx    # Hook para eventos del calendario
-│   │   ├── useTimeGrid.jsx          # Hook para rejilla temporal
-│   │   ├── useEventDrag.jsx         # Hook para arrastrar eventos
-│   │   ├── useEventResize.jsx       # Hook para redimensionar eventos
-│   │   ├── useTheme.jsx             # Hook para gestión de temas
-│   │   ├── useUIUtils.jsx           # Hook para utilidades UI
-│   │   ├── useTranslation.jsx       # Hook para traducciones extendido
-│   │   ├── usePerformance.jsx       # Hook para monitoreo de rendimiento
-│   │   └── useAccessibility.jsx     # Hook para funciones de accesibilidad
+│   │   ├── use-calendar-events.jsx  # Hook para eventos del calendario
+│   │   ├── use-time-grid.jsx        # Hook para rejilla temporal
+│   │   ├── use-event-drag.jsx       # Hook para arrastrar eventos
+│   │   ├── use-event-resize.jsx     # Hook para redimensionar eventos
+│   │   ├── use-theme.jsx            # Hook para gestión de temas
+│   │   ├── use-ui-utils.jsx         # Hook para utilidades UI
+│   │   ├── use-translation.jsx      # Hook para traducciones extendido
+│   │   ├── use-performance.jsx      # Hook para monitoreo de rendimiento
+│   │   └── use-accessibility.jsx    # Hook para funciones de accesibilidad
 │   │
 │   ├── utils/                       # Utilidades optimizadas
-│   │   ├── dateUtils.js             # Utilidades de fechas
-│   │   ├── timeUtils.js             # Utilidades de tiempo
-│   │   ├── eventUtils.js            # Utilidades para eventos
-│   │   ├── themeUtils.js            # Utilidades para temas
-│   │   ├── storageUtils.js          # Utilidades de almacenamiento
-│   │   ├── validationUtils.js       # Utilidades de validación
-│   │   ├── i18nUtils.js             # Utilidades de internacionalización
-│   │   ├── accessibilityUtils.js    # Utilidades de accesibilidad
-│   │   ├── analyticsUtils.js        # Utilidades para analíticas
-│   │   └── performanceUtils.js      # Utilidades de optimización
+│   │   ├── date-utils.js            # Utilidades de fechas
+│   │   ├── time-utils.js            # Utilidades de tiempo
+│   │   ├── event-utils.js           # Utilidades para eventos
+│   │   ├── theme-utils.js           # Utilidades para temas
+│   │   ├── storage-utils.js         # Utilidades de almacenamiento
+│   │   ├── validation-utils.js      # Utilidades de validación
+│   │   ├── i18n-utils.js            # Utilidades de internacionalización
+│   │   ├── accessibility-utils.js   # Utilidades de accesibilidad
+│   │   ├── analytics-utils.js       # Utilidades para analíticas
+│   │   └── performance-utils.js     # Utilidades de optimización
 │   │
 │   ├── i18n/                        # Sistema de internacionalización completo
 │   │   ├── index.js                 # Configuración principal
 │   │   ├── config.js                # Configuración avanzada
-│   │   ├── languageDetector.js      # Detector de idioma personalizado
+│   │   ├── language-detector.js     # Detector de idioma personalizado
 │   │   ├── formatter.js             # Formateador de textos específicos
 │   │   └── locales/                 # Archivos de traducción
 │   │       ├── es/                  # Español (idioma predeterminado)
@@ -193,12 +193,12 @@ atlas-core/
 │   │
 │   ├── styles/                      # Estilos optimizados
 │   │   ├── index.css                # Estilos globales
-│   │   ├── App.css                  # Estilos para App.jsx
+│   │   ├── app.css                  # Estilos para app.jsx
 │   │   ├── variables.css            # Variables CSS globales
 │   │   ├── themes/                  # Archivos de temas
 │   │   │   ├── light.css            # Tema claro
 │   │   │   ├── dark.css             # Tema oscuro
-│   │   │   └── purpleNight.css      # Tema púrpura nocturno
+│   │   │   └── purple-night.css     # Tema púrpura nocturno
 │   │   │
 │   │   ├── components/              # Estilos de componentes
 │   │   │   ├── calendar.css         # Estilos del calendario
@@ -208,13 +208,13 @@ atlas-core/
 │   │   │   └── accessibility.css    # Estilos de accesibilidad
 │   │   │
 │   │   └── calendar/                # Estilos específicos del calendario
-│   │       └── CalendarMain.css     # Estilos para CalendarMain.jsx
+│   │       └── calendar-main.css    # Estilos para calendar-main.jsx
 │   │
 │   └── plugins/                     # Sistema de plugins completo y optimizado
-│       ├── pluginLoader.js          # Cargador de plugins optimizado
-│       ├── pluginRegistry.js        # Registro de plugins optimizado
-│       ├── pluginDebugger.js        # Herramientas de depuración para plugins
-│       ├── pluginDocumentation.js   # Generador de documentación para plugins
+│       ├── plugin-loader.js         # Cargador de plugins optimizado
+│       ├── plugin-registry.js       # Registro de plugins optimizado
+│       ├── plugin-debugger.js       # Herramientas de depuración para plugins
+│       ├── plugin-documentation.js  # Generador de documentación para plugins
 │       │
 │       ├── notes-manager/           # Plugin de notas optimizado
 │       │   ├── index.js             # Punto de entrada del plugin

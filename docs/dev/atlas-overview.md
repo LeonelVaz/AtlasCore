@@ -240,7 +240,7 @@ atlas-core/
 │
 ├── src/
 │   ├── index.jsx                # Punto de entrada principal
-│   ├── App.jsx                  # Componente raíz de la aplicación
+│   ├── app.jsx                  # Componente raíz de la aplicación
 │   │
 │   ├── core/                    # Núcleo de la aplicación
 │   │   ├── bus/                 # Sistema de bus de eventos
@@ -265,45 +265,45 @@ atlas-core/
 │   │
 │   ├── components/              # Componentes de la aplicación
 │   │   ├── calendar/            # Componentes del calendario
-│   │   │   ├── CalendarMain.jsx # Componente principal del calendario
-│   │   │   ├── CalendarHeader.jsx # Encabezado del calendario
-│   │   │   ├── DayView.jsx      # Vista de día
-│   │   │   ├── WeekView.jsx     # Vista de semana
-│   │   │   ├── EventItem.jsx    # Elemento de evento
-│   │   │   ├── TimeGrid.jsx     # Rejilla temporal
-│   │   │   ├── TimeSlot.jsx     # Franja horaria
-│   │   │   └── EventForm.jsx    # Formulario de eventos
+│   │   │   ├── calendar-main.jsx # Componente principal del calendario
+│   │   │   ├── calendar-header.jsx # Encabezado del calendario
+│   │   │   ├── day-view.jsx      # Vista de día
+│   │   │   ├── week-view.jsx     # Vista de semana
+│   │   │   ├── event-item.jsx    # Elemento de evento
+│   │   │   ├── time-grid.jsx     # Rejilla temporal
+│   │   │   ├── time-slot.jsx     # Franja horaria
+│   │   │   └── event-form.jsx    # Formulario de eventos
 │   │   │
 │   │   ├── admin/               # Componentes de administración
-│   │   │   ├── AdminPanel.jsx   # Panel de administración
-│   │   │   ├── LogViewer.jsx    # Visor de logs
-│   │   │   └── ErrorDisplay.jsx # Visualizador de errores
+│   │   │   ├── admin-panel.jsx   # Panel de administración
+│   │   │   ├── log-viewer.jsx    # Visor de logs
+│   │   │   └── error-display.jsx # Visualizador de errores
 │   │   │
 │   │   ├── ui/                  # Componentes de UI reutilizables
-│   │   │   ├── Button.jsx       # Botón personalizado
-│   │   │   ├── Dialog.jsx       # Diálogo moderno
-│   │   │   ├── Toast.jsx        # Notificaciones toast
-│   │   │   ├── Dropdown.jsx     # Menú desplegable
-│   │   │   ├── ErrorBoundary.jsx # Captura de errores React
-│   │   │   └── ThemeSelector.jsx # Selector de temas
+│   │   │   ├── button.jsx       # Botón personalizado
+│   │   │   ├── dialog.jsx       # Diálogo moderno
+│   │   │   ├── toast.jsx        # Notificaciones toast
+│   │   │   ├── dropdown.jsx     # Menú desplegable
+│   │   │   ├── error-boundary.jsx # Captura de errores React
+│   │   │   └── theme-selector.jsx # Selector de temas
 │   │   │
 │   │   └── settings/            # Componentes de configuración
-│   │       ├── SettingsPanel.jsx # Panel de configuración
-│   │       ├── TimeScaleConfig.jsx # Configuración de escala de tiempo
-│   │       ├── ThemeConfig.jsx  # Configuración de temas
-│   │       └── CustomSignature.jsx # Configuración de firma
+│   │       ├── settings-panel.jsx # Panel de configuración
+│   │       ├── time-scale-config.jsx # Configuración de escala de tiempo
+│   │       ├── theme-config.jsx  # Configuración de temas
+│   │       └── custom-signature.jsx # Configuración de firma
 │   │
 │   ├── contexts/                # Contextos de React
-│   │   ├── CalendarContext.jsx  # Contexto del calendario
-│   │   ├── ThemeContext.jsx     # Contexto de temas
-│   │   └── SettingsContext.jsx  # Contexto de configuraciones
+│   │   ├── calendar-context.jsx  # Contexto del calendario
+│   │   ├── theme-context.jsx     # Contexto de temas
+│   │   └── settings-context.jsx  # Contexto de configuraciones
 │   │
 │   ├── hooks/                   # Hooks personalizados
-│   │   ├── useCalendarEvents.jsx # Hook para eventos del calendario
-│   │   ├── useTimeGrid.jsx      # Hook para rejilla temporal
-│   │   ├── useEventDrag.jsx     # Hook para arrastrar eventos
-│   │   ├── useEventResize.jsx   # Hook para redimensionar eventos
-│   │   └── useUIUtils.jsx       # Hook para utilidades UI
+│   │   ├── use-calendar-events.jsx # Hook para eventos del calendario
+│   │   ├── use-time-grid.jsx      # Hook para rejilla temporal
+│   │   ├── use-event-drag.jsx     # Hook para arrastrar eventos
+│   │   ├── use-event-resize.jsx   # Hook para redimensionar eventos
+│   │   └── use-ui-utils.jsx       # Hook para utilidades UI
 │   │
 │   ├── utils/                   # Utilidades
 │   │   ├── date-utils.js        # Utilidades de fechas
@@ -316,12 +316,12 @@ atlas-core/
 │   │   ├── index.js             # Configuración de i18n
 │   │   ├── config.js            # Configuración global
 │   │   └── locales/             # Archivos de traducción
-│   │       ├── es/              # Español
+│   │       ├── es/              # Español (idioma predeterminado)
 │   │       └── en/              # Inglés
 │   │
 │   ├── styles/                  # Estilos
 │   │   ├── index.css            # Estilos globales
-│   │   ├── App.css              # Estilos para App.jsx
+│   │   ├── app.css              # Estilos para app.jsx
 │   │   ├── variables.css        # Variables CSS globales
 │   │   ├── themes/              # Archivos de temas
 │   │   │   ├── light.css        # Tema claro
@@ -334,7 +334,7 @@ atlas-core/
 │   │   │   └── admin.css        # Estilos de administración
 │   │   │
 │   │   └── calendar/            # Estilos específicos del calendario
-│   │       └── calendar-main.css # Estilos para CalendarMain.jsx
+│   │       └── calendar-main.css # Estilos para calendar-main.jsx
 │   │
 │   └── plugins/                 # Sistema de plugins
 │       ├── plugin-loader.js     # Cargador de plugins

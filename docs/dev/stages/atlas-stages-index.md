@@ -2,11 +2,11 @@
 
 ## Visión General
 
-Este documento establece un plan de desarrollo por etapas para la aplicación Atlas, siguiendo un enfoque de versiones incrementales donde cada versión proporciona una aplicación funcional con un conjunto específico de características. El plan está diseñado para alinear el desarrollo técnico con los valores de marca de Atlas: modularidad, sostenibilidad, adaptabilidad, potencia con simplicidad, y privacidad y control.
+Este documento establece un plan de desarrollo por Stages para la aplicación Atlas, siguiendo un enfoque de versiones incrementales donde cada versión proporciona una aplicación funcional con un conjunto específico de características. El plan está diseñado para alinear el desarrollo técnico con los valores de marca de Atlas: modularidad, sostenibilidad, adaptabilidad, potencia con simplicidad, y privacidad y control.
 
-## Etapas de Desarrollo
+## Stages de Desarrollo
 
-### Etapa 1 - Fundamentos (Versión 0.1.0)
+### Stage 1 - Fundamentos (Versión 0.1.0)
 **Enfoque**: Arquitectura base y calendario funcional mínimo viable
 
 **Componentes a desarrollar:**
@@ -37,7 +37,7 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 
 *Para la estructura de archivos detallada, consulte [stage-1.md](stage-1.md)*
 
-### Etapa 2 - Mejoras de Interacción y Persistencia (Versión 0.2.0)
+### Stage 2 - Mejoras de Interacción y Persistencia (Versión 0.2.0)
 **Enfoque**: Mejorar la experiencia de usuario y robustez del sistema
 
 **Componentes a desarrollar:**
@@ -69,7 +69,7 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 
 *Para la estructura de archivos detallada, consulte [stage-2.md](stage-2.md)*
 
-### Etapa 3 - Personalización y Primeros Plugins (Versión 0.3.0)
+### Stage 3 - Personalización y Primeros Plugins (Versión 0.3.0)
 **Enfoque**: Implementar el sistema de temas y los primeros plugins básicos
 
 **Componentes a desarrollar:**
@@ -101,7 +101,7 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 
 *Para la estructura de archivos detallada, consulte [stage-3.md](stage-3.md)*
 
-### Etapa 4 - Robustez y Plugins Esenciales (Versión 0.4.0)
+### Stage 4 - Robustez y Plugins Esenciales (Versión 0.4.0)
 **Enfoque**: Ampliar las capacidades del sistema y mejorar la gestión de datos
 
 **Componentes a desarrollar:**
@@ -139,7 +139,7 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 
 *Para la estructura de archivos detallada, consulte [stage-4.md](stage-4.md)*
 
-### Etapa 5 - Análisis y Ecosistema Completo (Versión 0.5.0)
+### Stage 5 - Análisis y Ecosistema Completo (Versión 0.5.0)
 **Enfoque**: Completar el ecosistema de plugins y añadir capacidades analíticas
 
 **Componentes a desarrollar:**
@@ -177,7 +177,7 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 
 *Para la estructura de archivos detallada, consulte [stage-5.md](stage-5.md)*
 
-### Etapa 6 - Pulido y Lanzamiento (Versión 1.0.0)
+### Stage 6 - Pulido y Lanzamiento (Versión 1.0.0)
 **Enfoque**: Refinamiento general, optimización y preparación para lanzamiento
 
 **Componentes a desarrollar:**
@@ -215,9 +215,9 @@ Este documento establece un plan de desarrollo por etapas para la aplicación At
 
 *Para la estructura de archivos detallada, consulte [stage-6.md](stage-6.md)*
 
-## Consideraciones para Cada Etapa
+## Consideraciones para Cada Stage
 
-Para cada etapa, se deben considerar los siguientes aspectos:
+Para cada Stage, se deben considerar los siguientes aspectos:
 
 1. **Testing**: Implementar pruebas unitarias y de integración relevantes para los componentes desarrollados.
 
@@ -225,31 +225,31 @@ Para cada etapa, se deben considerar los siguientes aspectos:
 
 3. **Retroalimentación**: Establecer mecanismos para recopilar feedback de usuarios de prueba.
 
-4. **Refinamiento**: Dedicar tiempo al final de cada etapa para refinamiento y corrección de errores.
+4. **Refinamiento**: Dedicar tiempo al final de cada Stage para refinamiento y corrección de errores.
 
 ## Alineación con Valores de Marca
 
-Este plan de desarrollo por etapas está alineado con los valores fundamentales de Atlas:
+Este plan de desarrollo por Stages está alineado con los valores fundamentales de Atlas:
 
 - **Modularidad**: La estructura de desarrollo permite añadir componentes de forma independiente.
-- **Sostenibilidad**: Cada etapa construye sobre una base sólida para garantizar la longevidad del producto.
+- **Sostenibilidad**: Cada Stage construye sobre una base sólida para garantizar la longevidad del producto.
 - **Adaptabilidad**: El enfoque incremental permite ajustes basados en feedback y nuevas necesidades.
 - **Potencia con Simplicidad**: Cada versión es funcional mientras se añade complejidad de forma gradual.
-- **Privacidad y Control**: Desde las primeras etapas se prioriza el almacenamiento local y el control del usuario.
+- **Privacidad y Control**: Desde las primeras Stages se prioriza el almacenamiento local y el control del usuario.
 
-Este plan proporciona una hoja de ruta clara para el desarrollo de Atlas, permitiendo un progreso medible y la entrega de valor en cada etapa del proceso.
+Este plan proporciona una hoja de ruta clara para el desarrollo de Atlas, permitiendo un progreso medible y la entrega de valor en cada Stage del proceso.
 
 ---
 
-### Documentación Detallada de Etapas
+### Documentación Detallada de Stages
 
-La documentación detallada de cada etapa, incluyendo la estructura completa de archivos y directorios al finalizar cada fase, está disponible en los siguientes archivos:
+La documentación detallada de cada Stage, incluyendo la estructura completa de archivos y directorios al finalizar cada fase, está disponible en los siguientes archivos:
 
-- [Etapa 1 - Fundamentos (Versión 0.1.0)](stage-1.md)
-- [Etapa 2 - Mejoras de Interacción y Persistencia (Versión 0.2.0)](stage-2.md)
-- [Etapa 3 - Personalización y Primeros Plugins (Versión 0.3.0)](stage-3.md)
-- [Etapa 4 - Robustez y Plugins Esenciales (Versión 0.4.0)](stage-4.md)
-- [Etapa 5 - Análisis y Ecosistema Completo (Versión 0.5.0)](stage-5.md)
-- [Etapa 6 - Pulido y Lanzamiento (Versión 1.0.0)](stage-6.md)
+- [Stage 1 - Fundamentos (Versión 0.1.0)](stage-1.md)
+- [Stage 2 - Mejoras de Interacción y Persistencia (Versión 0.2.0)](stage-2.md)
+- [Stage 3 - Personalización y Primeros Plugins (Versión 0.3.0)](stage-3.md)
+- [Stage 4 - Robustez y Plugins Esenciales (Versión 0.4.0)](stage-4.md)
+- [Stage 5 - Análisis y Ecosistema Completo (Versión 0.5.0)](stage-5.md)
+- [Stage 6 - Pulido y Lanzamiento (Versión 1.0.0)](stage-6.md)
 
 **Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.

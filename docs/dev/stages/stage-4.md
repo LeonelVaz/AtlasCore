@@ -1,4 +1,4 @@
-# Etapa 4 - Robustez y Plugins Esenciales (Versión 0.4.0)
+# Stage 4 - Robustez y Plugins Esenciales (Versión 0.4.0)
 
 **Enfoque**: Ampliar las capacidades del sistema y mejorar la gestión de datos
 
@@ -29,7 +29,7 @@
 - Dos nuevos plugins (Tareas y Recordatorios) completamente funcionales
 - Mayor estabilidad general del sistema
 
-## Estructura de archivos al finalizar la Etapa 4
+## Estructura de archivos al finalizar la Stage 4
 
 ```
 atlas-core/
@@ -39,7 +39,7 @@ atlas-core/
 ├── electron/                        # Configuración para la app de escritorio mejorada
 │   ├── main.js                      # Proceso principal de Electron
 │   ├── preload.js                   # Script de precarga mejorado
-│   └── windowManager.js             # Gestión de ventanas completa
+│   └── window-manager.js            # Gestión de ventanas completa
 │
 ├── public/
 │   ├── favicon.ico
@@ -49,86 +49,86 @@ atlas-core/
 │
 ├── src/
 │   ├── index.jsx                    # Punto de entrada principal
-│   ├── App.jsx                      # Componente raíz con providers y error boundaries
+│   ├── app.jsx                      # Componente raíz con providers y error boundaries
 │   │
 │   ├── core/                        # Núcleo de la aplicación
 │   │   ├── bus/                     # Sistema de bus de eventos
-│   │   │   ├── EventBus.js          # Implementación mejorada
+│   │   │   ├── event-bus.js         # Implementación mejorada
 │   │   │   └── events.js            # Eventos completos del sistema
 │   │   │
 │   │   ├── module/                  # Sistema de registro de módulos
-│   │   │   ├── ModuleRegistry.js    # Registro de módulos
-│   │   │   └── moduleUtils.js       # Utilidades para módulos
+│   │   │   ├── module-registry.js   # Registro de módulos
+│   │   │   └── module-utils.js      # Utilidades para módulos
 │   │   │
 │   │   └── config/                  # Configuración global
-│   │       ├── appConfig.js         # Configuración de la app
+│   │       ├── app-config.js        # Configuración de la app
 │   │       └── constants.js         # Constantes globales
 │   │
 │   ├── services/                    # Servicios de la aplicación
-│   │   ├── storageService.js        # Abstracción de almacenamiento mejorada
-│   │   ├── importExportService.js   # Servicio de importación/exportación
-│   │   ├── logService.js            # Servicio de logging
-│   │   └── themeService.js          # Servicio de gestión de temas
+│   │   ├── storage-service.js       # Abstracción de almacenamiento mejorada
+│   │   ├── import-export-service.js # Servicio de importación/exportación
+│   │   ├── log-service.js           # Servicio de logging
+│   │   └── theme-service.js         # Servicio de gestión de temas
 │   │
 │   ├── components/                  # Componentes de la aplicación
 │   │   ├── calendar/                # Componentes del calendario
-│   │   │   ├── CalendarMain.jsx     # Componente principal mejorado
-│   │   │   ├── DayView.jsx          # Vista de día mejorada
-│   │   │   ├── WeekView.jsx         # Vista de semana mejorada
-│   │   │   ├── EventItem.jsx        # Elemento de evento con interacciones avanzadas
-│   │   │   ├── TimeGrid.jsx         # Rejilla temporal con escalas
-│   │   │   ├── TimeSlot.jsx         # Franja horaria personalizable
-│   │   │   └── EventForm.jsx        # Formulario de eventos avanzado
+│   │   │   ├── calendar-main.jsx    # Componente principal mejorado
+│   │   │   ├── day-view.jsx         # Vista de día mejorada
+│   │   │   ├── week-view.jsx        # Vista de semana mejorada
+│   │   │   ├── event-item.jsx       # Elemento de evento con interacciones avanzadas
+│   │   │   ├── time-grid.jsx        # Rejilla temporal con escalas
+│   │   │   ├── time-slot.jsx        # Franja horaria personalizable
+│   │   │   └── event-form.jsx       # Formulario de eventos avanzado
 │   │   │
 │   │   ├── admin/                   # Componentes de administración
-│   │   │   ├── AdminPanel.jsx       # Panel de administración
-│   │   │   ├── LogViewer.jsx        # Visor de logs
-│   │   │   └── ErrorDisplay.jsx     # Visualizador de errores
+│   │   │   ├── admin-panel.jsx      # Panel de administración
+│   │   │   ├── log-viewer.jsx       # Visor de logs
+│   │   │   └── error-display.jsx    # Visualizador de errores
 │   │   │
 │   │   ├── ui/                      # Componentes de UI reutilizables
-│   │   │   ├── Button.jsx           # Botón personalizado
-│   │   │   ├── Dialog.jsx           # Diálogo moderno
-│   │   │   ├── Toast.jsx            # Notificaciones toast
-│   │   │   ├── Dropdown.jsx         # Menú desplegable
-│   │   │   ├── ErrorBoundary.jsx    # Captura de errores React
-│   │   │   └── ThemeSelector.jsx    # Selector de temas
+│   │   │   ├── button.jsx           # Botón personalizado
+│   │   │   ├── dialog.jsx           # Diálogo moderno
+│   │   │   ├── toast.jsx            # Notificaciones toast
+│   │   │   ├── dropdown.jsx         # Menú desplegable
+│   │   │   ├── error-boundary.jsx   # Captura de errores React
+│   │   │   └── theme-selector.jsx   # Selector de temas
 │   │   │
 │   │   └── settings/                # Componentes de configuración
-│   │       ├── SettingsPanel.jsx    # Panel de configuración completo
-│   │       ├── TimeScaleConfig.jsx  # Configuración de escala de tiempo
-│   │       ├── ThemeConfig.jsx      # Configuración de temas
-│   │       └── ExportImportPanel.jsx # Panel de exportación/importación
+│   │       ├── settings-panel.jsx   # Panel de configuración completo
+│   │       ├── time-scale-config.jsx # Configuración de escala de tiempo
+│   │       ├── theme-config.jsx     # Configuración de temas
+│   │       └── export-import-panel.jsx # Panel de exportación/importación
 │   │
 │   ├── contexts/                    # Contextos de React
-│   │   ├── CalendarContext.jsx      # Contexto del calendario
-│   │   ├── ThemeContext.jsx         # Contexto de temas
-│   │   ├── SettingsContext.jsx      # Contexto de configuraciones
-│   │   └── AdminContext.jsx         # Contexto de administración
+│   │   ├── calendar-context.jsx     # Contexto del calendario
+│   │   ├── theme-context.jsx        # Contexto de temas
+│   │   ├── settings-context.jsx     # Contexto de configuraciones
+│   │   └── admin-context.jsx        # Contexto de administración
 │   │
 │   ├── hooks/                       # Hooks personalizados
-│   │   ├── useCalendarEvents.jsx    # Hook para eventos del calendario
-│   │   ├── useTimeGrid.jsx          # Hook para rejilla temporal
-│   │   ├── useEventDrag.jsx         # Hook para arrastrar eventos
-│   │   ├── useEventResize.jsx       # Hook para redimensionar eventos
-│   │   ├── useTheme.jsx             # Hook para gestión de temas
-│   │   └── useUIUtils.jsx           # Hook para utilidades UI
+│   │   ├── use-calendar-events.jsx  # Hook para eventos del calendario
+│   │   ├── use-time-grid.jsx        # Hook para rejilla temporal
+│   │   ├── use-event-drag.jsx       # Hook para arrastrar eventos
+│   │   ├── use-event-resize.jsx     # Hook para redimensionar eventos
+│   │   ├── use-theme.jsx            # Hook para gestión de temas
+│   │   └── use-ui-utils.jsx         # Hook para utilidades UI
 │   │
 │   ├── utils/                       # Utilidades
-│   │   ├── dateUtils.js             # Utilidades de fechas
-│   │   ├── timeUtils.js             # Utilidades de tiempo
-│   │   ├── eventUtils.js            # Utilidades para eventos
-│   │   ├── themeUtils.js            # Utilidades para temas
-│   │   ├── storageUtils.js          # Utilidades de almacenamiento
-│   │   └── validationUtils.js       # Utilidades de validación
+│   │   ├── date-utils.js            # Utilidades de fechas
+│   │   ├── time-utils.js            # Utilidades de tiempo
+│   │   ├── event-utils.js           # Utilidades para eventos
+│   │   ├── theme-utils.js           # Utilidades para temas
+│   │   ├── storage-utils.js         # Utilidades de almacenamiento
+│   │   └── validation-utils.js      # Utilidades de validación
 │   │
 │   ├── styles/                      # Estilos
 │   │   ├── index.css                # Estilos globales
-│   │   ├── App.css                  # Estilos para App.jsx
+│   │   ├── app.css                  # Estilos para app.jsx
 │   │   ├── variables.css            # Variables CSS globales
 │   │   ├── themes/                  # Archivos de temas
 │   │   │   ├── light.css            # Tema claro
 │   │   │   ├── dark.css             # Tema oscuro
-│   │   │   └── purpleNight.css      # Tema púrpura nocturno
+│   │   │   └── purple-night.css     # Tema púrpura nocturno
 │   │   │
 │   │   ├── components/              # Estilos de componentes
 │   │   │   ├── calendar.css         # Estilos del calendario
@@ -137,22 +137,22 @@ atlas-core/
 │   │   │   └── admin.css            # Estilos de administración
 │   │   │
 │   │   └── calendar/                # Estilos específicos del calendario
-│   │       └── CalendarMain.css     # Estilos para CalendarMain.jsx
+│   │       └── calendar-main.css    # Estilos para calendar-main.jsx
 │   │
 │   └── plugins/                     # Sistema de plugins extendido
-│       ├── pluginLoader.js          # Cargador de plugins mejorado
-│       ├── pluginRegistry.js        # Registro de plugins avanzado
+│       ├── plugin-loader.js         # Cargador de plugins mejorado
+│       ├── plugin-registry.js       # Registro de plugins avanzado
 │       │
 │       ├── notes-manager/           # Plugin de notas mejorado
 │       │   ├── index.js             # Punto de entrada del plugin
 │       │   ├── components/          # Componentes del plugin
-│       │   │   ├── NotesList.jsx    # Lista de notas
-│       │   │   ├── NoteEditor.jsx   # Editor de notas
-│       │   │   └── NotesPanel.jsx   # Panel principal
+│       │   │   ├── notes-list.jsx   # Lista de notas
+│       │   │   ├── note-editor.jsx  # Editor de notas
+│       │   │   └── notes-panel.jsx  # Panel principal
 │       │   ├── contexts/
-│       │   │   └── NotesContext.jsx # Contexto de notas
+│       │   │   └── notes-context.jsx # Contexto de notas
 │       │   ├── utils/
-│       │   │   └── notesUtils.js    # Utilidades específicas
+│       │   │   └── notes-utils.js   # Utilidades específicas
 │       │   ├── styles/
 │       │   │   └── notes.css        # Estilos específicos del plugin
 │       │   └── README.md            # Documentación del plugin
@@ -160,15 +160,15 @@ atlas-core/
 │       ├── task-tracker/            # Plugin de seguimiento de tareas
 │       │   ├── index.js             # Punto de entrada del plugin
 │       │   ├── components/          # Componentes del plugin
-│       │   │   ├── TaskBoard.jsx    # Vista de tablero Kanban
-│       │   │   ├── TaskList.jsx     # Vista de lista de tareas
-│       │   │   ├── TaskItem.jsx     # Componente de tarea individual
-│       │   │   └── TaskForm.jsx     # Formulario para crear/editar tareas
+│       │   │   ├── task-board.jsx   # Vista de tablero Kanban
+│       │   │   ├── task-list.jsx    # Vista de lista de tareas
+│       │   │   ├── task-item.jsx    # Componente de tarea individual
+│       │   │   └── task-form.jsx    # Formulario para crear/editar tareas
 │       │   ├── contexts/
-│       │   │   └── TaskContext.jsx  # Contexto global de tareas
+│       │   │   └── task-context.jsx # Contexto global de tareas
 │       │   ├── utils/
-│       │   │   ├── taskUtils.js     # Utilidades específicas
-│       │   │   └── taskToEvent.js   # Conversión entre tareas y eventos
+│       │   │   ├── task-utils.js    # Utilidades específicas
+│       │   │   └── task-to-event.js # Conversión entre tareas y eventos
 │       │   ├── styles/
 │       │   │   └── tasks.css        # Estilos específicos
 │       │   └── README.md            # Documentación
@@ -176,14 +176,14 @@ atlas-core/
 │       └── reminder-system/         # Plugin de recordatorios
 │           ├── index.js             # Punto de entrada del plugin
 │           ├── components/          # Componentes del plugin
-│           │   ├── ReminderSettings.jsx # Configuración de recordatorios
-│           │   ├── NotificationPanel.jsx # Panel de notificaciones
-│           │   └── ReminderForm.jsx # Formulario para crear recordatorios
+│           │   ├── reminder-settings.jsx # Configuración de recordatorios
+│           │   ├── notification-panel.jsx # Panel de notificaciones
+│           │   └── reminder-form.jsx # Formulario para crear recordatorios
 │           ├── services/
-│           │   ├── notificationService.js # Servicio de notificaciones
-│           │   └── schedulerService.js # Programación de recordatorios
+│           │   ├── notification-service.js # Servicio de notificaciones
+│           │   └── scheduler-service.js # Programación de recordatorios
 │           ├── utils/
-│           │   └── reminderUtils.js # Utilidades específicas
+│           │   └── reminder-utils.js # Utilidades específicas
 │           ├── styles/
 │           │   └── reminders.css    # Estilos específicos
 │           └── README.md            # Documentación
@@ -191,13 +191,13 @@ atlas-core/
 └── docs/                            # Documentación del proyecto
     ├── dev/                         # Documentación para desarrolladores
     │   ├── atlas-overview.md        # Visión general de Atlas
-    │   ├── atlas-stages.md          # Etapas de desarrollo
+    │   ├── atlas-stages.md          # Stages de desarrollo
     │   ├── comandos.md              # Comandos útiles
-    │   └── stages/                  # Documentación detallada por etapas
-    │       ├── stage-1.md           # Documentación de la Etapa 1
-    │       ├── stage-2.md           # Documentación de la Etapa 2
-    │       ├── stage-3.md           # Documentación de la Etapa 3
-    │       └── stage-4.md           # Documentación de la Etapa 4
+    │   └── stages/                  # Documentación detallada por Stages
+    │       ├── stage-1.md           # Documentación de la Stage 1
+    │       ├── stage-2.md           # Documentación de la Stage 2
+    │       ├── stage-3.md           # Documentación de la Stage 3
+    │       └── stage-4.md           # Documentación de la Stage 4
     │
     └── brand-assets/                # Recursos de marca
         ├── logos/                   # Logos de la aplicación

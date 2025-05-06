@@ -12,11 +12,11 @@ Usaremos el formato estándar de tres números: `MAYOR.MENOR.PARCHE` (por ejempl
 
 Durante la fase inicial de desarrollo, mantendremos el primer número en 0 (por ejemplo, 0.1.0, 0.2.0, etc.), indicando que estamos en desarrollo pre-lanzamiento.
 
-## Etapas y Versiones Correspondientes
+## Stages y Versiones Correspondientes
 
 Basado en nuestro plan de desarrollo, usaremos el siguiente esquema:
 
-| Etapa | Versión | Descripción |
+| Stage | Versión | Descripción |
 |-------|---------|-------------|
 | 1     | 0.1.0   | Fundamentos - Arquitectura base y calendario funcional mínimo |
 | 2     | 0.2.0   | Mejoras de Interacción y Persistencia |
@@ -44,12 +44,12 @@ Basado en nuestro plan de desarrollo, usaremos el siguiente esquema:
 
 ### Para Marcar una Versión Completa
 
-Cuando hayas completado una etapa (por ejemplo, la Etapa 1) y quieras crear la versión 0.1.0:
+Cuando hayas completado una Stage (por ejemplo, la Stage 1) y quieras crear la versión 0.1.0:
 
 1. Asegúrate de que todos tus cambios estén guardados, confirmados y subidos:
    ```bash
    git add .
-   git commit -m "Completada Etapa 1 - Versión 0.1.0"
+   git commit -m "Completada Stage 1 - Versión 0.1.0"
    git push origin main
    ```
 

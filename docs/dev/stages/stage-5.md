@@ -1,4 +1,4 @@
-# Etapa 5 - Análisis y Ecosistema Completo (Versión 0.5.0)
+# Stage 5 - Análisis y Ecosistema Completo (Versión 0.5.0)
 
 **Enfoque**: Completar el ecosistema de plugins y añadir capacidades analíticas
 
@@ -29,7 +29,7 @@
 - Sistema robusto de respaldo y recuperación
 - Integración completa entre todos los módulos
 
-## Estructura de archivos al finalizar la Etapa 5
+## Estructura de archivos al finalizar la Stage 5
 
 ```
 atlas-core/
@@ -39,7 +39,7 @@ atlas-core/
 ├── electron/                        # Configuración completa para escritorio
 │   ├── main.js                      # Proceso principal de Electron
 │   ├── preload.js                   # Script de precarga
-│   └── windowManager.js             # Gestión de ventanas
+│   └── window-manager.js            # Gestión de ventanas
 │
 ├── public/
 │   ├── favicon.ico
@@ -49,88 +49,88 @@ atlas-core/
 │
 ├── src/
 │   ├── index.jsx                    # Punto de entrada principal
-│   ├── App.jsx                      # Componente raíz completo
+│   ├── app.jsx                      # Componente raíz completo
 │   │
 │   ├── core/                        # Núcleo de la aplicación
 │   │   ├── bus/                     # Sistema de bus de eventos
-│   │   │   ├── EventBus.js          # Implementación completa
+│   │   │   ├── event-bus.js         # Implementación completa
 │   │   │   └── events.js            # Todos los eventos del sistema
 │   │   │
 │   │   ├── module/                  # Sistema de registro de módulos
-│   │   │   ├── ModuleRegistry.js    # Registro de módulos avanzado
-│   │   │   └── moduleUtils.js       # Utilidades avanzadas para módulos
+│   │   │   ├── module-registry.js   # Registro de módulos avanzado
+│   │   │   └── module-utils.js      # Utilidades avanzadas para módulos
 │   │   │
 │   │   └── config/                  # Configuración global
-│   │       ├── appConfig.js         # Configuración completa de la app
+│   │       ├── app-config.js        # Configuración completa de la app
 │   │       └── constants.js         # Constantes globales
 │   │
 │   ├── services/                    # Servicios de la aplicación
-│   │   ├── storageService.js        # Abstracción de almacenamiento
-│   │   ├── backupService.js         # Servicio de copias de seguridad
-│   │   ├── importExportService.js   # Servicio de importación/exportación
-│   │   ├── logService.js            # Servicio de logging
-│   │   └── themeService.js          # Servicio de gestión de temas
+│   │   ├── storage-service.js       # Abstracción de almacenamiento
+│   │   ├── backup-service.js        # Servicio de copias de seguridad
+│   │   ├── import-export-service.js # Servicio de importación/exportación
+│   │   ├── log-service.js           # Servicio de logging
+│   │   └── theme-service.js         # Servicio de gestión de temas
 │   │
 │   ├── components/                  # Componentes de la aplicación
 │   │   ├── calendar/                # Componentes del calendario
-│   │   │   ├── CalendarMain.jsx     # Componente principal completo
-│   │   │   ├── DayView.jsx          # Vista de día completa
-│   │   │   ├── WeekView.jsx         # Vista de semana completa
-│   │   │   ├── EventItem.jsx        # Elemento de evento avanzado
-│   │   │   ├── TimeGrid.jsx         # Rejilla temporal avanzada
-│   │   │   ├── TimeSlot.jsx         # Franja horaria personalizable
-│   │   │   └── EventForm.jsx        # Formulario de eventos completo
+│   │   │   ├── calendar-main.jsx    # Componente principal completo
+│   │   │   ├── day-view.jsx         # Vista de día completa
+│   │   │   ├── week-view.jsx        # Vista de semana completa
+│   │   │   ├── event-item.jsx       # Elemento de evento avanzado
+│   │   │   ├── time-grid.jsx        # Rejilla temporal avanzada
+│   │   │   ├── time-slot.jsx        # Franja horaria personalizable
+│   │   │   └── event-form.jsx       # Formulario de eventos completo
 │   │   │
 │   │   ├── admin/                   # Componentes de administración
-│   │   │   ├── AdminPanel.jsx       # Panel de administración completo
-│   │   │   ├── LogViewer.jsx        # Visor de logs avanzado
-│   │   │   └── ErrorDisplay.jsx     # Visualizador de errores
+│   │   │   ├── admin-panel.jsx      # Panel de administración completo
+│   │   │   ├── log-viewer.jsx       # Visor de logs avanzado
+│   │   │   └── error-display.jsx    # Visualizador de errores
 │   │   │
 │   │   ├── ui/                      # Componentes de UI reutilizables
-│   │   │   ├── Button.jsx           # Botón personalizado
-│   │   │   ├── Dialog.jsx           # Diálogo moderno
-│   │   │   ├── Toast.jsx            # Notificaciones toast
-│   │   │   ├── Dropdown.jsx         # Menú desplegable
-│   │   │   ├── ErrorBoundary.jsx    # Captura de errores React
-│   │   │   └── ThemeSelector.jsx    # Selector de temas
+│   │   │   ├── button.jsx           # Botón personalizado
+│   │   │   ├── dialog.jsx           # Diálogo moderno
+│   │   │   ├── toast.jsx            # Notificaciones toast
+│   │   │   ├── dropdown.jsx         # Menú desplegable
+│   │   │   ├── error-boundary.jsx   # Captura de errores React
+│   │   │   └── theme-selector.jsx   # Selector de temas
 │   │   │
 │   │   └── settings/                # Componentes de configuración
-│   │       ├── SettingsPanel.jsx    # Panel de configuración
-│   │       ├── TimeScaleConfig.jsx  # Configuración de escala de tiempo
-│   │       ├── ThemeConfig.jsx      # Configuración de temas
-│   │       ├── BackupConfig.jsx     # Configuración de respaldos
-│   │       └── ExportImportPanel.jsx # Panel de exportación/importación
+│   │       ├── settings-panel.jsx   # Panel de configuración
+│   │       ├── time-scale-config.jsx # Configuración de escala de tiempo
+│   │       ├── theme-config.jsx     # Configuración de temas
+│   │       ├── backup-config.jsx    # Configuración de respaldos
+│   │       └── export-import-panel.jsx # Panel de exportación/importación
 │   │
 │   ├── contexts/                    # Contextos de React
-│   │   ├── CalendarContext.jsx      # Contexto del calendario
-│   │   ├── ThemeContext.jsx         # Contexto de temas
-│   │   ├── SettingsContext.jsx      # Contexto de configuraciones
-│   │   └── AdminContext.jsx         # Contexto de administración
+│   │   ├── calendar-context.jsx     # Contexto del calendario
+│   │   ├── theme-context.jsx        # Contexto de temas
+│   │   ├── settings-context.jsx     # Contexto de configuraciones
+│   │   └── admin-context.jsx        # Contexto de administración
 │   │
 │   ├── hooks/                       # Hooks personalizados
-│   │   ├── useCalendarEvents.jsx    # Hook para eventos del calendario
-│   │   ├── useTimeGrid.jsx          # Hook para rejilla temporal
-│   │   ├── useEventDrag.jsx         # Hook para arrastrar eventos
-│   │   ├── useEventResize.jsx       # Hook para redimensionar eventos
-│   │   ├── useTheme.jsx             # Hook para gestión de temas
-│   │   └── useUIUtils.jsx           # Hook para utilidades UI
+│   │   ├── use-calendar-events.jsx  # Hook para eventos del calendario
+│   │   ├── use-time-grid.jsx        # Hook para rejilla temporal
+│   │   ├── use-event-drag.jsx       # Hook para arrastrar eventos
+│   │   ├── use-event-resize.jsx     # Hook para redimensionar eventos
+│   │   ├── use-theme.jsx            # Hook para gestión de temas
+│   │   └── use-ui-utils.jsx         # Hook para utilidades UI
 │   │
 │   ├── utils/                       # Utilidades
-│   │   ├── dateUtils.js             # Utilidades de fechas
-│   │   ├── timeUtils.js             # Utilidades de tiempo
-│   │   ├── eventUtils.js            # Utilidades para eventos
-│   │   ├── themeUtils.js            # Utilidades para temas
-│   │   ├── storageUtils.js          # Utilidades de almacenamiento
-│   │   └── validationUtils.js       # Utilidades de validación
+│   │   ├── date-utils.js            # Utilidades de fechas
+│   │   ├── time-utils.js            # Utilidades de tiempo
+│   │   ├── event-utils.js           # Utilidades para eventos
+│   │   ├── theme-utils.js           # Utilidades para temas
+│   │   ├── storage-utils.js         # Utilidades de almacenamiento
+│   │   └── validation-utils.js      # Utilidades de validación
 │   │
 │   ├── styles/                      # Estilos
 │   │   ├── index.css                # Estilos globales
-│   │   ├── App.css                  # Estilos para App.jsx
+│   │   ├── app.css                  # Estilos para app.jsx
 │   │   ├── variables.css            # Variables CSS globales
 │   │   ├── themes/                  # Archivos de temas
 │   │   │   ├── light.css            # Tema claro
 │   │   │   ├── dark.css             # Tema oscuro
-│   │   │   └── purpleNight.css      # Tema púrpura nocturno
+│   │   │   └── purple-night.css     # Tema púrpura nocturno
 │   │   │
 │   │   ├── components/              # Estilos de componentes
 │   │   │   ├── calendar.css         # Estilos del calendario
@@ -139,11 +139,11 @@ atlas-core/
 │   │   │   └── admin.css            # Estilos de administración
 │   │   │
 │   │   └── calendar/                # Estilos específicos del calendario
-│   │       └── CalendarMain.css     # Estilos para CalendarMain.jsx
+│   │       └── calendar-main.css    # Estilos para calendar-main.jsx
 │   │
 │   └── plugins/                     # Sistema de plugins completo
-│       ├── pluginLoader.js          # Cargador de plugins avanzado
-│       ├── pluginRegistry.js        # Registro de plugins completo
+│       ├── plugin-loader.js         # Cargador de plugins avanzado
+│       ├── plugin-registry.js       # Registro de plugins completo
 │       │
 │       ├── notes-manager/           # Plugin de notas
 │       │   ├── index.js             # Punto de entrada del plugin
@@ -163,13 +163,13 @@ atlas-core/
 │       ├── calendar-analytics/      # Plugin de estadísticas
 │       │   ├── index.js             # Punto de entrada
 │       │   ├── components/          # Componentes React
-│       │   │   ├── AnalyticsDashboard.jsx # Panel principal
-│       │   │   ├── TimeDistribution.jsx # Gráfico de distribución
-│       │   │   ├── CategoryPieChart.jsx # Gráfico circular por categorías
-│       │   │   └── ActivityTimeline.jsx # Línea de tiempo de actividad
+│       │   │   ├── analytics-dashboard.jsx # Panel principal
+│       │   │   ├── time-distribution.jsx # Gráfico de distribución
+│       │   │   ├── category-pie-chart.jsx # Gráfico circular por categorías
+│       │   │   └── activity-timeline.jsx # Línea de tiempo de actividad
 │       │   ├── utils/
-│       │   │   ├── analyticsUtils.js # Utilidades de análisis
-│       │   │   └── dataProcessing.js # Procesamiento de datos
+│       │   │   ├── analytics-utils.js # Utilidades de análisis
+│       │   │   └── data-processing.js # Procesamiento de datos
 │       │   ├── styles/
 │       │   │   └── analytics.css    # Estilos específicos
 │       │   └── README.md            # Documentación
@@ -177,29 +177,29 @@ atlas-core/
 │       ├── video-scheduler/         # Plugin de programador de videos
 │       │   ├── index.js             # Punto de entrada del plugin
 │       │   ├── components/          # Componentes del plugin
-│       │   │   ├── VideoScheduler.jsx # Componente principal
-│       │   │   ├── VideoSlot.jsx    # Slot individual de video
-│       │   │   ├── StatusSelector.jsx # Selector de estado de producción
-│       │   │   └── EarningsTracker.jsx # Seguimiento de ingresos
+│       │   │   ├── video-scheduler.jsx # Componente principal
+│       │   │   ├── video-slot.jsx    # Slot individual de video
+│       │   │   ├── status-selector.jsx # Selector de estado de producción
+│       │   │   └── earnings-tracker.jsx # Seguimiento de ingresos
 │       │   ├── contexts/
-│       │   │   └── VideoContext.jsx # Contexto del programador
+│       │   │   └── video-context.jsx # Contexto del programador
 │       │   ├── utils/
-│       │   │   ├── videoUtils.js    # Utilidades específicas
-│       │   │   └── eventConverter.js # Conversión entre eventos y videos
+│       │   │   ├── video-utils.js    # Utilidades específicas
+│       │   │   └── event-converter.js # Conversión entre eventos y videos
 │       │   ├── styles/
-│       │   │   └── videoScheduler.css # Estilos específicos
+│       │   │   └── video-scheduler.css # Estilos específicos
 │       │   └── README.md            # Documentación
 │       │
 │       └── weather-integration/     # Plugin de integración con el clima
 │           ├── index.js             # Punto de entrada
 │           ├── components/          # Componentes React
-│           │   ├── WeatherWidget.jsx # Widget para la UI principal
-│           │   ├── ForecastDay.jsx  # Previsión diaria
-│           │   └── EventWeather.jsx # Componente para eventos
+│           │   ├── weather-widget.jsx # Widget para la UI principal
+│           │   ├── forecast-day.jsx  # Previsión diaria
+│           │   └── event-weather.jsx # Componente para eventos
 │           ├── services/
-│           │   └── weatherAPI.js    # Servicio de conexión a API externa
+│           │   └── weather-api.js    # Servicio de conexión a API externa
 │           ├── utils/
-│           │   └── weatherUtils.js  # Utilidades específicas
+│           │   └── weather-utils.js  # Utilidades específicas
 │           ├── styles/
 │           │   └── weather.css      # Estilos específicos
 │           └── README.md            # Documentación
@@ -207,14 +207,14 @@ atlas-core/
 └── docs/                            # Documentación del proyecto
     ├── dev/                         # Documentación para desarrolladores
     │   ├── atlas-overview.md        # Visión general de Atlas
-    │   ├── atlas-stages.md          # Etapas de desarrollo
+    │   ├── atlas-stages.md          # Stages de desarrollo
     │   ├── comandos.md              # Comandos útiles
-    │   └── stages/                  # Documentación detallada por etapas
-    │       ├── stage-1.md           # Documentación de la Etapa 1
-    │       ├── stage-2.md           # Documentación de la Etapa 2
-    │       ├── stage-3.md           # Documentación de la Etapa 3
-    │       ├── stage-4.md           # Documentación de la Etapa 4
-    │       └── stage-5.md           # Documentación de la Etapa 5
+    │   └── stages/                  # Documentación detallada por Stages
+    │       ├── stage-1.md           # Documentación de la Stage 1
+    │       ├── stage-2.md           # Documentación de la Stage 2
+    │       ├── stage-3.md           # Documentación de la Stage 3
+    │       ├── stage-4.md           # Documentación de la Stage 4
+    │       └── stage-5.md           # Documentación de la Stage 5
     │
     └── brand-assets/                # Recursos de marca
         ├── logos/                   # Logos de la aplicación

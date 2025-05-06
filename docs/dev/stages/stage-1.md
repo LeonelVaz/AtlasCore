@@ -1,4 +1,4 @@
-# Etapa 1 - Fundamentos (Versión 0.1.0)
+# Stage 1 - Fundamentos (Versión 0.1.0)
 
 **Enfoque**: Arquitectura base y calendario funcional mínimo viable
 
@@ -28,7 +28,7 @@
 - Interfaz de usuario minimalista pero funcional
 - Capacidad de almacenar y recuperar eventos
 
-## Estructura de archivos al finalizar la Etapa 1
+## Estructura de archivos al finalizar la Stage 1
 
 ```
 atlas-core/
@@ -40,32 +40,32 @@ atlas-core/
 │
 ├── src/
 │   ├── index.jsx                 # Punto de entrada principal
-│   ├── App.jsx                   # Componente raíz con header básico
+│   ├── app.jsx                   # Componente raíz con header básico
 │   │
 │   ├── core/                     # Núcleo de la aplicación
 │   │   ├── bus/                  # Sistema de bus de eventos
-│   │   │   └── EventBus.js       # Implementación del bus de eventos
+│   │   │   └── event-bus.js      # Implementación del bus de eventos
 │   │   │
 │   │   └── module/               # Sistema de registro de módulos básico
-│   │       └── ModuleRegistry.js # Registro básico de módulos
+│   │       └── module-registry.js # Registro básico de módulos
 │   │
 │   ├── components/               # Componentes de la aplicación
 │   │   └── calendar/             # Componentes del calendario
-│   │       └── CalendarMain.jsx  # Componente principal del calendario
+│   │       └── calendar-main.jsx # Componente principal del calendario
 │   │
 │   └── styles/                   # Estilos
 │       ├── index.css             # Estilos globales
-│       ├── App.css               # Estilos para App.jsx
+│       ├── app.css               # Estilos para app.jsx
 │       └── calendar/             # Estilos específicos del calendario
-│           └── CalendarMain.css  # Estilos para CalendarMain.jsx
+│           └── calendar-main.css # Estilos para calendar-main.jsx
 │
 └── docs/                         # Documentación del proyecto
     ├── dev/                      # Documentación para desarrolladores
     │   ├── atlas-overview.md     # Visión general de Atlas
-    │   ├── atlas-stages.md       # Etapas de desarrollo
+    │   ├── atlas-stages.md       # Stages de desarrollo
     │   ├── comandos.md           # Comandos útiles
-    │   └── stages/               # Documentación detallada por etapas
-    │       └── stage-1.md        # Documentación de la Etapa 1
+    │   └── stages/               # Documentación detallada por Stages
+    │       └── stage-1.md        # Documentación de la Stage 1
     │
     └── brand-assets/             # Recursos de marca
         ├── logos/                # Logos de la aplicación

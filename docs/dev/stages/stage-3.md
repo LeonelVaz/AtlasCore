@@ -1,4 +1,4 @@
-# Etapa 3 - Personalización y Primeros Plugins (Versión 0.3.0)
+# Stage 3 - Personalización y Primeros Plugins (Versión 0.3.0)
 
 **Enfoque**: Implementar el sistema de temas y los primeros plugins básicos
 
@@ -29,133 +29,133 @@
 - Primer plugin (Notas) funcional e integrado
 - Panel de configuración para gestionar las nuevas opciones
 
-## Estructura de archivos al finalizar la Etapa 3
+## Estructura de archivos al finalizar la Stage 3
 
 ```
 atlas-core/
 ├── package.json
 ├── vite.config.js
 ├── index.html
-├── electron/                       # Configuración para la app de escritorio
-│   ├── main.js                     # Proceso principal de Electron mejorado
-│   ├── preload.js                  # Script de precarga para Electron
-│   └── windowManager.js            # Gestión de ventanas
+├── electron/                     # Configuración para la app de escritorio
+│   ├── main.js                   # Proceso principal de Electron mejorado
+│   ├── preload.js                # Script de precarga para Electron
+│   └── window-manager.js         # Gestión de ventanas
 │
 ├── public/
 │   ├── favicon.ico
 │   └── assets/
-│       └── fonts/                  # Fuentes para los temas
+│       └── fonts/                # Fuentes para los temas
 │
 ├── src/
-│   ├── index.jsx                   # Punto de entrada principal
-│   ├── App.jsx                     # Componente raíz con ThemeProvider
+│   ├── index.jsx                 # Punto de entrada principal
+│   ├── app.jsx                   # Componente raíz con ThemeProvider
 │   │
-│   ├── core/                       # Núcleo de la aplicación
-│   │   ├── bus/                    # Sistema de bus de eventos
-│   │   │   ├── EventBus.js         # Implementación mejorada
-│   │   │   └── events.js           # Más eventos definidos
+│   ├── core/                     # Núcleo de la aplicación
+│   │   ├── bus/                  # Sistema de bus de eventos
+│   │   │   ├── event-bus.js      # Implementación mejorada
+│   │   │   └── events.js         # Más eventos definidos
 │   │   │
-│   │   ├── module/                 # Sistema de registro de módulos
-│   │   │   ├── ModuleRegistry.js   # Registro de módulos
-│   │   │   └── moduleUtils.js      # Utilidades para módulos
+│   │   ├── module/               # Sistema de registro de módulos
+│   │   │   ├── module-registry.js # Registro de módulos
+│   │   │   └── module-utils.js   # Utilidades para módulos
 │   │   │
-│   │   └── config/                 # Configuración global
-│   │       ├── appConfig.js        # Configuración de la app
-│   │       └── constants.js        # Constantes globales
+│   │   └── config/               # Configuración global
+│   │       ├── app-config.js     # Configuración de la app
+│   │       └── constants.js      # Constantes globales
 │   │
-│   ├── services/                   # Servicios de la aplicación
-│   │   ├── storageService.js       # Abstracción de almacenamiento
-│   │   └── themeService.js         # Servicio de gestión de temas
+│   ├── services/                 # Servicios de la aplicación
+│   │   ├── storage-service.js    # Abstracción de almacenamiento
+│   │   └── theme-service.js      # Servicio de gestión de temas
 │   │
-│   ├── components/                 # Componentes de la aplicación
-│   │   ├── calendar/               # Componentes del calendario
-│   │   │   ├── CalendarMain.jsx    # Componente principal mejorado
-│   │   │   ├── DayView.jsx         # Vista de día
-│   │   │   ├── WeekView.jsx        # Vista de semana mejorada
-│   │   │   ├── EventItem.jsx       # Elemento de evento con interacciones
-│   │   │   ├── TimeGrid.jsx        # Rejilla temporal con escalas
-│   │   │   ├── TimeSlot.jsx        # Franja horaria personalizable
-│   │   │   └── EventForm.jsx       # Formulario de eventos mejorado
+│   ├── components/               # Componentes de la aplicación
+│   │   ├── calendar/             # Componentes del calendario
+│   │   │   ├── calendar-main.jsx # Componente principal mejorado
+│   │   │   ├── day-view.jsx      # Vista de día
+│   │   │   ├── week-view.jsx     # Vista de semana mejorada
+│   │   │   ├── event-item.jsx    # Elemento de evento con interacciones
+│   │   │   ├── time-grid.jsx     # Rejilla temporal con escalas
+│   │   │   ├── time-slot.jsx     # Franja horaria personalizable
+│   │   │   └── event-form.jsx    # Formulario de eventos mejorado
 │   │   │
-│   │   ├── ui/                     # Componentes de UI reutilizables
-│   │   │   ├── Button.jsx          # Botón personalizado
-│   │   │   ├── Dialog.jsx          # Diálogo moderno
-│   │   │   ├── Dropdown.jsx        # Menú desplegable
-│   │   │   └── ThemeSelector.jsx   # Selector de temas
+│   │   ├── ui/                   # Componentes de UI reutilizables
+│   │   │   ├── button.jsx        # Botón personalizado
+│   │   │   ├── dialog.jsx        # Diálogo moderno
+│   │   │   ├── dropdown.jsx      # Menú desplegable
+│   │   │   └── theme-selector.jsx # Selector de temas
 │   │   │
-│   │   └── settings/               # Componentes de configuración
-│   │       ├── SettingsPanel.jsx   # Panel de configuración
-│   │       ├── TimeScaleConfig.jsx # Configuración de escala de tiempo
-│   │       └── ThemeConfig.jsx     # Configuración de temas
+│   │   └── settings/             # Componentes de configuración
+│   │       ├── settings-panel.jsx # Panel de configuración
+│   │       ├── time-scale-config.jsx # Configuración de escala de tiempo
+│   │       └── theme-config.jsx  # Configuración de temas
 │   │
-│   ├── contexts/                   # Contextos de React
-│   │   ├── CalendarContext.jsx     # Contexto del calendario
-│   │   ├── ThemeContext.jsx        # Contexto de temas
-│   │   └── SettingsContext.jsx     # Contexto de configuraciones
+│   ├── contexts/                 # Contextos de React
+│   │   ├── calendar-context.jsx  # Contexto del calendario
+│   │   ├── theme-context.jsx     # Contexto de temas
+│   │   └── settings-context.jsx  # Contexto de configuraciones
 │   │
-│   ├── hooks/                      # Hooks personalizados
-│   │   ├── useCalendarEvents.jsx   # Hook para eventos del calendario
-│   │   ├── useTimeGrid.jsx         # Hook para rejilla temporal
-│   │   ├── useEventDrag.jsx        # Hook para arrastrar eventos
-│   │   ├── useEventResize.jsx      # Hook para redimensionar eventos
-│   │   └── useTheme.jsx            # Hook para gestión de temas
+│   ├── hooks/                    # Hooks personalizados
+│   │   ├── use-calendar-events.jsx # Hook para eventos del calendario
+│   │   ├── use-time-grid.jsx     # Hook para rejilla temporal
+│   │   ├── use-event-drag.jsx    # Hook para arrastrar eventos
+│   │   ├── use-event-resize.jsx  # Hook para redimensionar eventos
+│   │   └── use-theme.jsx         # Hook para gestión de temas
 │   │
-│   ├── utils/                      # Utilidades
-│   │   ├── dateUtils.js            # Utilidades de fechas
-│   │   ├── timeUtils.js            # Utilidades de tiempo
-│   │   ├── eventUtils.js           # Utilidades para eventos
-│   │   ├── themeUtils.js           # Utilidades para temas
-│   │   └── storageUtils.js         # Utilidades de almacenamiento
+│   ├── utils/                    # Utilidades
+│   │   ├── date-utils.js         # Utilidades de fechas
+│   │   ├── time-utils.js         # Utilidades de tiempo
+│   │   ├── event-utils.js        # Utilidades para eventos
+│   │   ├── theme-utils.js        # Utilidades para temas
+│   │   └── storage-utils.js      # Utilidades de almacenamiento
 │   │
-│   ├── styles/                     # Estilos
-│   │   ├── index.css               # Estilos globales
-│   │   ├── App.css                 # Estilos para App.jsx
-│   │   ├── variables.css           # Variables CSS globales
-│   │   ├── themes/                 # Archivos de temas
-│   │   │   ├── light.css           # Tema claro
-│   │   │   ├── dark.css            # Tema oscuro
-│   │   │   └── purpleNight.css     # Tema púrpura nocturno
+│   ├── styles/                   # Estilos
+│   │   ├── index.css             # Estilos globales
+│   │   ├── app.css               # Estilos para app.jsx
+│   │   ├── variables.css         # Variables CSS globales
+│   │   ├── themes/               # Archivos de temas
+│   │   │   ├── light.css         # Tema claro
+│   │   │   ├── dark.css          # Tema oscuro
+│   │   │   └── purple-night.css  # Tema púrpura nocturno
 │   │   │
-│   │   ├── components/             # Estilos de componentes
-│   │   │   ├── calendar.css        # Estilos del calendario
-│   │   │   ├── events.css          # Estilos de eventos
-│   │   │   └── settings.css        # Estilos de configuración
+│   │   ├── components/           # Estilos de componentes
+│   │   │   ├── calendar.css      # Estilos del calendario
+│   │   │   ├── events.css        # Estilos de eventos
+│   │   │   └── settings.css      # Estilos de configuración
 │   │   │
-│   │   └── calendar/               # Estilos específicos del calendario
-│   │       └── CalendarMain.css    # Estilos para CalendarMain.jsx
+│   │   └── calendar/             # Estilos específicos del calendario
+│   │       └── calendar-main.css # Estilos para calendar-main.jsx
 │   │
-│   └── plugins/                    # Sistema de plugins inicial
-│       ├── pluginLoader.js         # Cargador básico de plugins
-│       ├── pluginRegistry.js       # Registro de plugins
+│   └── plugins/                  # Sistema de plugins inicial
+│       ├── plugin-loader.js      # Cargador básico de plugins
+│       ├── plugin-registry.js    # Registro de plugins
 │       │
-│       └── notes-manager/          # Plugin de notas
-│           ├── index.js            # Punto de entrada del plugin
-│           ├── components/         # Componentes del plugin
-│           │   ├── NotesList.jsx   # Lista de notas
-│           │   ├── NoteEditor.jsx  # Editor de notas
-│           │   └── NotesPanel.jsx  # Panel principal
+│       └── notes-manager/        # Plugin de notas
+│           ├── index.js          # Punto de entrada del plugin
+│           ├── components/       # Componentes del plugin
+│           │   ├── notes-list.jsx # Lista de notas
+│           │   ├── note-editor.jsx # Editor de notas
+│           │   └── notes-panel.jsx # Panel principal
 │           ├── contexts/
-│           │   └── NotesContext.jsx # Contexto de notas
+│           │   └── notes-context.jsx # Contexto de notas
 │           ├── utils/
-│           │   └── notesUtils.js   # Utilidades específicas
+│           │   └── notes-utils.js # Utilidades específicas
 │           ├── styles/
-│           │   └── notes.css       # Estilos específicos del plugin
-│           └── README.md           # Documentación del plugin
+│           │   └── notes.css     # Estilos específicos del plugin
+│           └── README.md         # Documentación del plugin
 │
-└── docs/                           # Documentación del proyecto
-    ├── dev/                        # Documentación para desarrolladores
-    │   ├── atlas-overview.md       # Visión general de Atlas
-    │   ├── atlas-stages.md         # Etapas de desarrollo
-    │   ├── comandos.md             # Comandos útiles
-    │   └── stages/                 # Documentación detallada por etapas
-    │       ├── stage-1.md          # Documentación de la Etapa 1
-    │       ├── stage-2.md          # Documentación de la Etapa 2
-    │       └── stage-3.md          # Documentación de la Etapa 3
+└── docs/                         # Documentación del proyecto
+    ├── dev/                      # Documentación para desarrolladores
+    │   ├── atlas-overview.md     # Visión general de Atlas
+    │   ├── atlas-stages.md       # Stages de desarrollo
+    │   ├── comandos.md           # Comandos útiles
+    │   └── stages/               # Documentación detallada por Stages
+    │       ├── stage-1.md        # Documentación de la Stage 1
+    │       ├── stage-2.md        # Documentación de la Stage 2
+    │       └── stage-3.md        # Documentación de la Stage 3
     │
-    └── brand-assets/               # Recursos de marca
-        ├── logos/                  # Logos de la aplicación
-        │   └── atlas-logo.svg      # Logo SVG principal
+    └── brand-assets/             # Recursos de marca
+        ├── logos/                # Logos de la aplicación
+        │   └── atlas-logo.svg    # Logo SVG principal
         │
-        └── documentation/          # Documentación de marca
-            └── atlas-brand-guide.md  # Guía de identidad de marca
+        └── documentation/        # Documentación de marca
+            └── atlas-brand-guide.md # Guía de identidad de marca
 ```
