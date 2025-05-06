@@ -9,22 +9,22 @@ El plugin se estructura en torno a un conjunto de componentes de visualización 
 ```
 weather-integration/
 ├── index.js                 # Punto de entrada
-├── components/              # (Componentes UI)
-│   ├── weather-widget.jsx   # (Widget para la UI principal)
-│   ├── forecast-day.jsx     # (Previsión diaria)
-│   └── event-weather.jsx    # (Componente para eventos)
-├── services/                # (Servicios)
-│   └── weather-api.js       # (Servicio de conexión a API externa)
-├── utils/                   # (Utilidades)
-│   └── weather-utils.js     # (Funciones de procesamiento y formateo)
-├── styles/                  # (Estilos)
-│   └── weather.css          # (Estilos específicos del plugin)
-├── locales/                 # (Traducciones)
-│   ├── es/                  # (Español)
+├── components/              # Componentes UI
+│   ├── weather-widget.jsx   # Widget para la UI principal
+│   ├── forecast-day.jsx     # Previsión diaria
+│   └── event-weather.jsx    # Componente para eventos
+├── services/                # Servicios
+│   └── weather-api.js       # Servicio de conexión a API externa
+├── utils/                   # Utilidades
+│   └── weather-utils.js     # Funciones de procesamiento y formateo
+├── styles/                  # Estilos
+│   └── weather.css          # Estilos específicos del plugin
+├── locales/                 # Traducciones
+│   ├── es/                  # Español
 │   │   └── weather.json
-│   └── en/                  # (Inglés)
+│   └── en/                  # Inglés
 │       └── weather.json
-└── README.md                # (Documentación)
+└── README.md                # Documentación
 ```
 
 ## API y Interfaces
@@ -116,13 +116,13 @@ const weatherDataExample = {
     feelslike_f: 75.6,
     uv: 5.0
   },
-  updated: '2025-05-05T14:30:00Z',
+  updated: '2023-05-05T14:30:00Z',
   source: 'weatherapi.com'
 };
 
 // Estructura de previsión diaria
 const forecastDataExample = {
-  date: '2025-05-06',
+  date: '2023-05-06',
   day: {
     maxtemp_c: 25.6,
     maxtemp_f: 78.1,
@@ -152,7 +152,7 @@ const forecastDataExample = {
   hour: [
     // Previsión horaria (24 entradas)
     {
-      time: '2025-05-06T00:00:00Z',
+      time: '2023-05-06T00:00:00Z',
       temp_c: 15.3,
       temp_f: 59.5,
       condition: {
@@ -546,3 +546,5 @@ function OutdoorEventWeatherExtension({ eventId }) {
 | 0.6.0   | Mejora de visualización y múltiples proveedores de datos |
 | 0.8.0   | Previsiones históricas y tendencias para planificación a largo plazo |
 | 1.0.0   | Soporte completo para internacionalización y accesibilidad |
+
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

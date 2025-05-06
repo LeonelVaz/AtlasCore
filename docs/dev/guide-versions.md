@@ -75,7 +75,7 @@ Mantendremos un archivo `CHANGELOG.md` en la raíz del proyecto para documentar 
 ```markdown
 # Registro de Cambios (Changelog)
 
-## [0.1.0] - YYYY-MM-DD
+## [0.1.0] - AAAA-MM-DD
 ### Añadido
 - Estructura modular base
 - Sistema de Bus de Eventos
@@ -85,7 +85,7 @@ Mantendremos un archivo `CHANGELOG.md` en la raíz del proyecto para documentar 
 ### Corregido
 - [Si aplica, lista de correcciones]
 
-## [0.0.1] - YYYY-MM-DD
+## [0.0.1] - AAAA-MM-DD
 ### Añadido
 - Configuración inicial del proyecto
 - [Otros elementos iniciales]
@@ -137,6 +137,30 @@ git push origin --tags    # Para todas las etiquetas nuevas
 4. **Crea etiquetas solo para hitos importantes**: No necesitas crear una etiqueta para cada pequeño cambio, solo para versiones completas.
 
 5. **Considera usar una herramienta gráfica**: Aplicaciones como GitHub Desktop, GitKraken o SourceTree pueden hacer más fácil el trabajo con Git si prefieres interfaces visuales a comandos.
+
+## Procedimiento para Versiones de Corrección
+
+Para lanzar correcciones de errores entre versiones planificadas:
+
+1. Identifica la naturaleza del error y determina si requiere una versión de corrección
+2. Incrementa el tercer número de la versión (por ejemplo, de 0.2.0 a 0.2.1)
+3. Sigue el mismo proceso que para las versiones principales:
+   ```bash
+   git commit -m "Corrección: Descripción del error solucionado"
+   git tag -a v0.2.1 -m "Versión 0.2.1 - Corrección de [problema]"
+   git push origin main
+   git push origin v0.2.1
+   ```
+4. Actualiza el `CHANGELOG.md` con los detalles de la corrección
+
+## Consideraciones para Equipos Pequeños
+
+Este enfoque simplificado funciona bien para equipos pequeños. Si el equipo crece o el proyecto se vuelve más complejo, considera:
+
+1. Implementar un flujo de trabajo basado en ramas (Git Flow o similar)
+2. Establecer un proceso formal de revisión de código
+3. Configurar integración continua para pruebas automáticas antes de versionar
+4. Utilizar herramientas de gestión de versiones más avanzadas
 
 ---
 
