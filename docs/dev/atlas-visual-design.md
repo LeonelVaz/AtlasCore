@@ -499,4 +499,4 @@ La versión móvil de Atlas mantiene la estética y funcionalidad, adaptada a pa
 
 Este diseño visual para Atlas v1.0.0 representa una implementación completa de todas las características descritas en la documentación, con especial atención a las funcionalidades avanzadas como el sistema de imán (snap), escalas de tiempo independientes y la integración detallada de todos los plugins. La interfaz está diseñada para ser modular, adaptable y potente sin sacrificar la simplicidad, alineándose perfectamente con los valores fundamentales de la marca Atlas.
 
-**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

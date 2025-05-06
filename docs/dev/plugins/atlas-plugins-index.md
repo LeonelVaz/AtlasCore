@@ -93,6 +93,41 @@ Los usuarios pueden gestionar sus plugins desde el panel de configuración de At
 - **Verificar compatibilidad**: Ver la matriz de compatibilidad entre plugins instalados
 - **Actualizar plugins**: Gestionar las actualizaciones disponibles
 
+### Estructura Estándar de Plugins
+
+Cada plugin debe seguir una estructura estandarizada, aunque algunos directorios son opcionales dependiendo de las necesidades específicas del plugin:
+
+```
+plugin-name/ 
+├── index.js                 # Punto de entrada del plugin (OBLIGATORIO)
+├── components/              # Componentes UI (OBLIGATORIO)
+│   ├── component-name.jsx
+│   └── ...
+├── contexts/                # Contextos del plugin (OPCIONAL)
+│   └── context-name.jsx
+├── services/                # Servicios del plugin (OPCIONAL)
+│   └── service-name.js      # Necesario para plugins que requieren conexión a APIs
+│                            # externas o servicios específicos (como Reminder System,
+│                            # Weather Integration, Calendar Analytics)
+├── utils/                   # Utilidades (OBLIGATORIO)
+│   └── utility-name.js
+├── styles/                  # Estilos (OBLIGATORIO)
+│   └── plugin-styles.css
+├── locales/                 # Traducciones (OBLIGATORIO desde v1.0.0)
+│   ├── es/                  # Español
+│   │   └── plugin.json
+│   └── en/                  # Inglés
+│       └── plugin.json
+└── README.md                # Documentación del plugin (OBLIGATORIO)
+```
+
+Directrices específicas:
+- `services/`: Necesario para plugins que requieren conectividad externa o servicios complejos
+  - Presente en: Reminder System (notification-service.js), Weather Integration (weather-api.js), Calendar Analytics (data-processor.js)
+  - No requerido en: Notes Manager, Task Tracker (que operan principalmente con datos locales)
+- `contexts/`: Recomendado para plugins que manejan estado complejo o necesitan compartir datos entre componentes
+- La documentación (`README.md`) debe desarrollarse simultáneamente con el plugin para mantener la coherencia durante el desarrollo
+
 ## Internacionalización de Plugins
 
 Todos los plugins incorporan soporte para múltiples idiomas. A partir de la versión 1.0.0, los plugins incluyen traducciones para:
@@ -125,4 +160,4 @@ El proceso de carga de plugins sigue estos pasos:
 
 Este proceso garantiza que los plugins se integren de manera segura y consistente con el resto de la aplicación.
 
-**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

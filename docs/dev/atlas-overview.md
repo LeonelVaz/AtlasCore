@@ -462,4 +462,4 @@ atlas-core/
             └── atlas-logo-guidelines.md # Directrices del logotipo
 ```
 
-**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

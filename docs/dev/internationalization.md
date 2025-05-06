@@ -178,4 +178,4 @@ La implementación del sistema de internacionalización sigue un enfoque gradual
 
 Esta estructura de implementación progresiva asegura que al llegar a la versión 1.0.0, Atlas tenga un sistema de internacionalización completo y robusto, preparado para expandirse a más idiomas en el futuro.
 
-**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.

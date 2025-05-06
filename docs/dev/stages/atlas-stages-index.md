@@ -125,9 +125,9 @@ Este documento establece un plan de desarrollo por Stages para la aplicación At
    - Notificaciones nativas (escritorio) y en aplicación (web)
    - Configuración personalizada de alertas
 
-5. **Estructura básica de internacionalización**
-   - Implementación de la estructura base del sistema i18n
-   - Preparación de componentes core para soportar traducciones
+5. **Estructura básica de internacionalización (i18n)**
+   - Implementación de la estructura base del sistema de i18n
+   - Preparación de componentes core para internacionalización
    - Configuración inicial y pruebas básicas
 
 **Criterios de finalización:**
@@ -227,6 +227,11 @@ Para cada Stage, se deben considerar los siguientes aspectos:
 
 4. **Refinamiento**: Dedicar tiempo al final de cada Stage para refinamiento y corrección de errores.
 
+5. **Documentación**: Actualizar la documentación técnica y de usuario con cada nueva funcionalidad.
+   - **Documentación de plugins**: La documentación de cada plugin (README.md) debe desarrollarse simultáneamente con la implementación del plugin.
+   - **Documentación detallada**: La documentación completa en `docs/dev/plugins/` se debe crear durante la misma etapa en que se implementa el plugin.
+   - **Actualización de estructura**: La estructura de directorios en la documentación de cada etapa debe reflejar la adición de la documentación de los plugins.
+
 ## Alineación con Valores de Marca
 
 Este plan de desarrollo por Stages está alineado con los valores fundamentales de Atlas:
@@ -252,4 +257,4 @@ La documentación detallada de cada Stage, incluyendo la estructura completa de 
 - [Stage 5 - Análisis y Ecosistema Completo (Versión 0.5.0)](stage-5.md)
 - [Stage 6 - Pulido y Lanzamiento (Versión 1.0.0)](stage-6.md)
 
-**Nota sobre las fechas**: Los ejemplos y referencias a fechas futuras (2025) en esta documentación son ilustrativos y utilizados para mantener coherencia en los ejemplos de toda la documentación del proyecto.
+**Nota sobre las fechas**: Los ejemplos y referencias a fechas en esta documentación son ilustrativos.
