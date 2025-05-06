@@ -63,7 +63,7 @@ atlas-core/
     ├── dev/                      # Documentación para desarrolladores
     │   ├── atlas-overview.md     # Visión general de Atlas
     │   ├── atlas-stages.md       # Stages de desarrollo
-    │   ├── comandos.md           # Comandos útiles
+    │   ├── commands.md           # Comandos útiles
     │   ├── plugins/              # Documentación detallada de plugins (estructura inicial)
     │   └── stages/               # Documentación detallada por Stages
     │       └── stage-1.md        # Documentación de la Stage 1

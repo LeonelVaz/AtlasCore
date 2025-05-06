@@ -331,7 +331,7 @@ atlas-core/
     │   ├── architecture.md          # Arquitectura detallada
     │   ├── plugin-development.md    # Desarrollo de plugins
     │   ├── internationalization.md  # Guía de internacionalización
-    │   ├── comandos.md              # Comandos útiles
+    │   ├── commands.md              # Comandos útiles
     │   ├── coding-standards.md      # Estándares de código
     │   └── stages/                  # Documentación detallada por stages
     │       ├── stage-1.md           # Documentación del Stage 1

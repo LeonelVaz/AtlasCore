@@ -8,12 +8,14 @@ El plugin se estructura en torno a un sistema central de programación de record
 
 ```
 reminder-system/
-├── index.js                 # Punto de entrada del plugin
+├── index.js                 # Punto de entrada del plugin 
 ├── components/              # Componentes UI
 │   ├── reminder-settings.jsx # Configuración de recordatorios
 │   ├── notification-panel.jsx # Panel de notificaciones
 │   └── reminder-form.jsx    # Formulario para crear recordatorios
-├── services/                # Servicios
+├── contexts/                # Contextos del plugin
+│   └── reminder-context.jsx # Contexto para recordatorios
+├── services/                # Servicios del plugin
 │   ├── notification-service.js # Gestión de notificaciones
 │   └── scheduler-service.js # Programación de recordatorios
 ├── utils/                   # Utilidades
@@ -25,7 +27,7 @@ reminder-system/
 │   │   └── reminders.json
 │   └── en/                  # Inglés
 │       └── reminders.json
-└── README.md                # Documentación
+└── README.md                # Documentación del plugin
 ```
 
 ## API y Interfaces
@@ -92,15 +94,15 @@ const reminderExample = {
   id: 'reminder-123456',
   eventId: 'event-789',
   type: 'time-based', // 'time-based' o 'location-based'
-  triggerTime: '2023-03-15T13:45:00Z', // Momento exacto de activación
+  triggerTime: '2025-03-15T13:45:00Z', // Momento exacto de activación
   advance: {
     value: 15,
     unit: 'minutes' // 'minutes', 'hours', 'days'
   },
   status: 'pending', // 'pending', 'triggered', 'dismissed', 'snoozed'
   snoozeUntil: null, // Si está pospuesto, hora hasta la que se pospone
-  createdAt: '2023-03-10T09:30:00Z',
-  updatedAt: '2023-03-10T09:30:00Z',
+  createdAt: '2025-03-10T09:30:00Z',
+  updatedAt: '2025-03-10T09:30:00Z',
   sound: 'chime', // Sonido a reproducir
   message: 'Personalizado', // Mensaje personalizado (opcional)
   repeats: false // Si el recordatorio se repite con el evento

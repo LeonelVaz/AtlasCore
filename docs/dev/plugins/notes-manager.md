@@ -84,8 +84,8 @@ const noteExample = {
   id: 'note-123456',
   title: 'Título de la nota',
   content: '<p>Contenido formateado de la <strong>nota</strong></p>',
-  createdAt: '2023-01-15T10:30:00Z',
-  updatedAt: '2023-01-16T08:45:00Z',
+  createdAt: '2025-01-15T10:30:00Z',
+  updatedAt: '2025-01-16T08:45:00Z',
   color: '#26A69A',
   categoryId: 'category-work',
   references: {

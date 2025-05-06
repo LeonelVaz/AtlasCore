@@ -97,7 +97,7 @@ const videoExample = {
   title: 'Cómo usar Atlas efectivamente',
   description: 'Tutorial sobre las funcionalidades principales de Atlas',
   slot: {
-    date: '2023-04-15',
+    date: '2025-04-15',
     timeSlot: 'morning' // 'morning', 'afternoon', 'evening'
   },
   status: 'in-production', // 'planned', 'scripting', 'in-production', 'editing', 'published'
@@ -106,8 +106,8 @@ const videoExample = {
   tags: ['tutorial', 'productividad', 'atlas'],
   thumbnail: 'thumbnail-url.jpg', // URL de la miniatura (opcional)
   eventId: 'event-789', // ID del evento vinculado (opcional)
-  createdAt: '2023-04-01T10:30:00Z',
-  updatedAt: '2023-04-10T14:45:00Z',
+  createdAt: '2025-04-01T10:30:00Z',
+  updatedAt: '2025-04-10T14:45:00Z',
   publishedAt: null, // fecha de publicación (si está publicado)
   productionMetadata: {
     scriptComplete: true,
@@ -123,14 +123,14 @@ const videoExample = {
       'adsense': 95.20,
       'sponsorships': 29.30
     },
-    lastUpdated: '2023-04-20T08:15:00Z'
+    lastUpdated: '2025-04-20T08:15:00Z'
   }
 };
 
 // Estructura de una franja horaria
 const slotExample = {
-  id: 'slot-20230415-morning',
-  date: '2023-04-15',
+  id: 'slot-20250415-morning',
+  date: '2025-04-15',
   timeSlot: 'morning',
   videoId: 'video-123456',
   isAvailable: false, // false si hay un video asignado
@@ -156,7 +156,7 @@ Para integrar con el plugin Video Scheduler:
 2. Acceda a los videos y franjas horarias
    ```javascript
    // Obtener videos para una fecha específica
-   const date = new Date('2023-04-15');
+   const date = new Date('2025-04-15');
    const videos = videoScheduler.getVideosByDate(date);
    
    // Crear un nuevo video
@@ -164,7 +164,7 @@ Para integrar con el plugin Video Scheduler:
      title: 'Nuevo tutorial',
      description: 'Descripción del video',
      slot: {
-       date: '2023-04-20',
+       date: '2025-04-20',
        timeSlot: 'afternoon'
      },
      status: 'planned',

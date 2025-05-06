@@ -434,7 +434,7 @@ atlas-core/
     │   ├── atlas-visual-design.md # Diseño visual
     │   ├── internationalization.md # Documentación de internacionalización
     │   ├── guide-versions.md    # Guía de versionado
-    │   ├── comandos.md          # Comandos útiles
+    │   ├── commands.md          # Comandos útiles
     │   ├── plugins/             # Documentación detallada de plugins
     │   │   ├── atlas-plugins-index.md # Índice de plugins e interacciones
     │   │   ├── notes-manager.md # Documentación del plugin de notas

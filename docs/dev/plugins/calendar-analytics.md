@@ -89,8 +89,8 @@ subscribeToEvent(EVENT_TYPES.CALENDAR.EVENT_DELETED, handleEventChange);
 // Opciones de análisis
 const analyticsOptionsExample = {
   timeRange: {
-    start: '2023-01-01T00:00:00Z',
-    end: '2023-03-31T23:59:59Z'
+    start: '2025-01-01T00:00:00Z',
+    end: '2025-03-31T23:59:59Z'
   },
   groupBy: 'day', // 'hour', 'day', 'week', 'month'
   filters: {
@@ -99,8 +99,8 @@ const analyticsOptionsExample = {
     excludeAllDay: true
   },
   compareWith: { // Opcional, para comparaciones
-    start: '2022-10-01T00:00:00Z',
-    end: '2022-12-31T23:59:59Z'
+    start: '2024-10-01T00:00:00Z',
+    end: '2024-12-31T23:59:59Z'
   }
 };
 
@@ -133,11 +133,11 @@ const timeDistributionExample = {
 // Informe generado
 const reportExample = {
   id: 'report-123456',
-  title: 'Análisis Trimestral Q1 2023',
-  generatedAt: '2023-04-01T10:30:00Z',
+  title: 'Análisis Trimestral Q1 2025',
+  generatedAt: '2025-04-01T10:30:00Z',
   timeRange: {
-    start: '2023-01-01T00:00:00Z',
-    end: '2023-03-31T23:59:59Z'
+    start: '2025-01-01T00:00:00Z',
+    end: '2025-03-31T23:59:59Z'
   },
   sections: [
     {

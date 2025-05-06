@@ -93,9 +93,9 @@ const taskExample = {
   description: 'Detalles sobre la implementación...',
   status: 'in-progress',
   priority: 2, // 1-3, donde 3 es la más alta
-  dueDate: '2023-02-20T18:00:00Z',
-  createdAt: '2023-02-15T10:30:00Z',
-  updatedAt: '2023-02-16T14:45:00Z',
+  dueDate: '2025-02-20T18:00:00Z',
+  createdAt: '2025-02-15T10:30:00Z',
+  updatedAt: '2025-02-16T14:45:00Z',
   tags: ['desarrollo', 'frontend'],
   color: '#26A69A',
   assignee: 'user1',

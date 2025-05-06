@@ -82,7 +82,7 @@ plugin-name/
 └── README.md                # Documentación del plugin
 ```
 
-Para más detalles sobre cómo desarrollar un plugin, consulte la documentación dedicada al desarrollo de plugins en la sección de desarrollo de la documentación principal.
+Para más detalles sobre cómo desarrollar un plugin, consulte la documentación dedicada al desarrollo de plugins en la sección de desarrollo de la documentación principal. [Plugin Development](../plugin-development.md)
 
 ## Gestión de Plugins
 
@@ -149,7 +149,7 @@ locales/
     └── plugin.json          # Traducciones en inglés
 ```
 
-Para más información sobre la internacionalización de plugins, consulte la documentación de internacionalización.
+Para más información sobre la internacionalización de plugins, consulte la documentación de internacionalización. [Internationalization](../internationalization.md)
 
 ## Proceso de Carga de Plugins
 
