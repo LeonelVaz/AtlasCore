@@ -15,6 +15,8 @@ El sistema de plugins de Atlas permite extender la funcionalidad básica de la a
 | [Video Scheduler](video-scheduler.md) | Planificación de producción de videos | Contenido | v0.5.0 |
 | [Weather Integration](weather-integration.md) | Integración de datos meteorológicos | Información | v0.5.0 |
 
+Para conocer en detalle cómo evoluciona cada plugin entre versiones principales de Atlas, consulte la [Política de Versionado de Plugins](../plugin-versioning.md).
+
 ## Matriz de Interacción entre Plugins
 
 La siguiente matriz muestra cómo interactúan los diferentes plugins entre sí:

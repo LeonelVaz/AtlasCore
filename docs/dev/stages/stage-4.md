@@ -12,19 +12,31 @@
    - Funcionalidad de exportación por módulos y rango de fechas
    - Importación con validación y resolución de conflictos
    - Integración con sistema de archivos nativo en Electron
-   - Configuración básica de manifest.json para soporte futuro de PWA
 
-3. **Plugin: Task Tracker**
+3. **Configuración básica de PWA (Progressive Web App)**
+   - Creación y configuración inicial del archivo manifest.json con:
+     - Información básica de la aplicación (nombre, descripción corta)
+     - Configuración de iconos en diferentes tamaños
+     - Definición de colores de tema y fondo
+     - Configuración de orientación y modo de visualización
+   - Implementación de un Service Worker mínimo para:
+     - Caché básica de recursos estáticos (HTML, CSS, JS)
+     - Funcionalidad offline básica para acceder a la última sesión
+     - Estrategia de actualización cuando hay conectividad
+   - Configuración de metadatos de instalación en index.html
+   - Esta configuración sienta las bases para la implementación completa prevista en la versión 1.0.0
+
+4. **Plugin: Task Tracker**
    - Implementación del plugin de tareas
    - Integración bidireccional con eventos del calendario
    - Vistas de tablero Kanban y lista
 
-4. **Plugin: Reminder System**
+5. **Plugin: Reminder System**
    - Sistema de recordatorios para eventos
    - Notificaciones nativas (escritorio) y en aplicación (web)
    - Configuración personalizada de alertas
 
-5. **Estructura básica de internacionalización**
+6. **Estructura básica de internacionalización**
    - Implementación de la estructura base del sistema de i18n
    - Preparación de componentes core para internacionalización
    - Configuración inicial y pruebas básicas
@@ -34,6 +46,7 @@
 - Funcionalidades robustas de importación/exportación de datos
 - Dos nuevos plugins (Task Tracker y Reminder System) completamente funcionales
 - Estructura base para la internacionalización implementada
+- Configuración básica para soporte futuro de PWA implementada
 - Mayor estabilidad general del sistema
 
 ## Estructura de archivos al finalizar la Stage 4

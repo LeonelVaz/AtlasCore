@@ -170,10 +170,17 @@
 - Ajuste de rangos horarios visibles (hora inicio/fin)
 
 ### Firma Personalizada
-- Texto personalizable en parte superior de la aplicación
-- Opción para mostrar/ocultar la firma
-- Vista previa de cambios en tiempo real
-- Efecto visual estilizado con fuente especial
+
+**Nota sobre implementación**: La firma personalizada es un elemento conceptual clave en el diseño visual de Atlas desde su concepción inicial. Representa una característica distintiva del producto que permite a los usuarios personalizar la apariencia con un toque personal. Sin embargo, su implementación técnica está programada para la Stage 6 (versión 1.0.0) como parte de las mejoras de branding y personalización final.
+
+- **Concepto de diseño**: Texto personalizable en estilo caligráfico en la parte superior
+- **Ubicación**: Centrada en la parte superior de la interfaz
+- **Configurabilidad**: 
+  - Texto personalizable por el usuario
+  - Opción para mostrar/ocultar
+  - Estilos visuales predefinidos
+- **Visualización**: Efecto visual estilizado compatible con los temas de la aplicación
+- **Estado de implementación**: Diseñado conceptualmente, programado para implementación técnica en Stage 6 (v1.0.0)
 
 ## 6. Sistema de Plugins
 
