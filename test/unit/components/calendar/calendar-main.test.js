@@ -803,28 +803,6 @@ describe('CalendarMain', () => {
   });
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Añade estas pruebas al final de tu archivo de tests
-
 test('debe registrar correctamente el módulo de calendario con todas sus funciones', () => {
   // Capturar el módulo registrado
   let calendarModuleApi;
@@ -994,5 +972,129 @@ test('debe probar la función shouldShowEvent con diferentes escenarios', () => 
   fireEvent.click(screen.getByText('Semana siguiente'));
   fireEvent.click(screen.getByText('Semana actual')); // Volver a la semana actual
   
+  jest.useRealTimers();
+});
+
+test('debe probar el módulo del calendario con eventos simulados', () => {
+  // Preparar los datos de prueba
+  const testEvent = {
+    id: '123',
+    title: 'Evento de prueba',
+    start: new Date(2023, 5, 15, 10, 0).toISOString(),
+    end: new Date(2023, 5, 15, 11, 0).toISOString(),
+    color: '#2D4B94'
+  };
+  
+  // Preparar localStorage para que devuelva eventos
+  localStorageMock.getItem.mockReturnValue(JSON.stringify([testEvent]));
+  
+  // Configurar fecha fija
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date(2023, 5, 15));
+  
+  // Renderizar el componente
+  render(<CalendarMain />);
+  
+  // Verificar que el módulo está registrado correctamente
+  expect(registerModule).toHaveBeenCalledWith('calendar', expect.any(Object));
+  
+  // Verificar que se llamó a localStorage.getItem
+  expect(localStorageMock.getItem).toHaveBeenCalledWith('atlas_events');
+  
+  // Limpiar los timers
+  jest.useRealTimers();
+});
+
+test('debe probar updateEvent directamente con un enfoque manual', () => {
+  // Configurar prueba
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date(2023, 5, 15));
+  
+  // Eventos de prueba
+  const testEvents = [
+    {
+      id: '123',
+      title: 'Evento original',
+      start: new Date(2023, 5, 15, 10, 0).toISOString(),
+      end: new Date(2023, 5, 15, 11, 0).toISOString(),
+      color: '#2D4B94'
+    }
+  ];
+  
+  // Mockear localStorage
+  localStorageMock.getItem.mockReturnValue(JSON.stringify(testEvents));
+  
+  // Crear un mock para setEvents para verificar que se actualiza correctamente
+  const setEventsMock = jest.fn();
+  const useStateMock = jest.spyOn(React, 'useState');
+  
+  // Simular el comportamiento de useState para eventos
+  useStateMock.mockImplementationOnce(() => [testEvents, setEventsMock]);
+  
+  // Renderizar
+  const { container } = render(<CalendarMain />);
+  
+  // Acceder al módulo de calendario
+  const calendarModule = registerModule.mock.calls[0][1];
+  
+  // Llamar a updateEvent manualmente
+  calendarModule.updateEvent('123', { title: 'Evento actualizado' });
+  
+  // Verificar que se llamó a setEvents
+  expect(localStorageMock.setItem).toHaveBeenCalled();
+  
+  // Verificar que eventBus.publish fue llamado
+  expect(eventBus.publish).toHaveBeenCalled();
+  
+  // Limpiar
+  useStateMock.mockRestore();
+  jest.useRealTimers();
+});
+
+test('debe probar directamente shouldShowEvent y renderEvents', () => {
+  // Configurar
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date(2023, 5, 15, 10, 0));
+  
+  // Evento de prueba que coincide con la hora actual
+  const testEvent = {
+    id: '123',
+    title: 'Evento de prueba',
+    start: new Date(2023, 5, 15, 10, 0).toISOString(),
+    end: new Date(2023, 5, 15, 11, 0).toISOString(),
+    color: '#2D4B94'
+  };
+  
+  // Mockear localStorage
+  localStorageMock.getItem.mockReturnValue(JSON.stringify([testEvent]));
+  
+  // Renderizar
+  const { container } = render(<CalendarMain />);
+  
+  // Verificar que hay celdas de tiempo
+  const timeSlots = container.querySelectorAll('.calendar-time-slot');
+  expect(timeSlots.length).toBeGreaterThan(0);
+  
+  // Buscar eventos en el DOM
+  const eventElements = container.querySelectorAll('.calendar-event');
+  
+  // Comprobar que hay al menos un elemento de evento
+  expect(eventElements.length).toBeGreaterThan(0);
+  
+  // Verificar propiedades del evento
+  if (eventElements.length > 0) {
+    const eventElement = eventElements[0];
+    
+    // Verificar que contiene el título
+    expect(eventElement.textContent).toContain('Evento de prueba');
+    
+    // Verificar que contiene formato de hora (verificando que incluye ":")
+    expect(eventElement.textContent).toContain(':');
+    
+    // Verificar estilo de color
+    expect(eventElement).toHaveStyle(`background-color: ${testEvent.color}`);
+  }
+  
+  // Limpiar
   jest.useRealTimers();
 });
