@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule } from '../../core/module/module-registry';
+import { 
+  getFirstDayOfWeek, 
+  formatDate, 
+  formatHour, 
+  generateWeekDays 
+} from '../../utils/date-utils';
 import '../../styles/calendar/calendar-main.css';
 
 /**
@@ -116,28 +122,6 @@ function CalendarMain() {
     setCurrentDate(new Date());
   };
 
-  // Obtener el primer día de la semana (domingo)
-  const getFirstDayOfWeek = (date) => {
-    const newDate = new Date(date);
-    const day = newDate.getDay(); // 0 = Domingo, 1 = Lunes, ...
-    newDate.setDate(newDate.getDate() - day);
-    return newDate;
-  };
-
-  // Generar los días de la semana actual
-  const generateWeekDays = () => {
-    const firstDay = getFirstDayOfWeek(currentDate);
-    const days = [];
-    
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(firstDay);
-      day.setDate(day.getDate() + i);
-      days.push(day);
-    }
-    
-    return days;
-  };
-
   // Generar las horas del día (de 0 a 23)
   const generateHours = () => {
     const hours = [];
@@ -145,20 +129,6 @@ function CalendarMain() {
       hours.push(i);
     }
     return hours;
-  };
-
-  // Formatear la hora para mostrar (00:00 formato)
-  const formatHour = (hour) => {
-    return `${hour.toString().padStart(2, '0')}:00`;
-  };
-
-  // Formatear la fecha para mostrar (día y mes)
-  const formatDate = (date) => {
-    return date.toLocaleDateString('es-ES', { 
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short' 
-    });
   };
 
   // Manejar clic en una celda de tiempo para crear evento
@@ -262,7 +232,7 @@ function CalendarMain() {
     ));
   };
 
-  const weekDays = generateWeekDays();
+  const weekDays = generateWeekDays(currentDate);
   const hours = generateHours();
 
   return (
@@ -288,7 +258,11 @@ function CalendarMain() {
           <div className="calendar-cell calendar-time-header"></div>
           {weekDays.map((day, index) => (
             <div key={index} className="calendar-cell calendar-day-header">
-              {formatDate(day)}
+              {formatDate(day, { 
+                weekday: 'short', 
+                day: 'numeric', 
+                month: 'short' 
+              })}
             </div>
           ))}
         </div>
