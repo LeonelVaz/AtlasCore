@@ -3198,9 +3198,91 @@ describe('CalendarMain - Integración del bus de eventos (Tests 8.1 a 8.4)', () 
     );
   });
 
-
-
-  
+  // test 8.2: El componente responde a las actualizaciones de eventos externos
+  test('el componente responde a las actualizaciones de eventos externos', () => {
+    // Obtener referencia al EventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Mock para la función isSameDay para asegurar que los eventos se rendericen
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+    
+    // Mock para capturar la función de callback que se registra con subscribe
+    let eventCallback;
+    eventBus.subscribe.mockImplementation((eventType, callback) => {
+      if (eventType === `${EventCategories.STORAGE}.eventsUpdated`) {
+        eventCallback = callback;
+      }
+      return jest.fn(); // Devolver una función mock para la cancelación
+    });
+    
+    // Crear eventos externos para simular
+    const externalEvents = [
+      {
+        id: 'external-1',
+        title: 'Evento externo 1',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#26A69A'
+      },
+      {
+        id: 'external-2',
+        title: 'Evento externo 2',
+        start: '2025-05-08T02:00:00.000Z',
+        end: '2025-05-08T03:00:00.000Z',
+        color: '#7E57C2'
+      }
+    ];
+    
+    // Mock para localStorage
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(null), // Sin eventos iniciales
+      setItem: jest.fn((key, value) => {
+        // Simular que localStorage actualiza su estado
+        if (key === 'atlas_events') {
+          mockLocalStorage.getItem.mockReturnValue(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container, rerender } = render(<CalendarMain />);
+    
+    // Verificar que el componente se ha suscrito al evento
+    expect(eventBus.subscribe).toHaveBeenCalledWith(
+      `${EventCategories.STORAGE}.eventsUpdated`,
+      expect.any(Function)
+    );
+    
+    // Verificar que inicialmente no hay eventos en la cuadrícula
+    const initialEvents = container.querySelectorAll('.calendar-event');
+    expect(initialEvents.length).toBe(0);
+    
+    // Actualizar el mock de localStorage para simular eventos externos
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify(externalEvents));
+    
+    // Verificar que tenemos la función de callback
+    expect(eventCallback).toBeDefined();
+    
+    // Llamar directamente al callback con los nuevos eventos
+    eventCallback(externalEvents);
+    
+    // Forzar un re-renderizado del componente para reflejar los cambios
+    rerender(<CalendarMain />);
+    
+    // Verificar que ahora hay eventos en la cuadrícula
+    const updatedEvents = screen.getAllByText(/Evento externo/);
+    expect(updatedEvents.length).toBe(2);
+    
+    // Verificar que los eventos tienen los títulos correctos
+    expect(screen.getByText('Evento externo 1')).toBeInTheDocument();
+    expect(screen.getByText('Evento externo 2')).toBeInTheDocument();
+  });
 
   // test 8.3: El componente publica eventos cuando cambian los datos
   test('el componente publica eventos cuando cambian los datos', () => {
@@ -3287,4 +3369,7 @@ describe('CalendarMain - Integración del bus de eventos (Tests 8.1 a 8.4)', () 
     // Verificar que se llamó a la función de cancelación
     expect(unsubscribeMock).toHaveBeenCalled();
   });
+
+
+  
 });
