@@ -87,10 +87,10 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ## 9. Casos extremos relevantes para Stage 1
 
-- [ ] 9.1 Gestiona eventos simultáneos en la misma franja horaria
-- [ ] 9.2 Gestiona eventos en los límites del día (medianoche)
-- [ ] 9.3 Gestiona datos de eventos no válidos
-- [ ] 9.4 Gestiona correctamente el exceso de la cuota de almacenamiento local
+- [x] 9.1 Gestiona eventos simultáneos en la misma franja horaria
+- [x] 9.2 Gestiona eventos en los límites del día (medianoche)
+- [x] 9.3 Gestiona datos de eventos no válidos
+- [x] 9.4 Gestiona correctamente el exceso de la cuota de almacenamiento local
 
 ## Notas de implementación simulada
 

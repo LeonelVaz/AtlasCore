@@ -67,10 +67,53 @@ function CalendarMain() {
     try {
       const storedEvents = localStorage.getItem('atlas_events');
       if (storedEvents) {
-        setEvents(JSON.parse(storedEvents));
+        const parsedEvents = JSON.parse(storedEvents);
+        
+        // Validar que sea un array
+        if (!Array.isArray(parsedEvents)) {
+          console.error('Error: Los datos cargados no son un array válido de eventos');
+          setEvents([]);
+          return;
+        }
+        
+        // Filtrar eventos válidos
+        const validEvents = parsedEvents.filter(event => {
+          if (!event || typeof event !== 'object') {
+            console.error('Error: Evento no válido detectado', event);
+            return false;
+          }
+          
+          if (!event.id || !event.title) {
+            console.error('Error: Evento sin ID o título detectado', event);
+            return false;
+          }
+          
+          if (!event.start || !event.end) {
+            console.error('Error: Evento sin fechas detectado', event);
+            return false;
+          }
+          
+          try {
+            const startDate = new Date(event.start);
+            const endDate = new Date(event.end);
+            
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+              console.error('Error: Evento con fechas inválidas detectado', event);
+              return false;
+            }
+          } catch (error) {
+            console.error('Error al procesar fechas del evento:', error, event);
+            return false;
+          }
+          
+          return true;
+        });
+        
+        setEvents(validEvents);
       }
     } catch (error) {
       console.error('Error al cargar eventos:', error);
+      setEvents([]);
     }
   };
 
@@ -276,39 +319,66 @@ function CalendarMain() {
 
   // Verificar si un evento debe mostrarse en un día y hora específicos
   const shouldShowEvent = (event, day, hour) => {
-    const eventStart = new Date(event.start);
-    const eventEnd = new Date(event.end);
-    const cellDate = new Date(day);
-    cellDate.setHours(hour, 0, 0, 0);
+    // Verificar que el evento tenga los campos necesarios
+    if (!event || !event.start || !event.end) {
+      console.error('Error: Evento con datos incompletos detectado', event);
+      return false;
+    }
     
-    const cellEndDate = new Date(cellDate);
-    cellEndDate.setHours(hour + 1, 0, 0, 0);
-    
-    return (
-      eventStart.getDate() === day.getDate() &&
-      eventStart.getMonth() === day.getMonth() &&
-      eventStart.getFullYear() === day.getFullYear() &&
-      eventStart.getHours() === hour
-    );
+    try {
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+      
+      // Verificar que las fechas sean válidas
+      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) {
+        console.error('Error: Evento con fechas inválidas detectado', event);
+        return false;
+      }
+      
+      const cellDate = new Date(day);
+      cellDate.setHours(hour, 0, 0, 0);
+      
+      const cellEndDate = new Date(cellDate);
+      cellEndDate.setHours(hour + 1, 0, 0, 0);
+      
+      return (
+        eventStart.getDate() === day.getDate() &&
+        eventStart.getMonth() === day.getMonth() &&
+        eventStart.getFullYear() === day.getFullYear() &&
+        eventStart.getHours() === hour
+      );
+    } catch (error) {
+      console.error('Error al procesar evento:', error, event);
+      return false;
+    }
   };
 
   // Renderizar eventos en la celda correspondiente
   const renderEvents = (day, hour) => {
-    return events.filter(event => shouldShowEvent(event, day, hour)).map(event => (
-      <div 
-        key={event.id}
-        className="calendar-event"
-        style={{ backgroundColor: event.color }}
-        onClick={() => handleEventClick(event)}
-      >
-        <div className="event-title">{event.title}</div>
-        <div className="event-time">
-          {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-          {' - '}
-          {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+    return events
+      .filter(event => {
+        // Validar que el evento tenga un título
+        if (!event.title) {
+          console.error('Error: Evento sin título detectado', event);
+          return false;
+        }
+        return shouldShowEvent(event, day, hour);
+      })
+      .map(event => (
+        <div 
+          key={event.id}
+          className="calendar-event"
+          style={{ backgroundColor: event.color }}
+          onClick={() => handleEventClick(event)}
+        >
+          <div className="event-title">{event.title}</div>
+          <div className="event-time">
+            {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+            {' - '}
+            {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+          </div>
         </div>
-      </div>
-    ));
+      ));
   };
 
   const weekDays = generateWeekDays(currentDate);

@@ -3369,7 +3369,272 @@ describe('CalendarMain - Integración del bus de eventos (Tests 8.1 a 8.4)', () 
     // Verificar que se llamó a la función de cancelación
     expect(unsubscribeMock).toHaveBeenCalled();
   });
+});
 
+describe('CalendarMain - Casos extremos (Tests 9.1 a 9.4)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Mock para la función isSameDay para asegurar que los eventos se rendericen
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+  });
 
-  
+  // test 9.1: Gestiona eventos simultáneos en la misma franja horaria
+  test('gestiona eventos simultáneos en la misma franja horaria', () => {
+    // Crear eventos simultáneos (misma fecha y hora)
+    const simultaneousEvents = [
+      {
+        id: '1',
+        title: 'Evento 1 a las 9:00',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#2d4b94'
+      },
+      {
+        id: '2',
+        title: 'Evento 2 a las 9:00',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#7e57c2'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos simultáneos
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(simultaneousEvents));
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que ambos eventos existen en la cuadrícula
+    const eventos = container.querySelectorAll('.calendar-event');
+    expect(eventos.length).toBe(2);
+    
+    // Verificar que los dos eventos están visibles y son distintos
+    const eventTexts = Array.from(eventos).map(e => e.textContent);
+    expect(eventTexts.some(text => text.includes('Evento 1 a las 9:00'))).toBe(true);
+    expect(eventTexts.some(text => text.includes('Evento 2 a las 9:00'))).toBe(true);
+    
+    // Verificar que los eventos tienen colores diferentes (uno de los mecanismos para diferenciarlos)
+    const blueEvent = screen.getByText('Evento 1 a las 9:00').closest('.calendar-event');
+    const purpleEvent = screen.getByText('Evento 2 a las 9:00').closest('.calendar-event');
+    
+    expect(blueEvent.style.backgroundColor).toBe('rgb(45, 75, 148)'); // #2d4b94
+    expect(purpleEvent.style.backgroundColor).toBe('rgb(126, 87, 194)'); // #7e57c2
+  });
+
+  // test 9.2: Gestiona eventos en los límites del día (medianoche)
+  test('gestiona eventos en los límites del día (medianoche)', () => {
+    // Crear eventos en los límites del día
+    const midnightEvents = [
+      {
+        id: '1',
+        title: 'Evento fin de día',
+        start: '2025-05-07T23:00:00.000Z', // 23:00 horas
+        end: '2025-05-08T00:30:00.000Z',   // 00:30 del día siguiente
+        color: '#2d4b94'
+      },
+      {
+        id: '2',
+        title: 'Evento inicio de día',
+        start: '2025-05-08T00:00:00.000Z', // 00:00 horas
+        end: '2025-05-08T01:00:00.000Z',   // 01:00 horas
+        color: '#7e57c2'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos de medianoche
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(midnightEvents));
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que los eventos se muestran en sus horas correspondientes
+    const eventFinDia = screen.getByText('Evento fin de día');
+    const eventInicioDia = screen.getByText('Evento inicio de día');
+    
+    expect(eventFinDia).toBeInTheDocument();
+    expect(eventInicioDia).toBeInTheDocument();
+    
+    // Verificar que tienen los colores correctos
+    const eventFinDiaContainer = eventFinDia.closest('.calendar-event');
+    const eventInicioDiaContainer = eventInicioDia.closest('.calendar-event');
+    
+    expect(eventFinDiaContainer.style.backgroundColor).toBe('rgb(45, 75, 148)'); // #2d4b94
+    expect(eventInicioDiaContainer.style.backgroundColor).toBe('rgb(126, 87, 194)'); // #7e57c2
+  });
+
+  // test 9.3: Gestiona datos de eventos no válidos
+  test('gestiona datos de eventos no válidos', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Crear eventos con datos no válidos
+    const invalidEvents = [
+      {
+        id: '1',
+        title: 'Evento sin fechas',
+        // Sin start ni end
+        color: '#2d4b94'
+      },
+      {
+        id: '2',
+        // Sin título
+        start: '2025-05-07T02:00:00.000Z',
+        end: '2025-05-07T03:00:00.000Z',
+        color: '#7e57c2'
+      },
+      {
+        id: '3',
+        title: 'Evento con fechas inválidas',
+        start: 'fecha-invalida',
+        end: 'otra-fecha-invalida',
+        color: '#26a69a'
+      },
+      {
+        // Evento válido para referencia
+        id: '4',
+        title: 'Evento válido',
+        start: '2025-05-07T04:00:00.000Z',
+        end: '2025-05-07T05:00:00.000Z',
+        color: '#ffb300'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos inválidos
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(invalidEvents));
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que solo se muestra el evento válido
+    const validEvent = screen.getByText('Evento válido');
+    expect(validEvent).toBeInTheDocument();
+    
+    // Verificar que los eventos inválidos no causan un fallo en el componente
+    expect(screen.queryByText('Evento sin fechas')).not.toBeInTheDocument();
+    expect(screen.queryByText('Evento con fechas inválidas')).not.toBeInTheDocument();
+    
+    // Verificar que se mostraron mensajes de error
+    // Verificar que se llamó a console.error al menos una vez
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    
+    // Verificar que se registraron los tipos de errores correctos
+    const errorCalls = consoleErrorSpy.mock.calls.map(call => call[0]);
+    
+    // Verificamos si alguno de los mensajes de error contiene texto relacionado con fechas faltantes
+    const hasMissingDatesError = errorCalls.some(msg => 
+      typeof msg === 'string' && (
+        msg.includes('Evento sin fechas') || 
+        msg.includes('fechas detectado') || 
+        msg.includes('datos incompletos')
+      )
+    );
+    
+    // Verificamos si alguno de los mensajes de error contiene texto relacionado con título faltante
+    const hasMissingTitleError = errorCalls.some(msg => 
+      typeof msg === 'string' && (
+        msg.includes('sin título') || 
+        msg.includes('título detectado')
+      )
+    );
+    
+    // Verificamos si alguno de los mensajes de error contiene texto relacionado con fechas inválidas
+    const hasInvalidDatesError = errorCalls.some(msg => 
+      typeof msg === 'string' && (
+        msg.includes('fechas inválidas') || 
+        msg.includes('procesar fechas')
+      )
+    );
+    
+    // Verificar que se registró al menos uno de los tipos de errores
+    expect(hasMissingDatesError || hasMissingTitleError || hasInvalidDatesError).toBe(true);
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
+
+  // test 9.4: Gestiona correctamente el exceso de la cuota de almacenamiento local
+  test('gestiona correctamente el exceso de la cuota de almacenamiento local', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Crear un evento válido
+    const validEvent = {
+      id: '1',
+      title: 'Evento normal',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage que lanza un error de cuota excedida al llamar a setItem
+    // pero permite getItem normalmente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([validEvent])),
+      setItem: jest.fn().mockImplementation(() => {
+        throw new Error('Quota exceeded for localStorage');
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que el evento existente se carga correctamente
+    const eventElement = screen.getByText('Evento normal');
+    expect(eventElement).toBeInTheDocument();
+    
+    // Hacer clic en una celda para crear un nuevo evento
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]);
+    
+    // Modificar el título del evento
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento que excederá cuota' } });
+    
+    // Intentar guardar el evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que se mostró un mensaje de error
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error al guardar eventos:',
+      expect.any(Error)
+    );
+    
+    // Verificar que el formulario se cerró a pesar del error
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Verificar que el componente sigue funcionando (no se rompió)
+    expect(container.querySelector('.calendar-container')).toBeInTheDocument();
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
 });
