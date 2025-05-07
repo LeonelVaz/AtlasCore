@@ -715,4 +715,61 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     mockDateNow.mockRestore();
   });
 
+  // test 3.1.5: El evento publica una notificación de actualización a través de EventBus
+  test('el evento publica una notificación de actualización a través de EventBus', () => {
+    // Ya tenemos los mocks globales de eventBus y EventCategories definidos en las configuraciones iniciales
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Limpiar cualquier llamada previa a los métodos de eventBus
+    eventBus.publish.mockClear();
+    
+    // Mock de localStorage
+    const localStorageMock = {
+      getItem: jest.fn().mockReturnValue(null), // Sin eventos previos
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+    
+    render(<CalendarMain />);
+    
+    // Buscamos todas las celdas de tiempo
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    
+    // Hacer clic en una celda para crear un nuevo evento
+    fireEvent.click(timeSlots[10]);
+    
+    // Simular el guardado del evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que eventBus.publish fue llamado con el tipo de evento correcto
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      `${EventCategories.STORAGE}.eventsUpdated`,
+      expect.any(Array)
+    );
+    
+    // Obtener los argumentos de la llamada a publish
+    const publishCalls = eventBus.publish.mock.calls;
+    const storageUpdateCall = publishCalls.find(call => 
+      call[0] === `${EventCategories.STORAGE}.eventsUpdated`
+    );
+    
+    // Verificar que los datos publicados contienen el evento creado
+    const publishedEvents = storageUpdateCall[1];
+    expect(Array.isArray(publishedEvents)).toBe(true);
+    expect(publishedEvents.length).toBeGreaterThan(0);
+    
+    // Verificar que el evento publicado tiene las propiedades necesarias
+    const publishedEvent = publishedEvents[0];
+    expect(publishedEvent).toHaveProperty('id');
+    expect(publishedEvent).toHaveProperty('title');
+    expect(publishedEvent).toHaveProperty('start');
+    expect(publishedEvent).toHaveProperty('end');
+  });
+
 });
