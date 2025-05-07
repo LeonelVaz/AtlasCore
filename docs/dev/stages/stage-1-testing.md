@@ -53,7 +53,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 4.3 Los cambios en el estado de actualización de los campos del formulario
 - [x] 4.4 El botón Cancelar cierra el formulario sin guardar
 - [x] 4.5 El formulario gestiona correctamente las entradas de fecha y hora
-- [ ] 4.6 El selector de color actualiza el color del evento
+- [x] 4.6 El selector de color actualiza el color del evento
 
 ## 5. Representación de eventos
 

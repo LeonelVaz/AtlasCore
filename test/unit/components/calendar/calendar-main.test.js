@@ -2280,5 +2280,61 @@ describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)', () => {
     expect(savedEndDate.getMinutes()).toBe(newEnd.getMinutes());
   });
 
+// test 4.6: El selector de color actualiza el color del evento
+test('el selector de color actualiza el color del evento', () => {
+  // Renderizar el componente
+  const { container } = render(<CalendarMain />);
+  
+  // Configurar mock para localStorage
+  let savedEvents = [];
+  window.localStorage.setItem.mockImplementation((key, value) => {
+    if (key === 'atlas_events') {
+      savedEvents = JSON.parse(value);
+      // Actualizar el mock de getItem para simular que los datos se guardaron
+      window.localStorage.getItem.mockReturnValue(value);
+    }
+  });
+  
+  // Probar un solo color para simplificar el test
+  const testColor = '#7e57c2'; // Púrpura
+  
+  // Hacer clic en una celda para abrir el formulario
+  const timeSlots = screen.getAllByTestId('calendar-time-slot');
+  fireEvent.click(timeSlots[10]);
+  
+  // Capturar el campo de color
+  const colorField = container.querySelector('input[name="color"]');
+  
+  // Cambiar el color
+  fireEvent.change(colorField, { target: { value: testColor } });
+  
+  // Verificar que el color se actualizó en el campo
+  expect(colorField.value).toBe(testColor);
+  
+  // Modificar el título para identificar el evento
+  const titleField = container.querySelector('input[name="title"]');
+  fireEvent.change(titleField, { target: { value: `Evento de color púrpura` } });
+  
+  // Guardar el formulario
+  const saveButton = screen.getByRole('button', { name: 'Guardar' });
+  fireEvent.click(saveButton);
+  
+  // Verificar que el evento se guardó con el color correcto
+  expect(window.localStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+  
+  // Verificar que los datos guardados tienen el color correcto
+  const savedEvent = savedEvents.find(e => e.title === 'Evento de color púrpura');
+  expect(savedEvent).toBeDefined();
+  expect(savedEvent.color).toBe(testColor);
+  
+  // Si hay un evento visible en la UI, verificar su color
+  const eventElement = screen.queryByText('Evento de color púrpura');
+  if (eventElement) {
+    const eventContainer = eventElement.closest('.calendar-event');
+    // Verificar el estilo en caso de que el elemento exista
+    expect(window.getComputedStyle(eventContainer).backgroundColor).toBeDefined();
+  }
+});
+
 
 });
