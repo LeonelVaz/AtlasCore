@@ -1,4 +1,6 @@
-import { registerModule, getModule, isModuleRegistered } from '../../../../src/core/module/module-registry';
+// module-registry.test.js
+
+import { registerModule, getModule, isModuleRegistered, unregisterModule } from '../../../../src/core/module/module-registry';
 
 describe('Module Registry', () => {
   // Limpiar el registro de módulos entre pruebas
@@ -8,6 +10,20 @@ describe('Module Registry', () => {
         delete window.__appModules[key];
       });
     }
+  });
+
+  // Prueba para la inicialización del registro global de módulos (línea 10)
+  test('debe inicializar window.__appModules si no existe', () => {
+    // Eliminar __appModules para comprobar la inicialización
+    delete window.__appModules;
+    
+    // Re-importar el módulo para que se ejecute la inicialización
+    jest.resetModules();
+    const moduleRegistry = require('../../../../src/core/module/module-registry');
+    
+    // Verificar que __appModules se ha inicializado
+    expect(window.__appModules).toBeDefined();
+    expect(window.__appModules).toEqual({});
   });
 
   test('registerModule debe registrar un módulo y devolver true si es exitoso', () => {
@@ -119,6 +135,72 @@ describe('Module Registry', () => {
     expect(isRegistered).toBe(false);
     
     global.window = originalWindow;
+  });
+
+  // Pruebas para unregisterModule (líneas 65-73)
+  test('unregisterModule debe eliminar un módulo registrado y devolver true', () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    
+    registerModule('testModule', { id: 'test' });
+    
+    // Verificar que el módulo está registrado
+    expect(isModuleRegistered('testModule')).toBe(true);
+    
+    // Eliminar el módulo
+    const result = unregisterModule('testModule');
+    
+    expect(result).toBe(true);
+    expect(isModuleRegistered('testModule')).toBe(false);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Módulo testModule eliminado correctamente')
+    );
+    
+    consoleSpy.mockRestore();
+  });
+
+  test('unregisterModule debe devolver false y mostrar advertencia si el módulo no existe', () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    
+    const result = unregisterModule('nonExistingModule');
+    
+    expect(result).toBe(false);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('El módulo nonExistingModule no está registrado, no se puede eliminar.')
+    );
+    
+    consoleSpy.mockRestore();
+  });
+
+  test('unregisterModule debe manejar caso cuando window no está definido', () => {
+    const originalWindow = global.window;
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    
+    delete global.window;
+    
+    const result = unregisterModule('testModule');
+    
+    expect(result).toBe(false);
+    expect(consoleSpy).toHaveBeenCalled();
+    
+    global.window = originalWindow;
+    consoleSpy.mockRestore();
+  });
+
+  test('unregisterModule debe manejar caso cuando window.__appModules no está definido', () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    
+    // Guardar y eliminar __appModules
+    const originalAppModules = window.__appModules;
+    delete window.__appModules;
+    
+    const result = unregisterModule('testModule');
+    
+    expect(result).toBe(false);
+    expect(consoleSpy).toHaveBeenCalled();
+    
+    // Restaurar __appModules
+    window.__appModules = originalAppModules;
+    consoleSpy.mockRestore();
   });
 
   test('múltiples módulos pueden registrarse y recuperarse correctamente', () => {
