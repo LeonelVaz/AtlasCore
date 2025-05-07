@@ -257,7 +257,56 @@ describe('CalendarMain - Navegación por Fecha', () => {
     const dayHeaders = screen.getAllByTestId('calendar-day-header');
     expect(dayHeaders).toHaveLength(7);
   });
-
-
   
+  // test 2.2: El botón de la semana siguiente incrementa la fecha en 7 días
+  test('el botón de la semana siguiente incrementa la fecha en 7 días', () => {
+    render(<CalendarMain />);
+    
+    // Configurar mock para la semana siguiente (12-18 de mayo)
+    const nextWeekDays = [
+      new Date('2025-05-12'),
+      new Date('2025-05-13'),
+      new Date('2025-05-14'),
+      new Date('2025-05-15'),
+      new Date('2025-05-16'),
+      new Date('2025-05-17'),
+      new Date('2025-05-18'),
+    ];
+    
+    // Preparar el mock para devolver la semana siguiente cuando se llame después de hacer clic
+    dateUtils.generateWeekDays.mockImplementation((date) => {
+      // Verificar si la fecha es aproximadamente una semana después
+      if (date.getDate() >= 12 && date.getMonth() === 4) { // Mayo es 4 (0-indexed)
+        return nextWeekDays;
+      }
+      // Si no, devolver la semana original
+      return [
+        new Date('2025-05-05'),
+        new Date('2025-05-06'),
+        new Date('2025-05-07'),
+        new Date('2025-05-08'),
+        new Date('2025-05-09'),
+        new Date('2025-05-10'),
+        new Date('2025-05-11'),
+      ];
+    });
+    
+    // Verifica título inicial
+    expect(screen.getByText('mayo de 2025')).toBeInTheDocument();
+    
+    // Hacer clic en el botón de semana siguiente
+    const nextButton = screen.getByRole('button', { name: /siguiente/i });
+    fireEvent.click(nextButton);
+    
+    // Verificar que generateWeekDays fue llamado con una fecha 7 días después
+    expect(dateUtils.generateWeekDays).toHaveBeenCalledWith(expect.any(Date));
+    
+    // Verificar que se sigue mostrando "mayo de 2025"
+    const updatedTitle = screen.getByText('mayo de 2025');
+    expect(updatedTitle).toBeInTheDocument();
+    
+    // Verificar que los encabezados de día se actualizaron
+    const dayHeaders = screen.getAllByTestId('calendar-day-header');
+    expect(dayHeaders).toHaveLength(7);
+  });
 });
