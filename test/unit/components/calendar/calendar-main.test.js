@@ -3722,4 +3722,75 @@ describe('CalendarMain - Casos extremos (Tests 9.1 a 9.4)', () => {
     // Restaurar el espía
     consoleErrorSpy.mockRestore();
   });
+
+  // test 9.5: Gestiona objetos no array en localStorage
+  test('gestiona objetos no array en localStorage', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Mock de localStorage que devuelve un objeto en lugar de un array
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue('{"evento": "esto no es un array"}'),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se mostró un mensaje de error sobre datos no válidos
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error: Los datos cargados no son un array válido de eventos'
+    );
+    
+    // Verificar que el componente sigue funcionando
+    expect(screen.getAllByTestId('calendar-time-slot').length).toBeGreaterThan(0);
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
+
+  // test 9.6: Maneja eventos con tipos de datos inválidos
+  test('maneja eventos con tipos de datos inválidos', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Crear eventos con tipos de datos inválidos
+    const invalidTypeEvents = [
+      "esto no es un objeto",
+      null,
+      123,
+      {
+        // Este tiene el formato correcto para comparación
+        id: '1',
+        title: 'Evento válido',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#2d4b94'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos inválidos
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(invalidTypeEvents));
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se mostró el error de tipo no válido
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error: Evento no válido detectado',
+      expect.anything()
+    );
+    
+    // Solo debería mostrarse el evento válido
+    const validEvent = screen.getByText('Evento válido');
+    expect(validEvent).toBeInTheDocument();
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
 });

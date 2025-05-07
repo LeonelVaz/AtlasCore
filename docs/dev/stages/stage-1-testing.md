@@ -93,8 +93,8 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 9.2 Gestiona eventos en los límites del día (medianoche)
 - [x] 9.3 Gestiona datos de eventos no válidos
 - [x] 9.4 Gestiona correctamente el exceso de la cuota de almacenamiento local
-- [ ] 9.5: Gestiona objetos no array en localStorage
-- [ ] 9.6: Maneja eventos con tipos de datos inválidos
+- [x] 9.5: Gestiona objetos no array en localStorage
+- [x] 9.6: Maneja eventos con tipos de datos inválidos
 
 ## Notas de implementación simulada
 
