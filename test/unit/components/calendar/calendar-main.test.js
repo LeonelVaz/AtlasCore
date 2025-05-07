@@ -1343,7 +1343,700 @@ describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6)', () => {
     const eventContainer = updatedEventElement.closest('.calendar-event');
     expect(eventContainer).toHaveStyle({ backgroundColor: '#7e57c2' });
   });
-
-
-
 });
+
+describe('CalendarMain - Eliminación de eventos (Tests 3.3.1 a 3.3.5)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Mock para la función isSameDay para asegurar que los eventos se rendericen
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+  });
+  
+  // test 3.3.1: El botón Eliminar aparece en el formulario de edición
+  test('el botón Eliminar aparece en el formulario de edición', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que se cargó el evento existente
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Crear un nuevo evento para luego editarlo
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]); // Celda para la hora 1:00 AM
+    
+    // Verificar que el formulario se abrió en modo "Nuevo evento"
+    expect(screen.getByText('Nuevo evento')).toBeInTheDocument();
+    
+    // Verificar que el botón Eliminar NO está presente en el modo de creación
+    const deleteButtonInCreate = screen.queryByRole('button', { name: 'Eliminar' });
+    expect(deleteButtonInCreate).not.toBeInTheDocument();
+    
+    // Cerrar el formulario
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
+    fireEvent.click(cancelButton);
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Verificar que el botón Eliminar SÍ está presente en el modo de edición
+    const deleteButtonInEdit = screen.getByRole('button', { name: 'Eliminar' });
+    expect(deleteButtonInEdit).toBeInTheDocument();
+    
+    // Verificar que el botón tiene la clase correcta
+    expect(deleteButtonInEdit).toHaveClass('delete-button');
+  });
+
+  // test 3.3.2: El evento se elimina del estado al eliminarse
+  test('el evento se elimina del estado al eliminarse', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn((key, value) => {
+        // Simular que localStorage realmente actualiza los datos
+        if (key === 'atlas_events') {
+          mockLocalStorage.getItem.mockReturnValue(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se cargó el evento existente
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Verificar que el evento ya no está visible en la cuadrícula
+    const eventElementAfterDelete = screen.queryByText('Evento a eliminar');
+    expect(eventElementAfterDelete).not.toBeInTheDocument();
+  });
+
+  // test 3.3.3: El evento se elimina del almacenamiento local al eliminarse
+  test('el evento se elimina del almacenamiento local al eliminarse', () => {
+    // Crear dos eventos existentes para verificar que solo se elimina el correcto
+    const existingEvents = [
+      {
+        id: '1234-test-id',
+        title: 'Evento a eliminar',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#2d4b94'
+      },
+      {
+        id: '5678-test-id',
+        title: 'Evento que debe permanecer',
+        start: '2025-05-07T03:00:00.000Z',
+        end: '2025-05-07T04:00:00.000Z',
+        color: '#26a69a'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos existentes
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify(existingEvents)),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se cargaron los eventos existentes
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Limpiar el historial de llamadas para aislar la operación de eliminación
+    mockLocalStorage.setItem.mockClear();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que se llamó a localStorage.setItem
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+    
+    // Verificar que los datos guardados no contienen el evento eliminado
+    const setItemArgs = mockLocalStorage.setItem.mock.calls[0];
+    const savedEventsJSON = setItemArgs[1];
+    const savedEvents = JSON.parse(savedEventsJSON);
+    
+    // Verificar que solo queda un evento
+    expect(savedEvents.length).toBe(1);
+    
+    // Verificar que el evento que permanece es el correcto
+    expect(savedEvents[0].id).toBe('5678-test-id');
+    expect(savedEvents[0].title).toBe('Evento que debe permanecer');
+    
+    // Verificar que el evento eliminado ya no está en el array
+    const deletedEvent = savedEvents.find(event => event.id === '1234-test-id');
+    expect(deletedEvent).toBeUndefined();
+  });
+
+  // test 3.3.4: La eliminación del evento publica una notificación de actualización
+  test('la eliminación del evento publica una notificación de actualización', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Obtener acceso al mock de eventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Limpiar cualquier llamada previa
+    eventBus.publish.mockClear();
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que eventBus.publish fue llamado
+    expect(eventBus.publish).toHaveBeenCalled();
+    
+    // Verificar que se publicó el evento correcto
+    const publishCalls = eventBus.publish.mock.calls;
+    const storageUpdateCall = publishCalls.find(call => 
+      call[0] === `${EventCategories.STORAGE}.eventsUpdated`
+    );
+    
+    // Verificar que se encontró la llamada correcta
+    expect(storageUpdateCall).toBeDefined();
+    
+    // Verificar que el segundo argumento (datos) es un array de eventos actualizado
+    const publishedEvents = storageUpdateCall[1];
+    expect(Array.isArray(publishedEvents)).toBe(true);
+    
+    // Verificar que el evento eliminado no está en los datos publicados
+    const deletedEvent = publishedEvents.find(event => event.id === '1234-test-id');
+    expect(deletedEvent).toBeUndefined();
+  });
+
+  // test 3.3.5: El evento eliminado ya no aparece en la cuadrícula del calendario
+  test('el evento eliminado ya no aparece en la cuadrícula del calendario', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn((key, value) => {
+        // Simular que localStorage realmente actualiza los datos
+        if (key === 'atlas_events') {
+          mockLocalStorage.getItem.mockReturnValue(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container, rerender } = render(<CalendarMain />);
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    expect(eventElement).toBeInTheDocument();
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Verificar que el evento ya no está visible en la cuadrícula
+    const eventElementAfterDelete = screen.queryByText('Evento a eliminar');
+    expect(eventElementAfterDelete).not.toBeInTheDocument();
+    
+    // Verificar que no hay elementos de eventos en la cuadrícula
+    const eventElements = container.querySelectorAll('.calendar-event');
+    expect(eventElements.length).toBe(0);
+    
+    // Verificar que la eliminación persiste incluso si se vuelve a renderizar el componente
+    rerender(<CalendarMain />);
+    
+    // Verificar que el evento sigue sin aparecer después de re-renderizar
+    const eventElementAfterRerender = screen.queryByText('Evento a eliminar');
+    expect(eventElementAfterRerender).not.toBeInTheDocument();
+  });
+});
+
+describe('CalendarMain - Eliminación de eventos (Tests 3.3.1 a 3.3.5)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Mock para la función isSameDay para asegurar que los eventos se rendericen
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+  });
+  
+  // test 3.3.1: El botón Eliminar aparece en el formulario de edición
+  test('el botón Eliminar aparece en el formulario de edición', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que se cargó el evento existente
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Crear un nuevo evento para luego editarlo
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]); // Celda para la hora 1:00 AM
+    
+    // Verificar que el formulario se abrió en modo "Nuevo evento"
+    expect(screen.getByText('Nuevo evento')).toBeInTheDocument();
+    
+    // Verificar que el botón Eliminar NO está presente en el modo de creación
+    const deleteButtonInCreate = screen.queryByRole('button', { name: 'Eliminar' });
+    expect(deleteButtonInCreate).not.toBeInTheDocument();
+    
+    // Cerrar el formulario
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
+    fireEvent.click(cancelButton);
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Verificar que el botón Eliminar SÍ está presente en el modo de edición
+    const deleteButtonInEdit = screen.getByRole('button', { name: 'Eliminar' });
+    expect(deleteButtonInEdit).toBeInTheDocument();
+    
+    // Verificar que el botón tiene la clase correcta
+    expect(deleteButtonInEdit).toHaveClass('delete-button');
+  });
+
+  // test 3.3.2: El evento se elimina del estado al eliminarse
+  test('el evento se elimina del estado al eliminarse', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn((key, value) => {
+        // Simular que localStorage realmente actualiza los datos
+        if (key === 'atlas_events') {
+          mockLocalStorage.getItem.mockReturnValue(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se cargó el evento existente
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Verificar que el evento ya no está visible en la cuadrícula
+    const eventElementAfterDelete = screen.queryByText('Evento a eliminar');
+    expect(eventElementAfterDelete).not.toBeInTheDocument();
+  });
+
+  // test 3.3.3: El evento se elimina del almacenamiento local al eliminarse
+  test('el evento se elimina del almacenamiento local al eliminarse', () => {
+    // Crear dos eventos existentes para verificar que solo se elimina el correcto
+    const existingEvents = [
+      {
+        id: '1234-test-id',
+        title: 'Evento a eliminar',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#2d4b94'
+      },
+      {
+        id: '5678-test-id',
+        title: 'Evento que debe permanecer',
+        start: '2025-05-07T03:00:00.000Z',
+        end: '2025-05-07T04:00:00.000Z',
+        color: '#26a69a'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos existentes
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify(existingEvents)),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se cargaron los eventos existentes
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Limpiar el historial de llamadas para aislar la operación de eliminación
+    mockLocalStorage.setItem.mockClear();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que se llamó a localStorage.setItem
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+    
+    // Verificar que los datos guardados no contienen el evento eliminado
+    const setItemArgs = mockLocalStorage.setItem.mock.calls[0];
+    const savedEventsJSON = setItemArgs[1];
+    const savedEvents = JSON.parse(savedEventsJSON);
+    
+    // Verificar que solo queda un evento
+    expect(savedEvents.length).toBe(1);
+    
+    // Verificar que el evento que permanece es el correcto
+    expect(savedEvents[0].id).toBe('5678-test-id');
+    expect(savedEvents[0].title).toBe('Evento que debe permanecer');
+    
+    // Verificar que el evento eliminado ya no está en el array
+    const deletedEvent = savedEvents.find(event => event.id === '1234-test-id');
+    expect(deletedEvent).toBeUndefined();
+  });
+
+  // test 3.3.4: La eliminación del evento publica una notificación de actualización
+  test('la eliminación del evento publica una notificación de actualización', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Obtener acceso al mock de eventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Limpiar cualquier llamada previa
+    eventBus.publish.mockClear();
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que eventBus.publish fue llamado
+    expect(eventBus.publish).toHaveBeenCalled();
+    
+    // Verificar que se publicó el evento correcto
+    const publishCalls = eventBus.publish.mock.calls;
+    const storageUpdateCall = publishCalls.find(call => 
+      call[0] === `${EventCategories.STORAGE}.eventsUpdated`
+    );
+    
+    // Verificar que se encontró la llamada correcta
+    expect(storageUpdateCall).toBeDefined();
+    
+    // Verificar que el segundo argumento (datos) es un array de eventos actualizado
+    const publishedEvents = storageUpdateCall[1];
+    expect(Array.isArray(publishedEvents)).toBe(true);
+    
+    // Verificar que el evento eliminado no está en los datos publicados
+    const deletedEvent = publishedEvents.find(event => event.id === '1234-test-id');
+    expect(deletedEvent).toBeUndefined();
+  });
+
+  // test 3.3.5: El evento eliminado ya no aparece en la cuadrícula del calendario
+  test('el evento eliminado ya no aparece en la cuadrícula del calendario', () => {
+    // Crear un evento existente
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento a eliminar',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn((key, value) => {
+        // Simular que localStorage realmente actualiza los datos
+        if (key === 'atlas_events') {
+          mockLocalStorage.getItem.mockReturnValue(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container, rerender } = render(<CalendarMain />);
+    
+    // Verificar que hay un evento visible con el título correcto
+    const eventElement = screen.getByText('Evento a eliminar');
+    expect(eventElement).toBeInTheDocument();
+    
+    // Hacer clic en el evento para editarlo
+    fireEvent.click(eventElement);
+    
+    // Verificar que el formulario se abrió en modo edición
+    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Eliminar
+    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+    fireEvent.click(deleteButton);
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Verificar que el evento ya no está visible en la cuadrícula
+    const eventElementAfterDelete = screen.queryByText('Evento a eliminar');
+    expect(eventElementAfterDelete).not.toBeInTheDocument();
+    
+    // Verificar que no hay elementos de eventos en la cuadrícula
+    const eventElements = container.querySelectorAll('.calendar-event');
+    expect(eventElements.length).toBe(0);
+    
+    // Verificar que la eliminación persiste incluso si se vuelve a renderizar el componente
+    rerender(<CalendarMain />);
+    
+    // Verificar que el evento sigue sin aparecer después de re-renderizar
+    const eventElementAfterRerender = screen.queryByText('Evento a eliminar');
+    expect(eventElementAfterRerender).not.toBeInTheDocument();
+  });
+});
+
+

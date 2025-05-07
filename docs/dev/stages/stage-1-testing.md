@@ -40,11 +40,11 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ### 3.3 Eliminación de eventos
 
-- [ ] 3.3.1 El botón Eliminar aparece en el formulario de edición
-- [ ] 3.3.2 El evento se elimina del estado al eliminarse
-- [ ] 3.3.3 El evento se elimina del almacenamiento local al eliminarse
-- [ ] 3.3.4 La eliminación del evento publica una notificación de actualización
-- [ ] 3.3.5 El evento eliminado ya no aparece en la cuadrícula del calendario
+- [x] 3.3.1 El botón Eliminar aparece en el formulario de edición
+- [x] 3.3.2 El evento se elimina del estado al eliminarse
+- [x] 3.3.3 El evento se elimina del almacenamiento local al eliminarse
+- [x] 3.3.4 La eliminación del evento publica una notificación de actualización
+- [x] 3.3.5 El evento eliminado ya no aparece en la cuadrícula del calendario
 
 ## 4. Formulario Manejo
 
