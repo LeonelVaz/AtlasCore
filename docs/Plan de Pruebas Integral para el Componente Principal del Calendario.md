@@ -1,6 +1,6 @@
 # Plan de Pruebas Integral para el Componente Principal del Calendario - Stage 1
 
-Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades implementadas en el Stage 1, que incluye una vista semanal básica sin navegación entre meses.
+Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades implementadas en el Stage 1.
 
 ## 1. Renderizado del Componente
 
