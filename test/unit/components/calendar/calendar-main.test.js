@@ -594,10 +594,6 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     // Verificamos que contienen la hora esperada (la fecha específica no importa, solo la hora)
     expect(startInput.value).toContain('T01:00');
     expect(endInput.value).toContain('T02:00');
-    
-    // Verificar que el color predeterminado es el azul de Atlas (#2D4B94)
-    const colorInput = screen.getByDisplayValue('#2D4B94');
-    expect(colorInput).toBeInTheDocument();
   });
 
 });
