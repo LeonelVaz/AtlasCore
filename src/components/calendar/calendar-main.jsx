@@ -227,6 +227,14 @@ function CalendarMain() {
 
   // Guardar evento (crear nuevo o actualizar existente)
   const handleSaveEvent = () => {
+    // Validar que el título no esté vacío
+    if (!newEvent.title.trim()) {
+      // Si el título está vacío, mostrar un mensaje o simplemente no guardar
+      console.error('El título del evento no puede estar vacío');
+      return; // Detener la ejecución y no guardar
+    }
+    
+    // El resto de la función sigue igual
     // Crear una versión del evento sin los campos de formato para guardar
     const eventToSave = {
       ...newEvent,
@@ -352,7 +360,7 @@ function CalendarMain() {
           </div>
         ))}
       </div>
-      
+
       {/* Formulario para crear/editar eventos */}
       {showEventForm && (
         <div className="event-form-overlay" data-testid="event-form-overlay">
