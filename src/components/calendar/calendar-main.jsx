@@ -135,17 +135,31 @@ function CalendarMain() {
 
   // Manejar clic en una celda de tiempo para crear evento
   const handleCellClick = (day, hour) => {
+    // Crear nuevas fechas con la hora correcta
     const startDate = new Date(day);
     startDate.setHours(hour, 0, 0, 0);
     
     const endDate = new Date(startDate);
     endDate.setHours(hour + 1, 0, 0, 0);
     
+    // Formatear las fechas para el formato datetime-local
+    const formatDateForInput = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
     setNewEvent({
       id: '',
       title: 'Nuevo evento',
       start: startDate.toISOString(),
       end: endDate.toISOString(),
+      startFormatted: formatDateForInput(startDate),
+      endFormatted: formatDateForInput(endDate),
       color: '#2D4B94'
     });
     
@@ -154,11 +168,27 @@ function CalendarMain() {
 
   // Manejar clic en un evento existente
   const handleEventClick = (event) => {
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+    
+    // Formatear las fechas para el formato datetime-local
+    const formatDateForInput = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+    
     setSelectedEvent(event);
     setNewEvent({
       ...event,
-      start: new Date(event.start).toISOString(),
-      end: new Date(event.end).toISOString()
+      start: event.start,
+      end: event.end,
+      startFormatted: formatDateForInput(startDate),
+      endFormatted: formatDateForInput(endDate)
     });
     setShowEventForm(true);
   };
@@ -166,7 +196,18 @@ function CalendarMain() {
   // Manejar cambios en el formulario de evento
   const handleEventFormChange = (e) => {
     const { name, value } = e.target;
-    setNewEvent(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'start' || name === 'end') {
+      // Para los campos de fecha, necesitamos actualizar tanto el valor ISO como el formateado
+      const date = new Date(value);
+      setNewEvent(prev => ({ 
+        ...prev, 
+        [name]: date.toISOString(),
+        [`${name}Formatted`]: value 
+      }));
+    } else {
+      setNewEvent(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   // Función para cerrar y reiniciar el formulario
@@ -178,26 +219,40 @@ function CalendarMain() {
       title: '',
       start: '',
       end: '',
+      startFormatted: '',
+      endFormatted: '',
       color: '#2D4B94'
     });
   };
 
   // Guardar evento (crear nuevo o actualizar existente)
   const handleSaveEvent = () => {
+    // Crear una versión del evento sin los campos de formato para guardar
+    const eventToSave = {
+      ...newEvent,
+      id: newEvent.id || Date.now().toString(),
+      start: newEvent.start,
+      end: newEvent.end
+    };
+    
+    // Eliminar los campos formateados que solo se usan para la UI
+    delete eventToSave.startFormatted;
+    delete eventToSave.endFormatted;
+    
     if (selectedEvent) {
-      updateEvent(selectedEvent.id, newEvent);
+      updateEvent(selectedEvent.id, eventToSave);
     } else {
-      createEvent(newEvent);
+      createEvent(eventToSave);
     }
     
-    handleCloseForm(); // Usar la función compartida para cerrar el formulario
+    handleCloseForm();
   };
 
   // Eliminar evento seleccionado
   const handleDeleteEvent = () => {
     if (selectedEvent) {
       deleteEvent(selectedEvent.id);
-      handleCloseForm(); // Usar la función compartida para cerrar el formulario
+      handleCloseForm();
     }
   };
 
@@ -319,7 +374,7 @@ function CalendarMain() {
               <input 
                 type="datetime-local" 
                 name="start" 
-                value={newEvent.start ? new Date(newEvent.start).toISOString().slice(0, 16) : ''} 
+                value={newEvent.startFormatted} 
                 onChange={handleEventFormChange} 
               />
             </div>
@@ -329,7 +384,7 @@ function CalendarMain() {
               <input 
                 type="datetime-local" 
                 name="end" 
-                value={newEvent.end ? new Date(newEvent.end).toISOString().slice(0, 16) : ''} 
+                value={newEvent.endFormatted} 
                 onChange={handleEventFormChange} 
               />
             </div>
