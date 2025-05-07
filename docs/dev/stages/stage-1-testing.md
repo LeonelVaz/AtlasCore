@@ -63,6 +63,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 5.4 Los eventos se muestran con el color de fondo correcto
 - [x] 5.5 Se puede hacer clic en los eventos y abren el formulario de edición
 - [x] 5.6 La función shouldShowEvent filtra los eventos correctamente
+- [ ] 5.7: El componente maneja excepciones durante el renderizado de eventos
 
 ## 6. Integración de almacenamiento
 
@@ -70,6 +71,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 6.2 Los eventos se guardan en el almacenamiento local al crearse, actualizarse o eliminarse
 - [x] 6.3 La gestión de errores funciona para el almacenamiento local
 - [x] 6.4 Las operaciones de almacenamiento publican los eventos apropiados
+- [ ] 6.5: Manejo de formatos JSON inválidos en localStorage
 
 ## 7. Registro del módulo
 
@@ -91,6 +93,8 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 9.2 Gestiona eventos en los límites del día (medianoche)
 - [x] 9.3 Gestiona datos de eventos no válidos
 - [x] 9.4 Gestiona correctamente el exceso de la cuota de almacenamiento local
+- [ ] 9.5: Gestiona objetos no array en localStorage
+- [ ] 9.6: Maneja eventos con tipos de datos inválidos
 
 ## Notas de implementación simulada
 
