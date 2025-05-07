@@ -36,7 +36,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 3.2.3 Los cambios en el evento se guardan correctamente
 - [x] 3.2.4 El evento actualizado se guarda en el almacenamiento local
 - [x] 3.2.5 El evento publica una notificación de actualización a través de EventBus
-- [ ] 3.2.6 El evento actualizado aparece con los cambios en la cuadrícula del calendario
+- [x] 3.2.6 El evento actualizado aparece con los cambios en la cuadrícula del calendario
 
 ### 3.3 Eliminación de eventos
 
