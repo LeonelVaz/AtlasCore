@@ -498,7 +498,43 @@ describe('CalendarMain - Navegación por Fecha', () => {
     });
   });
 
-
-
+  // test 3.1.1: Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
+  test('al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento', () => {
+    render(<CalendarMain />);
+    
+    // Verificar que el formulario no está visible inicialmente
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Seleccionar una celda de tiempo y hacer clic en ella
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    const randomSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
+    
+    // Realizar el clic en la celda
+    fireEvent.click(randomSlot);
+    
+    // Verificar que el formulario de evento ahora es visible
+    const eventForm = screen.getByTestId('event-form-overlay');
+    expect(eventForm).toBeInTheDocument();
+    
+    // Verificar que el formulario tiene el título correcto para un nuevo evento
+    const formTitle = within(eventForm).getByText('Nuevo evento');
+    expect(formTitle).toBeInTheDocument();
+    
+    // Verificar que los campos del formulario están presentes (usando el texto de las etiquetas en lugar de getByLabelText)
+    expect(within(eventForm).getByText('Título:')).toBeInTheDocument();
+    expect(within(eventForm).getByText('Inicio:')).toBeInTheDocument();
+    expect(within(eventForm).getByText('Fin:')).toBeInTheDocument();
+    expect(within(eventForm).getByText('Color:')).toBeInTheDocument();
+    
+    // Verificar que los inputs existen
+    expect(within(eventForm).getByDisplayValue('Nuevo evento')).toBeInTheDocument(); // El título por defecto
+    expect(within(eventForm).getAllByRole('textbox').length).toBeGreaterThan(0);
+    
+    // Verificar que los botones de acción están presentes
+    expect(within(eventForm).getByRole('button', { name: /guardar/i })).toBeInTheDocument();
+    expect(within(eventForm).getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
+    // No debería haber botón de eliminar para un nuevo evento
+    expect(within(eventForm).queryByRole('button', { name: /eliminar/i })).not.toBeInTheDocument();
+  });
 
 });

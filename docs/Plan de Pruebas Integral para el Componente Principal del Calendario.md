@@ -22,7 +22,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ### 3.1 Creación de Eventos
 
-- [ ] 3.1.1 Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
+- [x] 3.1.1 Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
 - [ ] 3.1.2 Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
 - [ ] 3.1.3 El nuevo evento recibe un ID único
 - [ ] 3.1.4 El nuevo evento se guarda en el almacenamiento local
