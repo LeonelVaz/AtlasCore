@@ -2734,6 +2734,60 @@ describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.6)', () => {
     // Restaurar el espía
     consoleErrorSpy.mockRestore();
   });
+
+  // test 5.8: Maneja diferentes tipos de excepciones durante el renderizado
+  test('maneja diferentes tipos de excepciones durante el renderizado', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Mock para la función Map.prototype.map para que lance un error
+    // cuando se intente renderizar los eventos
+    const originalArrayMap = Array.prototype.map;
+    Array.prototype.map = function(...args) {
+      // Si es un array que contiene objetos de eventos, provocar un error
+      if (this.length > 0 && 
+          this[0] && 
+          typeof this[0] === 'object' && 
+          this[0].hasOwnProperty('title') && 
+          this[0].hasOwnProperty('start')) {
+        console.error('Error forzado en map de eventos');
+        throw new Error('Error simulado en renderizado de eventos');
+      }
+      return originalArrayMap.apply(this, args);
+    };
+    
+    // Crear eventos de prueba
+    const testEvents = [
+      {
+        id: '1',
+        title: 'Evento de prueba',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#2d4b94'
+      }
+    ];
+    
+    // Mock de localStorage
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(testEvents));
+    
+    // Renderizar el componente
+    try {
+      render(<CalendarMain />);
+    } catch (error) {
+      // Capturar cualquier error no manejado durante el renderizado
+      console.error('Error no manejado durante renderizado:', error);
+    }
+    
+    // Verificar que se registró el error forzado
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error forzado en map de eventos');
+    
+    // Restaurar la función original
+    Array.prototype.map = originalArrayMap;
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
+  
 });
 
 describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () => {

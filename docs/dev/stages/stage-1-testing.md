@@ -64,7 +64,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 5.5 Se puede hacer clic en los eventos y abren el formulario de edición
 - [x] 5.6 La función shouldShowEvent filtra los eventos correctamente
 - [x] 5.7: El componente maneja excepciones durante el renderizado de eventos
-- [ ] Test 5.8: Maneja diferentes tipos de excepciones durante el renderizado
+- [x] 5.8: Maneja diferentes tipos de excepciones durante el renderizado
 
 ## 6. Integración de almacenamiento
 

@@ -348,6 +348,7 @@ function CalendarMain() {
         eventStart.getHours() === hour
       );
     } catch (error) {
+      // Asegurarnos de que este error se registre siempre
       console.error('Error al procesar evento:', error, event);
       return false;
     }
@@ -355,30 +356,44 @@ function CalendarMain() {
 
   // Renderizar eventos en la celda correspondiente
   const renderEvents = (day, hour) => {
-    return events
-      .filter(event => {
-        // Validar que el evento tenga un título
-        if (!event.title) {
-          console.error('Error: Evento sin título detectado', event);
-          return false;
-        }
-        return shouldShowEvent(event, day, hour);
-      })
-      .map(event => (
-        <div 
-          key={event.id}
-          className="calendar-event"
-          style={{ backgroundColor: event.color }}
-          onClick={() => handleEventClick(event)}
-        >
-          <div className="event-title">{event.title}</div>
-          <div className="event-time">
-            {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            {' - '}
-            {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-          </div>
-        </div>
-      ));
+    try {
+      return events
+        .filter(event => {
+          // Validar que el evento tenga un título
+          if (!event.title) {
+            console.error('Error: Evento sin título detectado', event);
+            return false;
+          }
+          return shouldShowEvent(event, day, hour);
+        })
+        .map(event => {
+          try {
+            return (
+              <div 
+                key={event.id}
+                className="calendar-event"
+                style={{ backgroundColor: event.color }}
+                onClick={() => handleEventClick(event)}
+              >
+                <div className="event-title">{event.title}</div>
+                <div className="event-time">
+                  {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                  {' - '}
+                  {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            );
+          } catch (error) {
+            // Asegurar que este error se registre siempre
+            console.error('Error al renderizar evento específico:', error, event);
+            return null; // Devolver null para que React lo ignore sin romper el renderizado
+          }
+        });
+    } catch (error) {
+      // Asegurar que este error se registre siempre
+      console.error('Error general al renderizar eventos:', error);
+      return null; // Devolver null para que React pueda seguir con el renderizado
+    }
   };
 
   const weekDays = generateWeekDays(currentDate);
