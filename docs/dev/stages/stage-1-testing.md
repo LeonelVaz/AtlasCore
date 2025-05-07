@@ -31,7 +31,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ### 3.2 Edición de eventos
 
-- [ ] 3.2.1 Al hacer clic en un evento existente, se abre el formulario de edición
+- [x] 3.2.1 Al hacer clic en un evento existente, se abre el formulario de edición
 - [ ] 3.2.2 El formulario de edición se rellena con los datos correctos del evento
 - [ ] 3.2.3 Los cambios en el evento se guardan correctamente
 - [ ] 3.2.4 El evento actualizado se guarda en el almacenamiento local

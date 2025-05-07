@@ -835,4 +835,81 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6)', () => {
     // Restaurar el mock de Date.now
     mockDateNow.mockRestore();
   });
+
+  describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6 - En desarrollo)', () => {
+    beforeEach(() => {
+      // Fecha base para las pruebas (6 de mayo de 2025)
+      const baseDate = new Date('2025-05-06');
+      jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+      
+      // Mock inicial para los días de la semana actual
+      dateUtils.generateWeekDays.mockReturnValue([
+        new Date('2025-05-05'),
+        new Date('2025-05-06'),
+        new Date('2025-05-07'),
+        new Date('2025-05-08'),
+        new Date('2025-05-09'),
+        new Date('2025-05-10'),
+        new Date('2025-05-11'),
+      ]);
+      
+      // Mock para formato de fecha y hora
+      dateUtils.formatDate.mockImplementation((date) => {
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        return `${day}/${month}`;
+      });
+      
+      dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+      
+      // Limpiar localStorage y configurar con un evento de prueba
+      const mockEvent = {
+        id: '12345678',
+        title: 'Evento existente',
+        start: '2025-05-07T01:00:00.000Z',
+        end: '2025-05-07T02:00:00.000Z',
+        color: '#2D4B94'
+      };
+      
+      Object.defineProperty(window, 'localStorage', {
+        value: {
+          getItem: jest.fn().mockReturnValue(JSON.stringify([mockEvent])),
+          setItem: jest.fn(),
+          removeItem: jest.fn(),
+          clear: jest.fn(),
+        },
+        writable: true
+      });
+    });
+    
+    // test 3.2.1: Al hacer clic en un evento existente, se abre el formulario de edición
+    test('al hacer clic en un evento existente, se abre el formulario de edición', () => {
+      // Renderizar el componente con el evento precargado
+      const { container } = render(<CalendarMain />);
+      
+      // Verificar que el evento existe en la cuadrícula
+      const eventElements = container.querySelectorAll('.calendar-event');
+      expect(eventElements.length).toBe(1);
+      
+      // Buscar el evento por su título
+      const eventElement = screen.getByText('Evento existente');
+      expect(eventElement).toBeInTheDocument();
+      
+      // Verificar que el formulario de edición no está visible inicialmente
+      expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+      
+      // Hacer clic en el evento
+      fireEvent.click(eventElement);
+      
+      // Verificar que el formulario de edición se abre
+      expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+      
+      // Verificar que el título del formulario es "Editar evento"
+      expect(screen.getByText('Editar evento')).toBeInTheDocument();
+      
+      // Verificar que el botón "Eliminar" está presente (solo en modo edición)
+      const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
+      expect(deleteButton).toBeInTheDocument();
+    });
+  });
 });
