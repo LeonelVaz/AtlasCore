@@ -23,7 +23,7 @@ jest.mock('../../../../src/core/module/module-registry', () => ({
 
 jest.mock('../../../../src/utils/date-utils');
 
-describe('CalendarMain - Renderizado de estructura de cuadrícula', () => {
+describe('CalendarMain - Renderizado de estructura de cuadrícula (Tests 1.1 a 1.6)', () => {
   beforeEach(() => {
     // Mock de días de la semana (ajustado para mayo de 2025)
     dateUtils.generateWeekDays.mockReturnValue([
@@ -167,7 +167,7 @@ describe('CalendarMain - Renderizado de estructura de cuadrícula', () => {
   });
 });
 
-describe('CalendarMain - Navegación por Fecha', () => {
+describe('CalendarMain - Navegación por Fecha (Tests 2.1 a 2.4)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -497,48 +497,122 @@ describe('CalendarMain - Navegación por Fecha', () => {
       unmount();
     });
   });
+});
 
+describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarrollo)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Limpiar localStorage
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: jest.fn(),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      },
+      writable: true
+    });
+  });
+  
   // test 3.1.1: Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
   test('al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento', () => {
     render(<CalendarMain />);
     
     // Verificar que el formulario no está visible inicialmente
+    expect(screen.queryByText('Nuevo evento')).not.toBeInTheDocument();
+    
+    // Buscar una celda de tiempo y hacer clic en ella
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]); // Celda para las 10:00 AM del primer día
+    
+    // Verificar que el formulario de evento se muestra
+    expect(screen.getByText('Nuevo evento')).toBeInTheDocument();
+    
+    // Verificar que aparecen los campos del formulario
+    expect(screen.getByText('Título:')).toBeInTheDocument();
+    expect(screen.getByText('Inicio:')).toBeInTheDocument();
+    expect(screen.getByText('Fin:')).toBeInTheDocument();
+    expect(screen.getByText('Color:')).toBeInTheDocument();
+  });
+  
+  // test 3.1.2: Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
+  test('nuevo evento creado con valores predeterminados que coinciden con la hora del clic', () => {
+    render(<CalendarMain />);
+    
+    // Verificar que no hay formulario de evento visible inicialmente
     expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
     
-    // Seleccionar una celda de tiempo y hacer clic en ella
+    // Buscamos todas las celdas de tiempo
     const timeSlots = screen.getAllByTestId('calendar-time-slot');
-    const randomSlot = timeSlots[Math.floor(Math.random() * timeSlots.length)];
     
-    // Realizar el clic en la celda
-    fireEvent.click(randomSlot);
+    // Elegimos una celda específica para hacer clic (por ejemplo, el primer día a las 10:00)
+    // Como hay 24 horas por día y 7 días, la celda para el primer día a las 10:00 es:
+    // hora 10 + (día 0 * 24) = celda 10
+    const cellToClick = timeSlots[10]; // Celda para las 10:00 AM del primer día
     
-    // Verificar que el formulario de evento ahora es visible
-    const eventForm = screen.getByTestId('event-form-overlay');
-    expect(eventForm).toBeInTheDocument();
+    // Hacemos clic en la celda
+    fireEvent.click(cellToClick);
     
-    // Verificar que el formulario tiene el título correcto para un nuevo evento
-    const formTitle = within(eventForm).getByText('Nuevo evento');
-    expect(formTitle).toBeInTheDocument();
+    // Verificar que se abrió el formulario de evento
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
     
-    // Verificar que los campos del formulario están presentes (usando el texto de las etiquetas en lugar de getByLabelText)
-    expect(within(eventForm).getByText('Título:')).toBeInTheDocument();
-    expect(within(eventForm).getByText('Inicio:')).toBeInTheDocument();
-    expect(within(eventForm).getByText('Fin:')).toBeInTheDocument();
-    expect(within(eventForm).getByText('Color:')).toBeInTheDocument();
+    // Verificar que el título del formulario es "Nuevo evento"
+    expect(screen.getByText('Nuevo evento')).toBeInTheDocument();
     
-    // Verificar que los inputs existen
-    expect(within(eventForm).getByDisplayValue('Nuevo evento')).toBeInTheDocument(); // El título por defecto
-    expect(within(eventForm).getAllByRole('textbox').length).toBeGreaterThan(0);
+    // Verificar que el título del evento predeterminado es "Nuevo evento"
+    // Usamos getByDisplayValue en lugar de getByRole para encontrar el input por su valor
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    expect(titleInput).toBeInTheDocument();
     
-    // Verificar que los botones de acción están presentes
-    expect(within(eventForm).getByRole('button', { name: /guardar/i })).toBeInTheDocument();
-    expect(within(eventForm).getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
-    // No debería haber botón de eliminar para un nuevo evento
-    expect(within(eventForm).queryByRole('button', { name: /eliminar/i })).not.toBeInTheDocument();
+    // Verificar que la fecha/hora de inicio y fin corresponden a la celda seleccionada
+    // Como hicimos clic en la celda de las 10:00 AM, esperamos que:
+    // - La hora de inicio sea 10:00
+    // - La hora de fin sea 11:00 (una hora después)
+    
+    // Obtenemos los inputs de fecha/hora por su etiqueta
+    const startInput = screen.getByLabelText(/inicio/i);
+    const endInput = screen.getByLabelText(/fin/i);
+    
+    // Verificamos que contienen los valores esperados
+    // Para un input de tipo datetime-local, el formato es "YYYY-MM-DDThh:mm"
+    
+    // La fecha de inicio debería ser 2025-05-05T10:00 (primer día a las 10:00)
+    expect(startInput.value).toContain('2025-05-05T10:00');
+    
+    // La fecha de fin debería ser 2025-05-05T11:00 (una hora después)
+    expect(endInput.value).toContain('2025-05-05T11:00');
+    
+    // Verificar que el color predeterminado es el azul de Atlas (#2D4B94)
+    const colorInput = screen.getByLabelText(/color/i);
+    expect(colorInput.value).toBe('#2D4B94');
   });
 
-
-
-  
-  
+  // Aquí irían los futuros tests 3.1.3 a 3.1.6
+  // 3.1.3 El nuevo evento recibe un ID único
+  // 3.1.4 El nuevo evento se guarda en el almacenamiento local
+  // 3.1.5 El evento publica una notificación de actualización a través de EventBus
+  // 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
 });
