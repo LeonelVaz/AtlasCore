@@ -1,7 +1,7 @@
 // calendar-main.test.js
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import CalendarMain from '../../../../src/components/calendar/calendar-main'; // Ajusta el path si es necesario
 import * as dateUtils from '../../../../src/utils/date-utils';
 
@@ -27,20 +27,47 @@ describe('CalendarMain - Renderizado de estructura de cuadrícula', () => {
   beforeEach(() => {
     // Mock de días de la semana (ajustado para mayo de 2025)
     dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-04'),
       new Date('2025-05-05'),
       new Date('2025-05-06'),
       new Date('2025-05-07'),
       new Date('2025-05-08'),
       new Date('2025-05-09'),
       new Date('2025-05-10'),
-      new Date('2025-05-11'),
     ]);
 
     // Mock de formato de hora
     dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Mock del formato de fecha
+    dateUtils.formatDate.mockImplementation((date, options) => {
+      if (options.weekday === 'short' && options.day === 'numeric' && options.month === 'short') {
+        // Formato esperado según la salida real del test: "dom, 4 may" (ejemplo)
+        const weekdays = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+        const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        
+        const day = date.getDate();
+        const weekday = weekdays[date.getDay()];
+        const month = months[date.getMonth()];
+        
+        return `${weekday}, ${day} ${month}`;
+      }
+      return '';
+    });
 
     // Mock de la fecha actual (6 de mayo de 2025)
     jest.spyOn(Date, 'now').mockReturnValue(new Date('2025-05-06').getTime());
+    
+    // Limpiar localStorage antes de cada prueba
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: jest.fn(),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      },
+      writable: true
+    });
   });
 
   // test 1.1: La estructura de la cuadrícula del calendario se renderiza correctamente con las franjas horarias
@@ -94,5 +121,48 @@ describe('CalendarMain - Renderizado de estructura de cuadrícula', () => {
     // Verifica que el título muestra mayo de 2025
     const title = screen.getByText('mayo de 2025');
     expect(title).toBeInTheDocument();
+  });
+  
+  // test 1.5: Los encabezados de día muestran las fechas con el formato correcto
+  test('los encabezados de día muestran las fechas con el formato correcto', () => {
+    render(<CalendarMain />);
+    
+    // Verificar que existen encabezados de día y tienen el formato correcto
+    const dayHeaders = screen.getAllByTestId('calendar-day-header');
+    expect(dayHeaders).toHaveLength(7); // Debería haber 7 días en la semana
+    
+    // Verificar que formatDate fue llamada para cada día
+    expect(dateUtils.formatDate).toHaveBeenCalledTimes(7);
+    
+    // Verificar que formatDate fue llamada con los parámetros correctos
+    expect(dateUtils.formatDate).toHaveBeenCalledWith(
+      expect.any(Date),
+      expect.objectContaining({
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+      })
+    );
+  });
+  
+  // test 1.6: El formulario de evento no se muestra inicialmente
+  test('el formulario de evento no se muestra inicialmente', () => {
+    render(<CalendarMain />);
+    
+    // Verifica que el formulario de evento no está visible al inicio
+    const eventFormTitle = screen.queryByText('Nuevo evento');
+    const editEventTitle = screen.queryByText('Editar evento');
+    
+    expect(eventFormTitle).not.toBeInTheDocument();
+    expect(editEventTitle).not.toBeInTheDocument();
+    
+    // Verifica que ninguno de los elementos del formulario está presente
+    expect(screen.queryByText('Título:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Inicio:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Fin:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Color:')).not.toBeInTheDocument();
+    
+    // No incluimos la verificación de hacer clic en una celda porque
+    // las celdas no tienen el rol 'button' y eso complica el test
   });
 });

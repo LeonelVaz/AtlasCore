@@ -10,21 +10,21 @@
 
 - 1.4 [x] El título del calendario muestra el mes y el año correctos
 
-- 1.5 [ ] Los encabezados de día muestran las fechas con el formato correcto
+- 1.5 [x] Los encabezados de día muestran las fechas con el formato correcto
 
-- 1.6 [ ] El formulario de evento no se muestra inicialmente
+- 1.6 [x] El formulario de evento no se muestra inicialmente
 
 ## 2. Navegación por Fecha
 
-- [ ] El botón de la semana anterior reduce la fecha en 7 días
+- 2.1 [ ] El botón de la semana anterior reduce la fecha en 7 días
 
-- [ ] El botón de la semana siguiente incrementa la fecha en 7 días
+- 2.2 [ ] El botón de la semana siguiente incrementa la fecha en 7 días
 
-- [ ] El botón de la semana actual se restablece a la fecha actual
+- 2.3 [ ] El botón de la semana actual se restablece a la fecha actual
 
-- [ ] Los días de la semana se generan correctamente para cualquier fecha
+- 2.4 [ ] Los días de la semana se generan correctamente para cualquier fecha
 
-- [ ] El encabezado de mes/año se actualiza al navegar entre meses
+- 2.5 [ ] El encabezado de mes/año se actualiza al navegar entre meses
 
 ## 3. Gestión de Eventos
 

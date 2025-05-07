@@ -1,3 +1,5 @@
+// calendar-main.jsx
+
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule } from '../../core/module/module-registry';
@@ -261,7 +263,11 @@ function CalendarMain() {
         <div className="calendar-row calendar-header-row">
           <div className="calendar-cell calendar-time-header"></div>
           {weekDays.map((day, index) => (
-            <div key={index} className="calendar-cell calendar-day-header">
+            <div 
+              key={index} 
+              className="calendar-cell calendar-day-header"
+              data-testid="calendar-day-header"
+            >
               {formatDate(day, { 
                 weekday: 'short', 
                 day: 'numeric', 
@@ -282,6 +288,7 @@ function CalendarMain() {
               <div 
                 key={dayIndex} 
                 className="calendar-cell calendar-time-slot"
+                data-testid="calendar-time-slot"
                 onClick={() => handleCellClick(day, hour)}
               >
                 {renderEvents(day, hour)}
@@ -293,7 +300,7 @@ function CalendarMain() {
 
       {/* Formulario para crear/editar eventos */}
       {showEventForm && (
-        <div className="event-form-overlay">
+        <div className="event-form-overlay" data-testid="event-form-overlay">
           <div className="event-form">
             <h3>{selectedEvent ? 'Editar evento' : 'Nuevo evento'}</h3>
             
