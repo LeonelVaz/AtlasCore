@@ -66,10 +66,10 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ## 6. Integración de almacenamiento
 
-- [ ] 6.1 Los eventos se cargan desde el almacenamiento local al montar el componente
-- [ ] 6.2 Los eventos se guardan en el almacenamiento local al crearse, actualizarse o eliminarse
-- [ ] 6.3 La gestión de errores funciona para el almacenamiento local
-- [ ] 6.4 Las operaciones de almacenamiento publican los eventos apropiados
+- [x] 6.1 Los eventos se cargan desde el almacenamiento local al montar el componente
+- [x] 6.2 Los eventos se guardan en el almacenamiento local al crearse, actualizarse o eliminarse
+- [x] 6.3 La gestión de errores funciona para el almacenamiento local
+- [x] 6.4 Las operaciones de almacenamiento publican los eventos apropiados
 
 ## 7. Registro del módulo
 
@@ -80,10 +80,10 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ## 8. Integración del bus de eventos
 
-- [x] 8.1 El componente se suscribe a los eventos apropiados
-- [x] 8.2 El componente responde a las actualizaciones de eventos externos
-- [x] 8.3 El componente publica eventos cuando cambian los datos
-- [x] 8.4 El componente limpia las suscripciones al desmontar
+- [ ] 8.1 El componente se suscribe a los eventos apropiados
+- [ ] 8.2 El componente responde a las actualizaciones de eventos externos
+- [ ] 8.3 El componente publica eventos cuando cambian los datos
+- [ ] 8.4 El componente limpia las suscripciones al desmontar
 
 ## 9. Casos extremos relevantes para Stage 1
 
