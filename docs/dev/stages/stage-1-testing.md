@@ -58,9 +58,9 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 ## 5. Representación de eventos
 
 - [ ] 5.1 Los eventos se representan en las franjas horarias correctas según la hora de inicio
-- [ ] 5.2 Los eventos se muestran con el título correcto
+- [x] 5.2 Los eventos se muestran con el título correcto
 - [ ] 5.3 Los eventos se muestran con el formato de hora correcto
-- [ ] 5.4 Los eventos se muestran con el color de fondo correcto
+- [x] 5.4 Los eventos se muestran con el color de fondo correcto
 - [ ] 5.5 Se puede hacer clic en los eventos y abren el formulario de edición
 - [ ] 5.6 La función shouldShowEvent filtra los eventos correctamente
 

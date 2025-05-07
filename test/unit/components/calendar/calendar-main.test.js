@@ -2400,5 +2400,128 @@ describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)', () => {
       expect(window.getComputedStyle(eventContainer).backgroundColor).toBeDefined();
     }
   });
+});
 
+describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.6)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Mock para la función isSameDay para asegurar que los eventos se rendericen
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+  });
+
+  // test 5.2: Los eventos se muestran con el título correcto
+  test('los eventos se muestran con el título correcto', () => {
+    // Crear eventos de prueba con títulos específicos
+    const testEvents = [
+      {
+        id: '1',
+        title: 'Reunión de equipo',
+        start: '2025-05-07T10:00:00.000Z',
+        end: '2025-05-07T11:00:00.000Z',
+        color: '#2d4b94'
+      },
+      {
+        id: '2',
+        title: 'Almuerzo con cliente',
+        start: '2025-05-07T13:00:00.000Z',
+        end: '2025-05-07T14:00:00.000Z',
+        color: '#7e57c2'
+      },
+      {
+        id: '3',
+        title: 'Revisión de proyecto',
+        start: '2025-05-07T16:00:00.000Z',
+        end: '2025-05-07T17:00:00.000Z',
+        color: '#26a69a'
+      }
+    ];
+    
+    // Mock de localStorage con los eventos de prueba
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(testEvents));
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que cada evento muestra el título correcto
+    const evento1 = screen.getByText('Reunión de equipo');
+    expect(evento1).toBeInTheDocument();
+    
+    const evento2 = screen.getByText('Almuerzo con cliente');
+    expect(evento2).toBeInTheDocument();
+    
+    const evento3 = screen.getByText('Revisión de proyecto');
+    expect(evento3).toBeInTheDocument();
+    
+    // Verificar que los títulos están dentro de elementos con la clase correcta
+    expect(evento1.className).toBe('event-title');
+    expect(evento2.className).toBe('event-title');
+    expect(evento3.className).toBe('event-title');
+  });
+
+  // test 5.4: Los eventos se muestran con el color de fondo correcto
+  test('los eventos se muestran con el color de fondo correcto', () => {
+    // Crear eventos de prueba con diferentes colores
+    const testEvents = [
+      {
+        id: '1',
+        title: 'Evento azul',
+        start: '2025-05-07T09:00:00.000Z',
+        end: '2025-05-07T10:00:00.000Z',
+        color: '#2d4b94' // Azul Atlas
+      },
+      {
+        id: '2',
+        title: 'Evento verde',
+        start: '2025-05-07T14:00:00.000Z',
+        end: '2025-05-07T15:00:00.000Z',
+        color: '#26a69a' // Verde Modular
+      },
+      {
+        id: '3',
+        title: 'Evento púrpura',
+        start: '2025-05-07T16:00:00.000Z',
+        end: '2025-05-07T17:00:00.000Z',
+        color: '#7e57c2' // Púrpura
+      }
+    ];
+    
+    // Mock de localStorage con los eventos de prueba
+    window.localStorage.getItem.mockReturnValue(JSON.stringify(testEvents));
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Buscar los elementos de evento
+    const blueEvent = screen.getByText('Evento azul').closest('.calendar-event');
+    const greenEvent = screen.getByText('Evento verde').closest('.calendar-event');
+    const purpleEvent = screen.getByText('Evento púrpura').closest('.calendar-event');
+    
+    // Verificar los estilos inline directamente
+    expect(blueEvent.style.backgroundColor).toBe('rgb(45, 75, 148)');
+    expect(greenEvent.style.backgroundColor).toBe('rgb(38, 166, 154)');
+    expect(purpleEvent.style.backgroundColor).toBe('rgb(126, 87, 194)');
+  });
 });
