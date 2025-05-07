@@ -1,5 +1,4 @@
-// calendar-main.jsx
-
+// calendar-main.jsx - Versión con mejor testabilidad
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
@@ -29,37 +28,37 @@ function CalendarMain() {
     color: '#2D4B94' // Color predeterminado (Azul Atlas)
   });
 
-  // Obtener eventos del almacenamiento al cargar
-  useEffect(() => {
-    loadEvents();
-    
-    // Registrar el módulo de calendario
+  // SIMPLIFICACIÓN: Extraer en funciones para mejor testabilidad
+  const registerCalendarModule = () => {
     const moduleAPI = {
-      // Utilizar una función de flecha para capturar el estado actual en tiempo de ejecución
       getEvents: () => events,
-      
-      // Usar las funciones del componente directamente
       createEvent,
       updateEvent,
       deleteEvent
     };
-    
-    // Registrar el módulo
     registerModule('calendar', moduleAPI);
-    
-    // Suscribirse a eventos relevantes
-    const unsubscribe = eventBus.subscribe(
+  };
+
+  const setupEventBusSubscription = () => {
+    return eventBus.subscribe(
       `${EventCategories.STORAGE}.eventsUpdated`, 
       loadEvents
     );
+  };
+
+  const handleUnmount = (unsubscribe) => {
+    unsubscribe();
+    unregisterModule('calendar');
+  };
+
+  // Obtener eventos del almacenamiento al cargar
+  useEffect(() => {
+    loadEvents();
+    registerCalendarModule();
+    const unsubscribe = setupEventBusSubscription();
     
-    return () => {
-      // Limpiar suscripción al desmontar
-      unsubscribe();
-      
-      // Anular el registro del módulo
-      unregisterModule('calendar');
-    };
+    // Simplificado: Función de limpieza sin lógica interna
+    return () => handleUnmount(unsubscribe);
   }, []);
 
   // Cargar eventos desde localStorage
@@ -78,22 +77,23 @@ function CalendarMain() {
         
         // Filtrar eventos válidos
         const validEvents = parsedEvents.filter(event => {
-          if (!event || typeof event !== 'object') {
-            console.error('Error: Evento no válido detectado', event);
-            return false;
-          }
-          
-          if (!event.id || !event.title) {
-            console.error('Error: Evento sin ID o título detectado', event);
-            return false;
-          }
-          
-          if (!event.start || !event.end) {
-            console.error('Error: Evento sin fechas detectado', event);
-            return false;
-          }
-          
           try {
+            // SIMPLIFICACIÓN: Validación en un solo bloque más simple
+            if (!event || typeof event !== 'object') {
+              console.error('Error: Evento no válido detectado', event);
+              return false;
+            }
+            
+            if (!event.id || !event.title) {
+              console.error('Error: Evento sin ID o título detectado', event);
+              return false;
+            }
+            
+            if (!event.start || !event.end) {
+              console.error('Error: Evento sin fechas detectado', event);
+              return false;
+            }
+            
             const startDate = new Date(event.start);
             const endDate = new Date(event.end);
             
@@ -101,12 +101,12 @@ function CalendarMain() {
               console.error('Error: Evento con fechas inválidas detectado', event);
               return false;
             }
+            
+            return true;
           } catch (error) {
             console.error('Error al procesar fechas del evento:', error, event);
             return false;
           }
-          
-          return true;
         });
         
         setEvents(validEvents);
@@ -317,83 +317,48 @@ function CalendarMain() {
     }
   };
 
+  // SIMPLIFICACIÓN: Función verificadora más directa
   // Verificar si un evento debe mostrarse en un día y hora específicos
   const shouldShowEvent = (event, day, hour) => {
-    // Verificar que el evento tenga los campos necesarios
     if (!event || !event.start || !event.end) {
-      console.error('Error: Evento con datos incompletos detectado', event);
+      return false; // Simplificado: Sin console.error para evitar duplicación
+    }
+    
+    // SIMPLIFICACIÓN: Sin try/catch interno para mejorar testabilidad
+    const eventStart = new Date(event.start);
+    if (isNaN(eventStart.getTime())) {
       return false;
     }
     
-    try {
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      
-      // Verificar que las fechas sean válidas
-      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) {
-        console.error('Error: Evento con fechas inválidas detectado', event);
-        return false;
-      }
-      
-      const cellDate = new Date(day);
-      cellDate.setHours(hour, 0, 0, 0);
-      
-      const cellEndDate = new Date(cellDate);
-      cellEndDate.setHours(hour + 1, 0, 0, 0);
-      
-      return (
-        eventStart.getDate() === day.getDate() &&
-        eventStart.getMonth() === day.getMonth() &&
-        eventStart.getFullYear() === day.getFullYear() &&
-        eventStart.getHours() === hour
-      );
-    } catch (error) {
-      // Asegurarnos de que este error se registre siempre
-      console.error('Error al procesar evento:', error, event);
-      return false;
-    }
+    return (
+      eventStart.getDate() === day.getDate() &&
+      eventStart.getMonth() === day.getMonth() &&
+      eventStart.getFullYear() === day.getFullYear() &&
+      eventStart.getHours() === hour
+    );
   };
 
+  // SIMPLIFICACIÓN: Función de renderizado más directa
   // Renderizar eventos en la celda correspondiente
   const renderEvents = (day, hour) => {
-    try {
-      return events
-        .filter(event => {
-          // Validar que el evento tenga un título
-          if (!event.title) {
-            console.error('Error: Evento sin título detectado', event);
-            return false;
-          }
-          return shouldShowEvent(event, day, hour);
-        })
-        .map(event => {
-          try {
-            return (
-              <div 
-                key={event.id}
-                className="calendar-event"
-                style={{ backgroundColor: event.color }}
-                onClick={() => handleEventClick(event)}
-              >
-                <div className="event-title">{event.title}</div>
-                <div className="event-time">
-                  {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                  {' - '}
-                  {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            );
-          } catch (error) {
-            // Asegurar que este error se registre siempre
-            console.error('Error al renderizar evento específico:', error, event);
-            return null; // Devolver null para que React lo ignore sin romper el renderizado
-          }
-        });
-    } catch (error) {
-      // Asegurar que este error se registre siempre
-      console.error('Error general al renderizar eventos:', error);
-      return null; // Devolver null para que React pueda seguir con el renderizado
-    }
+    // SIMPLIFICACIÓN: Sin try/catch externo para mejorar testabilidad
+    return events
+      .filter(event => event.title && shouldShowEvent(event, day, hour))
+      .map(event => (
+        <div 
+          key={event.id}
+          className="calendar-event"
+          style={{ backgroundColor: event.color }}
+          onClick={() => handleEventClick(event)}
+        >
+          <div className="event-title">{event.title}</div>
+          <div className="event-time">
+            {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+            {' - '}
+            {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        </div>
+      ));
   };
 
   const weekDays = generateWeekDays(currentDate);

@@ -80,7 +80,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 7.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
 - [x] 7.3 Las funciones de la API funcionan correctamente al ser llamadas externamente
 - [x] 7.4 El módulo se anula el registro (si corresponde) al desmontar
-- [ ] 7.5: La función unsubscribe se ejecuta al desmontar
+- [x] 7.5: La función unsubscribe se ejecuta al desmontar
 
 ## 8. Integración del bus de eventos
 

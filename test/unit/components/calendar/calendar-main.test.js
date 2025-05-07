@@ -2040,7 +2040,6 @@ describe('CalendarMain - Eliminación de eventos (Tests 3.3.1 a 3.3.5)', () => {
   });
 });
 
-
 describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
@@ -2787,7 +2786,6 @@ describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.6)', () => {
     // Restaurar el espía
     consoleErrorSpy.mockRestore();
   });
-  
 });
 
 describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () => {
@@ -3280,6 +3278,34 @@ describe('CalendarMain - Registro del módulo (Tests 7.1 a 7.4)', () => {
     
     // Verificar que unregisterModule fue llamado con 'calendar'
     expect(unregisterModule).toHaveBeenCalledWith('calendar');
+  });
+
+  // test 7.5: La función unsubscribe se ejecuta al desmontar
+  test('la función unsubscribe se ejecuta al desmontar', () => {
+    // Crear un mock para la función unsubscribe
+    const unsubscribeMock = jest.fn();
+    
+    // Mock para eventBus.subscribe que devuelve nuestra función mock
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const originalSubscribe = eventBus.subscribe;
+    
+    // Configurar el mock para que devuelva nuestra función mock
+    eventBus.subscribe = jest.fn().mockReturnValue(unsubscribeMock);
+    
+    // Renderizar el componente
+    const { unmount } = render(<CalendarMain />);
+    
+    // Verificar que se llamó a subscribe
+    expect(eventBus.subscribe).toHaveBeenCalled();
+    
+    // Desmontar el componente
+    unmount();
+    
+    // Verificar que se llamó a la función unsubscribe
+    expect(unsubscribeMock).toHaveBeenCalled();
+    
+    // Restaurar la función original
+    eventBus.subscribe = originalSubscribe;
   });
 });
 
