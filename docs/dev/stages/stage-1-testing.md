@@ -71,7 +71,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 6.2 Los eventos se guardan en el almacenamiento local al crearse, actualizarse o eliminarse
 - [x] 6.3 La gestión de errores funciona para el almacenamiento local
 - [x] 6.4 Las operaciones de almacenamiento publican los eventos apropiados
-- [ ] 6.5: Manejo de formatos JSON inválidos en localStorage
+- [x] 6.5: Manejo de formatos JSON inválidos en localStorage
 
 ## 7. Registro del módulo
 

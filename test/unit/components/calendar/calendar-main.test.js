@@ -2996,6 +2996,38 @@ describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () =
     expect(publishedEvents.length).toBeGreaterThan(0);
     expect(publishedEvents.some(e => e.title === 'Evento de prueba')).toBe(true);
   });
+
+  // test 6.5: Manejo de formatos JSON inválidos en localStorage
+  test('maneja formatos JSON inválidos en localStorage', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Mock de localStorage que devuelve datos JSON inválidos
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue('{ datos inválidos no es json }'),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se capturó y manejó el error
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error al cargar eventos:',
+      expect.any(Error)
+    );
+    
+    // Verificar que el componente sigue funcionando
+    expect(screen.getAllByTestId('calendar-time-slot').length).toBeGreaterThan(0);
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('CalendarMain - Registro del módulo (Tests 7.1 a 7.4)', () => {
