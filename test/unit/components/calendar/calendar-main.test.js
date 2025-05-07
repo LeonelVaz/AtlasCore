@@ -647,4 +647,72 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     // Restaurar el mock de Date.now
     mockDateNow.mockRestore();
   });
+
+  // test 3.1.4: El nuevo evento se guarda en el almacenamiento local
+  test('el nuevo evento se guarda en el almacenamiento local', () => {
+    // Mock de localStorage para capturar y verificar los datos guardados
+    const localStorageMock = {
+      getItem: jest.fn().mockReturnValue(null), // No hay eventos previos
+      setItem: jest.fn(),
+      removeItem: jest.fn(),
+      clear: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+
+    // Mock de Date.now para tener un timestamp predecible
+    const mockDateNow = jest.spyOn(Date, 'now').mockReturnValue(12345678);
+    
+    render(<CalendarMain />);
+    
+    // Buscamos todas las celdas de tiempo
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    
+    // Hacer clic en una celda para crear un nuevo evento
+    fireEvent.click(timeSlots[10]);
+    
+    // Verificar que el formulario de evento se abrió
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Actualizar el título del evento (opcional, para verificar que se guardan los cambios)
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento de prueba' } });
+    
+    // Simular el guardado del evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que el método setItem de localStorage fue llamado
+    expect(localStorageMock.setItem).toHaveBeenCalled();
+    
+    // Obtener los argumentos con los que se llamó a setItem
+    const setItemArgs = localStorageMock.setItem.mock.calls[0];
+    
+    // Verificar que el primer argumento es 'atlas_events' (la clave correcta)
+    expect(setItemArgs[0]).toBe('atlas_events');
+    
+    // Parsear el JSON que se guardó
+    const savedEvents = JSON.parse(setItemArgs[1]);
+    
+    // Verificar que se guardó un array con un evento
+    expect(Array.isArray(savedEvents)).toBe(true);
+    expect(savedEvents).toHaveLength(1);
+    
+    // Verificar que el evento guardado tiene los datos correctos
+    const savedEvent = savedEvents[0];
+    expect(savedEvent.id).toBe('12345678');
+    expect(savedEvent.title).toBe('Evento de prueba');
+    
+    // Verificar que el evento contiene todas las propiedades necesarias
+    expect(savedEvent).toHaveProperty('start');
+    expect(savedEvent).toHaveProperty('end');
+    expect(savedEvent).toHaveProperty('color');
+    
+    // Restaurar el mock de Date.now
+    mockDateNow.mockRestore();
+  });
+
 });
