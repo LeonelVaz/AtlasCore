@@ -167,14 +167,8 @@ function CalendarMain() {
     setNewEvent(prev => ({ ...prev, [name]: value }));
   };
 
-  // Guardar evento (crear nuevo o actualizar existente)
-  const handleSaveEvent = () => {
-    if (selectedEvent) {
-      updateEvent(selectedEvent.id, newEvent);
-    } else {
-      createEvent(newEvent);
-    }
-    
+  // Función para cerrar y reiniciar el formulario
+  const handleCloseForm = () => {
     setShowEventForm(false);
     setSelectedEvent(null);
     setNewEvent({
@@ -186,12 +180,22 @@ function CalendarMain() {
     });
   };
 
+  // Guardar evento (crear nuevo o actualizar existente)
+  const handleSaveEvent = () => {
+    if (selectedEvent) {
+      updateEvent(selectedEvent.id, newEvent);
+    } else {
+      createEvent(newEvent);
+    }
+    
+    handleCloseForm(); // Usar la función compartida para cerrar el formulario
+  };
+
   // Eliminar evento seleccionado
   const handleDeleteEvent = () => {
     if (selectedEvent) {
       deleteEvent(selectedEvent.id);
-      setShowEventForm(false);
-      setSelectedEvent(null);
+      handleCloseForm(); // Usar la función compartida para cerrar el formulario
     }
   };
 
@@ -340,10 +344,7 @@ function CalendarMain() {
                   Eliminar
                 </button>
               )}
-              <button onClick={() => {
-                setShowEventForm(false);
-                setSelectedEvent(null);
-              }}>
+              <button onClick={handleCloseForm}>
                 Cancelar
               </button>
             </div>
