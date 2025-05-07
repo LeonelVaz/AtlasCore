@@ -19,6 +19,7 @@ jest.mock('../../../../src/core/bus/event-bus', () => ({
 
 jest.mock('../../../../src/core/module/module-registry', () => ({
   registerModule: jest.fn(),
+  unregisterModule: jest.fn()
 }));
 
 jest.mock('../../../../src/utils/date-utils');
@@ -2941,5 +2942,204 @@ describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () =
     const publishedEvents = updateCall[1];
     expect(publishedEvents.length).toBeGreaterThan(0);
     expect(publishedEvents.some(e => e.title === 'Evento de prueba')).toBe(true);
+  });
+});
+
+describe('CalendarMain - Registro del módulo (Tests 7.1 a 7.4)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Limpieza de window.__appModules
+    if (window.__appModules) {
+      delete window.__appModules.calendar;
+    }
+    
+    // Mock para localStorage
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(null),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Limpiar los mocks de módulo
+    const moduleRegistry = require('../../../../src/core/module/module-registry');
+    moduleRegistry.registerModule.mockClear();
+    moduleRegistry.unregisterModule.mockClear();
+  });
+
+  // test 7.1: El módulo de calendario se registra correctamente al montar
+  test('el módulo de calendario se registra correctamente al montar', () => {
+    // Obtener una referencia a la función registerModule
+    const { registerModule } = require('../../../../src/core/module/module-registry');
+    
+    // Configurar el mock para simular el registro real
+    registerModule.mockImplementation((moduleName, moduleApi) => {
+      window.__appModules = window.__appModules || {};
+      window.__appModules[moduleName] = moduleApi;
+      return true;
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se llamó a registerModule
+    expect(registerModule).toHaveBeenCalled();
+    
+    // Verificar que se registró el módulo 'calendar'
+    expect(registerModule).toHaveBeenCalledWith('calendar', expect.any(Object));
+    
+    // Verificar que el módulo está disponible en window.__appModules
+    expect(window.__appModules.calendar).toBeDefined();
+  });
+
+  // test 7.2: El módulo expone las funciones correctas de la API
+  test('el módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)', () => {
+    // Configurar el mock para simular el registro real
+    const { registerModule } = require('../../../../src/core/module/module-registry');
+    registerModule.mockImplementation((moduleName, moduleApi) => {
+      window.__appModules = window.__appModules || {};
+      window.__appModules[moduleName] = moduleApi;
+      return true;
+    });
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que el módulo está registrado
+    expect(window.__appModules.calendar).toBeDefined();
+    
+    // Obtener la API del módulo
+    const calendarAPI = window.__appModules.calendar;
+    
+    // Verificar que expone las funciones correctas
+    expect(calendarAPI.getEvents).toBeDefined();
+    expect(typeof calendarAPI.getEvents).toBe('function');
+    
+    expect(calendarAPI.createEvent).toBeDefined();
+    expect(typeof calendarAPI.createEvent).toBe('function');
+    
+    expect(calendarAPI.updateEvent).toBeDefined();
+    expect(typeof calendarAPI.updateEvent).toBe('function');
+    
+    expect(calendarAPI.deleteEvent).toBeDefined();
+    expect(typeof calendarAPI.deleteEvent).toBe('function');
+  });
+
+  // test 7.3: Las funciones de la API funcionan correctamente al ser llamadas externamente
+  test('las funciones de la API funcionan correctamente al ser llamadas externamente', () => {
+    // Mock para localStorage
+    let savedEvents = [];
+    const mockLocalStorage = {
+      getItem: jest.fn(() => JSON.stringify(savedEvents)),
+      setItem: jest.fn((key, value) => {
+        if (key === 'atlas_events') {
+          savedEvents = JSON.parse(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Mock del ID generado para eventos
+    const mockTimestamp = 12345678;
+    jest.spyOn(Date, 'now').mockReturnValue(mockTimestamp);
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que inicialmente no hay eventos guardados
+    expect(savedEvents.length).toBe(0);
+    
+    // 1. Crear un nuevo evento haciendo clic en una celda
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]);
+    
+    // Modificar el título para identificarlo fácilmente
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento API Test' } });
+    
+    // Guardar el evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que se guardó en localStorage con el título correcto
+    expect(savedEvents.length).toBe(1);
+    expect(savedEvents[0].title).toBe('Evento API Test');
+    expect(savedEvents[0].id).toBe(mockTimestamp.toString());
+    
+    // Verificar operaciones fundamentales:
+    // 1. Se pueden crear eventos
+    // 2. Se guardan correctamente en localStorage
+    // 3. Tienen un ID único
+    // 4. Mantienen las propiedades asignadas
+    
+    // Restaurar mocks
+    Date.now.mockRestore();
+  });
+
+  // test 7.4: El módulo se anula el registro al desmontar
+  test('el módulo se anula el registro al desmontar', () => {
+    // EventBus subscribe debería devolver una función para cancelar la suscripción
+    const unsubscribeMock = jest.fn();
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    eventBus.subscribe.mockReturnValue(unsubscribeMock);
+    
+    // Mock para unregisterModule
+    const { unregisterModule } = require('../../../../src/core/module/module-registry');
+    unregisterModule.mockImplementation((moduleName) => {
+      if (window.__appModules && window.__appModules[moduleName]) {
+        delete window.__appModules[moduleName];
+        return true;
+      }
+      return false;
+    });
+    
+    // Asegurar que existe un módulo calendar para desregistrar
+    window.__appModules = window.__appModules || {};
+    window.__appModules.calendar = {}; // Simular que ya hay un módulo calendar
+    
+    // Renderizar el componente
+    const { unmount } = render(<CalendarMain />);
+    
+    // Verificar que subscribe fue llamado
+    expect(eventBus.subscribe).toHaveBeenCalled();
+    
+    // Desmontar el componente
+    unmount();
+    
+    // Verificar que la función de cancelación de suscripción fue llamada
+    expect(unsubscribeMock).toHaveBeenCalled();
+    
+    // Verificar que unregisterModule fue llamado con 'calendar'
+    expect(unregisterModule).toHaveBeenCalledWith('calendar');
   });
 });

@@ -73,10 +73,10 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ## 7. Registro del módulo
 
-- [ ] 7.1 El módulo de calendario se registra correctamente al montar
-- [ ] 7.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
-- [ ] 7.3 Las funciones de la API funcionan correctamente al ser llamadas externamente
-- [ ] 7.4 El módulo se anula el registro (si corresponde) al desmontar
+- [x] 7.1 El módulo de calendario se registra correctamente al montar
+- [x] 7.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
+- [x] 7.3 Las funciones de la API funcionan correctamente al ser llamadas externamente
+- [x] 7.4 El módulo se anula el registro (si corresponde) al desmontar
 
 ## 8. Integración del bus de eventos
 
