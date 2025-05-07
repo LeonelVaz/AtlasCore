@@ -27,13 +27,13 @@ describe('CalendarMain - Renderizado de estructura de cuadrícula', () => {
   beforeEach(() => {
     // Mock de días de la semana (ajustado para mayo de 2025)
     dateUtils.generateWeekDays.mockReturnValue([
-      new Date('2025-05-04'),
       new Date('2025-05-05'),
       new Date('2025-05-06'),
       new Date('2025-05-07'),
       new Date('2025-05-08'),
       new Date('2025-05-09'),
       new Date('2025-05-10'),
+      new Date('2025-05-11'),
     ]);
 
     // Mock de formato de hora
@@ -175,13 +175,13 @@ describe('CalendarMain - Navegación por Fecha', () => {
     
     // Mock inicial para los días de la semana actual (4-10 de mayo)
     dateUtils.generateWeekDays.mockReturnValue([
-      new Date('2025-05-04'),
       new Date('2025-05-05'),
       new Date('2025-05-06'),
       new Date('2025-05-07'),
       new Date('2025-05-08'),
       new Date('2025-05-09'),
       new Date('2025-05-10'),
+      new Date('2025-05-11'),
     ]);
     
     // Mock para formato de fecha y hora
@@ -228,13 +228,13 @@ describe('CalendarMain - Navegación por Fecha', () => {
       }
       // Si no, devolver la semana original
       return [
-        new Date('2025-05-04'),
         new Date('2025-05-05'),
         new Date('2025-05-06'),
         new Date('2025-05-07'),
         new Date('2025-05-08'),
         new Date('2025-05-09'),
         new Date('2025-05-10'),
+        new Date('2025-05-11'),
       ];
     });
     
@@ -257,4 +257,7 @@ describe('CalendarMain - Navegación por Fecha', () => {
     const dayHeaders = screen.getAllByTestId('calendar-day-header');
     expect(dayHeaders).toHaveLength(7);
   });
+
+
+  
 });
