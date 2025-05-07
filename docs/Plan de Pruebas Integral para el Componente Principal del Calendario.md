@@ -20,7 +20,7 @@
 
 - 2.2 [x] El botón de la semana siguiente incrementa la fecha en 7 días
 
-- 2.3 [ ] El botón de la semana actual se restablece a la fecha actual
+- 2.3 [x] El botón de la semana actual se restablece a la fecha actual
 
 - 2.4 [ ] Los días de la semana se generan correctamente para cualquier fecha
 

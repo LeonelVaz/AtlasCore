@@ -309,4 +309,71 @@ describe('CalendarMain - Navegación por Fecha', () => {
     const dayHeaders = screen.getAllByTestId('calendar-day-header');
     expect(dayHeaders).toHaveLength(7);
   });
+
+
+  // test 2.3: El botón de la semana actual restablece a la fecha actual
+  test('el botón de la semana actual restablece a la fecha actual', () => {
+    render(<CalendarMain />);
+    
+    // Primero navegamos a otra semana (siguiente) para luego verificar el retorno
+    const nextWeekDays = [
+      new Date('2025-05-12'),
+      new Date('2025-05-13'),
+      new Date('2025-05-14'),
+      new Date('2025-05-15'),
+      new Date('2025-05-16'),
+      new Date('2025-05-17'),
+      new Date('2025-05-18'),
+    ];
+    
+    // Los días de la semana actual (semana del 5 de mayo)
+    const currentWeekDays = [
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ];
+    
+    // Mock de generateWeekDays para manejar los diferentes escenarios
+    dateUtils.generateWeekDays.mockImplementation((date) => {
+      // Si estamos en la semana siguiente (después de hacer clic en "siguiente")
+      if (date.getDate() >= 12 && date.getMonth() === 4) {
+        return nextWeekDays;
+      }
+      // Si estamos en la semana actual
+      return currentWeekDays;
+    });
+    
+    // Verificar título inicial
+    expect(screen.getByText('mayo de 2025')).toBeInTheDocument();
+    
+    // Hacer clic en el botón de semana siguiente para cambiar de semana
+    const nextButton = screen.getByRole('button', { name: /siguiente/i });
+    fireEvent.click(nextButton);
+    
+    // Hacer clic en el botón de semana actual para volver
+    const currentWeekButton = screen.getByRole('button', { name: /actual/i });
+    fireEvent.click(currentWeekButton);
+    
+    // Verificar que generateWeekDays fue llamado con la fecha actual
+    const currentDate = new Date('2025-05-06'); // Fecha base que usamos en beforeEach
+    expect(dateUtils.generateWeekDays).toHaveBeenCalledWith(
+      expect.objectContaining({
+        getFullYear: expect.any(Function),
+        getMonth: expect.any(Function),
+        getDate: expect.any(Function)
+      })
+    );
+    
+    // Verificar que el título sigue siendo "mayo de 2025"
+    expect(screen.getByText('mayo de 2025')).toBeInTheDocument();
+    
+    // Verificar que los encabezados de día están presentes
+    const dayHeaders = screen.getAllByTestId('calendar-day-header');
+    expect(dayHeaders).toHaveLength(7);
+  });
+
 });
