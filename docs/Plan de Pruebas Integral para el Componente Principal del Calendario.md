@@ -22,75 +22,75 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ### 3.1 Creación de Eventos
 
-- [ ] Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
-- [ ] Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
-- [ ] El nuevo evento recibe un ID único
-- [ ] El nuevo evento se guarda en el almacenamiento local
-- [ ] El evento publica una notificación de actualización a través de EventBus
-- [ ] El nuevo evento aparece en la cuadrícula del calendario tras su creación
+- [ ] 3.1.1 Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
+- [ ] 3.1.2 Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
+- [ ] 3.1.3 El nuevo evento recibe un ID único
+- [ ] 3.1.4 El nuevo evento se guarda en el almacenamiento local
+- [ ] 3.1.5 El evento publica una notificación de actualización a través de EventBus
+- [ ] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
 
 ### 3.2 Edición de eventos
 
-- [ ] Al hacer clic en un evento existente, se abre el formulario de edición
-- [ ] El formulario de edición se rellena con los datos correctos del evento
-- [ ] Los cambios en el evento se guardan correctamente
-- [ ] El evento actualizado se guarda en el almacenamiento local
-- [ ] El evento publica una notificación de actualización a través de EventBus
-- [ ] El evento actualizado aparece con los cambios en la cuadrícula del calendario
+- [ ] 3.2.1 Al hacer clic en un evento existente, se abre el formulario de edición
+- [ ] 3.2.2 El formulario de edición se rellena con los datos correctos del evento
+- [ ] 3.2.3 Los cambios en el evento se guardan correctamente
+- [ ] 3.2.4 El evento actualizado se guarda en el almacenamiento local
+- [ ] 3.2.5 El evento publica una notificación de actualización a través de EventBus
+- [ ] 3.2.6 El evento actualizado aparece con los cambios en la cuadrícula del calendario
 
 ### 3.3 Eliminación de eventos
 
-- [ ] El botón Eliminar aparece en el formulario de edición
-- [ ] El evento se elimina del estado al eliminarse
-- [ ] El evento se elimina del almacenamiento local al eliminarse
-- [ ] La eliminación del evento publica una notificación de actualización
-- [ ] El evento eliminado ya no aparece en la cuadrícula del calendario
+- [ ] 3.3.1 El botón Eliminar aparece en el formulario de edición
+- [ ] 3.3.2 El evento se elimina del estado al eliminarse
+- [ ] 3.3.3 El evento se elimina del almacenamiento local al eliminarse
+- [ ] 3.3.4 La eliminación del evento publica una notificación de actualización
+- [ ] 3.3.5 El evento eliminado ya no aparece en la cuadrícula del calendario
 
 ## 4. Formulario Manejo
 
-- [ ] El formulario muestra los campos correctos (título, inicio, fin, color)
-- [ ] La validación de campos funciona correctamente
-- [ ] Los cambios en el estado de actualización de los campos del formulario
-- [ ] El botón Cancelar cierra el formulario sin guardar
-- [ ] El formulario gestiona correctamente las entradas de fecha y hora
-- [ ] El selector de color actualiza el color del evento
+- [ ] 4.1 El formulario muestra los campos correctos (título, inicio, fin, color)
+- [ ] 4.2 La validación de campos funciona correctamente
+- [ ] 4.3 Los cambios en el estado de actualización de los campos del formulario
+- [ ] 4.4 El botón Cancelar cierra el formulario sin guardar
+- [ ] 4.5 El formulario gestiona correctamente las entradas de fecha y hora
+- [ ] 4.6 El selector de color actualiza el color del evento
 
 ## 5. Representación de eventos
 
-- [ ] Los eventos se representan en las franjas horarias correctas según la hora de inicio
-- [ ] Los eventos se muestran con el título correcto
-- [ ] Los eventos se muestran con el formato de hora correcto
-- [ ] Los eventos se muestran con el color de fondo correcto
-- [ ] Se puede hacer clic en los eventos y abren el formulario de edición
-- [ ] La función shouldShowEvent filtra los eventos correctamente
+- [ ] 5.1 Los eventos se representan en las franjas horarias correctas según la hora de inicio
+- [ ] 5.2 Los eventos se muestran con el título correcto
+- [ ] 5.3 Los eventos se muestran con el formato de hora correcto
+- [ ] 5.4 Los eventos se muestran con el color de fondo correcto
+- [ ] 5.5 Se puede hacer clic en los eventos y abren el formulario de edición
+- [ ] 5.6 La función shouldShowEvent filtra los eventos correctamente
 
 ## 6. Integración de almacenamiento
 
-- [ ] Los eventos se cargan desde el almacenamiento local al montar el componente
-- [ ] Los eventos se guardan en el almacenamiento local al crearse, actualizarse o eliminarse
-- [ ] La gestión de errores funciona para el almacenamiento local
-- [ ] Las operaciones de almacenamiento publican los eventos apropiados
+- [ ] 6.1 Los eventos se cargan desde el almacenamiento local al montar el componente
+- [ ] 6.2 Los eventos se guardan en el almacenamiento local al crearse, actualizarse o eliminarse
+- [ ] 6.3 La gestión de errores funciona para el almacenamiento local
+- [ ] 6.4 Las operaciones de almacenamiento publican los eventos apropiados
 
 ## 7. Registro del módulo
 
-- [ ] El módulo de calendario se registra correctamente al montar
-- [ ] El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
-- [ ] Las funciones de la API funcionan correctamente al ser llamadas externamente
-- [ ] El módulo se anula el registro (si corresponde) al desmontar
+- [ ] 7.1 El módulo de calendario se registra correctamente al montar
+- [ ] 7.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
+- [ ] 7.3 Las funciones de la API funcionan correctamente al ser llamadas externamente
+- [ ] 7.4 El módulo se anula el registro (si corresponde) al desmontar
 
 ## 8. Integración del bus de eventos
 
-- [ ] El componente se suscribe a los eventos apropiados
-- [ ] El componente responde a las actualizaciones de eventos externos
-- [ ] El componente publica eventos cuando cambian los datos
-- [ ] El componente limpia las suscripciones al desmontar
+- [ ] 8.1 El componente se suscribe a los eventos apropiados
+- [ ] 8.2 El componente responde a las actualizaciones de eventos externos
+- [ ] 8.3 El componente publica eventos cuando cambian los datos
+- [ ] 8.4 El componente limpia las suscripciones al desmontar
 
 ## 9. Casos extremos relevantes para Stage 1
 
-- [ ] Gestiona eventos simultáneos en la misma franja horaria
-- [ ] Gestiona eventos en los límites del día (medianoche)
-- [ ] Gestiona datos de eventos no válidos
-- [ ] Gestiona correctamente el exceso de la cuota de almacenamiento local
+- [ ] 9.1 Gestiona eventos simultáneos en la misma franja horaria
+- [ ] 9.2 Gestiona eventos en los límites del día (medianoche)
+- [ ] 9.3 Gestiona datos de eventos no válidos
+- [ ] 9.4 Gestiona correctamente el exceso de la cuota de almacenamiento local
 
 ## Notas de implementación simulada
 
