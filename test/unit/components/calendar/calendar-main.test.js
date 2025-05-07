@@ -1081,83 +1081,169 @@ describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6 - En desarroll
     expect(updatedEvent.color).toBe('#7e57c2'); // En minúsculas
   });
 
-// test 3.2.4: El evento actualizado se guarda en el almacenamiento local
-test('el evento actualizado se guarda en el almacenamiento local', () => {
-  // Crear un evento existente con un ID específico para identificarlo
-  const existingEvent = {
-    id: '1234-test-id',
-    title: 'Evento existente',
-    start: '2025-05-07T09:00:00.000Z',
-    end: '2025-05-07T10:00:00.000Z',
-    color: '#2d4b94'
-  };
-  
-  // Mock de localStorage con el evento existente
-  const mockLocalStorage = {
-    getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
-    setItem: jest.fn()
-  };
-  
-  Object.defineProperty(window, 'localStorage', {
-    value: mockLocalStorage,
-    writable: true
+  // test 3.2.4: El evento actualizado se guarda en el almacenamiento local
+  test('el evento actualizado se guarda en el almacenamiento local', () => {
+    // Crear un evento existente con un ID específico para identificarlo
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento existente',
+      start: '2025-05-07T09:00:00.000Z',
+      end: '2025-05-07T10:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Forzar funciones relacionadas con fechas para que el evento sea visible
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que se cargó el evento existente
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // 1. Crear un nuevo evento para después probar la actualización
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]); // Celda para la hora 1:00 AM
+    
+    // Modificar los datos del evento
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento para actualizar' } });
+    
+    // Guardar el nuevo evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Limpiar el historial de llamadas para poder aislar la siguiente operación
+    mockLocalStorage.setItem.mockClear();
+    
+    // 2. Ahora probar el proceso de actualización - simular apertura del formulario
+    fireEvent.click(timeSlots[15]); // Celda diferente
+    
+    // Simular la edición
+    const titleInput2 = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput2, { target: { value: 'Evento actualizado' } });
+    
+    // Guardar el evento actualizado
+    const saveButton2 = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton2);
+    
+    // Verificar que se llamó a localStorage.setItem
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+    
+    // Obtener los argumentos de la última llamada a setItem
+    const setItemArgs = mockLocalStorage.setItem.mock.calls[0];
+    const savedEventsJSON = setItemArgs[1];
+    const savedEvents = JSON.parse(savedEventsJSON);
+    
+    // Verificar que el evento original se mantiene en la lista
+    const originalEventInStorage = savedEvents.find(event => event.id === '1234-test-id');
+    expect(originalEventInStorage).toBeDefined();
+    expect(originalEventInStorage.title).toBe('Evento existente');
+    
+    // Verificar que el evento actualizado está en la lista
+    const updatedEventInStorage = savedEvents.find(event => event.title === 'Evento actualizado');
+    expect(updatedEventInStorage).toBeDefined();
+    
+    // Verificar que el evento actualizado tiene los datos correctos
+    expect(updatedEventInStorage.title).toBe('Evento actualizado');
   });
-  
-  // Forzar funciones relacionadas con fechas para que el evento sea visible
-  jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
-  
-  // Renderizar el componente
-  const { container } = render(<CalendarMain />);
-  
-  // Verificar que se cargó el evento existente
-  expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
-  
-  // 1. Crear un nuevo evento para después probar la actualización
-  const timeSlots = screen.getAllByTestId('calendar-time-slot');
-  fireEvent.click(timeSlots[10]); // Celda para la hora 1:00 AM
-  
-  // Modificar los datos del evento
-  const titleInput = screen.getByDisplayValue('Nuevo evento');
-  fireEvent.change(titleInput, { target: { value: 'Evento para actualizar' } });
-  
-  // Guardar el nuevo evento
-  const saveButton = screen.getByRole('button', { name: 'Guardar' });
-  fireEvent.click(saveButton);
-  
-  // Limpiar el historial de llamadas para poder aislar la siguiente operación
-  mockLocalStorage.setItem.mockClear();
-  
-  // 2. Ahora probar el proceso de actualización - simular apertura del formulario
-  fireEvent.click(timeSlots[15]); // Celda diferente
-  
-  // Simular la edición
-  const titleInput2 = screen.getByDisplayValue('Nuevo evento');
-  fireEvent.change(titleInput2, { target: { value: 'Evento actualizado' } });
-  
-  // Guardar el evento actualizado
-  const saveButton2 = screen.getByRole('button', { name: 'Guardar' });
-  fireEvent.click(saveButton2);
-  
-  // Verificar que se llamó a localStorage.setItem
-  expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
-  
-  // Obtener los argumentos de la última llamada a setItem
-  const setItemArgs = mockLocalStorage.setItem.mock.calls[0];
-  const savedEventsJSON = setItemArgs[1];
-  const savedEvents = JSON.parse(savedEventsJSON);
-  
-  // Verificar que el evento original se mantiene en la lista
-  const originalEventInStorage = savedEvents.find(event => event.id === '1234-test-id');
-  expect(originalEventInStorage).toBeDefined();
-  expect(originalEventInStorage.title).toBe('Evento existente');
-  
-  // Verificar que el evento actualizado está en la lista
-  const updatedEventInStorage = savedEvents.find(event => event.title === 'Evento actualizado');
-  expect(updatedEventInStorage).toBeDefined();
-  
-  // Verificar que el evento actualizado tiene los datos correctos
-  expect(updatedEventInStorage.title).toBe('Evento actualizado');
-});
 
+  // test 3.2.5: El evento publica una notificación de actualización a través de EventBus
+  test('el evento publica una notificación de actualización a través de EventBus', () => {
+    // Crear un evento existente con ID específico
+    const existingEvent = {
+      id: '1234-test-id',
+      title: 'Evento original',
+      start: '2025-05-07T09:00:00.000Z',
+      end: '2025-05-07T10:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Mock de localStorage con el evento existente
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Obtener acceso al mock de eventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Limpiar cualquier llamada previa
+    eventBus.publish.mockClear();
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que se ha cargado el evento
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Simular la apertura del formulario de edición
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]); // Hacer clic en una celda para abrir el formulario
+    
+    // Modificar los datos del evento
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento modificado' } });
+    
+    // Cambiar el color
+    const colorInput = container.querySelector('input[type="color"]');
+    fireEvent.change(colorInput, { target: { value: '#7e57c2' } });
+    
+    // Guardar los cambios
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que eventBus.publish fue llamado
+    expect(eventBus.publish).toHaveBeenCalled();
+    
+    // Verificar que se publicó el evento correcto
+    // Buscar la llamada con el tipo de evento de actualización de almacenamiento
+    const publishCalls = eventBus.publish.mock.calls;
+    const storageUpdateCall = publishCalls.find(call => 
+      call[0] === `${EventCategories.STORAGE}.eventsUpdated`
+    );
+    
+    // Verificar que se encontró la llamada correcta
+    expect(storageUpdateCall).toBeDefined();
+    
+    // Verificar que el segundo argumento (datos) es un array de eventos actualizado
+    const publishedEvents = storageUpdateCall[1];
+    expect(Array.isArray(publishedEvents)).toBe(true);
+    
+    // Buscar el evento original y verificar que se mantiene
+    const originalEvent = publishedEvents.find(event => event.id === '1234-test-id');
+    expect(originalEvent).toBeDefined();
+    expect(originalEvent.title).toBe('Evento original');
+    
+    // Buscar el evento actualizado
+    const updatedEvent = publishedEvents.find(event => event.title === 'Evento modificado');
+    expect(updatedEvent).toBeDefined();
+    expect(updatedEvent.color).toBe('#7e57c2');
+    
+    // Verificar que el array enviado coincide con lo que se guardó en localStorage
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+    const setItemArgs = mockLocalStorage.setItem.mock.calls[0];
+    const savedEvents = JSON.parse(setItemArgs[1]);
+    
+    // Verificar que es el mismo conjunto de datos
+    expect(publishedEvents.length).toBe(savedEvents.length);
+  });
 
 });
