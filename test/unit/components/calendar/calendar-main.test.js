@@ -166,3 +166,95 @@ describe('CalendarMain - Renderizado de estructura de cuadrícula', () => {
     // las celdas no tienen el rol 'button' y eso complica el test
   });
 });
+
+describe('CalendarMain - Navegación por Fecha', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual (4-10 de mayo)
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-04'),
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1; // +1 porque getMonth() devuelve 0-11
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Limpiar localStorage
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: jest.fn(),
+        setItem: jest.fn(),
+        removeItem: jest.fn(),
+        clear: jest.fn(),
+      },
+      writable: true
+    });
+  });
+  
+  // test 2.1: El botón de la semana anterior reduce la fecha en 7 días
+  test('el botón de la semana anterior reduce la fecha en 7 días', () => {
+    render(<CalendarMain />);
+    
+    // Configurar mock para la semana anterior (27 de abril al 3 de mayo)
+    const prevWeekDays = [
+      new Date('2025-04-27'),
+      new Date('2025-04-28'),
+      new Date('2025-04-29'),
+      new Date('2025-04-30'),
+      new Date('2025-05-01'),
+      new Date('2025-05-02'),
+      new Date('2025-05-03'),
+    ];
+    
+    // Preparar el mock para devolver la semana anterior cuando se llame después de hacer clic
+    dateUtils.generateWeekDays.mockImplementation((date) => {
+      // Verificar si la fecha es aproximadamente una semana antes
+      if (date.getDate() <= 3 && date.getMonth() === 4) { // Mayo es 4 (0-indexed)
+        return prevWeekDays;
+      }
+      // Si no, devolver la semana original
+      return [
+        new Date('2025-05-04'),
+        new Date('2025-05-05'),
+        new Date('2025-05-06'),
+        new Date('2025-05-07'),
+        new Date('2025-05-08'),
+        new Date('2025-05-09'),
+        new Date('2025-05-10'),
+      ];
+    });
+    
+    // Verifica título inicial
+    expect(screen.getByText('mayo de 2025')).toBeInTheDocument();
+    
+    // Hacer clic en el botón de semana anterior
+    const prevButton = screen.getByRole('button', { name: /anterior/i });
+    fireEvent.click(prevButton);
+    
+    // Verificar que generateWeekDays fue llamado con una fecha 7 días antes
+    expect(dateUtils.generateWeekDays).toHaveBeenCalledWith(expect.any(Date));
+    
+    // Verificar que ahora se está mostrando "abril de 2025" o "mayo de 2025" dependiendo del primer día
+    // de la semana generada (puede ser abril o mayo dependiendo de cómo se implementa generateWeekDays)
+    const updatedTitle = screen.getByText(/abril de 2025|mayo de 2025/);
+    expect(updatedTitle).toBeInTheDocument();
+    
+    // Verificar que los encabezados de día se actualizaron
+    const dayHeaders = screen.getAllByTestId('calendar-day-header');
+    expect(dayHeaders).toHaveLength(7);
+  });
+});

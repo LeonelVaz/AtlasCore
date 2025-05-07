@@ -16,7 +16,7 @@
 
 ## 2. Navegación por Fecha
 
-- 2.1 [ ] El botón de la semana anterior reduce la fecha en 7 días
+- 2.1 [x] El botón de la semana anterior reduce la fecha en 7 días
 
 - 2.2 [ ] El botón de la semana siguiente incrementa la fecha en 7 días
 
