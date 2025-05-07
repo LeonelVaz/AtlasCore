@@ -49,7 +49,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 ## 4. Formulario Manejo
 
 - [x] 4.1 El formulario muestra los campos correctos (título, inicio, fin, color)
-- [ ] 4.2 La validación de campos funciona correctamente
+- [x] 4.2 La validación de campos funciona correctamente
 - [x] 4.3 Los cambios en el estado de actualización de los campos del formulario
 - [x] 4.4 El botón Cancelar cierra el formulario sin guardar
 - [x] 4.5 El formulario gestiona correctamente las entradas de fecha y hora
