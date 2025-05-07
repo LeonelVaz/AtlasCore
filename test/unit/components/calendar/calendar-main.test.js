@@ -499,7 +499,7 @@ describe('CalendarMain - Navegación por Fecha (Tests 2.1 a 2.4)', () => {
   });
 });
 
-describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarrollo)', () => {
+describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
