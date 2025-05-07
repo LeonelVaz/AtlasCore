@@ -27,7 +27,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 3.1.3 El nuevo evento recibe un ID único
 - [x] 3.1.4 El nuevo evento se guarda en el almacenamiento local
 - [x] 3.1.5 El evento publica una notificación de actualización a través de EventBus
-- [ ] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
+- [x] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
 
 ### 3.2 Edición de eventos
 

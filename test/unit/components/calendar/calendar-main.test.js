@@ -772,4 +772,67 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     expect(publishedEvent).toHaveProperty('end');
   });
 
+  // test 3.1.6: El nuevo evento aparece en la cuadrícula del calendario tras su creación
+  test('el nuevo evento aparece en la cuadrícula del calendario tras su creación', () => {
+    // Mock para Date.now() para tener un ID predecible
+    const mockDateNow = jest.spyOn(Date, 'now').mockReturnValue(12345678);
+    
+    // Mock de localStorage con datos iniciales vacíos
+    const localStorageMock = {
+      getItem: jest.fn().mockReturnValue(null), // Sin eventos previos
+      setItem: jest.fn((key, value) => {
+        // Simular que localStorage actualiza los datos para pruebas futuras
+        localStorageMock.getItem.mockReturnValue(value);
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true
+    });
+    
+    // Renderizar el componente del calendario
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que inicialmente no hay eventos en la cuadrícula
+    const calendarCells = screen.getAllByTestId('calendar-time-slot');
+    const initialEventElements = container.querySelectorAll('.calendar-event');
+    expect(initialEventElements.length).toBe(0);
+    
+    // Buscamos todas las celdas de tiempo y hacemos clic en una específica
+    // Por ejemplo, el primer día a la 1:00 (el índice 10 parece corresponder a esta hora)
+    const cellToClick = calendarCells[10];
+    fireEvent.click(cellToClick);
+    
+    // Verificar que se abrió el formulario de evento
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Personalizar el título del evento para identificarlo mejor
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento de prueba' } });
+    
+    // Guardar el evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que el formulario se cierra
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Verificar que el evento aparece en la cuadrícula del calendario
+    // Específicamente, buscamos un elemento con el título del evento que acabamos de crear
+    const calendarEvents = screen.getAllByText('Evento de prueba');
+    expect(calendarEvents.length).toBeGreaterThan(0);
+    
+    // Verificar que el evento está en la celda correcta
+    // Buscamos el evento dentro de la celda donde hicimos clic
+    const eventInCell = within(cellToClick).queryByText('Evento de prueba');
+    expect(eventInCell).toBeInTheDocument();
+    
+    // Verificar que el evento tiene la clase correcta
+    const eventElement = screen.getByText('Evento de prueba').closest('.calendar-event');
+    expect(eventElement).toHaveClass('calendar-event');
+    
+    // Restaurar el mock de Date.now
+    mockDateNow.mockRestore();
+  });
 });
