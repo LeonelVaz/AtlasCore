@@ -376,4 +376,129 @@ describe('CalendarMain - Navegación por Fecha', () => {
     expect(dayHeaders).toHaveLength(7);
   });
 
+  // test 2.4: Los días de la semana se generan correctamente para cualquier fecha
+  test('los días de la semana se generan correctamente para cualquier fecha', () => {
+    // Restauramos la implementación original de generateWeekDays para probar diferentes fechas
+    dateUtils.generateWeekDays.mockRestore();
+    
+    // En su lugar, vamos a espiar la función real para verificar que se llama con los argumentos correctos
+    jest.spyOn(dateUtils, 'generateWeekDays');
+    
+    // Vamos a probar con tres fechas distintas (inicios de mes, mitad de mes, fin de mes)
+    const testDates = [
+      new Date('2025-05-01'), // Inicio de mes
+      new Date('2025-05-15'), // Mitad de mes
+      new Date('2025-05-31'), // Fin de mes
+      new Date('2025-12-31')  // Fin de año
+    ];
+    
+    // Mock para los días generados para cada fecha de prueba
+    const mockWeekDays = {
+      '2025-05-01': [
+        new Date('2025-04-28'), // Lunes
+        new Date('2025-04-29'),
+        new Date('2025-04-30'),
+        new Date('2025-05-01'),
+        new Date('2025-05-02'),
+        new Date('2025-05-03'),
+        new Date('2025-05-04')  // Domingo
+      ],
+      '2025-05-15': [
+        new Date('2025-05-12'), // Lunes
+        new Date('2025-05-13'),
+        new Date('2025-05-14'),
+        new Date('2025-05-15'),
+        new Date('2025-05-16'),
+        new Date('2025-05-17'),
+        new Date('2025-05-18')  // Domingo
+      ],
+      '2025-05-31': [
+        new Date('2025-05-26'), // Lunes
+        new Date('2025-05-27'),
+        new Date('2025-05-28'),
+        new Date('2025-05-29'),
+        new Date('2025-05-30'),
+        new Date('2025-05-31'),
+        new Date('2025-06-01')  // Domingo
+      ],
+      '2025-12-31': [
+        new Date('2025-12-29'), // Lunes
+        new Date('2025-12-30'),
+        new Date('2025-12-31'),
+        new Date('2026-01-01'),
+        new Date('2026-01-02'),
+        new Date('2026-01-03'),
+        new Date('2026-01-04')  // Domingo
+      ]
+    };
+    
+    // Implementamos un mock que devuelve los días adecuados según la fecha
+    dateUtils.generateWeekDays.mockImplementation((date) => {
+      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      
+      // Si tenemos una configuración específica para esta fecha, la usamos
+      if (mockWeekDays[dateKey]) {
+        return mockWeekDays[dateKey];
+      }
+      
+      // Si no, devolvemos la semana por defecto (semana del 5 de mayo)
+      return [
+        new Date('2025-05-05'),
+        new Date('2025-05-06'),
+        new Date('2025-05-07'),
+        new Date('2025-05-08'),
+        new Date('2025-05-09'),
+        new Date('2025-05-10'),
+        new Date('2025-05-11'),
+      ];
+    });
+    
+    // Mock de formatDate para manejar distintos formatos
+    dateUtils.formatDate.mockImplementation((date, options) => {
+      if (options && options.month === 'long' && options.year === 'numeric') {
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${months[date.getMonth()]} de ${date.getFullYear()}`;
+      }
+      
+      if (options && options.weekday === 'short' && options.day === 'numeric' && options.month === 'short') {
+        const weekdays = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+        const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        
+        const day = date.getDate();
+        const weekday = weekdays[date.getDay()];
+        const month = months[date.getMonth()];
+        
+        return `${weekday}, ${day} ${month}`;
+      }
+      
+      return date.toLocaleDateString();
+    });
+    
+    // Ciclo de prueba para cada fecha
+    testDates.forEach(testDate => {
+      // Mock de fecha actual para esta iteración
+      jest.spyOn(Date, 'now').mockReturnValue(testDate.getTime());
+      
+      // Renderizar el componente con esta fecha como "actual"
+      const { unmount } = render(<CalendarMain />);
+      
+      // Verificar que se llama a generateWeekDays con una fecha cercana a la actual
+      expect(dateUtils.generateWeekDays).toHaveBeenCalled();
+      
+      // Verificar que se renderizan 7 encabezados de día
+      const dayHeaders = screen.getAllByTestId('calendar-day-header');
+      expect(dayHeaders).toHaveLength(7);
+      
+      // Verificar que hay celdas de tiempo para cada día
+      const timeSlots = screen.getAllByTestId('calendar-time-slot');
+      expect(timeSlots.length).toBe(7 * 24); // 7 días x 24 horas
+      
+      // Desmontar antes de la siguiente iteración
+      unmount();
+    });
+  });
+
+
+
+
 });

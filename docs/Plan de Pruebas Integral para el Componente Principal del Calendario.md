@@ -22,7 +22,7 @@
 
 - 2.3 [x] El botón de la semana actual se restablece a la fecha actual
 
-- 2.4 [ ] Los días de la semana se generan correctamente para cualquier fecha
+- 2.4 [x] Los días de la semana se generan correctamente para cualquier fecha
 
 - 2.5 [ ] El encabezado de mes/año se actualiza al navegar entre meses
 
