@@ -557,7 +557,7 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     expect(screen.getByText('Fin:')).toBeInTheDocument();
     expect(screen.getByText('Color:')).toBeInTheDocument();
   });
-      
+        
   // test 3.1.2: Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
   test('nuevo evento creado con valores predeterminados que coinciden con la hora del clic', () => {
     render(<CalendarMain />);
@@ -568,9 +568,9 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     // Buscamos todas las celdas de tiempo
     const timeSlots = screen.getAllByTestId('calendar-time-slot');
     
-    // Elegimos una celda específica para hacer clic (por ejemplo, el primer día a las 10:00)
-    // Como hay 24 horas por día y 7 días, la celda para el primer día a las 10:00 es:
-    // hora 10 + (día 0 * 24) = celda 10
+    // Elegimos una celda específica para hacer clic (por ejemplo, el primer día a las 1:00)
+    // Como hay 24 horas por día y 7 días, la celda para el primer día a la 1:00 es:
+    // hora 1 + (día 0 * 24) = celda 10
     const cellToClick = timeSlots[10]; // Celda para la hora 1:00 AM del primer día
     
     // Hacemos clic en la celda
@@ -595,5 +595,4 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     expect(startInput.value).toContain('T01:00');
     expect(endInput.value).toContain('T02:00');
   });
-
 });
