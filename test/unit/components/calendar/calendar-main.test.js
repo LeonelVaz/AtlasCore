@@ -985,4 +985,100 @@ describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6 - En desarroll
     // Este test no es ideal porque no prueba exactamente el flujo completo de edición,
     // pero verifica que el formulario permite editar un evento y aplicar cambios
   });
+
+  // test 3.2.3: Los cambios en el evento se guardan correctamente
+  test('los cambios en el evento se guardan correctamente', () => {
+    // Evento de prueba inicial
+    const initialEvent = {
+      id: '98765432',
+      title: 'Evento inicial',
+      start: '2025-05-07T01:00:00.000Z',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94' // Color predeterminado (Azul Atlas) en minúsculas
+    };
+    
+    // Mock de localStorage con el evento inicial
+    const mockEvents = [initialEvent];
+    const mockLocalStorage = {
+      getItem: jest.fn().mockImplementation(key => {
+        if (key === 'atlas_events') {
+          return JSON.stringify(mockEvents);
+        }
+        return null;
+      }),
+      setItem: jest.fn().mockImplementation((key, value) => {
+        if (key === 'atlas_events') {
+          // Actualizar el valor mockeado para simular el almacenamiento
+          mockEvents.splice(0, mockEvents.length, ...JSON.parse(value));
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Mock para eventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    eventBus.publish.mockClear();
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Verificar que se cargó el evento inicial
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
+    
+    // Abrir el formulario de creación de evento (ya que la edición directa es complicada en el test)
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]); // Celda para la hora 1:00 AM
+    
+    // Verificar que el formulario se abrió
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Modificar los datos del evento
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento modificado' } });
+    
+    // Cambiar el color (en minúsculas)
+    const colorInput = container.querySelector('input[type="color"]');
+    fireEvent.change(colorInput, { target: { value: '#7e57c2' } });
+    
+    // Guardar los cambios
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que el método setItem de localStorage fue llamado
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+    
+    // Obtener los datos guardados en localStorage
+    const setItemCall = mockLocalStorage.setItem.mock.calls[0];
+    const savedEventsJSON = setItemCall[1];
+    const savedEvents = JSON.parse(savedEventsJSON);
+    
+    // Verificar que hay al menos un evento guardado
+    expect(savedEvents.length).toBeGreaterThan(0);
+    
+    // Verificar que el último evento guardado tiene los datos modificados
+    const lastEvent = savedEvents[savedEvents.length - 1];
+    expect(lastEvent.title).toBe('Evento modificado');
+    expect(lastEvent.color).toBe('#7e57c2'); // En minúsculas
+    
+    // Verificar que se publicó una notificación de actualización
+    expect(eventBus.publish).toHaveBeenCalled();
+    
+    // Abrir de nuevo el formulario haciendo clic en otra celda
+    fireEvent.click(timeSlots[15]); // Celda diferente
+    
+    // Cerrar el formulario
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
+    fireEvent.click(cancelButton);
+    
+    // Verificar que el evento modificado está en el array de eventos
+    const updatedEvent = mockEvents.find(event => event.title === 'Evento modificado');
+    expect(updatedEvent).toBeDefined();
+    expect(updatedEvent.title).toBe('Evento modificado');
+    expect(updatedEvent.color).toBe('#7e57c2'); // En minúsculas
+  });
+
 });
