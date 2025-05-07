@@ -3143,3 +3143,148 @@ describe('CalendarMain - Registro del módulo (Tests 7.1 a 7.4)', () => {
     expect(unregisterModule).toHaveBeenCalledWith('calendar');
   });
 });
+
+describe('CalendarMain - Integración del bus de eventos (Tests 8.1 a 8.4)', () => {
+  beforeEach(() => {
+    // Fecha base para las pruebas (6 de mayo de 2025)
+    const baseDate = new Date('2025-05-06');
+    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
+    
+    // Mock inicial para los días de la semana actual
+    dateUtils.generateWeekDays.mockReturnValue([
+      new Date('2025-05-05'),
+      new Date('2025-05-06'),
+      new Date('2025-05-07'),
+      new Date('2025-05-08'),
+      new Date('2025-05-09'),
+      new Date('2025-05-10'),
+      new Date('2025-05-11'),
+    ]);
+    
+    // Mock para formato de fecha y hora
+    dateUtils.formatDate.mockImplementation((date) => {
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}/${month}`;
+    });
+    
+    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
+    
+    // Mock para la función isSameDay para asegurar que los eventos se rendericen
+    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
+    
+    // Limpiar los mocks del EventBus para cada test
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    eventBus.subscribe.mockClear();
+    eventBus.publish.mockClear();
+  });
+
+  // test 8.1: El componente se suscribe a los eventos apropiados
+  test('el componente se suscribe a los eventos apropiados', () => {
+    // Obtener referencia al EventBus y EventCategories
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que eventBus.subscribe fue llamado
+    expect(eventBus.subscribe).toHaveBeenCalled();
+    
+    // Verificar que se suscribió al evento de actualización de almacenamiento
+    expect(eventBus.subscribe).toHaveBeenCalledWith(
+      `${EventCategories.STORAGE}.eventsUpdated`,
+      expect.any(Function)
+    );
+  });
+
+
+
+  
+
+  // test 8.3: El componente publica eventos cuando cambian los datos
+  test('el componente publica eventos cuando cambian los datos', () => {
+    // Obtener referencia al EventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    
+    // Mock para localStorage
+    let savedEvents = [];
+    const mockLocalStorage = {
+      getItem: jest.fn(() => savedEvents.length ? JSON.stringify(savedEvents) : null),
+      setItem: jest.fn((key, value) => {
+        if (key === 'atlas_events') {
+          savedEvents = JSON.parse(value);
+        }
+      })
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Limpiar cualquier llamada previa
+    eventBus.publish.mockClear();
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // 1. Crear un nuevo evento
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]);
+    
+    // Modificar el título
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento de prueba' } });
+    
+    // Guardar el evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que eventBus.publish fue llamado
+    expect(eventBus.publish).toHaveBeenCalled();
+    
+    // Verificar que se publicó el tipo de evento correcto con los datos actualizados
+    expect(eventBus.publish).toHaveBeenCalledWith(
+      `${EventCategories.STORAGE}.eventsUpdated`,
+      expect.any(Array)
+    );
+    
+    // Verificar que los datos publicados contienen el evento creado
+    const publishCalls = eventBus.publish.mock.calls;
+    const storageUpdateCall = publishCalls.find(call => 
+      call[0] === `${EventCategories.STORAGE}.eventsUpdated`
+    );
+    
+    expect(storageUpdateCall).toBeDefined();
+    
+    const publishedEvents = storageUpdateCall[1];
+    expect(publishedEvents.length).toBe(1);
+    expect(publishedEvents[0].title).toBe('Evento de prueba');
+  });
+
+  // test 8.4: El componente limpia las suscripciones al desmontar
+  test('el componente limpia las suscripciones al desmontar', () => {
+    // Crear un mock para la función de cancelación
+    const unsubscribeMock = jest.fn();
+    
+    // Obtener referencia al EventBus
+    const eventBus = require('../../../../src/core/bus/event-bus').default;
+    
+    // Configurar el mock para devolver la función de cancelación
+    eventBus.subscribe.mockReturnValue(unsubscribeMock);
+    
+    // Renderizar el componente
+    const { unmount } = render(<CalendarMain />);
+    
+    // Verificar que se suscribió al bus de eventos
+    expect(eventBus.subscribe).toHaveBeenCalled();
+    
+    // Desmontar el componente
+    unmount();
+    
+    // Verificar que se llamó a la función de cancelación
+    expect(unsubscribeMock).toHaveBeenCalled();
+  });
+});

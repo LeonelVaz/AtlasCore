@@ -80,10 +80,10 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 ## 8. Integración del bus de eventos
 
-- [ ] 8.1 El componente se suscribe a los eventos apropiados
+- [x] 8.1 El componente se suscribe a los eventos apropiados
 - [ ] 8.2 El componente responde a las actualizaciones de eventos externos
-- [ ] 8.3 El componente publica eventos cuando cambian los datos
-- [ ] 8.4 El componente limpia las suscripciones al desmontar
+- [x] 8.3 El componente publica eventos cuando cambian los datos
+- [x] 8.4 El componente limpia las suscripciones al desmontar
 
 ## 9. Casos extremos relevantes para Stage 1
 
