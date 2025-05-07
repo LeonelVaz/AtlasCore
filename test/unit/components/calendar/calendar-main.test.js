@@ -595,4 +595,56 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6 - En desarroll
     expect(startInput.value).toContain('T01:00');
     expect(endInput.value).toContain('T02:00');
   });
+
+  // test 3.1.3: El nuevo evento recibe un ID único
+  test('el nuevo evento recibe un ID único', () => {
+    // Hacer un mock de Date.now() para controlar el valor que se usa para generar el ID
+    const mockDateNow = jest.spyOn(Date, 'now').mockReturnValue(12345678);
+
+    // Mock de localStorage para capturar los datos guardados
+    const localStorageMock = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock
+    });
+
+    render(<CalendarMain />);
+    
+    // Buscamos todas las celdas de tiempo
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    
+    // Hacer clic en una celda para crear un nuevo evento
+    fireEvent.click(timeSlots[10]);
+    
+    // Verificar que el formulario de evento se abrió
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Simular el guardado del evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que el método setItem de localStorage fue llamado
+    expect(localStorageMock.setItem).toHaveBeenCalled();
+    
+    // Obtener los argumentos con los que se llamó a setItem
+    const setItemArgs = localStorageMock.setItem.mock.calls[0];
+    
+    // Verificar que el primer argumento es 'atlas_events'
+    expect(setItemArgs[0]).toBe('atlas_events');
+    
+    // Parsear el JSON que se guardó y verificar que el evento tiene un ID único
+    const savedEvents = JSON.parse(setItemArgs[1]);
+    expect(savedEvents).toHaveLength(1);
+    
+    // Verificar que el ID coincide con el timestamp mockeado
+    expect(savedEvents[0].id).toBe('12345678');
+    
+    // Verificar que el evento tiene los datos esperados
+    expect(savedEvents[0].title).toBe('Nuevo evento');
+    
+    // Restaurar el mock de Date.now
+    mockDateNow.mockRestore();
+  });
 });

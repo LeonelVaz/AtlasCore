@@ -24,7 +24,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 
 - [x] 3.1.1 Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
 - [x] 3.1.2 Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
-- [ ] 3.1.3 El nuevo evento recibe un ID único
+- [x] 3.1.3 El nuevo evento recibe un ID único
 - [ ] 3.1.4 El nuevo evento se guarda en el almacenamiento local
 - [ ] 3.1.5 El evento publica una notificación de actualización a través de EventBus
 - [ ] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
