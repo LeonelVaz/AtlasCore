@@ -63,7 +63,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 5.4 Los eventos se muestran con el color de fondo correcto
 - [x] 5.5 Se puede hacer clic en los eventos y abren el formulario de edición
 - [x] 5.6 La función shouldShowEvent filtra los eventos correctamente
-- [ ] 5.7: El componente maneja excepciones durante el renderizado de eventos
+- [x] 5.7: El componente maneja excepciones durante el renderizado de eventos
 
 ## 6. Integración de almacenamiento
 

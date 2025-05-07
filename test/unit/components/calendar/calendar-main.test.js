@@ -2681,6 +2681,59 @@ describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.6)', () => {
     const allEventTitles = container.querySelectorAll('.event-title');
     expect(allEventTitles.length).toBe(2);
   });
+
+  // test 5.7: El componente maneja excepciones durante el renderizado de eventos
+  test('el componente maneja excepciones durante el renderizado de eventos', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Mock para la función Date que falla al procesar una fecha específica
+    const originalDate = global.Date;
+    
+    // Crear un evento con una fecha que causará error
+    const eventWithBadDate = {
+      id: '1',
+      title: 'Evento con fecha problemática',
+      start: 'fecha-que-causara-error',
+      end: '2025-05-07T02:00:00.000Z',
+      color: '#2d4b94'
+    };
+    
+    // Modificar el comportamiento de la clase Date para que lance una excepción
+    // con la fecha problemática específica
+    global.Date = function(date) {
+      if (date === 'fecha-que-causara-error') {
+        throw new Error('Error al procesar fecha');
+      }
+      return new originalDate(date);
+    };
+    
+    // Copiar los métodos estáticos y prototipo de Date original
+    Object.setPrototypeOf(global.Date, originalDate);
+    global.Date.now = originalDate.now;
+    
+    // Mock de localStorage
+    window.localStorage.getItem.mockReturnValue(JSON.stringify([eventWithBadDate]));
+    
+    // Renderizar el componente
+    render(<CalendarMain />);
+    
+    // Verificar que se capturó el error - usamos el mensaje correcto que se muestra en el error
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error al procesar fechas del evento:',
+      expect.any(Error),
+      expect.anything()
+    );
+    
+    // Verificar que el componente sigue funcionando
+    expect(screen.getAllByTestId('calendar-time-slot').length).toBeGreaterThan(0);
+    
+    // Restaurar el Date original
+    global.Date = originalDate;
+    
+    // Restaurar el espía
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () => {
