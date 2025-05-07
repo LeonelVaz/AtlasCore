@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
-import { registerModule } from '../../core/module/module-registry';
+import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import { 
   getFirstDayOfWeek, 
   formatDate, 
@@ -34,12 +34,18 @@ function CalendarMain() {
     loadEvents();
     
     // Registrar el módulo de calendario
-    registerModule('calendar', {
+    const moduleAPI = {
+      // Utilizar una función de flecha para capturar el estado actual en tiempo de ejecución
       getEvents: () => events,
-      createEvent: createEvent,
-      updateEvent: updateEvent,
-      deleteEvent: deleteEvent
-    });
+      
+      // Usar las funciones del componente directamente
+      createEvent,
+      updateEvent,
+      deleteEvent
+    };
+    
+    // Registrar el módulo
+    registerModule('calendar', moduleAPI);
     
     // Suscribirse a eventos relevantes
     const unsubscribe = eventBus.subscribe(
@@ -48,7 +54,11 @@ function CalendarMain() {
     );
     
     return () => {
-      unsubscribe(); // Limpiar suscripción al desmontar
+      // Limpiar suscripción al desmontar
+      unsubscribe();
+      
+      // Anular el registro del módulo
+      unregisterModule('calendar');
     };
   }, []);
 

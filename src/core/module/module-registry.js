@@ -55,3 +55,20 @@ export function getModule(moduleName) {
 export function isModuleRegistered(moduleName) {
   return typeof window !== 'undefined' && !!window.__appModules[moduleName];
 }
+
+/**
+ * Elimina un módulo previamente registrado
+ * @param {string} moduleName - Nombre del módulo a eliminar
+ * @returns {boolean} - true si el módulo fue eliminado, false si no existía
+ */
+export function unregisterModule(moduleName) {
+  if (typeof window === 'undefined' || !window.__appModules || !window.__appModules[moduleName]) {
+    console.warn(`El módulo ${moduleName} no está registrado, no se puede eliminar.`);
+    return false;
+  }
+  
+  // Eliminar el módulo del registro
+  delete window.__appModules[moduleName];
+  console.log(`Módulo ${moduleName} eliminado correctamente`);
+  return true;
+}
