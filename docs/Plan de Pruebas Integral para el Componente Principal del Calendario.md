@@ -2,17 +2,17 @@
 
 ## 1. Renderizado del Componente
 
-- [ ] La estructura de la cuadrícula del calendario se renderiza correctamente con las franjas horarias
+- 1.1 [x] La estructura de la cuadrícula del calendario se renderiza correctamente con las franjas horarias
 
-- [ ] El encabezado de hora muestra 24 horas con el formato correcto
+- 1.2 [x] El encabezado de hora muestra 24 horas con el formato correcto
 
-- [ ] Los botones de navegación de fecha se renderizan y se puede hacer clic
+- 1.3 [x] Los botones de navegación de fecha se renderizan y se puede hacer clic
 
-- [ ] El título del calendario muestra el mes y el año correctos
+- 1.4 [x] El título del calendario muestra el mes y el año correctos
 
-- [ ] Los encabezados de día muestran las fechas con el formato correcto
+- 1.5 [ ] Los encabezados de día muestran las fechas con el formato correcto
 
-- [ ] El formulario de evento no se muestra inicialmente
+- 1.6 [ ] El formulario de evento no se muestra inicialmente
 
 ## 2. Navegación por Fecha
 
