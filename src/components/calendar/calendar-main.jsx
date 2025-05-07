@@ -1,4 +1,4 @@
-// calendar-main.jsx - Versión final para 100% de cobertura
+// calendar-main.jsx - Versión corregida
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
@@ -58,6 +58,25 @@ function CalendarMain() {
       unregisterModule('calendar'); 
     };
   }, []);
+
+  // Para depuración
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.debugCalendar = () => {
+        console.log('Estado actual de eventos:', events);
+        console.log('Evento seleccionado:', selectedEvent);
+        console.log('Formulario de evento:', newEvent);
+        console.log('Fecha actual:', currentDate);
+        return { events, selectedEvent, newEvent, currentDate };
+      };
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.debugCalendar;
+      }
+    };
+  }, [events, selectedEvent, newEvent, currentDate]);
 
   // Cargar eventos desde localStorage
   const loadEvents = () => {
@@ -127,33 +146,49 @@ function CalendarMain() {
 
   // Crear un nuevo evento
   const createEvent = (eventData) => {
-    const newEventWithId = {
-      ...eventData,
-      id: Date.now().toString() // ID único basado en timestamp
-    };
-    
-    const updatedEvents = [...events, newEventWithId];
-    setEvents(updatedEvents);
-    saveEvents(updatedEvents);
-    return newEventWithId;
+    try {
+      const newEventWithId = {
+        ...eventData,
+        id: Date.now().toString() // ID único basado en timestamp
+      };
+      
+      const updatedEvents = [...events, newEventWithId];
+      setEvents(updatedEvents);
+      saveEvents(updatedEvents);
+      return newEventWithId;
+    } catch (error) {
+      console.error('Error al crear evento:', error);
+      return null;
+    }
   };
 
   // Actualizar un evento existente
   const updateEvent = (eventId, eventData) => {
-    const updatedEvents = events.map(event => 
-      event.id === eventId ? { ...event, ...eventData } : event
-    );
-    
-    setEvents(updatedEvents);
-    saveEvents(updatedEvents);
-    return updatedEvents.find(e => e.id === eventId);
+    try {
+      console.log('Actualizando evento:', eventId, eventData); // Para depuración
+      
+      const updatedEvents = events.map(event => 
+        event.id === eventId ? { ...event, ...eventData } : event
+      );
+      
+      setEvents(updatedEvents);
+      saveEvents(updatedEvents);
+      return updatedEvents.find(e => e.id === eventId);
+    } catch (error) {
+      console.error('Error al actualizar evento:', error);
+      return null;
+    }
   };
 
   // Eliminar un evento
   const deleteEvent = (eventId) => {
-    const updatedEvents = events.filter(event => event.id !== eventId);
-    setEvents(updatedEvents);
-    saveEvents(updatedEvents);
+    try {
+      const updatedEvents = events.filter(event => event.id !== eventId);
+      setEvents(updatedEvents);
+      saveEvents(updatedEvents);
+    } catch (error) {
+      console.error('Error al eliminar evento:', error);
+    }
   };
 
   // Navegar a la semana anterior
@@ -186,84 +221,117 @@ function CalendarMain() {
 
   // Manejar clic en una celda de tiempo para crear evento
   const handleCellClick = (day, hour) => {
-    // Crear nuevas fechas con la hora correcta
-    const startDate = new Date(day);
-    startDate.setHours(hour, 0, 0, 0);
-    
-    const endDate = new Date(startDate);
-    endDate.setHours(hour + 1, 0, 0, 0);
-    
-    // Formatear las fechas para el formato datetime-local
-    const formatDateForInput = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
+    try {
+      // Crear nuevas fechas con la hora correcta
+      const startDate = new Date(day);
+      startDate.setHours(hour, 0, 0, 0);
       
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-    
-    setNewEvent({
-      id: '',
-      title: 'Nuevo evento',
-      start: startDate.toISOString(),
-      end: endDate.toISOString(),
-      startFormatted: formatDateForInput(startDate),
-      endFormatted: formatDateForInput(endDate),
-      color: '#2D4B94'
-    });
-    
-    setShowEventForm(true);
+      const endDate = new Date(startDate);
+      endDate.setHours(hour + 1, 0, 0, 0);
+      
+      // Formatear las fechas para el formato datetime-local
+      const formatDateForInput = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+      
+      // Resetear el evento seleccionado
+      setSelectedEvent(null);
+      
+      setNewEvent({
+        id: '',
+        title: 'Nuevo evento',
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        startFormatted: formatDateForInput(startDate),
+        endFormatted: formatDateForInput(endDate),
+        color: '#2D4B94'
+      });
+      
+      setShowEventForm(true);
+    } catch (error) {
+      console.error('Error al manejar clic en celda:', error);
+    }
   };
 
   // Manejar clic en un evento existente
   const handleEventClick = (event) => {
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end);
+    console.log('Evento clickeado:', event); // Para depuración
     
-    // Formatear las fechas para el formato datetime-local
-    const formatDateForInput = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
+    try {
+      // Asegurar que estamos trabajando con objetos Date para las fechas
+      const startDate = new Date(event.start);
+      const endDate = new Date(event.end);
       
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
-    };
-    
-    // Guardar el evento seleccionado para referencias futuras
-    setSelectedEvent(event);
-    
-    // CORREGIDO: Asegurar que se conserven todos los valores del evento original
-    setNewEvent({
-      id: event.id,
-      title: event.title,  // Asegurar que se use el título original
-      start: event.start,
-      end: event.end,
-      color: event.color,  // Asegurar que se use el color original
-      startFormatted: formatDateForInput(startDate),
-      endFormatted: formatDateForInput(endDate)
-    });
-    
-    setShowEventForm(true);
+      // Validar que las fechas sean válidas
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.error('Fechas de evento inválidas:', event);
+        return;
+      }
+      
+      // Formatear las fechas para el formato datetime-local
+      const formatDateForInput = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+      
+      // Hacer una copia profunda del evento seleccionado para evitar problemas de referencia
+      setSelectedEvent({...event});
+      
+      // Establecer todos los campos del formulario explícitamente
+      const formattedEvent = {
+        id: event.id,
+        title: event.title || '',
+        start: event.start,
+        end: event.end,
+        color: event.color || '#2D4B94',
+        startFormatted: formatDateForInput(startDate),
+        endFormatted: formatDateForInput(endDate)
+      };
+      
+      console.log('Evento formateado para formulario:', formattedEvent); // Para depuración
+      setNewEvent(formattedEvent);
+      
+      setShowEventForm(true);
+    } catch (error) {
+      console.error('Error al manejar clic en evento:', error, event);
+    }
   };
 
   // Manejar cambios en el formulario de evento
   const handleEventFormChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name === 'start' || name === 'end') {
-      // Para los campos de fecha, necesitamos actualizar tanto el valor ISO como el formateado
-      const date = new Date(value);
-      setNewEvent(prev => ({ 
-        ...prev, 
-        [name]: date.toISOString(),
-        [`${name}Formatted`]: value 
-      }));
-    } else {
-      setNewEvent(prev => ({ ...prev, [name]: value }));
+    try {
+      const { name, value } = e.target;
+      
+      if (name === 'start' || name === 'end') {
+        // Para los campos de fecha, necesitamos actualizar tanto el valor ISO como el formateado
+        const date = new Date(value);
+        
+        if (isNaN(date.getTime())) {
+          console.error('Fecha inválida:', value);
+          return;
+        }
+        
+        setNewEvent(prev => ({ 
+          ...prev, 
+          [name]: date.toISOString(),
+          [`${name}Formatted`]: value 
+        }));
+      } else {
+        setNewEvent(prev => ({ ...prev, [name]: value }));
+      }
+    } catch (error) {
+      console.error('Error al manejar cambio en formulario:', error);
     }
   };
 
@@ -284,80 +352,103 @@ function CalendarMain() {
 
   // Guardar evento (crear nuevo o actualizar existente)
   const handleSaveEvent = () => {
-    // Validar que el título no esté vacío
-    if (!newEvent.title.trim()) {
-      // Si el título está vacío, mostrar un mensaje o simplemente no guardar
-      console.error('El título del evento no puede estar vacío');
-      return; // Detener la ejecución y no guardar
+    try {
+      // Validar que el título no esté vacío
+      if (!newEvent.title.trim()) {
+        console.error('El título del evento no puede estar vacío');
+        return;
+      }
+      
+      // Crear una versión del evento sin los campos de formato para guardar
+      const eventToSave = {
+        id: newEvent.id || Date.now().toString(),
+        title: newEvent.title.trim(),
+        start: newEvent.start,
+        end: newEvent.end,
+        color: newEvent.color || '#2D4B94'
+      };
+      
+      console.log('Guardando evento:', eventToSave); 
+      console.log('Evento seleccionado:', selectedEvent);
+      
+      if (selectedEvent && selectedEvent.id) {
+        // Actualizar evento existente
+        updateEvent(selectedEvent.id, eventToSave);
+      } else {
+        // Crear nuevo evento
+        createEvent(eventToSave);
+      }
+      
+      handleCloseForm();
+    } catch (error) {
+      console.error('Error al guardar evento:', error);
     }
-    
-    // El resto de la función sigue igual
-    // Crear una versión del evento sin los campos de formato para guardar
-    const eventToSave = {
-      ...newEvent,
-      id: newEvent.id || Date.now().toString(),
-      start: newEvent.start,
-      end: newEvent.end
-    };
-    
-    // Eliminar los campos formateados que solo se usan para la UI
-    delete eventToSave.startFormatted;
-    delete eventToSave.endFormatted;
-    
-    if (selectedEvent) {
-      updateEvent(selectedEvent.id, eventToSave);
-    } else {
-      createEvent(eventToSave);
-    }
-    
-    handleCloseForm();
   };
 
   // Eliminar evento seleccionado
   const handleDeleteEvent = () => {
-    if (selectedEvent) {
-      deleteEvent(selectedEvent.id);
-      handleCloseForm();
+    try {
+      if (selectedEvent) {
+        deleteEvent(selectedEvent.id);
+        handleCloseForm();
+      }
+    } catch (error) {
+      console.error('Error al eliminar evento:', error);
     }
   };
 
-  // SIMPLIFICACIÓN: Se eliminó la validación redundante
   // Verificar si un evento debe mostrarse en un día y hora específicos
   const shouldShowEvent = (event, day, hour) => {
-    // Simplificado: Validaciones inline sin bloques separados
-    if (!event?.start) return false; // Línea 324 evitada combinando validaciones
-    
-    const eventStart = new Date(event.start);
-    // Simplificado: Sin validación de fecha inválida aquí, ya se hace en loadEvents
-    
-    return (
-      eventStart.getDate() === day.getDate() &&
-      eventStart.getMonth() === day.getMonth() &&
-      eventStart.getFullYear() === day.getFullYear() &&
-      eventStart.getHours() === hour
-    );
+    try {
+      // Validaciones básicas
+      if (!event?.start) return false;
+      
+      const eventStart = new Date(event.start);
+      
+      // Comprobar si la fecha es válida
+      if (isNaN(eventStart.getTime())) return false;
+      
+      // Comprobar si el evento coincide con el día y la hora de la celda
+      return (
+        eventStart.getDate() === day.getDate() &&
+        eventStart.getMonth() === day.getMonth() &&
+        eventStart.getFullYear() === day.getFullYear() &&
+        eventStart.getHours() === hour
+      );
+    } catch (error) {
+      console.error('Error al verificar evento:', error, event);
+      return false;
+    }
   };
 
   // Renderizar eventos en la celda correspondiente
   const renderEvents = (day, hour) => {
-    // Simplificado: Sin try/catch
-    return events
-      .filter(event => event.title && shouldShowEvent(event, day, hour))
-      .map(event => (
-        <div 
-          key={event.id}
-          className="calendar-event"
-          style={{ backgroundColor: event.color }}
-          onClick={() => handleEventClick(event)}
-        >
-          <div className="event-title">{event.title}</div>
-          <div className="event-time">
-            {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            {' - '}
-            {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+    try {
+      return events
+        .filter(event => event.title && shouldShowEvent(event, day, hour))
+        .map(event => (
+          <div 
+            key={event.id}
+            className="calendar-event"
+            style={{ backgroundColor: event.color }}
+            onClick={(e) => {
+              e.stopPropagation(); // Evitar que se propague al contenedor
+              handleEventClick(event);
+            }}
+            data-event-id={event.id} // Añadir un atributo para identificar el evento
+          >
+            <div className="event-title">{event.title}</div>
+            <div className="event-time">
+              {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+              {' - '}
+              {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+            </div>
           </div>
-        </div>
-      ));
+        ));
+    } catch (error) {
+      console.error('Error al renderizar eventos:', error);
+      return null;
+    }
   };
 
   const weekDays = generateWeekDays(currentDate);
