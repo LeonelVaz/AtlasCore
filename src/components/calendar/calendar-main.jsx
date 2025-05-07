@@ -352,7 +352,7 @@ function CalendarMain() {
           </div>
         ))}
       </div>
-
+      
       {/* Formulario para crear/editar eventos */}
       {showEventForm && (
         <div className="event-form-overlay" data-testid="event-form-overlay">
@@ -360,8 +360,9 @@ function CalendarMain() {
             <h3>{selectedEvent ? 'Editar evento' : 'Nuevo evento'}</h3>
             
             <div className="form-group">
-              <label>Título:</label>
+              <label htmlFor="event-title">Título:</label>
               <input 
+                id="event-title"
                 type="text" 
                 name="title" 
                 value={newEvent.title} 
@@ -370,8 +371,9 @@ function CalendarMain() {
             </div>
             
             <div className="form-group">
-              <label>Inicio:</label>
+              <label htmlFor="event-start">Inicio:</label>
               <input 
+                id="event-start"
                 type="datetime-local" 
                 name="start" 
                 value={newEvent.startFormatted} 
@@ -380,8 +382,9 @@ function CalendarMain() {
             </div>
             
             <div className="form-group">
-              <label>Fin:</label>
+              <label htmlFor="event-end">Fin:</label>
               <input 
+                id="event-end"
                 type="datetime-local" 
                 name="end" 
                 value={newEvent.endFormatted} 
@@ -390,8 +393,9 @@ function CalendarMain() {
             </div>
             
             <div className="form-group">
-              <label>Color:</label>
+              <label htmlFor="event-color">Color:</label>
               <input 
+                id="event-color"
                 type="color" 
                 name="color" 
                 value={newEvent.color} 
