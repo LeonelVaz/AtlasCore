@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import CalendarMain from '../../../../src/components/calendar/calendar-main'; // Ajusta el path si es necesario
+import CalendarMain from '../../../../src/components/calendar/calendar-main';
 import * as dateUtils from '../../../../src/utils/date-utils';
 
 // Mocks obligatorios según las notas del plan
@@ -3874,5 +3874,3 @@ describe('CalendarMain - Casos extremos (Tests 9.1 a 9.4)', () => {
     consoleErrorSpy.mockRestore();
   });
 });
-
-

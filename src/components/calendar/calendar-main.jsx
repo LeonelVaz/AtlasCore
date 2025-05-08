@@ -25,7 +25,7 @@ function CalendarMain() {
     title: '',
     start: '',
     end: '',
-    color: '#2D4B94' // Color predeterminado (Azul Atlas)
+    color: '#2d4b94' // Color predeterminado (Azul Atlas)
   });
 
   // MEJORA: Exportar la función getEvents fuera del useEffect para que sea más testeable
@@ -60,9 +60,9 @@ function CalendarMain() {
   }, []);
 
   // Para depuración
+  /* istanbul ignore next */
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      /* istanbul ignore next */
       window.debugCalendar = () => {
         console.log('Estado actual de eventos:', events);
         console.log('Evento seleccionado:', selectedEvent);
@@ -167,6 +167,7 @@ function CalendarMain() {
 
   // Actualizar un evento existente
   const updateEvent = (eventId, eventData) => {
+
     try {
       console.log('Actualizando evento:', eventId, eventData); // Para depuración
       
@@ -256,7 +257,7 @@ function CalendarMain() {
         end: endDate.toISOString(),
         startFormatted: formatDateForInput(startDate),
         endFormatted: formatDateForInput(endDate),
-        color: '#2D4B94'
+        color: '#2d4b94'
       });
       
       setShowEventForm(true);
@@ -303,7 +304,7 @@ function CalendarMain() {
         title: event.title || '',
         start: event.start,
         end: event.end,
-        color: event.color || '#2D4B94',
+        color: event.color || '#2d4b94',
         startFormatted: formatDateForInput(startDate),
         endFormatted: formatDateForInput(endDate)
       };
@@ -359,7 +360,7 @@ function CalendarMain() {
       end: '',
       startFormatted: '',
       endFormatted: '',
-      color: '#2D4B94'
+      color: '#2d4b94'
     });
   };
 
@@ -378,7 +379,7 @@ function CalendarMain() {
         title: newEvent.title.trim(),
         start: newEvent.start,
         end: newEvent.end,
-        color: newEvent.color || '#2D4B94'
+        color: newEvent.color || '#2d4b94'
       };
       
       console.log('Guardando evento:', eventToSave); 
