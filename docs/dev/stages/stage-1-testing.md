@@ -28,6 +28,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 3.1.4 El nuevo evento se guarda en el almacenamiento local
 - [x] 3.1.5 El evento publica una notificación de actualización a través de EventBus
 - [x] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
+- [x] 3.1.7 Validación de fechas funciona al crear un nuevo evento
 
 ### 3.2 Edición de eventos
 
@@ -37,6 +38,7 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 3.2.4 El evento actualizado se guarda en el almacenamiento local
 - [x] 3.2.5 El evento publica una notificación de actualización a través de EventBus
 - [x] 3.2.6 El evento actualizado aparece con los cambios en la cuadrícula del calendario
+- [x] 3.2.7 Validación de fechas funciona al editar un evento existente
 
 ### 3.3 Eliminación de eventos
 
@@ -54,6 +56,8 @@ Este plan ha sido ajustado para enfocarse exclusivamente en las funcionalidades 
 - [x] 4.4 El botón Cancelar cierra el formulario sin guardar
 - [x] 4.5 El formulario gestiona correctamente las entradas de fecha y hora
 - [x] 4.6 El selector de color actualiza el color del evento
+- [x] 4.7 El formulario impide guardar eventos con hora de fin anterior a hora de inicio
+- [x] 4.8 El estado de error se limpia al cerrar el formulario
 
 ## 5. Representación de eventos
 

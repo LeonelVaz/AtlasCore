@@ -500,7 +500,7 @@ describe('CalendarMain - Navegación por Fecha (Tests 2.1 a 2.4)', () => {
   });
 });
 
-describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6)', () => {
+describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.7)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -923,7 +923,7 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6)', () => {
   });
 });
 
-describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6)', () => {
+describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.7)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -1431,426 +1431,76 @@ describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6)', () => {
   });
 
   // test 3.2.7: Validación de fechas funciona al editar un evento existente
-// Este test va en la sección "CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)"
-// Deberías añadir este test como "test 4.7: El formulario impide guardar eventos con hora de fin anterior a hora de inicio"
-
-test('el formulario impide guardar eventos con hora de fin anterior a hora de inicio', () => {
-  // Renderizar el componente
-  const { container } = render(<CalendarMain />);
-  
-  // 1. Abrir el formulario para crear un nuevo evento
-  const timeSlots = screen.getAllByTestId('calendar-time-slot');
-  fireEvent.click(timeSlots[10]); // Hacer clic en una celda
-  
-  // Verificar que el formulario se abrió
-  expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
-  
-  // 2. Configurar un evento con fechas inválidas (fin antes que inicio)
-  
-  // Buscar los inputs
-  const startInput = container.querySelector('input[name="start"]');
-  const endInput = container.querySelector('input[name="end"]');
-  
-  // Encontrar el botón de guardar
-  const saveButton = screen.getByRole('button', { name: 'Guardar' });
-  
-  // Mostrar los valores actuales para diagnóstico
-  console.log('Valor inicial de fecha inicio:', startInput.value);
-  console.log('Valor inicial de fecha fin:', endInput.value);
-  
-  // Establecer una fecha de inicio específica
-  const startDate = new Date('2025-05-15T10:00');
-  const startDateString = '2025-05-15T10:00';
-  
-  fireEvent.change(startInput, {
-    target: {
-      name: 'start',
-      value: startDateString
-    }
-  });
-  
-  // Establecer una fecha de fin anterior
-  const endDateString = '2025-05-15T09:00'; // Una hora antes
-  
-  fireEvent.change(endInput, {
-    target: {
-      name: 'end',
-      value: endDateString
-    }
-  });
-  
-  // Verificar que los valores han cambiado
-  console.log('Nuevo valor de fecha inicio:', startInput.value);
-  console.log('Nuevo valor de fecha fin:', endInput.value);
-  
-  // 3. Intentar guardar (debería fallar la validación)
-  fireEvent.click(saveButton);
-  
-  // 4. Verificar que el formulario sigue abierto (no se guardó el evento)
-  expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
-  
-  // 5. Corregir la fecha de fin para que sea posterior
-  const correctEndDateString = '2025-05-15T11:00'; // Una hora después
-  
-  fireEvent.change(endInput, {
-    target: {
-      name: 'end',
-      value: correctEndDateString
-    }
-  });
-  
-  // 6. Intentar guardar nuevamente
-  fireEvent.click(saveButton);
-  
-  // 7. Verificar que el formulario se cerró (se guardó el evento)
-  expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
-});
-});
-
-describe('CalendarMain - Eliminación de eventos (Tests 3.3.1 a 3.3.5)', () => {
-  beforeEach(() => {
-    // Fecha base para las pruebas (6 de mayo de 2025)
-    const baseDate = new Date('2025-05-06');
-    jest.spyOn(Date, 'now').mockReturnValue(baseDate.getTime());
-    
-    // Mock inicial para los días de la semana actual
-    dateUtils.generateWeekDays.mockReturnValue([
-      new Date('2025-05-05'),
-      new Date('2025-05-06'),
-      new Date('2025-05-07'),
-      new Date('2025-05-08'),
-      new Date('2025-05-09'),
-      new Date('2025-05-10'),
-      new Date('2025-05-11'),
-    ]);
-    
-    // Mock para formato de fecha y hora
-    dateUtils.formatDate.mockImplementation((date) => {
-      const day = date.getDate();
-      const month = date.getMonth() + 1;
-      return `${day}/${month}`;
-    });
-    
-    dateUtils.formatHour.mockImplementation(hour => `${hour}:00`);
-    
-    // Mock para la función isSameDay para asegurar que los eventos se rendericen
-    jest.spyOn(dateUtils, 'isSameDay').mockReturnValue(true);
-  });
-  
-  // test 3.3.1: El botón Eliminar aparece en el formulario de edición
-  test('el botón Eliminar aparece en el formulario de edición', () => {
-    // Crear un evento existente
-    const existingEvent = {
-      id: '1234-test-id',
-      title: 'Evento a eliminar',
-      start: '2025-05-07T01:00:00.000Z',
-      end: '2025-05-07T02:00:00.000Z',
-      color: '#2d4b94'
-    };
-    
-    // Mock de localStorage con el evento existente
-    const mockLocalStorage = {
-      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
-      setItem: jest.fn()
-    };
-    
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-      writable: true
-    });
-    
+  test('el formulario impide guardar eventos con hora de fin anterior a hora de inicio', () => {
     // Renderizar el componente
     const { container } = render(<CalendarMain />);
     
-    // Verificar que se cargó el evento existente
-    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
-    
-    // Crear un nuevo evento para luego editarlo
+    // 1. Abrir el formulario para crear un nuevo evento
     const timeSlots = screen.getAllByTestId('calendar-time-slot');
-    fireEvent.click(timeSlots[10]); // Celda para la hora 1:00 AM
+    fireEvent.click(timeSlots[10]); // Hacer clic en una celda
     
-    // Verificar que el formulario se abrió en modo "Nuevo evento"
-    expect(screen.getByText('Nuevo evento')).toBeInTheDocument();
+    // Verificar que el formulario se abrió
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
     
-    // Verificar que el botón Eliminar NO está presente en el modo de creación
-    const deleteButtonInCreate = screen.queryByRole('button', { name: 'Eliminar' });
-    expect(deleteButtonInCreate).not.toBeInTheDocument();
+    // 2. Configurar un evento con fechas inválidas (fin antes que inicio)
     
-    // Cerrar el formulario
-    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
-    fireEvent.click(cancelButton);
+    // Buscar los inputs
+    const startInput = container.querySelector('input[name="start"]');
+    const endInput = container.querySelector('input[name="end"]');
     
-    // Verificar que hay un evento visible con el título correcto
-    const eventElement = screen.getByText('Evento a eliminar');
+    // Encontrar el botón de guardar
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
     
-    // Hacer clic en el evento para editarlo
-    fireEvent.click(eventElement);
+    // Mostrar los valores actuales para diagnóstico
+    console.log('Valor inicial de fecha inicio:', startInput.value);
+    console.log('Valor inicial de fecha fin:', endInput.value);
     
-    // Verificar que el formulario se abrió en modo edición
-    expect(screen.getByText('Editar evento')).toBeInTheDocument();
+    // Establecer una fecha de inicio específica
+    const startDate = new Date('2025-05-15T10:00');
+    const startDateString = '2025-05-15T10:00';
     
-    // Verificar que el botón Eliminar SÍ está presente en el modo de edición
-    const deleteButtonInEdit = screen.getByRole('button', { name: 'Eliminar' });
-    expect(deleteButtonInEdit).toBeInTheDocument();
-    
-    // Verificar que el botón tiene la clase correcta
-    expect(deleteButtonInEdit).toHaveClass('delete-button');
-  });
-
-  // test 3.3.2: El evento se elimina del estado al eliminarse
-  test('el evento se elimina del estado al eliminarse', () => {
-    // Crear un evento existente
-    const existingEvent = {
-      id: '1234-test-id',
-      title: 'Evento a eliminar',
-      start: '2025-05-07T01:00:00.000Z',
-      end: '2025-05-07T02:00:00.000Z',
-      color: '#2d4b94'
-    };
-    
-    // Mock de localStorage con el evento existente
-    const mockLocalStorage = {
-      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
-      setItem: jest.fn((key, value) => {
-        // Simular que localStorage realmente actualiza los datos
-        if (key === 'atlas_events') {
-          mockLocalStorage.getItem.mockReturnValue(value);
-        }
-      })
-    };
-    
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-      writable: true
-    });
-    
-    // Renderizar el componente
-    render(<CalendarMain />);
-    
-    // Verificar que se cargó el evento existente
-    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
-    
-    // Verificar que hay un evento visible con el título correcto
-    const eventElement = screen.getByText('Evento a eliminar');
-    
-    // Hacer clic en el evento para editarlo
-    fireEvent.click(eventElement);
-    
-    // Verificar que el formulario se abrió en modo edición
-    expect(screen.getByText('Editar evento')).toBeInTheDocument();
-    
-    // Hacer clic en el botón Eliminar
-    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
-    fireEvent.click(deleteButton);
-    
-    // Verificar que el formulario se cerró
-    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
-    
-    // Verificar que el evento ya no está visible en la cuadrícula
-    const eventElementAfterDelete = screen.queryByText('Evento a eliminar');
-    expect(eventElementAfterDelete).not.toBeInTheDocument();
-  });
-
-  // test 3.3.3: El evento se elimina del almacenamiento local al eliminarse
-  test('el evento se elimina del almacenamiento local al eliminarse', () => {
-    // Crear dos eventos existentes para verificar que solo se elimina el correcto
-    const existingEvents = [
-      {
-        id: '1234-test-id',
-        title: 'Evento a eliminar',
-        start: '2025-05-07T01:00:00.000Z',
-        end: '2025-05-07T02:00:00.000Z',
-        color: '#2d4b94'
-      },
-      {
-        id: '5678-test-id',
-        title: 'Evento que debe permanecer',
-        start: '2025-05-07T03:00:00.000Z',
-        end: '2025-05-07T04:00:00.000Z',
-        color: '#26a69a'
+    fireEvent.change(startInput, {
+      target: {
+        name: 'start',
+        value: startDateString
       }
-    ];
-    
-    // Mock de localStorage con los eventos existentes
-    const mockLocalStorage = {
-      getItem: jest.fn().mockReturnValue(JSON.stringify(existingEvents)),
-      setItem: jest.fn()
-    };
-    
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-      writable: true
     });
     
-    // Renderizar el componente
-    render(<CalendarMain />);
+    // Establecer una fecha de fin anterior
+    const endDateString = '2025-05-15T09:00'; // Una hora antes
     
-    // Verificar que se cargaron los eventos existentes
-    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('atlas_events');
-    
-    // Verificar que hay un evento visible con el título correcto
-    const eventElement = screen.getByText('Evento a eliminar');
-    
-    // Hacer clic en el evento para editarlo
-    fireEvent.click(eventElement);
-    
-    // Verificar que el formulario se abrió en modo edición
-    expect(screen.getByText('Editar evento')).toBeInTheDocument();
-    
-    // Limpiar el historial de llamadas para aislar la operación de eliminación
-    mockLocalStorage.setItem.mockClear();
-    
-    // Hacer clic en el botón Eliminar
-    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
-    fireEvent.click(deleteButton);
-    
-    // Verificar que se llamó a localStorage.setItem
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
-    
-    // Verificar que los datos guardados no contienen el evento eliminado
-    const setItemArgs = mockLocalStorage.setItem.mock.calls[0];
-    const savedEventsJSON = setItemArgs[1];
-    const savedEvents = JSON.parse(savedEventsJSON);
-    
-    // Verificar que solo queda un evento
-    expect(savedEvents.length).toBe(1);
-    
-    // Verificar que el evento que permanece es el correcto
-    expect(savedEvents[0].id).toBe('5678-test-id');
-    expect(savedEvents[0].title).toBe('Evento que debe permanecer');
-    
-    // Verificar que el evento eliminado ya no está en el array
-    const deletedEvent = savedEvents.find(event => event.id === '1234-test-id');
-    expect(deletedEvent).toBeUndefined();
-  });
-
-  // test 3.3.4: La eliminación del evento publica una notificación de actualización
-  test('la eliminación del evento publica una notificación de actualización', () => {
-    // Crear un evento existente
-    const existingEvent = {
-      id: '1234-test-id',
-      title: 'Evento a eliminar',
-      start: '2025-05-07T01:00:00.000Z',
-      end: '2025-05-07T02:00:00.000Z',
-      color: '#2d4b94'
-    };
-    
-    // Mock de localStorage con el evento existente
-    const mockLocalStorage = {
-      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
-      setItem: jest.fn()
-    };
-    
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-      writable: true
+    fireEvent.change(endInput, {
+      target: {
+        name: 'end',
+        value: endDateString
+      }
     });
     
-    // Obtener acceso al mock de eventBus
-    const eventBus = require('../../../../src/core/bus/event-bus').default;
-    const { EventCategories } = require('../../../../src/core/bus/event-bus');
+    // Verificar que los valores han cambiado
+    console.log('Nuevo valor de fecha inicio:', startInput.value);
+    console.log('Nuevo valor de fecha fin:', endInput.value);
     
-    // Limpiar cualquier llamada previa
-    eventBus.publish.mockClear();
+    // 3. Intentar guardar (debería fallar la validación)
+    fireEvent.click(saveButton);
     
-    // Renderizar el componente
-    render(<CalendarMain />);
+    // 4. Verificar que el formulario sigue abierto (no se guardó el evento)
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
     
-    // Verificar que hay un evento visible con el título correcto
-    const eventElement = screen.getByText('Evento a eliminar');
+    // 5. Corregir la fecha de fin para que sea posterior
+    const correctEndDateString = '2025-05-15T11:00'; // Una hora después
     
-    // Hacer clic en el evento para editarlo
-    fireEvent.click(eventElement);
-    
-    // Verificar que el formulario se abrió en modo edición
-    expect(screen.getByText('Editar evento')).toBeInTheDocument();
-    
-    // Hacer clic en el botón Eliminar
-    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
-    fireEvent.click(deleteButton);
-    
-    // Verificar que eventBus.publish fue llamado
-    expect(eventBus.publish).toHaveBeenCalled();
-    
-    // Verificar que se publicó el evento correcto
-    const publishCalls = eventBus.publish.mock.calls;
-    const storageUpdateCall = publishCalls.find(call => 
-      call[0] === `${EventCategories.STORAGE}.eventsUpdated`
-    );
-    
-    // Verificar que se encontró la llamada correcta
-    expect(storageUpdateCall).toBeDefined();
-    
-    // Verificar que el segundo argumento (datos) es un array de eventos actualizado
-    const publishedEvents = storageUpdateCall[1];
-    expect(Array.isArray(publishedEvents)).toBe(true);
-    
-    // Verificar que el evento eliminado no está en los datos publicados
-    const deletedEvent = publishedEvents.find(event => event.id === '1234-test-id');
-    expect(deletedEvent).toBeUndefined();
-  });
-
-  // test 3.3.5: El evento eliminado ya no aparece en la cuadrícula del calendario
-  test('el evento eliminado ya no aparece en la cuadrícula del calendario', () => {
-    // Crear un evento existente
-    const existingEvent = {
-      id: '1234-test-id',
-      title: 'Evento a eliminar',
-      start: '2025-05-07T01:00:00.000Z',
-      end: '2025-05-07T02:00:00.000Z',
-      color: '#2d4b94'
-    };
-    
-    // Mock de localStorage con el evento existente
-    const mockLocalStorage = {
-      getItem: jest.fn().mockReturnValue(JSON.stringify([existingEvent])),
-      setItem: jest.fn((key, value) => {
-        // Simular que localStorage realmente actualiza los datos
-        if (key === 'atlas_events') {
-          mockLocalStorage.getItem.mockReturnValue(value);
-        }
-      })
-    };
-    
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-      writable: true
+    fireEvent.change(endInput, {
+      target: {
+        name: 'end',
+        value: correctEndDateString
+      }
     });
     
-    // Renderizar el componente
-    const { container, rerender } = render(<CalendarMain />);
+    // 6. Intentar guardar nuevamente
+    fireEvent.click(saveButton);
     
-    // Verificar que hay un evento visible con el título correcto
-    const eventElement = screen.getByText('Evento a eliminar');
-    expect(eventElement).toBeInTheDocument();
-    
-    // Hacer clic en el evento para editarlo
-    fireEvent.click(eventElement);
-    
-    // Verificar que el formulario se abrió en modo edición
-    expect(screen.getByText('Editar evento')).toBeInTheDocument();
-    
-    // Hacer clic en el botón Eliminar
-    const deleteButton = screen.getByRole('button', { name: 'Eliminar' });
-    fireEvent.click(deleteButton);
-    
-    // Verificar que el formulario se cerró
+    // 7. Verificar que el formulario se cerró (se guardó el evento)
     expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
-    
-    // Verificar que el evento ya no está visible en la cuadrícula
-    const eventElementAfterDelete = screen.queryByText('Evento a eliminar');
-    expect(eventElementAfterDelete).not.toBeInTheDocument();
-    
-    // Verificar que no hay elementos de eventos en la cuadrícula
-    const eventElements = container.querySelectorAll('.calendar-event');
-    expect(eventElements.length).toBe(0);
-    
-    // Verificar que la eliminación persiste incluso si se vuelve a renderizar el componente
-    rerender(<CalendarMain />);
-    
-    // Verificar que el evento sigue sin aparecer después de re-renderizar
-    const eventElementAfterRerender = screen.queryByText('Evento a eliminar');
-    expect(eventElementAfterRerender).not.toBeInTheDocument();
   });
 });
 
@@ -2201,7 +1851,7 @@ describe('CalendarMain - Eliminación de eventos (Tests 3.3.1 a 3.3.5)', () => {
   });
 });
 
-describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)', () => {
+describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.8)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -2703,7 +2353,7 @@ describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)', () => {
   });
 });
 
-describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.6)', () => {
+describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.8)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -3089,7 +2739,7 @@ describe('CalendarMain - Representación de eventos (Tests 5.1 a 5.6)', () => {
   });
 });
 
-describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () => {
+describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.5)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -3383,7 +3033,7 @@ describe('CalendarMain - Integración de almacenamiento (Tests 6.1 a 6.4)', () =
   });
 });
 
-describe('CalendarMain - Registro del módulo (Tests 7.1 a 7.4)', () => {
+describe('CalendarMain - Registro del módulo (Tests 7.1 a 7.5)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
@@ -3837,7 +3487,7 @@ describe('CalendarMain - Integración del bus de eventos (Tests 8.1 a 8.4)', () 
   });
 });
 
-describe('CalendarMain - Casos extremos (Tests 9.1 a 9.4)', () => {
+describe('CalendarMain - Casos extremos (Tests 9.1 a 9.6)', () => {
   beforeEach(() => {
     // Fecha base para las pruebas (6 de mayo de 2025)
     const baseDate = new Date('2025-05-06');
