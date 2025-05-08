@@ -1,6 +1,6 @@
 # Registro de Cambios (Changelog)
 
-## [0.1.0] - YYYY-MM-DD (Fecha actual)
+## [0.1.0] - 2025-05-08
 ### Añadido
 - Estructura modular base
 - Sistema de Bus de Eventos
