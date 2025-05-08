@@ -836,6 +836,91 @@ describe('CalendarMain - Gestión de Eventos (Tests 3.1.1 a 3.1.6)', () => {
     // Restaurar el mock de Date.now
     mockDateNow.mockRestore();
   });
+
+  // test 3.1.7: Validación de fechas funciona al crear un nuevo evento
+  test('validación de fechas funciona al crear un nuevo evento', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Mock de localStorage
+    const mockLocalStorage = {
+      getItem: jest.fn().mockReturnValue(null), // Sin eventos previos
+      setItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Hacer clic en una celda para abrir el formulario
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]);
+    
+    // Modificar el título para identificar el evento
+    const titleInput = screen.getByDisplayValue('Nuevo evento');
+    fireEvent.change(titleInput, { target: { value: 'Evento con fechas inválidas' } });
+    
+    // Configurar fechas inválidas (fin antes que inicio)
+    const startInput = container.querySelector('input[name="start"]');
+    const endInput = container.querySelector('input[name="end"]');
+    
+    // Establecer fechas con problema
+    fireEvent.change(startInput, { 
+      target: { 
+        value: '2025-05-10T10:00',
+        name: 'start'
+      } 
+    });
+    
+    fireEvent.change(endInput, { 
+      target: { 
+        value: '2025-05-10T09:00', // Hora anterior
+        name: 'end'
+      } 
+    });
+    
+    // Intentar guardar
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que se mostró el error
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'La hora de fin no puede ser anterior a la hora de inicio'
+    );
+    
+    // Verificar que el evento no se guardó
+    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+    
+    // Ahora corregir la fecha
+    fireEvent.change(endInput, { 
+      target: { 
+        value: '2025-05-10T11:00', // Hora posterior
+        name: 'end'
+      } 
+    });
+    
+    // Limpiar los mocks
+    consoleErrorSpy.mockClear();
+    
+    // Intentar guardar nuevamente
+    fireEvent.click(saveButton);
+    
+    // Verificar que no hay error
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    
+    // Verificar que el evento se guardó
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('atlas_events', expect.any(String));
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Restaurar el mock
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6)', () => {
@@ -1344,6 +1429,82 @@ describe('CalendarMain - Edición de eventos (Tests 3.2.1 a 3.2.6)', () => {
     const eventContainer = updatedEventElement.closest('.calendar-event');
     expect(eventContainer).toHaveStyle({ backgroundColor: '#7e57c2' });
   });
+
+  // test 3.2.7: Validación de fechas funciona al editar un evento existente
+// Este test va en la sección "CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)"
+// Deberías añadir este test como "test 4.7: El formulario impide guardar eventos con hora de fin anterior a hora de inicio"
+
+test('el formulario impide guardar eventos con hora de fin anterior a hora de inicio', () => {
+  // Renderizar el componente
+  const { container } = render(<CalendarMain />);
+  
+  // 1. Abrir el formulario para crear un nuevo evento
+  const timeSlots = screen.getAllByTestId('calendar-time-slot');
+  fireEvent.click(timeSlots[10]); // Hacer clic en una celda
+  
+  // Verificar que el formulario se abrió
+  expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+  
+  // 2. Configurar un evento con fechas inválidas (fin antes que inicio)
+  
+  // Buscar los inputs
+  const startInput = container.querySelector('input[name="start"]');
+  const endInput = container.querySelector('input[name="end"]');
+  
+  // Encontrar el botón de guardar
+  const saveButton = screen.getByRole('button', { name: 'Guardar' });
+  
+  // Mostrar los valores actuales para diagnóstico
+  console.log('Valor inicial de fecha inicio:', startInput.value);
+  console.log('Valor inicial de fecha fin:', endInput.value);
+  
+  // Establecer una fecha de inicio específica
+  const startDate = new Date('2025-05-15T10:00');
+  const startDateString = '2025-05-15T10:00';
+  
+  fireEvent.change(startInput, {
+    target: {
+      name: 'start',
+      value: startDateString
+    }
+  });
+  
+  // Establecer una fecha de fin anterior
+  const endDateString = '2025-05-15T09:00'; // Una hora antes
+  
+  fireEvent.change(endInput, {
+    target: {
+      name: 'end',
+      value: endDateString
+    }
+  });
+  
+  // Verificar que los valores han cambiado
+  console.log('Nuevo valor de fecha inicio:', startInput.value);
+  console.log('Nuevo valor de fecha fin:', endInput.value);
+  
+  // 3. Intentar guardar (debería fallar la validación)
+  fireEvent.click(saveButton);
+  
+  // 4. Verificar que el formulario sigue abierto (no se guardó el evento)
+  expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+  
+  // 5. Corregir la fecha de fin para que sea posterior
+  const correctEndDateString = '2025-05-15T11:00'; // Una hora después
+  
+  fireEvent.change(endInput, {
+    target: {
+      name: 'end',
+      value: correctEndDateString
+    }
+  });
+  
+  // 6. Intentar guardar nuevamente
+  fireEvent.click(saveButton);
+  
+  // 7. Verificar que el formulario se cerró (se guardó el evento)
+  expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+});
 });
 
 describe('CalendarMain - Eliminación de eventos (Tests 3.3.1 a 3.3.5)', () => {
@@ -2399,6 +2560,146 @@ describe('CalendarMain - Manejo del Formulario (Tests 4.1 a 4.6)', () => {
       // Verificar el estilo en caso de que el elemento exista
       expect(window.getComputedStyle(eventContainer).backgroundColor).toBeDefined();
     }
+  });
+
+  // test 4.7: El formulario impide guardar eventos con hora de fin anterior a hora de inicio
+  test('el formulario impide guardar eventos con hora de fin anterior a hora de inicio', () => {
+    // Espiar console.error para verificar los mensajes de error
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Mock para localStorage
+    const mockSetItem = jest.fn();
+    window.localStorage.setItem.mockImplementation(mockSetItem);
+    
+    // Hacer clic en una celda para abrir el formulario
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]);
+    
+    // Verificar que el formulario se abrió
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Configurar una fecha de inicio y fin donde fin < inicio
+    const startInput = container.querySelector('input[name="start"]');
+    const endInput = container.querySelector('input[name="end"]');
+    
+    // Fecha de inicio: 10 de mayo a las 10:00
+    fireEvent.change(startInput, { 
+      target: { 
+        value: '2025-05-10T10:00',
+        name: 'start'
+      } 
+    });
+    
+    // Fecha de fin: 10 de mayo a las 09:00 (anterior a la de inicio)
+    fireEvent.change(endInput, { 
+      target: { 
+        value: '2025-05-10T09:00',
+        name: 'end'
+      } 
+    });
+    
+    // Intentar guardar el evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que se mostró el mensaje de error correcto
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'La hora de fin no puede ser anterior a la hora de inicio'
+    );
+    
+    // Verificar que el evento no se guardó (no se llamó a setItem)
+    expect(mockSetItem).not.toHaveBeenCalled();
+    
+    // Verificar que el formulario sigue abierto
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Verificar que se muestra el mensaje de error en la interfaz
+    const errorMessage = screen.getByText('La hora de fin no puede ser anterior a la hora de inicio');
+    expect(errorMessage).toBeInTheDocument();
+    expect(errorMessage.closest('.form-error')).toHaveStyle({ color: 'red' });
+    
+    // Ahora corregir la fecha de fin para que sea posterior a la de inicio
+    fireEvent.change(endInput, { 
+      target: { 
+        value: '2025-05-10T11:00',
+        name: 'end'
+      } 
+    });
+    
+    // Limpiar el historial de llamadas para verificar el guardado
+    consoleErrorSpy.mockClear();
+    mockSetItem.mockClear();
+    
+    // Intentar guardar el evento nuevamente
+    fireEvent.click(saveButton);
+    
+    // Verificar que ahora no hay error
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    
+    // Verificar que el evento se guardó correctamente (se llamó a setItem)
+    expect(mockSetItem).toHaveBeenCalled();
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Restaurar el mock de console.error
+    consoleErrorSpy.mockRestore();
+  });
+
+  // test 4.8: El estado de error se limpia al cerrar el formulario
+  test('el estado de error se limpia al cerrar el formulario', () => {
+    // Renderizar el componente
+    const { container } = render(<CalendarMain />);
+    
+    // Hacer clic en una celda para abrir el formulario
+    const timeSlots = screen.getAllByTestId('calendar-time-slot');
+    fireEvent.click(timeSlots[10]);
+    
+    // Configurar una fecha de inicio y fin donde fin < inicio para generar error
+    const startInput = container.querySelector('input[name="start"]');
+    const endInput = container.querySelector('input[name="end"]');
+    
+    // Fecha de inicio: 10 de mayo a las 10:00
+    fireEvent.change(startInput, { 
+      target: { 
+        value: '2025-05-10T10:00',
+        name: 'start'
+      } 
+    });
+    
+    // Fecha de fin: 10 de mayo a las 09:00 (anterior a la de inicio)
+    fireEvent.change(endInput, { 
+      target: { 
+        value: '2025-05-10T09:00',
+        name: 'end'
+      } 
+    });
+    
+    // Intentar guardar el evento
+    const saveButton = screen.getByRole('button', { name: 'Guardar' });
+    fireEvent.click(saveButton);
+    
+    // Verificar que se muestra el mensaje de error
+    expect(screen.getByText('La hora de fin no puede ser anterior a la hora de inicio')).toBeInTheDocument();
+    
+    // Hacer clic en el botón Cancelar para cerrar el formulario
+    const cancelButton = screen.getByRole('button', { name: 'Cancelar' });
+    fireEvent.click(cancelButton);
+    
+    // Verificar que el formulario se cerró
+    expect(screen.queryByTestId('event-form-overlay')).not.toBeInTheDocument();
+    
+    // Abrir el formulario nuevamente
+    fireEvent.click(timeSlots[15]); // Usar una celda diferente
+    
+    // Verificar que el formulario se abrió
+    expect(screen.getByTestId('event-form-overlay')).toBeInTheDocument();
+    
+    // Verificar que NO hay mensaje de error (se ha limpiado)
+    expect(screen.queryByText('La hora de fin no puede ser anterior a la hora de inicio')).not.toBeInTheDocument();
   });
 });
 

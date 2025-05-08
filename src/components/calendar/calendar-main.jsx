@@ -1,4 +1,4 @@
-// calendar-main.jsx - Versión corregida
+// calendar-main.jsx
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
@@ -20,6 +20,7 @@ function CalendarMain() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
+  const [formError, setFormError] = useState(''); // Estado para manejar errores del formulario
   const [newEvent, setNewEvent] = useState({
     id: '',
     title: '',
@@ -60,9 +61,9 @@ function CalendarMain() {
   }, []);
 
   // Para depuración
-  /* istanbul ignore next */
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      /* istanbul ignore next */
       window.debugCalendar = () => {
         console.log('Estado actual de eventos:', events);
         console.log('Evento seleccionado:', selectedEvent);
@@ -247,8 +248,9 @@ function CalendarMain() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
       
-      // Resetear el evento seleccionado
+      // Resetear el evento seleccionado y el error del formulario
       setSelectedEvent(null);
+      setFormError('');
       
       setNewEvent({
         id: '',
@@ -297,6 +299,9 @@ function CalendarMain() {
       
       // Hacer una copia profunda del evento seleccionado para evitar problemas de referencia
       setSelectedEvent({...event});
+      
+      // Resetear el error del formulario
+      setFormError('');
       
       // Establecer todos los campos del formulario explícitamente
       const formattedEvent = {
@@ -353,6 +358,7 @@ function CalendarMain() {
   const handleCloseForm = () => {
     setShowEventForm(false);
     setSelectedEvent(null);
+    setFormError(''); // Limpiar el mensaje de error
     setNewEvent({
       id: '',
       title: '',
@@ -367,9 +373,23 @@ function CalendarMain() {
   // Guardar evento (crear nuevo o actualizar existente)
   const handleSaveEvent = () => {
     try {
+      // Resetear el mensaje de error
+      setFormError('');
+      
       // Validar que el título no esté vacío
       if (!newEvent.title.trim()) {
+        setFormError('El título del evento no puede estar vacío');
         console.error('El título del evento no puede estar vacío');
+        return;
+      }
+      
+      // Validar que la hora de fin no sea anterior a la hora de inicio
+      const startDate = new Date(newEvent.start);
+      const endDate = new Date(newEvent.end);
+      
+      if (endDate < startDate) {
+        setFormError('La hora de fin no puede ser anterior a la hora de inicio');
+        console.error('La hora de fin no puede ser anterior a la hora de inicio');
         return;
       }
       
@@ -393,10 +413,14 @@ function CalendarMain() {
         createEvent(eventToSave);
       }
       
+      // Limpiar el error y cerrar el formulario
+      setFormError('');
       handleCloseForm();
     } catch (error) {
       /* istanbul ignore next */
       console.error('Error al guardar evento:', error);
+      /* istanbul ignore next */
+      setFormError('Ocurrió un error al guardar el evento');
     }
   };
 
@@ -534,6 +558,13 @@ function CalendarMain() {
         <div className="event-form-overlay" data-testid="event-form-overlay">
           <div className="event-form">
             <h3>{selectedEvent ? 'Editar evento' : 'Nuevo evento'}</h3>
+            
+            {/* Mostrar mensaje de error si existe */}
+            {formError && (
+              <div className="form-error" style={{ color: 'red', marginBottom: '10px' }}>
+                {formError}
+              </div>
+            )}
             
             <div className="form-group">
               <label htmlFor="event-title">Título:</label>
