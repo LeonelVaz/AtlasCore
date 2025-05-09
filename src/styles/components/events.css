@@ -72,3 +72,13 @@
   font-size: 0.75rem;
   opacity: 0.9;
 }
+
+/* Mejoras para eventos en vista diaria */
+.day-view-hour-slot .calendar-event {
+  margin-bottom: 4px;
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+}
