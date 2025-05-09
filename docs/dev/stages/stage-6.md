@@ -120,6 +120,7 @@ atlas-core/
 │   │   │   ├── event-item.jsx       # Elemento de evento optimizado
 │   │   │   ├── time-grid.jsx        # Rejilla temporal optimizada
 │   │   │   ├── time-slot.jsx        # Franja horaria optimizada
+│   │   │   ├── snap-control.jsx  # Control de imán
 │   │   │   └── event-form.jsx       # Formulario de eventos completo
 │   │   │
 │   │   ├── admin/                   # Componentes de administración

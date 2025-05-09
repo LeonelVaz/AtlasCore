@@ -70,6 +70,7 @@ atlas-core/
 │   │   │   ├── week-view.jsx     # Vista de semana mejorada
 │   │   │   ├── event-item.jsx    # Elemento de evento con interacciones
 │   │   │   ├── time-grid.jsx     # Rejilla temporal mejorada
+│   │   │   ├── snap-control.jsx  # Control de imán
 │   │   │   └── event-form.jsx    # Formulario mejorado de eventos
 │   │   │
 │   │   └── ui/                   # Componentes de UI básicos
