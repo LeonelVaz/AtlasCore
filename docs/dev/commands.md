@@ -97,7 +97,6 @@ git checkout main
 git checkout main
 git pull origin main
 ```
-
 ## Crea la nueva rama
 ```bash
 git checkout -b feature/nuevos-componentes-calendario-stage2
