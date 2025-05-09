@@ -1,3 +1,5 @@
+/* calendar-main.css */
+
 /**
  * Estilos para el componente principal del calendario
  */
@@ -131,6 +133,11 @@
 .calendar-time-slot:hover {
   background-color: #f0f7ff;
 }
+
+
+
+
+
 
 /* Formulario de eventos */
 .event-form-overlay {

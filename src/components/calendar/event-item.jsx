@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * Componente para renderizar un evento individual con soporte para
- * arrastrar en dos dimensiones y redimensionar, con movimiento horizontal mejorado
+ * arrastrar en dos dimensiones y redimensionar, con resaltado de celda de destino
  */
 function EventItem({ 
   event, 
@@ -38,8 +38,13 @@ function EventItem({
       days: [],
       dayElements: [],
       startDay: null,
-      startHour: 0
-    }
+      startHour: 0,
+      timeSlots: [], // Referencia a todas las celdas de tiempo
+      startSlot: null, // Slot original del evento
+      targetSlot: null // Slot actual de destino
+    },
+    // Referencia a la celda resaltada actualmente
+    highlightedCell: null
   });
   
   // Usar useEffect para limpiar listeners al desmontar
@@ -47,6 +52,10 @@ function EventItem({
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      // Limpiar cualquier resaltado de celda si existe
+      removeAllHighlights();
+      // Asegurar que se elimina la clase de arrastre del body
+      document.body.classList.remove('dragging-active');
     };
   }, []);
   
@@ -71,23 +80,42 @@ function EventItem({
       const isWeekView = eventRef.current.closest('.calendar-grid') !== null;
       const isInDayView = eventRef.current.closest('.day-view-container') !== null;
       
+      // Obtener la celda actual donde está el evento
+      const currentSlot = eventRef.current.closest('.calendar-time-slot') || 
+                          eventRef.current.closest('.day-view-hour-slot');
+      
+      // Coleccionar todas las celdas de tiempo
+      let timeSlots = [];
+      let container = null;
+      
+      if (isWeekView) {
+        container = eventRef.current.closest('.calendar-grid');
+        timeSlots = container ? Array.from(container.querySelectorAll('.calendar-time-slot')) : [];
+      } else {
+        container = eventRef.current.closest('.day-view-container');
+        timeSlots = container ? Array.from(container.querySelectorAll('.day-view-hour-slot')) : [];
+      }
+      
       // Si estamos en vista diaria, no necesitamos información de rejilla horizontal
       if (isInDayView) {
         return {
-          containerElement: eventRef.current.closest('.day-view-container'),
-          gridRect: null,
+          containerElement: container,
+          gridRect: container ? container.getBoundingClientRect() : null,
           dayWidth: 0,
           hourHeight: gridSize,
           days: [],
           dayElements: [],
           inWeekView: false,
           startDay: new Date(event.start),
-          startHour: new Date(event.start).getHours()
+          startHour: new Date(event.start).getHours(),
+          timeSlots,
+          startSlot: currentSlot,
+          targetSlot: currentSlot
         };
       }
       
       // Para vista semanal, necesitamos toda la información de la rejilla
-      const gridElement = eventRef.current.closest('.calendar-grid');
+      const gridElement = container;
       const gridRect = gridElement?.getBoundingClientRect();
       
       // Obtener elementos de día y sus anchos
@@ -153,7 +181,10 @@ function EventItem({
         dayElements,
         inWeekView: true,
         startDay,
-        startHour
+        startHour,
+        timeSlots,
+        startSlot: currentSlot,
+        targetSlot: currentSlot
       };
     } catch (error) {
       console.error('Error initializing grid info:', error);
@@ -166,7 +197,10 @@ function EventItem({
         dayElements: [],
         inWeekView: false,
         startDay: new Date(event.start),
-        startHour: new Date(event.start).getHours()
+        startHour: new Date(event.start).getHours(),
+        timeSlots: [],
+        startSlot: null,
+        targetSlot: null
       };
     }
   };
@@ -185,6 +219,86 @@ function EventItem({
     }
     
     return -1;
+  };
+  
+  // Función para encontrar la celda de destino según la posición actual
+  const findTargetSlot = (clientX, clientY) => {
+    // Si no tenemos información de rejilla, no podemos determinar la celda de destino
+    if (!dragInfo.current.grid || !dragInfo.current.grid.timeSlots.length) {
+      return null;
+    }
+    
+    // Calcular el desplazamiento en celdas
+    const deltaY = clientY - dragInfo.current.startY;
+    const deltaX = clientX - dragInfo.current.startX;
+    
+    const hourDelta = Math.round(deltaY / dragInfo.current.grid.hourHeight);
+    let dayDelta = 0;
+    
+    if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+      dayDelta = Math.round(deltaX / dragInfo.current.grid.dayWidth);
+    }
+    
+    // Si no hay cambio, quedamos en la misma celda de inicio
+    if (hourDelta === 0 && dayDelta === 0) {
+      return dragInfo.current.grid.startSlot;
+    }
+    
+    // Buscar la celda de destino basada en la posición original y el desplazamiento
+    const slots = dragInfo.current.grid.timeSlots;
+    if (!slots.length) return null;
+    
+    // Encontrar las coordenadas de la celda de inicio
+    const startSlotIndex = slots.indexOf(dragInfo.current.grid.startSlot);
+    if (startSlotIndex === -1) return null;
+    
+    // Calcular el índice de la celda de destino
+    // Vista semanal: 7 celdas por fila (7 días), cada fila es una hora
+    // Vista diaria: 1 celda por fila (1 día), cada fila es una hora
+    const rowSize = dragInfo.current.grid.inWeekView ? 7 : 1;
+    
+    // Calcular el nuevo índice teniendo en cuenta movimiento vertical y horizontal
+    let targetRowIndex = Math.floor(startSlotIndex / rowSize) + hourDelta;
+    let targetColIndex = startSlotIndex % rowSize + dayDelta;
+    
+    // Asegurar que estamos dentro de los límites
+    targetRowIndex = Math.max(0, Math.min(targetRowIndex, Math.floor((slots.length - 1) / rowSize)));
+    targetColIndex = Math.max(0, Math.min(targetColIndex, rowSize - 1));
+    
+    // Calcular el índice final
+    const targetIndex = targetRowIndex * rowSize + targetColIndex;
+    
+    // Asegurar que el índice esté dentro de los límites
+    if (targetIndex >= 0 && targetIndex < slots.length) {
+      return slots[targetIndex];
+    }
+    
+    return null;
+  };
+  
+  // Resaltar la celda de destino durante el arrastre
+  const highlightTargetSlot = (targetSlot) => {
+    // Quitar el resaltado anterior si existe
+    removeAllHighlights();
+    
+    // Si tenemos una celda de destino, resaltarla
+    if (targetSlot) {
+      targetSlot.classList.add('drag-target-active');
+      dragInfo.current.highlightedCell = targetSlot;
+    }
+  };
+  
+  // Eliminar todos los resaltados de celdas
+  const removeAllHighlights = () => {
+    if (dragInfo.current.highlightedCell) {
+      dragInfo.current.highlightedCell.classList.remove('drag-target-active');
+      dragInfo.current.highlightedCell = null;
+    }
+    
+    // Por seguridad, limpiar todas las celdas resaltadas
+    document.querySelectorAll('.drag-target-active').forEach(cell => {
+      cell.classList.remove('drag-target-active');
+    });
   };
   
   // Manejador simple de clic para editar
@@ -223,12 +337,16 @@ function EventItem({
       listeners: true,
       startTime: Date.now(),
       moved: false,
-      grid: gridInfo
+      grid: gridInfo,
+      highlightedCell: null
     };
     
     // Añadir event listeners para el movimiento
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    
+    // Agregar clase al body para indicar que hay un arrastre activo
+    document.body.classList.add('dragging-active');
     
     // Configurar el estado visual después de un pequeño delay
     setTimeout(() => {
@@ -275,6 +393,16 @@ function EventItem({
       else {
         // Aplicar transformación directa para seguir exactamente al cursor
         eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        
+        // Encontrar y resaltar la celda de destino
+        const targetSlot = findTargetSlot(e.clientX, e.clientY);
+        if (targetSlot) {
+          // Actualizar la celda de destino en la información de arrastre
+          dragInfo.current.grid.targetSlot = targetSlot;
+          
+          // Resaltar la celda de destino
+          highlightTargetSlot(targetSlot);
+        }
       }
     }
   };
@@ -288,6 +416,12 @@ function EventItem({
     // Eliminar los event listeners
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
+    
+    // Eliminar todos los resaltados de celdas
+    removeAllHighlights();
+    
+    // Eliminar la clase de arrastre del body
+    document.body.classList.remove('dragging-active');
     
     // Detectar si fue un clic rápido sin movimiento
     const wasJustAClick = !dragInfo.current.moved && 

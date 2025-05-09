@@ -1,4 +1,4 @@
-/* Estilos minimalistas para eventos - enfocados en prevenir problemas de clic */
+/* events.css */
 
 /* Estilos base para los eventos */
 .calendar-event {
@@ -92,3 +92,17 @@
   margin-bottom: 4px;
 }
 
+/* Cuando se está arrastrando o redimensionando un evento, desactivamos todos los hovers de celdas */
+body.dragging-active .calendar-time-slot:hover:not(.drag-target-active),
+body.dragging-active .day-view-hour-slot:hover:not(.drag-target-active) {
+  background-color: inherit; /* Vuelve al color original */
+}
+
+/* Mantenemos el estilo de la celda de destino durante el arrastre */
+.drag-target-active {
+  background-color: rgba(41, 98, 255, 0.15) !important;
+  box-shadow: inset 0 0 0 2px rgba(41, 98, 255, 0.5);
+  transition: none !important; /* Sin transición para feedback inmediato */
+  position: relative;
+  z-index: 5; /* Mayor z-index para que esté por encima de otras celdas pero por debajo del evento */
+}
