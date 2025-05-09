@@ -137,3 +137,52 @@ body.dragging-active .day-view-hour-slot:hover:not(.drag-target-active) {
   right: 0;
   position: relative;
 }
+
+/* Estilos para eventos que continúan entre días */
+
+/* Indicador visual para eventos que continúan al día siguiente */
+.calendar-event.continues-next-day::after {
+  content: "▼";
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+  font-size: 10px;
+}
+
+/* Indicador visual para eventos que continúan desde el día anterior */
+.calendar-event.continues-from-prev-day::before {
+  content: "▲";
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 10px;
+}
+
+/* Estilos para los bordes de eventos continuos */
+.calendar-event.continues-next-day {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+.calendar-event.continues-from-prev-day {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+/* Asegurar que las porciones de eventos sean visibles correctamente */
+.calendar-time-slot {
+  overflow: visible !important; /* Permitir que los eventos se muestren entre celdas */
+}
+
+/* Ajustes para eventos que cruzan el límite de un día */
+.event-wrapper.continues-next-day .calendar-event {
+  /* Evento que continúa al siguiente día */
+  box-shadow: 0 4px 0 -2px rgba(0, 0, 0, 0.2);
+}
+
+.event-wrapper.continues-from-prev-day .calendar-event {
+  /* Evento que continúa desde el día anterior */
+  box-shadow: 0 -4px 0 -2px rgba(0, 0, 0, 0.2);
+}

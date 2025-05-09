@@ -9,6 +9,8 @@ function EventItem({
   event, 
   onClick, 
   onUpdate,
+  continuesNextDay = false,
+  continuesFromPrevDay = false,
   gridSize = 60, // Altura de una celda (1 hora)
 }) {
   // Referencias y estado
@@ -291,6 +293,13 @@ function EventItem({
   
   // Iniciar arrastre o redimensionamiento
   const handleMouseDown = (e, mode) => {
+    // No permitir redimensionamiento si el evento continúa al día siguiente
+    if (mode === 'resize' && continuesNextDay) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -570,7 +579,9 @@ function EventItem({
   return (
     <div 
       ref={eventRef}
-      className={`calendar-event ${dragging ? 'dragging' : ''} ${resizing ? 'resizing' : ''}`}
+      className={`calendar-event ${dragging ? 'dragging' : ''} ${resizing ? 'resizing' : ''} 
+                  ${continuesNextDay ? 'continues-next-day' : ''} 
+                  ${continuesFromPrevDay ? 'continues-from-prev-day' : ''}`}
       style={{ backgroundColor: event.color }}
       onMouseDown={(e) => handleMouseDown(e, 'drag')}
       onClick={handleClick}
@@ -579,11 +590,13 @@ function EventItem({
       <div className="event-title">{event.title}</div>
       <div className="event-time">{formatEventTime()}</div>
       
-      {/* Handle para redimensionar */}
-      <div 
-        className="event-resize-handle"
-        onMouseDown={(e) => handleMouseDown(e, 'resize')}
-      />
+      {/* Solo mostrar el handle de redimensionamiento si no continúa al día siguiente */}
+      {!continuesNextDay && (
+        <div 
+          className="event-resize-handle"
+          onMouseDown={(e) => handleMouseDown(e, 'resize')}
+        />
+      )}
     </div>
   );
 }
