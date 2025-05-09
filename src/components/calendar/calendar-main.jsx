@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
+import storageService from '../../services/storage-service';
 import { 
   getFirstDayOfWeek, 
   formatDate, 
@@ -80,67 +81,63 @@ function CalendarMain() {
     };
   }, [events, selectedEvent, newEvent, currentDate]);
 
-  // Cargar eventos desde localStorage
-  const loadEvents = () => {
+  // Cargar eventos usando el servicio de almacenamiento
+  const loadEvents = async () => {
     try {
-      const storedEvents = localStorage.getItem('atlas_events');
-      if (storedEvents) {
-        const parsedEvents = JSON.parse(storedEvents);
-        
-        // Validar que sea un array
-        if (!Array.isArray(parsedEvents)) {
-          console.error('Error: Los datos cargados no son un array válido de eventos');
-          setEvents([]);
-          return;
-        }
-        
-        // Filtrar eventos válidos
-        const validEvents = parsedEvents.filter(event => {
-          try {
-            // SIMPLIFICACIÓN: Validación en un solo bloque más simple
-            if (!event || typeof event !== 'object') {
-              console.error('Error: Evento no válido detectado', event);
-              return false;
-            }
-            
-            if (!event.id || !event.title) {
-              console.error('Error: Evento sin ID o título detectado', event);
-              return false;
-            }
-            
-            if (!event.start || !event.end) {
-              console.error('Error: Evento sin fechas detectado', event);
-              return false;
-            }
-            
-            const startDate = new Date(event.start);
-            const endDate = new Date(event.end);
-            
-            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-              console.error('Error: Evento con fechas inválidas detectado', event);
-              return false;
-            }
-            
-            return true;
-          } catch (error) {
-            console.error('Error al procesar fechas del evento:', error, event);
+      const storedEvents = await storageService.get('atlas_events', []);
+      
+      // Validar que sea un array
+      if (!Array.isArray(storedEvents)) {
+        console.error('Error: Los datos cargados no son un array válido de eventos');
+        setEvents([]);
+        return;
+      }
+      
+      // Filtrar eventos válidos
+      const validEvents = storedEvents.filter(event => {
+        try {
+          if (!event || typeof event !== 'object') {
+            console.error('Error: Evento no válido detectado', event);
             return false;
           }
-        });
-        
-        setEvents(validEvents);
-      }
+          
+          if (!event.id || !event.title) {
+            console.error('Error: Evento sin ID o título detectado', event);
+            return false;
+          }
+          
+          if (!event.start || !event.end) {
+            console.error('Error: Evento sin fechas detectado', event);
+            return false;
+          }
+          
+          const startDate = new Date(event.start);
+          const endDate = new Date(event.end);
+          
+          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            console.error('Error: Evento con fechas inválidas detectado', event);
+            return false;
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error al procesar fechas del evento:', error, event);
+          return false;
+        }
+      });
+      
+      setEvents(validEvents);
     } catch (error) {
       console.error('Error al cargar eventos:', error);
       setEvents([]);
     }
   };
 
-  // Guardar eventos en localStorage
-  const saveEvents = (updatedEvents) => {
+  // Guardar eventos usando el servicio de almacenamiento
+  const saveEvents = async (updatedEvents) => {
     try {
-      localStorage.setItem('atlas_events', JSON.stringify(updatedEvents));
-      eventBus.publish(`${EventCategories.STORAGE}.eventsUpdated`, updatedEvents);
+      await storageService.set('atlas_events', updatedEvents);
+      // El evento eventsUpdated se publica automáticamente en storageService
     } catch (error) {
       console.error('Error al guardar eventos:', error);
     }
