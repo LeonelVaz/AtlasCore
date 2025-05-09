@@ -27,7 +27,11 @@
   /* Estructura interna */
   display: flex;
   flex-direction: column;
+
+  will-change: transform; /* Optimización para transformaciones */
+  transform-origin: center center; /* Centro de transformación */
 }
+
 
 /* Hover */
 .calendar-event:hover {
@@ -38,7 +42,10 @@
 .calendar-event.dragging {
   opacity: 0.8;
   z-index: 100;
+  pointer-events: none; /* Evita interferencia durante el arrastre */
+  cursor: move !important; /* Cursor de movimiento más claro */
 }
+
 
 .calendar-event.resizing {
   opacity: 0.8;
@@ -84,3 +91,4 @@
   bottom: auto;
   margin-bottom: 4px;
 }
+

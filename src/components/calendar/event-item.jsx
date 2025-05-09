@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * Componente para renderizar un evento individual con soporte para
- * arrastrar en dos dimensiones y redimensionar, con corrección para clic
+ * arrastrar en dos dimensiones y redimensionar, con movimiento horizontal mejorado
  */
 function EventItem({ 
   event, 
   onClick, 
   onUpdate,
   gridSize = 60, // Altura de una celda (1 hora)
-  columnWidth = null, // Ancho de columna, se detecta automáticamente
 }) {
   // Referencias para el elemento del evento
   const eventRef = useRef(null);
@@ -30,11 +29,17 @@ function EventItem({
     listeners: false,
     startTime: 0,
     moved: false,
-    parentElement: null,
-    parentRect: null,
-    eventRect: null,
-    columnCount: 7, // Asumimos 7 días por defecto para vista semanal
-    columnWidth: 0
+    // Información sobre la rejilla para movimiento bidimensional
+    grid: {
+      containerElement: null,
+      gridRect: null,      
+      dayWidth: 0,
+      hourHeight: gridSize,
+      days: [],
+      dayElements: [],
+      startDay: null,
+      startHour: 0
+    }
   });
   
   // Usar useEffect para limpiar listeners al desmontar
@@ -59,6 +64,129 @@ function EventItem({
     }
   };
   
+  // Inicializar información sobre la rejilla del calendario para arrastre bidimensional
+  const initializeGridInfo = () => {
+    try {
+      // Verificar si estamos en vista semanal o diaria
+      const isWeekView = eventRef.current.closest('.calendar-grid') !== null;
+      const isInDayView = eventRef.current.closest('.day-view-container') !== null;
+      
+      // Si estamos en vista diaria, no necesitamos información de rejilla horizontal
+      if (isInDayView) {
+        return {
+          containerElement: eventRef.current.closest('.day-view-container'),
+          gridRect: null,
+          dayWidth: 0,
+          hourHeight: gridSize,
+          days: [],
+          dayElements: [],
+          inWeekView: false,
+          startDay: new Date(event.start),
+          startHour: new Date(event.start).getHours()
+        };
+      }
+      
+      // Para vista semanal, necesitamos toda la información de la rejilla
+      const gridElement = eventRef.current.closest('.calendar-grid');
+      const gridRect = gridElement?.getBoundingClientRect();
+      
+      // Obtener elementos de día y sus anchos
+      const headerRow = gridElement?.querySelector('.calendar-header-row');
+      const dayHeaders = headerRow?.querySelectorAll('.calendar-day-header');
+      const dayElements = [];
+      const days = [];
+      
+      // Calcular ancho de día promedio
+      let totalDayWidth = 0;
+      let dayCount = 0;
+      
+      if (dayHeaders) {
+        dayHeaders.forEach((dayHeader, index) => {
+          if (index > 0) { // Ignorar el header de tiempo
+            // Obtener fecha del encabezado (asumiendo formato es "Dia, N Mes")
+            const headerText = dayHeader.textContent || '';
+            const dateParts = headerText.split(',');
+            if (dateParts.length > 1) {
+              // Extraer y parsear fecha
+              let dayDate = new Date();
+              
+              // Intentar extraer fecha del texto del encabezado
+              try {
+                const monthYearStr = dateParts[1].trim();
+                const [day, month] = monthYearStr.split(' ');
+                const monthIndex = getMonthIndex(month);
+                
+                if (!isNaN(parseInt(day)) && monthIndex !== -1) {
+                  dayDate = new Date();
+                  dayDate.setDate(parseInt(day));
+                  dayDate.setMonth(monthIndex);
+                }
+              } catch (e) {
+                console.log('Error parsing date from header:', e);
+              }
+              
+              days.push(dayDate);
+              dayElements.push(dayHeader);
+              
+              // Acumular ancho
+              const dayRect = dayHeader.getBoundingClientRect();
+              totalDayWidth += dayRect.width;
+              dayCount++;
+            }
+          }
+        });
+      }
+      
+      // Calcular ancho promedio si no pudimos obtener información específica
+      const avgDayWidth = dayCount > 0 ? totalDayWidth / dayCount : gridRect ? gridRect.width / 7 : 0;
+      
+      // Determinar el día y hora iniciales del evento
+      const startDay = new Date(event.start);
+      const startHour = startDay.getHours();
+      
+      return {
+        containerElement: gridElement,
+        gridRect,
+        dayWidth: avgDayWidth,
+        hourHeight: gridSize,
+        days,
+        dayElements,
+        inWeekView: true,
+        startDay,
+        startHour
+      };
+    } catch (error) {
+      console.error('Error initializing grid info:', error);
+      return {
+        containerElement: null,
+        gridRect: null,
+        dayWidth: 0,
+        hourHeight: gridSize,
+        days: [],
+        dayElements: [],
+        inWeekView: false,
+        startDay: new Date(event.start),
+        startHour: new Date(event.start).getHours()
+      };
+    }
+  };
+  
+  // Función auxiliar para obtener el índice del mes
+  const getMonthIndex = (monthName) => {
+    const months = {
+      'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+      'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+    };
+    
+    for (const [abbr, index] of Object.entries(months)) {
+      if (monthName.toLowerCase().startsWith(abbr)) {
+        return index;
+      }
+    }
+    
+    return -1;
+  };
+  
   // Manejador simple de clic para editar
   const handleClick = (e) => {
     e.preventDefault();
@@ -73,14 +201,36 @@ function EventItem({
   
   // Función para manejar el inicio del arrastre o redimensionamiento
   const handleMouseDown = (e, mode) => {
+    // Evitar propagación para que no se cree un nuevo evento al hacer clic
+    e.preventDefault();
+    e.stopPropagation();
+    
     // Si es un clic en el manejador de redimensionamiento
     const isResize = mode === 'resize';
     
-    // Guardar el timestamp para detectar clics
-    const startTime = Date.now();
+    // Inicializar información de la rejilla para arrastre bidimensional
+    const gridInfo = initializeGridInfo();
+    
+    // Guardar datos iniciales
+    dragInfo.current = {
+      dragging: true,
+      isResize: isResize,
+      startX: e.clientX,
+      startY: e.clientY,
+      startHeight: eventRef.current.offsetHeight,
+      deltaX: 0,
+      deltaY: 0,
+      listeners: true,
+      startTime: Date.now(),
+      moved: false,
+      grid: gridInfo
+    };
+    
+    // Añadir event listeners para el movimiento
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
     
     // Configurar el estado visual después de un pequeño delay
-    // Esto ayuda a diferenciar entre clics y arrastres
     setTimeout(() => {
       if (dragInfo.current.dragging) {
         if (isResize) {
@@ -91,76 +241,18 @@ function EventItem({
           eventRef.current.classList.add('dragging');
         }
       }
-    }, 150); // Pequeño delay para evitar visual flash en clics
-    
-    // Obtener referencias a los elementos padre y medidas
-    const parentElement = eventRef.current.closest('.calendar-time-slot') || 
-                          eventRef.current.closest('.day-view-hour-slot');
-    
-    // Determinar si estamos en vista semanal o diaria
-    const isWeekView = eventRef.current.closest('.calendar-grid') !== null;
-    
-    // Obtener medidas para el posicionamiento
-    const eventRect = eventRef.current.getBoundingClientRect();
-    const parentRect = parentElement?.getBoundingClientRect();
-    
-    // Calcular ancho de columna para vista semanal
-    let colWidth = columnWidth;
-    let colCount = 7; // Días por defecto
-    
-    if (isWeekView && !colWidth) {
-      const gridElement = eventRef.current.closest('.calendar-grid');
-      const row = gridElement?.querySelector('.calendar-row');
-      
-      if (row) {
-        const cells = row.querySelectorAll('.calendar-time-slot');
-        colCount = cells.length;
-        
-        if (cells.length > 0) {
-          colWidth = cells[0].getBoundingClientRect().width;
-        }
-      }
-    }
-    
-    // Guardar datos iniciales
-    dragInfo.current = {
-      dragging: true,
-      isResize: isResize,
-      startX: e.clientX,
-      startY: e.clientY,
-      startHeight: eventRect.height,
-      deltaX: 0,
-      deltaY: 0,
-      listeners: true,
-      startTime: startTime,
-      moved: false,
-      parentElement,
-      parentRect,
-      eventRect,
-      isWeekView,
-      columnCount: colCount,
-      columnWidth: colWidth
-    };
-    
-    // Añadir event listeners para el movimiento
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    
-    // Evitar que este evento se propague al contenedor
-    e.preventDefault();
-    e.stopPropagation();
+    }, 100);
   };
   
   // Función para manejar el movimiento del ratón
   const handleMouseMove = (e) => {
     if (!dragInfo.current.dragging) return;
     
-    // Calcular el desplazamiento
+    // Calcular el desplazamiento desde el punto inicial
     const deltaX = e.clientX - dragInfo.current.startX;
     const deltaY = e.clientY - dragInfo.current.startY;
     
     // Solo consideramos que hay movimiento si se superó un umbral mínimo
-    // Esto ayuda a evitar micro-movimientos accidentales
     const movedSignificantly = Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3;
     
     if (movedSignificantly) {
@@ -176,7 +268,7 @@ function EventItem({
         let newHeight = dragInfo.current.startHeight + deltaY;
         newHeight = Math.max(gridSize / 2, newHeight); // Altura mínima
         
-        // Aplicar la nueva altura directamente para movimiento fluido (sin snap)
+        // Aplicar la nueva altura directamente para movimiento fluido
         eventRef.current.style.height = `${newHeight}px`;
       } 
       // Si estamos arrastrando (vertical y horizontal)
@@ -189,7 +281,6 @@ function EventItem({
   
   // Función para manejar el final del arrastre o redimensionamiento
   const handleMouseUp = (e) => {
-    // Detener la propagación del evento
     e.stopPropagation();
     
     if (!dragInfo.current.dragging) return;
@@ -217,18 +308,16 @@ function EventItem({
       onClick(event);
       
       // Reiniciar el objeto de información de arrastre
-      resetDragInfo();
+      dragInfo.current = { dragging: false };
       
       return;
     }
     
     // Si hubo movimiento real, calcular cambios
-    const isResize = dragInfo.current.isResize;
-    const isWeekView = dragInfo.current.isWeekView;
     let hoursDelta = 0;
     let daysDelta = 0;
     
-    if (isResize) {
+    if (dragInfo.current.isResize) {
       // Para redimensionamiento, calcular cuántas horas añadimos/eliminamos
       const heightDelta = Math.round(eventRef.current.offsetHeight) - dragInfo.current.startHeight;
       hoursDelta = Math.round(heightDelta / gridSize);
@@ -237,14 +326,22 @@ function EventItem({
       eventRef.current.classList.remove('resizing');
       eventRef.current.style.height = '';
     } else {
-      // Para arrastre, calcular cambios en días y horas
+      // Para arrastre, calcular cambios en horas y días
       
       // Calcular cambio de horas (vertical)
       hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
       
-      // Calcular cambio de días (horizontal) solo en vista semanal
-      if (isWeekView && dragInfo.current.columnWidth > 0) {
-        daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.columnWidth);
+      // Calcular cambio de días (horizontal) si estamos en vista semanal
+      if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+        const horizontalChange = dragInfo.current.deltaX;
+        daysDelta = Math.round(horizontalChange / dragInfo.current.grid.dayWidth);
+        
+        // Corrección para movimiento negativo (izquierda)
+        if (horizontalChange < 0 && Math.abs(horizontalChange) % dragInfo.current.grid.dayWidth > 10) {
+          daysDelta = Math.floor(horizontalChange / dragInfo.current.grid.dayWidth);
+        }
+        
+        console.log(`Movimiento horizontal: ${horizontalChange}px, Cambio de días: ${daysDelta}`);
       }
       
       // Eliminar clase y estilo de arrastre
@@ -261,15 +358,15 @@ function EventItem({
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       
-      if (isResize) {
+      if (dragInfo.current.isResize) {
         // Si redimensiona, solo cambiamos la hora de fin
         endDate.setHours(endDate.getHours() + hoursDelta);
       } else {
-        // Si arrastra, mover ambas horas y posiblemente días
+        // Si arrastra, mover ambas horas
         startDate.setHours(startDate.getHours() + hoursDelta);
         endDate.setHours(endDate.getHours() + hoursDelta);
         
-        // Aplicar cambio de días si es necesario
+        // Aplicar cambio de días
         if (daysDelta !== 0) {
           startDate.setDate(startDate.getDate() + daysDelta);
           endDate.setDate(endDate.getDate() + daysDelta);
@@ -290,28 +387,7 @@ function EventItem({
     }
     
     // Reiniciar el objeto de información de arrastre
-    resetDragInfo();
-  };
-  
-  // Función para reiniciar el estado de arrastre
-  const resetDragInfo = () => {
-    dragInfo.current = {
-      dragging: false,
-      isResize: false,
-      startX: 0,
-      startY: 0,
-      startHeight: 0,
-      deltaX: 0,
-      deltaY: 0,
-      listeners: false,
-      moved: false,
-      parentElement: null,
-      parentRect: null,
-      eventRect: null,
-      isWeekView: false,
-      columnCount: 7,
-      columnWidth: 0
-    };
+    dragInfo.current = { dragging: false };
   };
   
   return (
@@ -320,7 +396,7 @@ function EventItem({
       className={`calendar-event ${dragging ? 'dragging' : ''} ${resizing ? 'resizing' : ''}`}
       style={{ backgroundColor: event.color }}
       onMouseDown={(e) => handleMouseDown(e, 'drag')}
-      onClick={handleClick} // Añadimos el manejador de clic explícito
+      onClick={handleClick}
       data-event-id={event.id}
     >
       <div className="event-title">{event.title}</div>
