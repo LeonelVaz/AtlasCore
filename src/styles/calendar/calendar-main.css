@@ -214,3 +214,135 @@
     padding: var(--spacing-md);
   }
 }
+
+
+/* Añadir estos estilos a src/styles/calendar/calendar-main.css */
+
+/* Estilos para la vista diaria */
+.day-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--color-shadow);
+  overflow: hidden;
+}
+
+.day-view-header {
+  padding: var(--spacing-md);
+  background-color: #f5f5f5;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.day-view-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-atlas-blue);
+  text-transform: capitalize;
+  text-align: center;
+}
+
+.day-view-timeline {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.day-view-hour-row {
+  display: flex;
+  min-height: 60px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.day-view-hour-label {
+  flex: 0 0 60px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: var(--spacing-xs);
+  font-size: 0.8rem;
+  color: var(--color-structure-gray);
+  border-right: 2px solid var(--color-border);
+}
+
+.day-view-hour-slot {
+  flex: 1;
+  position: relative;
+  background-color: white;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+}
+
+.day-view-hour-slot:hover {
+  background-color: #f0f7ff;
+}
+
+/* Mejoras para eventos en vista diaria */
+.day-view-hour-slot .calendar-event {
+  margin-bottom: 4px;
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+}
+
+.day-view-hour-slot .event-description {
+  font-size: 0.75rem;
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Añadir estos estilos a src/styles/calendar/calendar-main.css */
+
+/* Botones de cambio de vista */
+.calendar-view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-view-toggle button {
+  padding: 6px 12px;
+  background-color: #f0f0f0;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.calendar-view-toggle button:hover {
+  background-color: #e0e0e0;
+}
+
+.calendar-view-toggle button.active {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+/* Actualizaciones para el encabezado */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background-color: #f5f5f5;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .calendar-view-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -9,6 +9,7 @@ import {
   formatHour, 
   generateWeekDays 
 } from '../../utils/date-utils';
+import DayView from './day-view';
 import '../../styles/calendar/calendar-main.css';
 
 /**
@@ -22,6 +23,8 @@ function CalendarMain() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [formError, setFormError] = useState(''); // Estado para manejar errores del formulario
+  const [view, setView] = useState('week'); // 'week' o 'day'
+  const [selectedDay, setSelectedDay] = useState(new Date());
   const [newEvent, setNewEvent] = useState({
     id: '',
     title: '',
@@ -213,6 +216,14 @@ function CalendarMain() {
   // Ir a la semana actual
   const goToCurrentWeek = () => {
     setCurrentDate(new Date());
+  };
+
+  // Cambiar entre vistas
+  const toggleView = (newView, date = null) => {
+    setView(newView);
+    if (date) {
+      setSelectedDay(new Date(date));
+    }
   };
 
   // Generar las horas del día (de 0 a 23)
@@ -497,58 +508,104 @@ function CalendarMain() {
     <div className="calendar-container">
       <div className="calendar-header">
         <div className="calendar-navigation">
-          <button onClick={goToPreviousWeek}>Semana anterior</button>
-          <button onClick={goToCurrentWeek}>Semana actual</button>
-          <button onClick={goToNextWeek}>Semana siguiente</button>
+          {view === 'week' ? (
+            <>
+              <button onClick={goToPreviousWeek}>Semana anterior</button>
+              <button onClick={goToCurrentWeek}>Semana actual</button>
+              <button onClick={goToNextWeek}>Semana siguiente</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => {
+                const prevDay = new Date(selectedDay);
+                prevDay.setDate(prevDay.getDate() - 1);
+                setSelectedDay(prevDay);
+              }}>Día anterior</button>
+              <button onClick={() => setSelectedDay(new Date())}>Hoy</button>
+              <button onClick={() => {
+                const nextDay = new Date(selectedDay);
+                nextDay.setDate(nextDay.getDate() + 1);
+                setSelectedDay(nextDay);
+              }}>Día siguiente</button>
+            </>
+          )}
+        </div>
+        <div className="calendar-view-toggle">
+          <button 
+            className={view === 'week' ? 'active' : ''} 
+            onClick={() => toggleView('week')}
+          >
+            Vista Semanal
+          </button>
+          <button 
+            className={view === 'day' ? 'active' : ''} 
+            onClick={() => toggleView('day', selectedDay)}
+          >
+            Vista Diaria
+          </button>
         </div>
         <div className="calendar-title">
-          {weekDays.length > 0 && (
+          {view === 'week' && weekDays.length > 0 && (
             <h2>
               {new Date(weekDays[0]).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+            </h2>
+          )}
+          {view === 'day' && (
+            <h2>
+              {new Date(selectedDay).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </h2>
           )}
         </div>
       </div>
 
-      <div className="calendar-grid">
-        {/* Encabezado con días de la semana */}
-        <div className="calendar-row calendar-header-row">
-          <div className="calendar-cell calendar-time-header"></div>
-          {weekDays.map((day, index) => (
-            <div 
-              key={index} 
-              className="calendar-cell calendar-day-header"
-              data-testid="calendar-day-header"
-            >
-              {formatDate(day, { 
-                weekday: 'short', 
-                day: 'numeric', 
-                month: 'short' 
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Filas de horas */}
-        {hours.map((hour) => (
-          <div key={hour} className="calendar-row">
-            <div className="calendar-cell calendar-time">
-              {formatHour(hour)}
-            </div>
-            
-            {weekDays.map((day, dayIndex) => (
+      {view === 'week' ? (
+        <div className="calendar-grid">
+          {/* Encabezado con días de la semana */}
+          <div className="calendar-row calendar-header-row">
+            <div className="calendar-cell calendar-time-header"></div>
+            {weekDays.map((day, index) => (
               <div 
-                key={dayIndex} 
-                className="calendar-cell calendar-time-slot"
-                data-testid="calendar-time-slot"
-                onClick={() => handleCellClick(day, hour)}
+                key={index} 
+                className="calendar-cell calendar-day-header"
+                data-testid="calendar-day-header"
               >
-                {renderEvents(day, hour)}
+                {formatDate(day, { 
+                  weekday: 'short', 
+                  day: 'numeric', 
+                  month: 'short' 
+                })}
               </div>
             ))}
           </div>
-        ))}
-      </div>
+
+          {/* Filas de horas */}
+          {hours.map((hour) => (
+            <div key={hour} className="calendar-row">
+              <div className="calendar-cell calendar-time">
+                {formatHour(hour)}
+              </div>
+              
+              {weekDays.map((day, dayIndex) => (
+                <div 
+                  key={dayIndex} 
+                  className="calendar-cell calendar-time-slot"
+                  data-testid="calendar-time-slot"
+                  onClick={() => handleCellClick(day, hour)}
+                >
+                  {renderEvents(day, hour)}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <DayView 
+          date={selectedDay}
+          events={events}
+          onEventClick={handleEventClick}
+          onTimeSlotClick={handleCellClick}
+        />
+      )}
 
       {/* Formulario para crear/editar eventos */}
       {showEventForm && (
