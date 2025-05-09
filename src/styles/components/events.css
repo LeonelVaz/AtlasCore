@@ -1,4 +1,4 @@
-/* Estilos para eventos - Versión mínima */
+/* Estilos minimalistas para eventos - enfocados en prevenir problemas de clic */
 
 /* Estilos base para los eventos */
 .calendar-event {
@@ -16,13 +16,17 @@
   padding: 4px;
   font-size: 0.85rem;
   
-  /* Interacción */
+  /* Interacción - IMPORTANTE: cursor pointer para indicar que es clickable */
   cursor: pointer;
   
   /* Otros */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   z-index: 10;
+  
+  /* Estructura interna */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hover */
@@ -31,7 +35,11 @@
 }
 
 /* Estados de arrastre y redimensionamiento */
-.calendar-event.dragging,
+.calendar-event.dragging {
+  opacity: 0.8;
+  z-index: 100;
+}
+
 .calendar-event.resizing {
   opacity: 0.8;
   z-index: 100;
@@ -49,7 +57,11 @@
   border-radius: 0 0 4px 4px;
 }
 
-/* Componentes internos */
+.event-resize-handle:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Contenido del evento */
 .event-title {
   font-weight: 500;
   margin-bottom: 2px;
@@ -61,4 +73,14 @@
 .event-time {
   font-size: 0.75rem;
   opacity: 0.9;
+}
+
+/* Ajuste para eventos en vista diaria */
+.day-view-hour-slot .calendar-event {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  margin-bottom: 4px;
 }

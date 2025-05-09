@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * Componente para renderizar un evento individual con soporte para
- * arrastrar en dos dimensiones y redimensionar
+ * arrastrar en dos dimensiones y redimensionar, con corrección para clic
  */
 function EventItem({ 
   event, 
@@ -59,20 +59,39 @@ function EventItem({
     }
   };
   
-  // Función para manejar el inicio del arrastre o redimensionamiento
-  const handleMouseDown = (e, mode) => {
+  // Manejador simple de clic para editar
+  const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     
+    // Verificar que no estamos arrastrando o redimensionando
+    if (!dragInfo.current.dragging && !dragging && !resizing) {
+      console.log('Clic en evento, abriendo editor...');
+      onClick(event);
+    }
+  };
+  
+  // Función para manejar el inicio del arrastre o redimensionamiento
+  const handleMouseDown = (e, mode) => {
     // Si es un clic en el manejador de redimensionamiento
     const isResize = mode === 'resize';
     
-    // Configurar el estado visual
-    if (isResize) {
-      setResizing(true);
-    } else {
-      setDragging(true);
-    }
+    // Guardar el timestamp para detectar clics
+    const startTime = Date.now();
+    
+    // Configurar el estado visual después de un pequeño delay
+    // Esto ayuda a diferenciar entre clics y arrastres
+    setTimeout(() => {
+      if (dragInfo.current.dragging) {
+        if (isResize) {
+          setResizing(true);
+          eventRef.current.classList.add('resizing');
+        } else {
+          setDragging(true);
+          eventRef.current.classList.add('dragging');
+        }
+      }
+    }, 150); // Pequeño delay para evitar visual flash en clics
     
     // Obtener referencias a los elementos padre y medidas
     const parentElement = eventRef.current.closest('.calendar-time-slot') || 
@@ -113,7 +132,7 @@ function EventItem({
       deltaX: 0,
       deltaY: 0,
       listeners: true,
-      startTime: Date.now(),
+      startTime: startTime,
       moved: false,
       parentElement,
       parentRect,
@@ -127,53 +146,50 @@ function EventItem({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     
-    // Crear un clon flotante para arrastre si no es redimensionamiento
-    if (!isResize) {
-      eventRef.current.style.pointerEvents = 'none'; // Evitar que interfiera con el arrastre
-      
-      // Añadir clase para estilos de arrastre
-      eventRef.current.classList.add('dragging');
-    } else {
-      // Añadir clase para estilos de redimensionamiento
-      eventRef.current.classList.add('resizing');
-    }
-    
-    console.log(isResize ? 'Iniciando redimensionamiento' : 'Iniciando arrastre');
+    // Evitar que este evento se propague al contenedor
+    e.preventDefault();
+    e.stopPropagation();
   };
   
   // Función para manejar el movimiento del ratón
   const handleMouseMove = (e) => {
     if (!dragInfo.current.dragging) return;
     
-    // Marcar como movido (no solo un clic)
-    dragInfo.current.moved = true;
-    
     // Calcular el desplazamiento
     const deltaX = e.clientX - dragInfo.current.startX;
     const deltaY = e.clientY - dragInfo.current.startY;
     
-    // Almacenar el desplazamiento actual
-    dragInfo.current.deltaX = deltaX;
-    dragInfo.current.deltaY = deltaY;
+    // Solo consideramos que hay movimiento si se superó un umbral mínimo
+    // Esto ayuda a evitar micro-movimientos accidentales
+    const movedSignificantly = Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3;
     
-    // Si estamos redimensionando (solo vertical)
-    if (dragInfo.current.isResize) {
-      // Calcular nueva altura
-      let newHeight = dragInfo.current.startHeight + deltaY;
-      newHeight = Math.max(gridSize, newHeight); // Altura mínima
+    if (movedSignificantly) {
+      dragInfo.current.moved = true;
       
-      // Aplicar la nueva altura directamente para movimiento fluido (sin snap)
-      eventRef.current.style.height = `${newHeight}px`;
-    } 
-    // Si estamos arrastrando (vertical y horizontal)
-    else {
-      // Aplicar transformación directa para seguir exactamente al cursor
-      eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+      // Almacenar el desplazamiento actual
+      dragInfo.current.deltaX = deltaX;
+      dragInfo.current.deltaY = deltaY;
+      
+      // Si estamos redimensionando (solo vertical)
+      if (dragInfo.current.isResize) {
+        // Calcular nueva altura
+        let newHeight = dragInfo.current.startHeight + deltaY;
+        newHeight = Math.max(gridSize / 2, newHeight); // Altura mínima
+        
+        // Aplicar la nueva altura directamente para movimiento fluido (sin snap)
+        eventRef.current.style.height = `${newHeight}px`;
+      } 
+      // Si estamos arrastrando (vertical y horizontal)
+      else {
+        // Aplicar transformación directa para seguir exactamente al cursor
+        eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+      }
     }
   };
   
   // Función para manejar el final del arrastre o redimensionamiento
   const handleMouseUp = (e) => {
+    // Detener la propagación del evento
     e.stopPropagation();
     
     if (!dragInfo.current.dragging) return;
@@ -190,7 +206,6 @@ function EventItem({
     if (wasJustAClick && !dragInfo.current.isResize) {
       // Eliminar clases y estilos
       eventRef.current.classList.remove('dragging');
-      eventRef.current.style.pointerEvents = '';
       eventRef.current.style.transform = '';
       
       // Actualizar estados
@@ -234,7 +249,6 @@ function EventItem({
       
       // Eliminar clase y estilo de arrastre
       eventRef.current.classList.remove('dragging');
-      eventRef.current.style.pointerEvents = '';
       eventRef.current.style.transform = '';
     }
     
@@ -306,10 +320,7 @@ function EventItem({
       className={`calendar-event ${dragging ? 'dragging' : ''} ${resizing ? 'resizing' : ''}`}
       style={{ backgroundColor: event.color }}
       onMouseDown={(e) => handleMouseDown(e, 'drag')}
-      onClick={(e) => {
-        // Este manejador es solo por seguridad, la lógica principal está en handleMouseUp
-        e.stopPropagation();
-      }}
+      onClick={handleClick} // Añadimos el manejador de clic explícito
       data-event-id={event.id}
     >
       <div className="event-title">{event.title}</div>
