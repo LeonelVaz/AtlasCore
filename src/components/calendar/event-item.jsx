@@ -487,6 +487,11 @@ function EventItem({
       let hoursDelta = 0;
       let daysDelta = 0;
       
+      // SOLUCIÓN MEJORADA: Usar directamente la celda de destino resaltada
+      // en lugar de hacer un nuevo cálculo basado en deltaX/deltaY
+      const targetSlot = dragInfo.current.grid ? dragInfo.current.grid.targetSlot : null;
+      const startSlot = dragInfo.current.grid ? dragInfo.current.grid.startSlot : null;
+      
       if (dragInfo.current.isResize) {
         // Para redimensionamiento, calcular cuántas horas añadimos/eliminamos
         if (eventRef.current) {
@@ -500,19 +505,49 @@ function EventItem({
           eventRef.current.style.height = '';
         }
       } else {
-        // Para arrastre, calcular cambios en horas y días
-        
-        // Calcular cambio de horas (vertical)
-        hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
-        
-        // Calcular cambio de días (horizontal) si estamos en vista semanal
-        if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
-          const horizontalChange = dragInfo.current.deltaX;
-          daysDelta = Math.round(horizontalChange / dragInfo.current.grid.dayWidth);
+        // Para arrastre, determinar el cambio basado en las celdas, no en píxeles
+        if (targetSlot && startSlot && targetSlot !== startSlot) {
+          // Determinar la posición de las celdas de inicio y destino
+          const allSlots = dragInfo.current.grid.timeSlots;
+          if (allSlots && allSlots.length > 0) {
+            const rowSize = dragInfo.current.grid.inWeekView ? 7 : 1;
+            
+            // Encontrar índices de las celdas
+            const startIndex = allSlots.indexOf(startSlot);
+            const targetIndex = allSlots.indexOf(targetSlot);
+            
+            if (startIndex !== -1 && targetIndex !== -1) {
+              // Calcular fila (hora) y columna (día) para ambas celdas
+              const startRow = Math.floor(startIndex / rowSize);
+              const startCol = startIndex % rowSize;
+              
+              const targetRow = Math.floor(targetIndex / rowSize);
+              const targetCol = targetIndex % rowSize;
+              
+              // Calcular diferencia en días y horas
+              hoursDelta = targetRow - startRow;
+              daysDelta = targetCol - startCol;
+              
+              console.log(`Cambio calculado desde celdas: ${daysDelta} días, ${hoursDelta} horas`);
+            } else {
+              // Fallback: usar el cálculo tradicional si no podemos encontrar los índices
+              hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
+              
+              if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+                const horizontalChange = dragInfo.current.deltaX;
+                daysDelta = Math.round(horizontalChange / dragInfo.current.grid.dayWidth);
+              }
+              
+              console.log(`Cambio calculado desde delta: ${daysDelta} días, ${hoursDelta} horas`);
+            }
+          }
+        } else {
+          // Fallback si no tenemos celdas de referencia
+          hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
           
-          // Corrección para movimiento negativo (izquierda)
-          if (horizontalChange < 0 && Math.abs(horizontalChange) % dragInfo.current.grid.dayWidth > 10) {
-            daysDelta = Math.floor(horizontalChange / dragInfo.current.grid.dayWidth);
+          if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+            const horizontalChange = dragInfo.current.deltaX;
+            daysDelta = Math.round(horizontalChange / dragInfo.current.grid.dayWidth);
           }
         }
         
