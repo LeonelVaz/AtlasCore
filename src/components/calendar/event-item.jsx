@@ -33,6 +33,9 @@ function EventItem({
     startTime: 0,
     endTime: 0,
     moved: false,
+    // Valores originales del evento para cálculos
+    originalDuration: null,
+    originalStartMinutes: null,
     // Rejilla para movimiento bidimensional
     grid: {
       containerElement: null,
@@ -72,6 +75,18 @@ function EventItem({
     } catch (error) {
       console.error('Error al formatear hora del evento:', error);
       return '';
+    }
+  };
+  
+  // Calcular duración del evento en minutos
+  const calculateEventDuration = () => {
+    try {
+      const start = new Date(event.start);
+      const end = new Date(event.end);
+      return (end - start) / (1000 * 60); // Duración en minutos
+    } catch (error) {
+      console.error('Error al calcular duración del evento:', error);
+      return 60; // Valor por defecto: 1 hora
     }
   };
   
@@ -322,6 +337,12 @@ function EventItem({
     const isResize = mode === 'resize';
     const gridInfo = initializeGridInfo();
     
+    // Guardar duración original y minutos de inicio para cálculos posteriores
+    const startDate = new Date(event.start);
+    const endDate = new Date(event.end);
+    const durationMinutes = (endDate - startDate) / (1000 * 60);
+    const startMinutes = startDate.getMinutes();
+    
     dragInfo.current = {
       dragging: true,
       isResize: isResize,
@@ -334,6 +355,8 @@ function EventItem({
       startTime: Date.now(),
       endTime: 0,
       moved: false,
+      originalDuration: durationMinutes,
+      originalStartMinutes: startMinutes,
       grid: gridInfo,
       highlightedCell: null
     };
@@ -425,9 +448,16 @@ function EventItem({
     }
   };
   
-  // Función para calcular el cambio de tiempo preciso con snap
+  // Función para calcular el cambio de tiempo preciso
   const calculatePreciseTimeChange = (deltaY, isResize = false) => {
-    // Si no hay snap activado, usar cálculo simple
+    // Si estamos redimensionando SIN snap activado, redondeamos a horas completas
+    if (snapValue === 0 && isResize) {
+      // Calcular cuántas horas completas cambia
+      const hourDelta = Math.round(deltaY / gridSize);
+      return hourDelta * 60; // Convertir a minutos
+    }
+    
+    // Si no hay snap activado (pero no es redimensionamiento), usar cálculo simple
     if (snapValue === 0) {
       const pixelsPerMinute = gridSize / 60;
       return deltaY / pixelsPerMinute;  // Retorna minutos
@@ -523,9 +553,27 @@ function EventItem({
           // Solo cambia tiempo de fin en minutos precisos
           endDate.setMinutes(endDate.getMinutes() + minutesDelta);
         } else {
-          // Mueve todo el evento en minutos precisos
-          startDate.setMinutes(startDate.getMinutes() + minutesDelta);
-          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+          // Si no hay snap activado, alinear con la hora completa pero mantener duración
+          if (snapValue === 0) {
+            // Obtener la hora completa más cercana basada en el desplazamiento
+            const hourDelta = Math.round(dragInfo.current.deltaY / gridSize);
+            
+            // Ajustar la fecha para comenzar en una hora completa
+            startDate.setHours(startDate.getHours() + hourDelta);
+            startDate.setMinutes(0); // Resetear minutos a 0 para alinear con hora completa
+            
+            // Mantener la duración exacta original
+            const durationMinutes = dragInfo.current.originalDuration;
+            const newEndDate = new Date(startDate);
+            newEndDate.setMinutes(newEndDate.getMinutes() + durationMinutes);
+            
+            // Actualizar solo endDate después de calcular basado en startDate
+            endDate.setTime(newEndDate.getTime());
+          } else {
+            // Con snap activado, comportamiento normal
+            startDate.setMinutes(startDate.getMinutes() + minutesDelta);
+            endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+          }
           
           if (daysDelta !== 0) {
             startDate.setDate(startDate.getDate() + daysDelta);
