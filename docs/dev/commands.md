@@ -110,6 +110,12 @@ git status
 git push -u origin feature/nuevos-componentes-calendario-stage2
 ```
 
+# Hacer coincidir la rama con main
+```bash
+git checkout feature/nuevos-componentes-calendario-stage2
+git reset --hard main
+```
+
 ## Vite (Desarrollo Frontend)
 
 ### Iniciar el servidor de desarrollo
