@@ -667,7 +667,7 @@ function EventItem({
       <div className="event-time">{formatEventTime()}</div>
       
       {/* Solo mostrar el handle de redimensionamiento si no continúa al día siguiente */}
-      {!continuesNextDay && (
+      {!continuesNextDay && ( 
         <div 
           className="event-resize-handle"
           onMouseDown={(e) => handleMouseDown(e, 'resize')}
