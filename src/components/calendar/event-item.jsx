@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * Componente simplificado para renderizar un evento individual con soporte para
- * arrastrar y redimensionar
+ * arrastrar y redimensionar - Versión corregida para arrastre inmediato
  */
 function EventItem({ 
   event, 
@@ -10,30 +10,31 @@ function EventItem({
   onUpdate,
   gridSize = 60, // Altura de una celda (1 hora)
 }) {
-  // Estados para controlar el arrastre y redimensionamiento
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [initialY, setInitialY] = useState(0);
-  const [initialHeight, setInitialHeight] = useState(0);
-  
-  // Referencia al elemento del evento
+  // Referencias para el elemento del evento
   const eventRef = useRef(null);
-
-  // Referencia mutable para almacenar el offset actual
-  const offsetRef = useRef(0);
-  const heightRef = useRef(0);
   
-  // Para debugging - muestra los cambios en el elemento del evento
+  // Estado para tracking
+  const [dragging, setDragging] = useState(false);
+  const [resizing, setResizing] = useState(false);
+  
+  // Variables para seguimiento del arrastre/redimensionamiento
+  const dragInfo = useRef({
+    dragging: false,
+    startY: 0,
+    startHeight: 0,
+    deltaY: 0,
+    listeners: false
+  });
+  
+  // Usar useEffect para limpiar listeners al desmontar
   useEffect(() => {
-    if (eventRef.current) {
-      console.log(`Evento ${event.id} montado/actualizado`);
-    }
     return () => {
-      console.log(`Evento ${event.id} desmontado`);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [event.id]);
+  }, []);
   
-  // Formatea las horas para mostrar
+  // Formatear las horas para mostrar
   const formatEventTime = () => {
     try {
       const start = new Date(event.start);
@@ -47,166 +48,160 @@ function EventItem({
     }
   };
   
-  // Función para iniciar el arrastre
-  const startDrag = (e) => {
-    // Solo iniciar arrastre si no estamos en el manejador de redimensionamiento
-    if (e.target.classList.contains('event-resize-handle')) return;
-    
+  // Función para manejar el inicio del arrastre o redimensionamiento
+  const handleMouseDown = (e, mode) => {
     e.preventDefault();
     e.stopPropagation();
     
-    setIsDragging(true);
-    setInitialY(e.clientY);
-    offsetRef.current = 0;
+    // Si es un clic en el manejador de redimensionamiento
+    const isResize = mode === 'resize';
     
-    document.addEventListener('mousemove', handleDrag);
-    document.addEventListener('mouseup', stopDrag);
+    // Configurar el estado y las variables de referencias
+    if (isResize) {
+      setResizing(true);
+    } else {
+      setDragging(true);
+    }
+    
+    // Guardar datos iniciales
+    dragInfo.current = {
+      dragging: true,
+      isResize: isResize,
+      startY: e.clientY,
+      startHeight: eventRef.current.offsetHeight,
+      deltaY: 0,
+      listeners: true
+    };
+    
+    // Añadir event listeners para el movimiento
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // Aplicar clase visual inmediatamente
+    if (isResize) {
+      eventRef.current.classList.add('resizing');
+    } else {
+      eventRef.current.classList.add('dragging');
+    }
+    
+    console.log(isResize ? 'Iniciando redimensionamiento' : 'Iniciando arrastre');
   };
   
-  // Función para manejar el arrastre
-  const handleDrag = (e) => {
-    if (!isDragging) return;
+  // Función para manejar el movimiento del ratón
+  const handleMouseMove = (e) => {
+    if (!dragInfo.current.dragging) return;
     
-    const deltaY = e.clientY - initialY;
-    // Redondear al múltiplo de gridSize más cercano para el efecto snap
-    const snappedDelta = Math.round(deltaY / gridSize) * gridSize;
+    // Calcular el desplazamiento
+    const deltaY = e.clientY - dragInfo.current.startY;
+    dragInfo.current.deltaY = deltaY;
     
-    // Actualizar referencia al offset actual
-    offsetRef.current = snappedDelta;
-    
-    // Aplicar la transformación
-    eventRef.current.style.transform = `translateY(${snappedDelta}px)`;
+    // Si estamos redimensionando
+    if (dragInfo.current.isResize) {
+      // Calcular nueva altura
+      let newHeight = dragInfo.current.startHeight + deltaY;
+      newHeight = Math.max(gridSize, newHeight); // Altura mínima
+      newHeight = Math.round(newHeight / gridSize) * gridSize; // Snap a la rejilla
+      
+      // Aplicar la nueva altura
+      eventRef.current.style.height = `${newHeight}px`;
+    } 
+    // Si estamos arrastrando
+    else {
+      // Calcular offset con snap
+      const snappedDelta = Math.round(deltaY / gridSize) * gridSize;
+      
+      // Aplicar la transformación para mover
+      eventRef.current.style.transform = `translateY(${snappedDelta}px)`;
+    }
   };
   
-  // Función para detener el arrastre
-  const stopDrag = () => {
-    if (!isDragging) return;
+  // Función para manejar el final del arrastre o redimensionamiento
+  const handleMouseUp = (e) => {
+    if (!dragInfo.current.dragging) return;
     
-    document.removeEventListener('mousemove', handleDrag);
-    document.removeEventListener('mouseup', stopDrag);
+    // Eliminar los event listeners
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
     
     // Calcular el cambio en horas
-    const hoursDelta = Math.round(offsetRef.current / gridSize);
+    let hoursDelta;
+    const isResize = dragInfo.current.isResize;
     
-    console.log(`Arrastre finalizado. Offset: ${offsetRef.current}px, Delta en horas: ${hoursDelta}`);
+    if (isResize) {
+      // Para redimensionamiento, calcular cuántas horas añadimos/eliminamos
+      const heightDelta = Math.round(eventRef.current.offsetHeight) - dragInfo.current.startHeight;
+      hoursDelta = Math.round(heightDelta / gridSize);
+      
+      // Eliminar clase y estilo de redimensionamiento
+      eventRef.current.classList.remove('resizing');
+      eventRef.current.style.height = '';
+    } else {
+      // Para arrastre, calcular cuántas horas se desplazó
+      hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
+      
+      // Eliminar clase y estilo de arrastre
+      eventRef.current.classList.remove('dragging');
+      eventRef.current.style.transform = '';
+    }
     
-    // Limpiar transformación
-    eventRef.current.style.transform = '';
+    // Actualizar estados
+    setDragging(false);
+    setResizing(false);
     
-    // Solo actualizar si hubo un cambio
+    // Solo actualizar si hubo cambio
     if (hoursDelta !== 0) {
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       
-      startDate.setHours(startDate.getHours() + hoursDelta);
-      endDate.setHours(endDate.getHours() + hoursDelta);
+      if (isResize) {
+        // Si redimensiona, solo cambiamos la hora de fin
+        endDate.setHours(endDate.getHours() + hoursDelta);
+      } else {
+        // Si arrastra, mover ambas horas
+        startDate.setHours(startDate.getHours() + hoursDelta);
+        endDate.setHours(endDate.getHours() + hoursDelta);
+      }
       
+      // Crear evento actualizado
       const updatedEvent = {
         ...event,
         start: startDate.toISOString(),
         end: endDate.toISOString()
       };
       
-      console.log('Evento después de arrastrar:', updatedEvent);
+      console.log('Evento actualizado:', updatedEvent);
       
-      // Ejecutar la actualización
+      // Llamar a la función de actualización
       onUpdate(updatedEvent);
     }
     
-    // Restablecer el estado
-    setIsDragging(false);
-    offsetRef.current = 0;
+    // Reiniciar el objeto de información de arrastre
+    dragInfo.current = {
+      dragging: false,
+      isResize: false,
+      startY: 0,
+      startHeight: 0,
+      deltaY: 0,
+      listeners: false
+    };
   };
   
-  // Función para iniciar el redimensionamiento
-  const startResize = (e) => {
-    e.preventDefault();
+  // Manejar clic para abrir detalles (solo si no estamos arrastrando)
+  const handleClick = (e) => {
+    // Si estamos arrastrando o redimensionando, no hacer nada
+    if (dragging || resizing || dragInfo.current.dragging) return;
+    
     e.stopPropagation();
-    
-    setIsResizing(true);
-    setInitialY(e.clientY);
-    setInitialHeight(eventRef.current.offsetHeight);
-    heightRef.current = eventRef.current.offsetHeight;
-    
-    document.addEventListener('mousemove', handleResize);
-    document.addEventListener('mouseup', stopResize);
-  };
-  
-  // Función para manejar el redimensionamiento
-  const handleResize = (e) => {
-    if (!isResizing) return;
-    
-    const deltaY = e.clientY - initialY;
-    
-    // Calcular nueva altura y aplicar snap
-    let newHeight = initialHeight + deltaY;
-    
-    // Asegurar altura mínima de una celda
-    newHeight = Math.max(gridSize, newHeight);
-    
-    // Snap a la rejilla
-    newHeight = Math.round(newHeight / gridSize) * gridSize;
-    
-    // Actualizar referencia a la altura actual
-    heightRef.current = newHeight;
-    
-    // Aplicar nueva altura
-    eventRef.current.style.height = `${newHeight}px`;
-  };
-  
-  // Función para detener el redimensionamiento
-  const stopResize = () => {
-    if (!isResizing) return;
-    
-    document.removeEventListener('mousemove', handleResize);
-    document.removeEventListener('mouseup', stopResize);
-    
-    // Calcular el cambio en horas
-    const hoursDelta = Math.round((heightRef.current - initialHeight) / gridSize);
-    
-    console.log(`Redimensionamiento finalizado. Nueva altura: ${heightRef.current}px, 
-                Altura inicial: ${initialHeight}px, Delta en horas: ${hoursDelta}`);
-    
-    // Limpiar estilos
-    eventRef.current.style.height = '';
-    
-    // Solo actualizar si hubo un cambio
-    if (hoursDelta !== 0) {
-      const startDate = new Date(event.start);
-      const endDate = new Date(event.end);
-      
-      // Modificar solo la hora de fin al redimensionar
-      endDate.setHours(endDate.getHours() + hoursDelta);
-      
-      const updatedEvent = {
-        ...event,
-        start: startDate.toISOString(),
-        end: endDate.toISOString()
-      };
-      
-      console.log('Evento después de redimensionar:', updatedEvent);
-      
-      // Ejecutar la actualización
-      onUpdate(updatedEvent);
-    }
-    
-    // Restablecer estados
-    setIsResizing(false);
-    heightRef.current = 0;
+    onClick(event);
   };
   
   return (
     <div 
       ref={eventRef}
-      className={`calendar-event ${isDragging ? 'dragging' : ''} ${isResizing ? 'resizing' : ''}`}
+      className={`calendar-event ${dragging ? 'dragging' : ''} ${resizing ? 'resizing' : ''}`}
       style={{ backgroundColor: event.color }}
-      onClick={(e) => {
-        if (!isDragging && !isResizing) {
-          e.stopPropagation();
-          onClick(event);
-        }
-      }}
-      onMouseDown={startDrag}
+      onClick={handleClick}
+      onMouseDown={(e) => handleMouseDown(e, 'drag')}
       data-event-id={event.id}
     >
       <div className="event-title">{event.title}</div>
@@ -215,7 +210,7 @@ function EventItem({
       {/* Handle para redimensionar */}
       <div 
         className="event-resize-handle"
-        onMouseDown={startResize}
+        onMouseDown={(e) => handleMouseDown(e, 'resize')}
       />
     </div>
   );

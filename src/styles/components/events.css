@@ -17,8 +17,9 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s ease;
+  transition: transform 0s, box-shadow 0.2s ease;
   z-index: 5;
+  user-select: none; /* Evitar selección de texto durante el arrastre */
 }
 
 .calendar-event:hover {
@@ -28,18 +29,22 @@
 
 /* Estilos para eventos mientras se arrastran */
 .calendar-event.dragging {
-  cursor: grabbing;
+  cursor: grabbing !important;
   opacity: 0.8;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
   z-index: 100;
+  pointer-events: none; /* Importante: evita problemas durante el arrastre */
+  transition: none; /* Deshabilitar transiciones durante arrastre */
 }
 
 /* Estilos para eventos mientras se redimensionan */
 .calendar-event.resizing {
-  cursor: ns-resize;
+  cursor: ns-resize !important;
   opacity: 0.8;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
   z-index: 100;
+  pointer-events: none; /* Importante: evita problemas durante el redimensionamiento */
+  transition: none; /* Deshabilitar transiciones durante redimensionamiento */
 }
 
 /* Controlador de redimensionamiento */
@@ -48,14 +53,15 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 6px;
+  height: 8px; /* Un poco más alto para facilitar su uso */
   cursor: ns-resize;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 0 0 4px 4px;
+  z-index: 10;
 }
 
 .event-resize-handle:hover {
-  height: 8px;
+  height: 10px;
   background: rgba(255, 255, 255, 0.5);
 }
 
@@ -75,10 +81,15 @@
 
 /* Mejoras para eventos en vista diaria */
 .day-view-hour-slot .calendar-event {
-  margin-bottom: 4px;
   position: relative;
+  margin-bottom: 4px;
   top: auto;
   left: auto;
   right: auto;
   bottom: auto;
+}
+
+/* Asegurar que las celdas tienen posición relativa */
+.calendar-time-slot, .day-view-hour-slot {
+  position: relative !important;
 }
