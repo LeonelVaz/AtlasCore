@@ -30,6 +30,7 @@ function EventItem({
     deltaY: 0,
     listeners: false,
     startTime: 0,
+    endTime: 0, // Tiempo de finalización del arrastre
     moved: false,
     // Información sobre la rejilla para movimiento bidimensional
     grid: {
@@ -348,6 +349,7 @@ function EventItem({
       deltaY: 0,
       listeners: true,
       startTime: Date.now(),
+      endTime: 0,
       moved: false,
       grid: gridInfo,
       highlightedCell: null
@@ -426,6 +428,8 @@ function EventItem({
   
   // Función para manejar el final del arrastre o redimensionamiento
   const handleMouseUp = (e) => {
+    // Evitar que cualquier evento se propague y active la celda subyacente
+    e.preventDefault();
     e.stopPropagation();
     
     if (!dragInfo.current.dragging) return;
@@ -440,12 +444,15 @@ function EventItem({
     // Eliminar la clase de arrastre del body
     document.body.classList.remove('dragging-active');
     
+    // Registrar el tiempo de finalización
+    dragInfo.current.endTime = Date.now();
+    
     // Detectar si hubo algún movimiento significativo
     const wasActuallyDragged = dragInfo.current.moved;
     
     // Detectar si fue un clic rápido sin movimiento
     const wasJustAClick = !wasActuallyDragged && 
-                         (Date.now() - dragInfo.current.startTime < 300);
+                         (dragInfo.current.endTime - dragInfo.current.startTime < 300);
     
     // Si fue solo un clic, abrir el editor
     if (wasJustAClick && !dragInfo.current.isResize) {
@@ -558,7 +565,55 @@ function EventItem({
       // Desactivar el bloqueo después de un tiempo para evitar la apertura del editor
       setTimeout(() => {
         setBlockClicks(false);
-      }, 500);
+      }, 300);
+      
+      // SOLUCIÓN AJUSTADA: No bloqueamos todos los clics globalmente, solo los que ocurren 
+      // demasiado rápido después de soltar el mouse (probablemente no intencionados)
+      const handleDocumentClick = (event) => {
+        // Solo prevenimos los clics que suceden muy rápido después de soltar el mouse
+        // (menos de 100ms), que son probablemente resultado del mouseup, no un clic intencional
+        const timeElapsed = Date.now() - dragInfo.current.endTime;
+        if (timeElapsed < 100) {
+          // Prevenir el clic solo si es muy rápido después de soltar
+          event.stopPropagation();
+          event.preventDefault();
+          console.log('Bloqueando clic inmediato después de arrastre');
+        }
+        
+        // Eliminar este listener después del primer clic de cualquier manera
+        document.removeEventListener('click', handleDocumentClick, true);
+        return false;
+      };
+      
+      // Agregar un listener de captura a nivel de documento para capturar el siguiente clic
+      document.addEventListener('click', handleDocumentClick, true);
+      
+      // Guardar una referencia al contenedor antes de reiniciar dragInfo
+      const containerElement = dragInfo.current.grid ? dragInfo.current.grid.containerElement : null;
+      
+      // Guardar el tiempo de finalización
+      const endTime = dragInfo.current.endTime;
+      
+      // Reiniciar el objeto de información de arrastre, pero mantener el tiempo de finalización
+      dragInfo.current = { 
+        dragging: false,
+        endTime: endTime // Mantener el tiempo de finalización
+      };
+      
+      // Añadir una clase al elemento del calendario para indicar que se acaba de
+      // completar una operación de arrastre/redimensionamiento, pero por menos tiempo
+      if (containerElement) {
+        containerElement.classList.add('just-dragged');
+        
+        // Guardar el tiempo del último arrastre como atributo de datos
+        containerElement.setAttribute('data-drag-time', String(endTime));
+        
+        setTimeout(() => {
+          if (containerElement) {
+            containerElement.classList.remove('just-dragged');
+          }
+        }, 150); // Reducir a 150ms en lugar de 300ms
+      }
     } else {
       // Si no hubo movimiento, simplemente limpiamos los estados
       setDragging(false);
@@ -568,10 +623,10 @@ function EventItem({
       setTimeout(() => {
         setBlockClicks(false);
       }, 300);
+      
+      // Reiniciar el objeto de información de arrastre
+      dragInfo.current = { dragging: false };
     }
-    
-    // Reiniciar el objeto de información de arrastre
-    dragInfo.current = { dragging: false };
   };
   
   // Usamos useEffect para asegurar que el bloqueo de clics se desactive
