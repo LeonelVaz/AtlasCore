@@ -16,7 +16,7 @@ function EventItem({
   // Estado para tracking
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
-  // Nueva variable de estado para evitar clics no deseados después de arrastrar/redimensionar
+  // Variable de estado para bloquear clics
   const [blockClicks, setBlockClicks] = useState(false);
   
   // Variables para seguimiento del arrastre/redimensionamiento
@@ -77,7 +77,6 @@ function EventItem({
   
   // Inicializar información sobre la rejilla del calendario para arrastre bidimensional
   const initializeGridInfo = () => {
-    // Implementación sin cambios (omitida para brevedad)
     try {
       // Verificar si estamos en vista semanal o diaria
       const isWeekView = eventRef.current.closest('.calendar-grid') !== null;
@@ -226,7 +225,6 @@ function EventItem({
   
   // Función para encontrar la celda de destino según la posición actual
   const findTargetSlot = (clientX, clientY) => {
-    // Implementación sin cambios (omitida para brevedad)
     // Si no tenemos información de rejilla, no podemos determinar la celda de destino
     if (!dragInfo.current.grid || !dragInfo.current.grid.timeSlots.length) {
       return null;
@@ -282,7 +280,6 @@ function EventItem({
   
   // Resaltar la celda de destino durante el arrastre
   const highlightTargetSlot = (targetSlot) => {
-    // Implementación sin cambios (omitida para brevedad)
     // Quitar el resaltado anterior si existe
     removeAllHighlights();
     
@@ -295,7 +292,6 @@ function EventItem({
   
   // Eliminar todos los resaltados de celdas
   const removeAllHighlights = () => {
-    // Implementación sin cambios (omitida para brevedad)
     if (dragInfo.current.highlightedCell) {
       dragInfo.current.highlightedCell.classList.remove('drag-target-active');
       dragInfo.current.highlightedCell = null;
@@ -369,10 +365,10 @@ function EventItem({
       if (dragInfo.current.dragging) {
         if (isResize) {
           setResizing(true);
-          eventRef.current.classList.add('resizing');
+          if (eventRef.current) eventRef.current.classList.add('resizing');
         } else {
           setDragging(true);
-          eventRef.current.classList.add('dragging');
+          if (eventRef.current) eventRef.current.classList.add('dragging');
         }
       }
     }, 100);
@@ -390,6 +386,7 @@ function EventItem({
     const movedSignificantly = Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3;
     
     if (movedSignificantly) {
+      // Indicar que el evento se ha movido significativamente
       dragInfo.current.moved = true;
       
       // Almacenar el desplazamiento actual
@@ -403,12 +400,16 @@ function EventItem({
         newHeight = Math.max(gridSize / 2, newHeight); // Altura mínima
         
         // Aplicar la nueva altura directamente para movimiento fluido
-        eventRef.current.style.height = `${newHeight}px`;
+        if (eventRef.current) {
+          eventRef.current.style.height = `${newHeight}px`;
+        }
       } 
       // Si estamos arrastrando (vertical y horizontal)
       else {
         // Aplicar transformación directa para seguir exactamente al cursor
-        eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        if (eventRef.current) {
+          eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        }
         
         // Encontrar y resaltar la celda de destino
         const targetSlot = findTargetSlot(e.clientX, e.clientY);
@@ -439,15 +440,20 @@ function EventItem({
     // Eliminar la clase de arrastre del body
     document.body.classList.remove('dragging-active');
     
+    // Detectar si hubo algún movimiento significativo
+    const wasActuallyDragged = dragInfo.current.moved;
+    
     // Detectar si fue un clic rápido sin movimiento
-    const wasJustAClick = !dragInfo.current.moved && 
+    const wasJustAClick = !wasActuallyDragged && 
                          (Date.now() - dragInfo.current.startTime < 300);
     
     // Si fue solo un clic, abrir el editor
     if (wasJustAClick && !dragInfo.current.isResize) {
       // Eliminar clases y estilos
-      eventRef.current.classList.remove('dragging');
-      eventRef.current.style.transform = '';
+      if (eventRef.current) {
+        eventRef.current.classList.remove('dragging');
+        eventRef.current.style.transform = '';
+      }
       
       // Actualizar estados
       setDragging(false);
@@ -468,87 +474,104 @@ function EventItem({
       return;
     }
     
-    // Si hubo movimiento real, calcular cambios
-    let hoursDelta = 0;
-    let daysDelta = 0;
-    
-    if (dragInfo.current.isResize) {
-      // Para redimensionamiento, calcular cuántas horas añadimos/eliminamos
-      const heightDelta = Math.round(eventRef.current.offsetHeight) - dragInfo.current.startHeight;
-      hoursDelta = Math.round(heightDelta / gridSize);
-      
-      // Eliminar clase y estilo de redimensionamiento
-      eventRef.current.classList.remove('resizing');
-      eventRef.current.style.height = '';
-    } else {
-      // Para arrastre, calcular cambios en horas y días
-      
-      // Calcular cambio de horas (vertical)
-      hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
-      
-      // Calcular cambio de días (horizontal) si estamos en vista semanal
-      if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
-        const horizontalChange = dragInfo.current.deltaX;
-        daysDelta = Math.round(horizontalChange / dragInfo.current.grid.dayWidth);
-        
-        // Corrección para movimiento negativo (izquierda)
-        if (horizontalChange < 0 && Math.abs(horizontalChange) % dragInfo.current.grid.dayWidth > 10) {
-          daysDelta = Math.floor(horizontalChange / dragInfo.current.grid.dayWidth);
-        }
-        
-        console.log(`Movimiento horizontal: ${horizontalChange}px, Cambio de días: ${daysDelta}`);
-      }
-      
-      // Eliminar clase y estilo de arrastre
-      eventRef.current.classList.remove('dragging');
-      eventRef.current.style.transform = '';
-    }
-    
-    // Actualizar estados
-    setDragging(false);
-    setResizing(false);
-    
-    // Solo actualizar si hubo cambio
-    if (hoursDelta !== 0 || daysDelta !== 0) {
-      const startDate = new Date(event.start);
-      const endDate = new Date(event.end);
+    // Si hubo un movimiento real, se calculan los cambios
+    // pero independientemente de si hubo cambios en horas/días, no abrimos el editor
+    if (wasActuallyDragged) {
+      let hoursDelta = 0;
+      let daysDelta = 0;
       
       if (dragInfo.current.isResize) {
-        // Si redimensiona, solo cambiamos la hora de fin
-        endDate.setHours(endDate.getHours() + hoursDelta);
-      } else {
-        // Si arrastra, mover ambas horas
-        startDate.setHours(startDate.getHours() + hoursDelta);
-        endDate.setHours(endDate.getHours() + hoursDelta);
+        // Para redimensionamiento, calcular cuántas horas añadimos/eliminamos
+        if (eventRef.current) {
+          const heightDelta = Math.round(eventRef.current.offsetHeight) - dragInfo.current.startHeight;
+          hoursDelta = Math.round(heightDelta / gridSize);
+        }
         
-        // Aplicar cambio de días
-        if (daysDelta !== 0) {
-          startDate.setDate(startDate.getDate() + daysDelta);
-          endDate.setDate(endDate.getDate() + daysDelta);
+        // Eliminar clase y estilo de redimensionamiento
+        if (eventRef.current) {
+          eventRef.current.classList.remove('resizing');
+          eventRef.current.style.height = '';
+        }
+      } else {
+        // Para arrastre, calcular cambios en horas y días
+        
+        // Calcular cambio de horas (vertical)
+        hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
+        
+        // Calcular cambio de días (horizontal) si estamos en vista semanal
+        if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+          const horizontalChange = dragInfo.current.deltaX;
+          daysDelta = Math.round(horizontalChange / dragInfo.current.grid.dayWidth);
+          
+          // Corrección para movimiento negativo (izquierda)
+          if (horizontalChange < 0 && Math.abs(horizontalChange) % dragInfo.current.grid.dayWidth > 10) {
+            daysDelta = Math.floor(horizontalChange / dragInfo.current.grid.dayWidth);
+          }
+        }
+        
+        // Eliminar clase y estilo de arrastre
+        if (eventRef.current) {
+          eventRef.current.classList.remove('dragging');
+          eventRef.current.style.transform = '';
         }
       }
       
-      // Crear evento actualizado
-      const updatedEvent = {
-        ...event,
-        start: startDate.toISOString(),
-        end: endDate.toISOString()
-      };
+      // Actualizar estados
+      setDragging(false);
+      setResizing(false);
       
-      console.log('Evento actualizado:', updatedEvent);
+      // Solo actualizar si hubo cambio efectivo en horas o días
+      if (hoursDelta !== 0 || daysDelta !== 0) {
+        const startDate = new Date(event.start);
+        const endDate = new Date(event.end);
+        
+        if (dragInfo.current.isResize) {
+          // Si redimensiona, solo cambiamos la hora de fin
+          endDate.setHours(endDate.getHours() + hoursDelta);
+        } else {
+          // Si arrastra, mover ambas horas
+          startDate.setHours(startDate.getHours() + hoursDelta);
+          endDate.setHours(endDate.getHours() + hoursDelta);
+          
+          // Aplicar cambio de días
+          if (daysDelta !== 0) {
+            startDate.setDate(startDate.getDate() + daysDelta);
+            endDate.setDate(endDate.getDate() + daysDelta);
+          }
+        }
+        
+        // Crear evento actualizado
+        const updatedEvent = {
+          ...event,
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
+        };
+        
+        console.log('Evento actualizado:', updatedEvent);
+        
+        // Llamar a la función de actualización
+        onUpdate(updatedEvent);
+      }
       
-      // Llamar a la función de actualización
-      onUpdate(updatedEvent);
+      // IMPORTANTE: Siempre mantenemos el bloqueo de clics activo si hubo movimiento,
+      // independientemente de si los cambios fueron efectivos (hoursDelta !== 0 || daysDelta !== 0)
+      // Desactivar el bloqueo después de un tiempo para evitar la apertura del editor
+      setTimeout(() => {
+        setBlockClicks(false);
+      }, 500);
+    } else {
+      // Si no hubo movimiento, simplemente limpiamos los estados
+      setDragging(false);
+      setResizing(false);
+      
+      // Desactivar el bloqueo de clics después de un breve delay
+      setTimeout(() => {
+        setBlockClicks(false);
+      }, 300);
     }
     
     // Reiniciar el objeto de información de arrastre
     dragInfo.current = { dragging: false };
-    
-    // Desactivar el bloqueo de clics después de un tiempo más largo para evitar
-    // que se abra el editor accidentalmente después de un redimensionamiento o arrastre
-    setTimeout(() => {
-      setBlockClicks(false);
-    }, 500); // Tiempo más largo (500ms) para estar seguros
   };
   
   // Usamos useEffect para asegurar que el bloqueo de clics se desactive
