@@ -16,6 +16,8 @@ function EventItem({
   // Estado para tracking
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
+  // Nueva variable de estado para evitar clics no deseados después de arrastrar/redimensionar
+  const [blockClicks, setBlockClicks] = useState(false);
   
   // Variables para seguimiento del arrastre/redimensionamiento
   const dragInfo = useRef({
@@ -75,6 +77,7 @@ function EventItem({
   
   // Inicializar información sobre la rejilla del calendario para arrastre bidimensional
   const initializeGridInfo = () => {
+    // Implementación sin cambios (omitida para brevedad)
     try {
       // Verificar si estamos en vista semanal o diaria
       const isWeekView = eventRef.current.closest('.calendar-grid') !== null;
@@ -223,6 +226,7 @@ function EventItem({
   
   // Función para encontrar la celda de destino según la posición actual
   const findTargetSlot = (clientX, clientY) => {
+    // Implementación sin cambios (omitida para brevedad)
     // Si no tenemos información de rejilla, no podemos determinar la celda de destino
     if (!dragInfo.current.grid || !dragInfo.current.grid.timeSlots.length) {
       return null;
@@ -278,6 +282,7 @@ function EventItem({
   
   // Resaltar la celda de destino durante el arrastre
   const highlightTargetSlot = (targetSlot) => {
+    // Implementación sin cambios (omitida para brevedad)
     // Quitar el resaltado anterior si existe
     removeAllHighlights();
     
@@ -290,6 +295,7 @@ function EventItem({
   
   // Eliminar todos los resaltados de celdas
   const removeAllHighlights = () => {
+    // Implementación sin cambios (omitida para brevedad)
     if (dragInfo.current.highlightedCell) {
       dragInfo.current.highlightedCell.classList.remove('drag-target-active');
       dragInfo.current.highlightedCell = null;
@@ -303,6 +309,13 @@ function EventItem({
   
   // Manejador simple de clic para editar
   const handleClick = (e) => {
+    // No hace nada si blockClicks está activo
+    if (blockClicks) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -318,6 +331,9 @@ function EventItem({
     // Evitar propagación para que no se cree un nuevo evento al hacer clic
     e.preventDefault();
     e.stopPropagation();
+    
+    // Activar bloqueo de clics inmediatamente al iniciar arrastre/redimensionamiento
+    setBlockClicks(true);
     
     // Si es un clic en el manejador de redimensionamiento
     const isResize = mode === 'resize';
@@ -444,6 +460,11 @@ function EventItem({
       // Reiniciar el objeto de información de arrastre
       dragInfo.current = { dragging: false };
       
+      // Desactivar el bloqueo de clics después de un breve delay
+      setTimeout(() => {
+        setBlockClicks(false);
+      }, 300);
+      
       return;
     }
     
@@ -522,7 +543,24 @@ function EventItem({
     
     // Reiniciar el objeto de información de arrastre
     dragInfo.current = { dragging: false };
+    
+    // Desactivar el bloqueo de clics después de un tiempo más largo para evitar
+    // que se abra el editor accidentalmente después de un redimensionamiento o arrastre
+    setTimeout(() => {
+      setBlockClicks(false);
+    }, 500); // Tiempo más largo (500ms) para estar seguros
   };
+  
+  // Usamos useEffect para asegurar que el bloqueo de clics se desactive
+  // incluso si ocurre algún error en el manejo del arrastre/redimensionamiento
+  useEffect(() => {
+    if (blockClicks) {
+      const timer = setTimeout(() => {
+        setBlockClicks(false);
+      }, 1000); // Tiempo de seguridad máximo
+      return () => clearTimeout(timer);
+    }
+  }, [blockClicks]);
   
   return (
     <div 
