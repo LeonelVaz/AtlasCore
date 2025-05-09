@@ -48,17 +48,48 @@ function DayView({
     try {
       return events
         .filter(event => event.title && shouldShowEvent(event, hour))
-        .map(event => (
-          <EventItem
-            key={event.id}
-            event={event}
-            onClick={onEventClick}
-            onUpdate={(updatedEvent) => {
-              console.log('Evento actualizado en vista diaria:', updatedEvent);
-              onUpdate(updatedEvent);
-            }}
-          />
-        ));
+        .map(event => {
+          const start = new Date(event.start);
+          const end = new Date(event.end);
+          
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return (
+              <EventItem
+                key={event.id}
+                event={event}
+                onClick={onEventClick}
+                onUpdate={(updatedEvent) => {
+                  console.log('Evento actualizado en vista diaria:', updatedEvent);
+                  onUpdate(updatedEvent);
+                }}
+              />
+            );
+          }
+          
+          // Calcular duración y altura
+          const durationMs = end.getTime() - start.getTime();
+          const durationHours = durationMs / (1000 * 60 * 60);
+          const heightPx = Math.max(60, Math.round(durationHours * 60));
+          
+          const eventStyle = {
+            height: `${heightPx}px`,
+            zIndex: 20
+          };
+          
+          return (
+            <div className="event-wrapper" style={eventStyle} key={event.id}>
+              <EventItem
+                key={event.id}
+                event={event}
+                onClick={onEventClick}
+                onUpdate={(updatedEvent) => {
+                  console.log('Evento actualizado en vista diaria:', updatedEvent);
+                  onUpdate(updatedEvent);
+                }}
+              />
+            </div>
+          );
+        });
     } catch (error) {
       console.error('Error al renderizar eventos en vista diaria:', error);
       return null;

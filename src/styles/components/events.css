@@ -83,13 +83,27 @@
 }
 
 /* Ajuste para eventos en vista diaria */
+.day-view-hour-slot {
+  position: relative;
+  overflow: visible !important; /* Asegura que los eventos puedan extenderse fuera del slot */
+}
+
+.day-view-hour-slot .event-wrapper {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  overflow: visible;
+  z-index: 10;
+}
+
 .day-view-hour-slot .calendar-event {
   position: relative;
-  top: auto;
-  left: auto;
-  right: auto;
-  bottom: auto;
-  margin-bottom: 4px;
+  height: 100%;
+  width: auto;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 /* Cuando se está arrastrando o redimensionando un evento, desactivamos todos los hovers de celdas */
