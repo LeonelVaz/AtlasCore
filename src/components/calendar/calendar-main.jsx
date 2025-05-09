@@ -15,16 +15,15 @@ import '../../styles/calendar/calendar-main.css';
 import '../../styles/components/events.css';
 
 /**
- * Componente principal del calendario con vista semanal
- * Implementa la funcionalidad básica de visualización y gestión de eventos
+ * Componente principal del calendario con vista semanal y diaria
  */
 function CalendarMain() {
-  // Estado para almacenar eventos y fecha actual
+  // Estados principales
   const [events, setEvents] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
-  const [formError, setFormError] = useState(''); // Estado para manejar errores del formulario
+  const [formError, setFormError] = useState('');
   const [view, setView] = useState('week'); // 'week' o 'day'
   const [selectedDay, setSelectedDay] = useState(new Date());
   const [newEvent, setNewEvent] = useState({
@@ -35,62 +34,36 @@ function CalendarMain() {
     color: '#2d4b94' // Color predeterminado (Azul Atlas)
   });
 
-  // MEJORA: Exportar la función getEvents fuera del useEffect para que sea más testeable
-  // Esta función siempre devolverá el estado events actual
+  // Obtener eventos actuales
   const getEvents = () => events;
 
-  // Obtener eventos del almacenamiento al cargar
+  // Cargar eventos al iniciar y registrar módulo
   useEffect(() => {
     loadEvents();
     
-    // Registrar el módulo de calendario
+    // Registrar API del calendario
     const moduleAPI = {
-      // Usar la función externa para mejorar la testabilidad
-      getEvents, // Esta línea ahora es más fácil de probar
+      getEvents,
       createEvent,
       updateEvent,
       deleteEvent
     };
     registerModule('calendar', moduleAPI);
     
-    // Suscribirse a eventos relevantes
+    // Suscribirse a eventos de almacenamiento
     const unsubscribe = eventBus.subscribe(
       `${EventCategories.STORAGE}.eventsUpdated`, 
       loadEvents
     );
     
-    // Simplificado: Función de limpieza directa
     return () => { 
       unsubscribe && unsubscribe(); 
       unregisterModule('calendar'); 
     };
   }, []);
 
-  // Para depuración
+  // Exponer funciones de depuración
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      /* istanbul ignore next */
-      window.debugCalendar = () => {
-        console.log('Estado actual de eventos:', events);
-        console.log('Evento seleccionado:', selectedEvent);
-        console.log('Formulario de evento:', newEvent);
-        console.log('Fecha actual:', currentDate);
-        return { events, selectedEvent, newEvent, currentDate };
-      };
-    }
-    
-    return () => {
-      if (typeof window !== 'undefined') {
-        delete window.debugCalendar;
-      }
-    };
-  }, [events, selectedEvent, newEvent, currentDate]);
-
-  // Añadir useEffect para depuración
-  useEffect(() => {
-    console.log('Estado de eventos actualizado:', events);
-    
-    // Exponer función de depuración en window para pruebas
     if (typeof window !== 'undefined') {
       window.debugAtlas = {
         getEvents: () => events,
@@ -150,12 +123,11 @@ function CalendarMain() {
     };
   }, [events]);
 
-  // Cargar eventos desde el almacenamiento
+  // Cargar eventos desde almacenamiento
   const loadEvents = async () => {
     try {
       const storedEvents = await storageService.get('atlas_events', []);
       
-      // Validar que sea un array
       if (!Array.isArray(storedEvents)) {
         console.error('Error: Los datos cargados no son un array válido de eventos');
         setEvents([]);
@@ -202,22 +174,15 @@ function CalendarMain() {
     }
   };
 
-  // Guardar eventos en el almacenamiento
+  // Guardar eventos en almacenamiento
   const saveEvents = async (updatedEvents) => {
     try {
-      console.log('Guardando eventos:', updatedEvents);
-      
-      // Asegurar que tenemos un array válido para guardar
       if (!Array.isArray(updatedEvents)) {
         console.error('Error: Intentando guardar eventos que no son un array');
         return false;
       }
       
-      // Guardar en el servicio de almacenamiento
       const result = await storageService.set('atlas_events', updatedEvents);
-      
-      console.log('Resultado de guardado:', result);
-      
       return result;
     } catch (error) {
       console.error('Error al guardar eventos:', error);
@@ -225,7 +190,7 @@ function CalendarMain() {
     }
   };
 
-  // Función para cambiar entre vistas
+  // Cambiar entre vistas
   const toggleView = (newView, date = null) => {
     setView(newView);
     if (date) {
@@ -233,7 +198,7 @@ function CalendarMain() {
     }
   };
 
-  // Crear un nuevo evento
+  // Crear evento
   const createEvent = (eventData) => {
     try {
       const newEventWithId = {
@@ -246,77 +211,57 @@ function CalendarMain() {
       saveEvents(updatedEvents);
       return newEventWithId;
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al crear evento:', error);
-      /* istanbul ignore next */
       return null;
     }
   };
 
-  // Actualizar un evento existente
+  // Actualizar evento
   const updateEvent = (eventId, eventData) => {
     try {
-      console.log('Actualizando evento con ID:', eventId);
-      console.log('Nuevos datos:', eventData);
-      
-      // Crear una copia del array de eventos
       const updatedEvents = events.map(event => 
         event.id === eventId ? { ...eventData } : event
       );
       
-      console.log('Lista actualizada de eventos:', updatedEvents);
-      
-      // Actualizar el estado
       setEvents(updatedEvents);
-      
-      // Guardar los cambios
       saveEvents(updatedEvents);
       
-      // Devolver el evento actualizado
-      const updatedEvent = updatedEvents.find(e => e.id === eventId);
-      console.log('Evento después de actualizar:', updatedEvent);
-      
-      return updatedEvent;
+      return updatedEvents.find(e => e.id === eventId);
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al actualizar evento:', error);
-      /* istanbul ignore next */
       return null;
     }
   };
 
-  // Eliminar un evento
+  // Eliminar evento
   const deleteEvent = (eventId) => {
     try {
       const updatedEvents = events.filter(event => event.id !== eventId);
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al eliminar evento:', error);
     }
   };
 
-  // Navegar a la semana anterior
+  // Navegación entre semanas
   const goToPreviousWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
     setCurrentDate(newDate);
   };
 
-  // Navegar a la semana siguiente
   const goToNextWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
     setCurrentDate(newDate);
   };
 
-  // Ir a la semana actual
   const goToCurrentWeek = () => {
     setCurrentDate(new Date());
   };
 
-  // Generar las horas del día (de 0 a 23)
+  // Generar horas del día
   const generateHours = () => {
     const hours = [];
     for (let i = 0; i < 24; i++) {
@@ -325,17 +270,16 @@ function CalendarMain() {
     return hours;
   };
 
-  // Manejar clic en una celda de tiempo para crear evento
+  // Manejar clic en celda para crear evento
   const handleCellClick = (day, hour) => {
     try {
-      // Crear nuevas fechas con la hora correcta
       const startDate = new Date(day);
       startDate.setHours(hour, 0, 0, 0);
       
       const endDate = new Date(startDate);
       endDate.setHours(hour + 1, 0, 0, 0);
       
-      // Formatear las fechas para el formato datetime-local
+      // Formatear fechas para inputs
       const formatDateForInput = (date) => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -346,7 +290,6 @@ function CalendarMain() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
       
-      // Resetear el evento seleccionado y el error del formulario
       setSelectedEvent(null);
       setFormError('');
       
@@ -362,29 +305,22 @@ function CalendarMain() {
       
       setShowEventForm(true);
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al manejar clic en celda:', error);
     }
   };
 
-  // Manejar clic en un evento existente
+  // Manejar clic en evento existente
   const handleEventClick = (event) => {
-    console.log('Evento clickeado:', event); // Para depuración
-    
     try {
-      // Asegurar que estamos trabajando con objetos Date para las fechas
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       
-      // Validar que las fechas sean válidas
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        /* istanbul ignore next */
         console.error('Fechas de evento inválidas:', event);
-        /* istanbul ignore next */
         return;
       }
       
-      // Formatear las fechas para el formato datetime-local
+      // Formatear fechas para inputs
       const formatDateForInput = (date) => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -395,14 +331,10 @@ function CalendarMain() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
       
-      // Hacer una copia profunda del evento seleccionado para evitar problemas de referencia
       setSelectedEvent({...event});
-      
-      // Resetear el error del formulario
       setFormError('');
       
-      // Establecer todos los campos del formulario explícitamente
-      const formattedEvent = {
+      setNewEvent({
         id: event.id,
         title: event.title || '',
         start: event.start,
@@ -410,31 +342,24 @@ function CalendarMain() {
         color: event.color || '#2d4b94',
         startFormatted: formatDateForInput(startDate),
         endFormatted: formatDateForInput(endDate)
-      };
-      
-      console.log('Evento formateado para formulario:', formattedEvent); // Para depuración
-      setNewEvent(formattedEvent);
+      });
       
       setShowEventForm(true);
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al manejar clic en evento:', error, event);
     }
   };
 
-  // Manejar cambios en el formulario de evento
+  // Actualizar datos del formulario
   const handleEventFormChange = (e) => {
     try {
       const { name, value } = e.target;
       
       if (name === 'start' || name === 'end') {
-        // Para los campos de fecha, necesitamos actualizar tanto el valor ISO como el formateado
         const date = new Date(value);
         
         if (isNaN(date.getTime())) {
-          /* istanbul ignore next */
           console.error('Fecha inválida:', value);
-          /* istanbul ignore next */
           return;
         }
         
@@ -447,16 +372,15 @@ function CalendarMain() {
         setNewEvent(prev => ({ ...prev, [name]: value }));
       }
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al manejar cambio en formulario:', error);
     }
   };
 
-  // Función para cerrar y reiniciar el formulario
+  // Cerrar y reiniciar formulario
   const handleCloseForm = () => {
     setShowEventForm(false);
     setSelectedEvent(null);
-    setFormError(''); // Limpiar el mensaje de error
+    setFormError('');
     setNewEvent({
       id: '',
       title: '',
@@ -468,30 +392,26 @@ function CalendarMain() {
     });
   };
 
-  // Guardar evento (crear nuevo o actualizar existente)
+  // Guardar evento
   const handleSaveEvent = () => {
     try {
-      // Resetear el mensaje de error
       setFormError('');
       
-      // Validar que el título no esté vacío
+      // Validar título
       if (!newEvent.title.trim()) {
         setFormError('El título del evento no puede estar vacío');
-        console.error('El título del evento no puede estar vacío');
         return;
       }
       
-      // Validar que la hora de fin no sea anterior a la hora de inicio
+      // Validar fechas
       const startDate = new Date(newEvent.start);
       const endDate = new Date(newEvent.end);
       
       if (endDate < startDate) {
         setFormError('La hora de fin no puede ser anterior a la hora de inicio');
-        console.error('La hora de fin no puede ser anterior a la hora de inicio');
         return;
       }
       
-      // Crear una versión del evento sin los campos de formato para guardar
       const eventToSave = {
         id: newEvent.id || Date.now().toString(),
         title: newEvent.title.trim(),
@@ -500,29 +420,22 @@ function CalendarMain() {
         color: newEvent.color || '#2d4b94'
       };
       
-      console.log('Guardando evento:', eventToSave); 
-      console.log('Evento seleccionado:', selectedEvent);
-      
       if (selectedEvent && selectedEvent.id) {
-        // Actualizar evento existente
+        // Actualizar existente
         updateEvent(selectedEvent.id, eventToSave);
       } else {
-        // Crear nuevo evento
+        // Crear nuevo
         createEvent(eventToSave);
       }
       
-      // Limpiar el error y cerrar el formulario
-      setFormError('');
       handleCloseForm();
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al guardar evento:', error);
-      /* istanbul ignore next */
       setFormError('Ocurrió un error al guardar el evento');
     }
   };
 
-  // Eliminar evento seleccionado
+  // Eliminar evento
   const handleDeleteEvent = () => {
     try {
       if (selectedEvent) {
@@ -530,23 +443,19 @@ function CalendarMain() {
         handleCloseForm();
       }
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al eliminar evento:', error);
     }
   };
 
-  // Verificar si un evento debe mostrarse en un día y hora específicos
+  // Verificar si un evento debe mostrarse
   const shouldShowEvent = (event, day, hour) => {
     try {
-      // Validaciones básicas
       if (!event?.start) return false;
       
       const eventStart = new Date(event.start);
       
-      // Comprobar si la fecha es válida
       if (isNaN(eventStart.getTime())) return false;
       
-      // Comprobar si el evento coincide con el día y la hora de la celda
       return (
         eventStart.getDate() === day.getDate() &&
         eventStart.getMonth() === day.getMonth() &&
@@ -554,19 +463,16 @@ function CalendarMain() {
         eventStart.getHours() === hour
       );
     } catch (error) {
-      /* istanbul ignore next */
       console.error('Error al verificar evento:', error, event);
-      /* istanbul ignore next */
       return false;
     }
   };
 
-  // Renderizar eventos en la celda correspondiente
+  // Renderizar eventos en la celda
   const renderEvents = (day, hour) => {
     try {
       return events
         .filter(event => {
-          // Solo incluir eventos que comienzan exactamente en esta hora
           if (!event.title) return false;
           
           const eventStart = new Date(event.start);
@@ -580,7 +486,6 @@ function CalendarMain() {
           );
         })
         .map(event => {
-          // Calcular la duración en horas
           const start = new Date(event.start);
           const end = new Date(event.end);
           
@@ -597,17 +502,14 @@ function CalendarMain() {
             );
           }
           
-          // Calcular duración en horas
+          // Calcular duración y altura
           const durationMs = end.getTime() - start.getTime();
           const durationHours = durationMs / (1000 * 60 * 60);
-          
-          // Calcular altura basada en duración (cada celda = 60px de altura)
           const heightPx = Math.max(60, Math.round(durationHours * 60));
           
-          // Aplicar estilo inline para la altura
           const eventStyle = {
             height: `${heightPx}px`,
-            zIndex: 20 // Asegurar que esté por encima de otras celdas
+            zIndex: 20
           };
           
           return (
@@ -688,7 +590,7 @@ function CalendarMain() {
 
       {view === 'week' ? (
         <div className="calendar-grid">
-          {/* Encabezado con días de la semana */}
+          {/* Encabezado con días */}
           <div className="calendar-row calendar-header-row">
             <div className="calendar-cell calendar-time-header"></div>
             {weekDays.map((day, index) => (
@@ -706,7 +608,7 @@ function CalendarMain() {
             ))}
           </div>
 
-          {/* Filas de horas */}
+          {/* Rejilla horaria */}
           {hours.map((hour) => (
             <div key={hour} className="calendar-row">
               <div className="calendar-cell calendar-time">
@@ -738,13 +640,12 @@ function CalendarMain() {
         />
       )}
 
-      {/* Formulario para crear/editar eventos */}
+      {/* Formulario de evento */}
       {showEventForm && (
         <div className="event-form-overlay" data-testid="event-form-overlay">
           <div className="event-form">
             <h3>{selectedEvent ? 'Editar evento' : 'Nuevo evento'}</h3>
             
-            {/* Mostrar mensaje de error si existe */}
             {formError && (
               <div className="form-error" style={{ color: 'red', marginBottom: '10px' }}>
                 {formError}
@@ -813,7 +714,7 @@ function CalendarMain() {
   );
 }
 
-// MEJORA: Exponer la función getEvents para test
+// Exponer getEvents para pruebas
 CalendarMain.getEvents = (component) => component.getEvents();
 
 export default CalendarMain;
