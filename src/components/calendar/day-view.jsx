@@ -11,7 +11,8 @@ function DayView({
   events, 
   onEventClick, 
   onTimeSlotClick,
-  onUpdate  // Función para actualizar eventos
+  onUpdate,  // Función para actualizar eventos
+  snapValue = 0 // Valor de snap en minutos (0 = desactivado)
 }) {
   // Generar las horas del día (de 0 a 23)
   const generateHours = () => {
@@ -116,6 +117,7 @@ function DayView({
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={true}
+              snapValue={snapValue}
             />
           </div>
         );
@@ -188,6 +190,7 @@ function DayView({
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={false}
+              snapValue={snapValue}
             />
           </div>
         );

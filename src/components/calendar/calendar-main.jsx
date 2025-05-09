@@ -10,9 +10,11 @@ import {
 } from '../../utils/date-utils';
 import DayView from './day-view';
 import EventItem from './event-item';
+import SnapControl from './snap-control';
 import storageService from '../../services/storage-service';
 import '../../styles/calendar/calendar-main.css';
 import '../../styles/components/events.css';
+import '../../styles/components/snap-control.css';
 
 /**
  * Componente principal del calendario con vista semanal y diaria
@@ -26,6 +28,7 @@ function CalendarMain() {
   const [formError, setFormError] = useState('');
   const [view, setView] = useState('week'); // 'week' o 'day'
   const [selectedDay, setSelectedDay] = useState(new Date());
+  const [snapValue, setSnapValue] = useState(0); // 0 = desactivado por defecto
   const [newEvent, setNewEvent] = useState({
     id: '',
     title: '',
@@ -541,6 +544,7 @@ function CalendarMain() {
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={true}
+              snapValue={snapValue}
             />
           </div>
         );
@@ -613,6 +617,7 @@ function CalendarMain() {
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={false}
+              snapValue={snapValue}
             />
           </div>
         );
@@ -665,6 +670,10 @@ function CalendarMain() {
           >
             Vista Diaria
           </button>
+          <SnapControl
+            snapValue={snapValue}
+            onSnapChange={setSnapValue}
+          />
         </div>
         <div className="calendar-title">
           {view === 'week' && weekDays.length > 0 && (
@@ -729,6 +738,7 @@ function CalendarMain() {
           onUpdate={(updatedEvent) => {
             updateEvent(updatedEvent.id, updatedEvent);
           }}
+          snapValue={snapValue}
         />
       )}
 

@@ -1,0 +1,124 @@
+/* Contenedor principal */
+.snap-control-container {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  position: relative;
+}
+
+/* Botón de toggle */
+.snap-control-toggle {
+  background-color: #f0f0f0;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px 0 0 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.snap-control-toggle.active {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.snap-icon {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Indicador de valor */
+.snap-value-indicator {
+  background-color: #f0f0f0;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.snap-control-toggle.active + .snap-value-indicator {
+  background-color: #e0e0e0;
+  color: var(--color-text);
+}
+
+.snap-value-indicator:hover {
+  background-color: #e0e0e0;
+}
+
+/* Menú de opciones */
+.snap-options-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  width: 180px;
+  z-index: 100;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.snap-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.snap-option:hover {
+  background-color: #f5f5f5;
+}
+
+.snap-option.selected {
+  background-color: #e3f2fd;
+  color: var(--color-atlas-blue);
+  font-weight: 500;
+}
+
+/* Sección de valor personalizado */
+.snap-custom-section {
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.snap-custom-input {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.snap-custom-input input {
+  width: 50px;
+  padding: 4px;
+  margin-right: 8px;
+}
+
+.snap-apply-custom {
+  width: 100%;
+  padding: 4px 0;
+  background-color: var(--color-atlas-blue);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.snap-apply-custom:hover {
+  background-color: #1A3A7D;
+}
+
+/* Estado activo durante arrastre con snap */
+.snap-active .calendar-time-slot,
+.snap-active .day-view-hour-slot {
+  transition: background-color 0.05s ease;
+}

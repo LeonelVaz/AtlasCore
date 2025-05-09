@@ -12,6 +12,7 @@ function EventItem({
   continuesNextDay = false,
   continuesFromPrevDay = false,
   gridSize = 60, // Altura de una celda (1 hora)
+  snapValue = 0  // Valor de snap en minutos (0 = desactivado)
 }) {
   // Referencias y estado
   const eventRef = useRef(null);
@@ -56,6 +57,7 @@ function EventItem({
       document.removeEventListener('mouseup', handleMouseUp);
       removeAllHighlights();
       document.body.classList.remove('dragging-active');
+      document.body.classList.remove('snap-active');
     };
   }, []);
   
@@ -105,6 +107,7 @@ function EventItem({
           inWeekView: false,
           startDay: new Date(event.start),
           startHour: new Date(event.start).getHours(),
+          startMinute: new Date(event.start).getMinutes(), // Añadir minutos del inicio
           timeSlots,
           startSlot: currentSlot,
           targetSlot: currentSlot
@@ -159,6 +162,7 @@ function EventItem({
       const avgDayWidth = dayCount > 0 ? totalDayWidth / dayCount : gridRect ? gridRect.width / 7 : 0;
       const startDay = new Date(event.start);
       const startHour = startDay.getHours();
+      const startMinute = startDay.getMinutes(); // Añadir minutos del inicio
       
       return {
         containerElement: gridElement,
@@ -170,6 +174,7 @@ function EventItem({
         inWeekView: true,
         startDay,
         startHour,
+        startMinute, // Incluir minutos del inicio
         timeSlots,
         startSlot: currentSlot,
         targetSlot: currentSlot
@@ -186,6 +191,7 @@ function EventItem({
         inWeekView: false,
         startDay: new Date(event.start),
         startHour: new Date(event.start).getHours(),
+        startMinute: new Date(event.start).getMinutes(),
         timeSlots: [],
         startSlot: null,
         targetSlot: null
@@ -218,7 +224,15 @@ function EventItem({
     const deltaY = clientY - dragInfo.current.startY;
     const deltaX = clientX - dragInfo.current.startX;
     
-    const hourDelta = Math.round(deltaY / dragInfo.current.grid.hourHeight);
+    // Aplicar snap a la posición vertical (tiempo)
+    let adjustedDeltaY = deltaY;
+    if (snapValue > 0) {
+      // Convertir snapValue (minutos) a pixeles
+      const snapPixels = snapValue * (gridSize / 60);
+      adjustedDeltaY = Math.round(deltaY / snapPixels) * snapPixels;
+    }
+    
+    const hourDelta = Math.round(adjustedDeltaY / dragInfo.current.grid.hourHeight);
     let dayDelta = 0;
     
     if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
@@ -329,6 +343,11 @@ function EventItem({
     
     document.body.classList.add('dragging-active');
     
+    // Si snap está activo, añadir clase especial
+    if (snapValue > 0) {
+      document.body.classList.add('snap-active');
+    }
+    
     setTimeout(() => {
       if (dragInfo.current.dragging) {
         if (isResize) {
@@ -354,20 +373,47 @@ function EventItem({
     if (movedSignificantly) {
       dragInfo.current.moved = true;
       dragInfo.current.deltaX = deltaX;
-      dragInfo.current.deltaY = deltaY;
       
       if (dragInfo.current.isResize) {
-        // Redimensionar verticalmente
-        let newHeight = dragInfo.current.startHeight + deltaY;
+        // Aplicar snap al redimensionamiento
+        let adjustedDeltaY = deltaY;
+        if (snapValue > 0) {
+          // Convertir snapValue (minutos) a pixeles
+          const snapPixels = snapValue * (gridSize / 60);
+          adjustedDeltaY = Math.round(deltaY / snapPixels) * snapPixels;
+        }
+        
+        dragInfo.current.deltaY = adjustedDeltaY;
+        
+        // Redimensionar verticalmente con snap
+        let newHeight = dragInfo.current.startHeight + adjustedDeltaY;
         newHeight = Math.max(gridSize / 2, newHeight); // Altura mínima
         
         if (eventRef.current) {
           eventRef.current.style.height = `${newHeight}px`;
         }
       } else {
-        // Arrastrar (vertical y horizontal)
+        // Arrastrar (vertical y horizontal) con snap aplicado en findTargetSlot
+        dragInfo.current.deltaY = deltaY;
+        
         if (eventRef.current) {
-          eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+          // Si snap está activado, ajustar la visualización de la transformación
+          if (snapValue > 0) {
+            // Convertir snapValue (minutos) a pixeles
+            const snapPixels = snapValue * (gridSize / 60);
+            const adjustedDeltaY = Math.round(deltaY / snapPixels) * snapPixels;
+            
+            // Aproximar horizontalmente a días
+            let adjustedDeltaX = deltaX;
+            if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+              adjustedDeltaX = Math.round(deltaX / dragInfo.current.grid.dayWidth) * dragInfo.current.grid.dayWidth;
+            }
+            
+            eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+          } else {
+            // Sin snap, transformación normal
+            eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+          }
         }
         
         const targetSlot = findTargetSlot(e.clientX, e.clientY);
@@ -377,6 +423,23 @@ function EventItem({
         }
       }
     }
+  };
+  
+  // Función para calcular el cambio de tiempo preciso con snap
+  const calculatePreciseTimeChange = (deltaY, isResize = false) => {
+    // Si no hay snap activado, usar cálculo simple
+    if (snapValue === 0) {
+      const pixelsPerMinute = gridSize / 60;
+      return deltaY / pixelsPerMinute;  // Retorna minutos
+    }
+    
+    // Con snap activado, calcular cuántos intervalos de snap
+    const pixelsPerMinute = gridSize / 60;
+    const snapPixels = snapValue * pixelsPerMinute;
+    const snapIntervals = Math.round(deltaY / snapPixels);
+    
+    // Devuelve minutos exactos basados en el snap
+    return snapIntervals * snapValue;
   };
   
   // Finalizar arrastre o redimensionamiento
@@ -390,6 +453,7 @@ function EventItem({
     document.removeEventListener('mouseup', handleMouseUp);
     removeAllHighlights();
     document.body.classList.remove('dragging-active');
+    document.body.classList.remove('snap-active');
     
     dragInfo.current.endTime = Date.now();
     
@@ -421,60 +485,24 @@ function EventItem({
     
     // Si hubo movimiento real, calcular cambios
     if (wasActuallyDragged) {
-      let hoursDelta = 0;
+      let minutesDelta = 0;
       let daysDelta = 0;
       
-      const targetSlot = dragInfo.current.grid ? dragInfo.current.grid.targetSlot : null;
-      const startSlot = dragInfo.current.grid ? dragInfo.current.grid.startSlot : null;
-      
       if (dragInfo.current.isResize) {
-        // Calcular cambio por redimensionamiento
-        if (eventRef.current) {
-          const heightDelta = Math.round(eventRef.current.offsetHeight) - dragInfo.current.startHeight;
-          hoursDelta = Math.round(heightDelta / gridSize);
-        }
+        // Calcular cambio por redimensionamiento en minutos precisos
+        minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, true);
         
         if (eventRef.current) {
           eventRef.current.classList.remove('resizing');
           eventRef.current.style.height = '';
         }
       } else {
-        // Calcular cambio por arrastre
-        if (targetSlot && startSlot && targetSlot !== startSlot) {
-          const allSlots = dragInfo.current.grid.timeSlots;
-          if (allSlots && allSlots.length > 0) {
-            const rowSize = dragInfo.current.grid.inWeekView ? 7 : 1;
-            
-            const startIndex = allSlots.indexOf(startSlot);
-            const targetIndex = allSlots.indexOf(targetSlot);
-            
-            if (startIndex !== -1 && targetIndex !== -1) {
-              const startRow = Math.floor(startIndex / rowSize);
-              const startCol = startIndex % rowSize;
-              
-              const targetRow = Math.floor(targetIndex / rowSize);
-              const targetCol = targetIndex % rowSize;
-              
-              hoursDelta = targetRow - startRow;
-              daysDelta = targetCol - startCol;
-              
-              console.log(`Cambio calculado: ${daysDelta} días, ${hoursDelta} horas`);
-            } else {
-              // Fallback: cálculo por píxeles
-              hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
-              
-              if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
-                daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
-              }
-            }
-          }
-        } else {
-          // Fallback para cálculo de cambios
-          hoursDelta = Math.round(dragInfo.current.deltaY / gridSize);
-          
-          if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
-            daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
-          }
+        // Calcular cambio por arrastre en minutos precisos
+        minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, false);
+        
+        // Calcular cambio en días (solo para vista semanal)
+        if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+          daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
         }
         
         if (eventRef.current) {
@@ -487,17 +515,17 @@ function EventItem({
       setResizing(false);
       
       // Actualizar si hubo cambio efectivo
-      if (hoursDelta !== 0 || daysDelta !== 0) {
+      if (minutesDelta !== 0 || daysDelta !== 0) {
         const startDate = new Date(event.start);
         const endDate = new Date(event.end);
         
         if (dragInfo.current.isResize) {
-          // Solo cambia hora de fin
-          endDate.setHours(endDate.getHours() + hoursDelta);
+          // Solo cambia tiempo de fin en minutos precisos
+          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
         } else {
-          // Mueve todo el evento
-          startDate.setHours(startDate.getHours() + hoursDelta);
-          endDate.setHours(endDate.getHours() + hoursDelta);
+          // Mueve todo el evento en minutos precisos
+          startDate.setMinutes(startDate.getMinutes() + minutesDelta);
+          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
           
           if (daysDelta !== 0) {
             startDate.setDate(startDate.getDate() + daysDelta);
