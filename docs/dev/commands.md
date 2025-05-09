@@ -80,6 +80,16 @@ git push origin v0.1.0    # Para una etiqueta específica
 git push origin --tags    # Para todas las etiquetas nuevas
 ```
 
+## Cambiar a otra rama
+```bash
+git checkout nombre_de_la_rama
+```
+
+# Volver a rama principal
+```bash
+git checkout main
+```
+
 ## Vite (Desarrollo Frontend)
 
 ### Iniciar el servidor de desarrollo
