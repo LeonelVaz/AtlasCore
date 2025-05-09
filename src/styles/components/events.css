@@ -1,50 +1,40 @@
-/* Estilos para eventos y sus interacciones */
+/* Estilos para eventos - Versión mínima */
 
 /* Estilos base para los eventos */
 .calendar-event {
+  /* Posicionamiento */
   position: absolute;
   top: 2px;
   left: 2px;
   right: 2px;
   bottom: 2px;
+  
+  /* Apariencia */
   background-color: var(--color-atlas-blue);
   color: white;
   border-radius: 4px;
   padding: 4px;
   font-size: 0.85rem;
-  overflow: hidden;
-  cursor: grab;
+  
+  /* Interacción */
+  cursor: pointer;
+  
+  /* Otros */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  transition: transform 0s, box-shadow 0.2s ease;
-  z-index: 5;
-  user-select: none; /* Evitar selección de texto durante el arrastre */
-}
-
-.calendar-event:hover {
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
   z-index: 10;
 }
 
-/* Estilos para eventos mientras se arrastran */
-.calendar-event.dragging {
-  cursor: grabbing !important;
-  opacity: 0.8;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-  pointer-events: none; /* Importante: evita problemas durante el arrastre */
-  transition: none; /* Deshabilitar transiciones durante arrastre */
+/* Hover */
+.calendar-event:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
 }
 
-/* Estilos para eventos mientras se redimensionan */
+/* Estados de arrastre y redimensionamiento */
+.calendar-event.dragging,
 .calendar-event.resizing {
-  cursor: ns-resize !important;
   opacity: 0.8;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
   z-index: 100;
-  pointer-events: none; /* Importante: evita problemas durante el redimensionamiento */
-  transition: none; /* Deshabilitar transiciones durante redimensionamiento */
 }
 
 /* Controlador de redimensionamiento */
@@ -53,19 +43,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 8px; /* Un poco más alto para facilitar su uso */
+  height: 8px;
   cursor: ns-resize;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 0 0 4px 4px;
-  z-index: 10;
 }
 
-.event-resize-handle:hover {
-  height: 10px;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Títulos y horas de los eventos */
+/* Componentes internos */
 .event-title {
   font-weight: 500;
   margin-bottom: 2px;
@@ -77,19 +61,4 @@
 .event-time {
   font-size: 0.75rem;
   opacity: 0.9;
-}
-
-/* Mejoras para eventos en vista diaria */
-.day-view-hour-slot .calendar-event {
-  position: relative;
-  margin-bottom: 4px;
-  top: auto;
-  left: auto;
-  right: auto;
-  bottom: auto;
-}
-
-/* Asegurar que las celdas tienen posición relativa */
-.calendar-time-slot, .day-view-hour-slot {
-  position: relative !important;
 }
