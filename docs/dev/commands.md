@@ -90,6 +90,27 @@ git checkout nombre_de_la_rama
 git checkout main
 ```
 
+# Crear una nueva rama
+
+## Asegúrate de estar en main y tenerlo actualizado
+```bash
+git checkout main
+git pull origin main
+```
+
+## Crea la nueva rama
+```bash
+git checkout -b feature/nuevos-componentes-calendario-stage2
+```
+## Confirma que estás en la nueva rama
+```bash
+git status
+```
+# Sube la nueva rama al repositorio remoto
+```bash
+git push -u origin feature/nuevos-componentes-calendario-stage2
+```
+
 ## Vite (Desarrollo Frontend)
 
 ### Iniciar el servidor de desarrollo
