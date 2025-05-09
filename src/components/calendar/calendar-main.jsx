@@ -1,8 +1,7 @@
 // calendar-main.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
-import storageService from '../../services/storage-service';
 import { 
   getFirstDayOfWeek, 
   formatDate, 
@@ -10,7 +9,10 @@ import {
   generateWeekDays 
 } from '../../utils/date-utils';
 import DayView from './day-view';
+import EventItem from './event-item';
+import storageService from '../../services/storage-service';
 import '../../styles/calendar/calendar-main.css';
+import '../../styles/components/events.css';
 
 /**
  * Componente principal del calendario con vista semanal
@@ -84,7 +86,71 @@ function CalendarMain() {
     };
   }, [events, selectedEvent, newEvent, currentDate]);
 
-  // Cargar eventos usando el servicio de almacenamiento
+  // Añadir useEffect para depuración
+  useEffect(() => {
+    console.log('Estado de eventos actualizado:', events);
+    
+    // Exponer función de depuración en window para pruebas
+    if (typeof window !== 'undefined') {
+      window.debugAtlas = {
+        getEvents: () => events,
+        createTestEvent: () => {
+          const now = new Date();
+          const start = new Date(now);
+          start.setHours(start.getHours() + 1, 0, 0, 0);
+          
+          const end = new Date(start);
+          end.setHours(end.getHours() + 1);
+          
+          const testEvent = {
+            title: `Evento de prueba ${Date.now()}`,
+            start: start.toISOString(),
+            end: end.toISOString(),
+            color: '#FF5722'
+          };
+          
+          const createdEvent = createEvent(testEvent);
+          console.log('Evento de prueba creado:', createdEvent);
+          return createdEvent;
+        },
+        forceUpdate: (eventId, hoursToMove) => {
+          const eventToUpdate = events.find(e => e.id === eventId);
+          if (!eventToUpdate) {
+            console.error('Evento no encontrado:', eventId);
+            return null;
+          }
+          
+          const startDate = new Date(eventToUpdate.start);
+          const endDate = new Date(eventToUpdate.end);
+          
+          startDate.setHours(startDate.getHours() + hoursToMove);
+          endDate.setHours(endDate.getHours() + hoursToMove);
+          
+          const updatedEvent = {
+            ...eventToUpdate,
+            start: startDate.toISOString(),
+            end: endDate.toISOString()
+          };
+          
+          const result = updateEvent(eventId, updatedEvent);
+          console.log('Actualización forzada:', result);
+          return result;
+        },
+        saveAllEvents: () => {
+          saveEvents(events);
+          console.log('Eventos guardados manualmente');
+        }
+      };
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.debugAtlas;
+      }
+    };
+  }, [events]);
+
+  // Cargar eventos desde el almacenamiento
   const loadEvents = async () => {
     try {
       const storedEvents = await storageService.get('atlas_events', []);
@@ -136,13 +202,34 @@ function CalendarMain() {
     }
   };
 
-  // Guardar eventos usando el servicio de almacenamiento
+  // Guardar eventos en el almacenamiento
   const saveEvents = async (updatedEvents) => {
     try {
-      await storageService.set('atlas_events', updatedEvents);
-      // El evento eventsUpdated se publica automáticamente en storageService
+      console.log('Guardando eventos:', updatedEvents);
+      
+      // Asegurar que tenemos un array válido para guardar
+      if (!Array.isArray(updatedEvents)) {
+        console.error('Error: Intentando guardar eventos que no son un array');
+        return false;
+      }
+      
+      // Guardar en el servicio de almacenamiento
+      const result = await storageService.set('atlas_events', updatedEvents);
+      
+      console.log('Resultado de guardado:', result);
+      
+      return result;
     } catch (error) {
       console.error('Error al guardar eventos:', error);
+      return false;
+    }
+  };
+
+  // Función para cambiar entre vistas
+  const toggleView = (newView, date = null) => {
+    setView(newView);
+    if (date) {
+      setSelectedDay(new Date(date));
     }
   };
 
@@ -168,17 +255,28 @@ function CalendarMain() {
 
   // Actualizar un evento existente
   const updateEvent = (eventId, eventData) => {
-
     try {
-      console.log('Actualizando evento:', eventId, eventData); // Para depuración
+      console.log('Actualizando evento con ID:', eventId);
+      console.log('Nuevos datos:', eventData);
       
+      // Crear una copia del array de eventos
       const updatedEvents = events.map(event => 
-        event.id === eventId ? { ...event, ...eventData } : event
+        event.id === eventId ? { ...eventData } : event
       );
       
+      console.log('Lista actualizada de eventos:', updatedEvents);
+      
+      // Actualizar el estado
       setEvents(updatedEvents);
+      
+      // Guardar los cambios
       saveEvents(updatedEvents);
-      return updatedEvents.find(e => e.id === eventId);
+      
+      // Devolver el evento actualizado
+      const updatedEvent = updatedEvents.find(e => e.id === eventId);
+      console.log('Evento después de actualizar:', updatedEvent);
+      
+      return updatedEvent;
     } catch (error) {
       /* istanbul ignore next */
       console.error('Error al actualizar evento:', error);
@@ -216,14 +314,6 @@ function CalendarMain() {
   // Ir a la semana actual
   const goToCurrentWeek = () => {
     setCurrentDate(new Date());
-  };
-
-  // Cambiar entre vistas
-  const toggleView = (newView, date = null) => {
-    setView(newView);
-    if (date) {
-      setSelectedDay(new Date(date));
-    }
   };
 
   // Generar las horas del día (de 0 a 23)
@@ -477,23 +567,15 @@ function CalendarMain() {
       return events
         .filter(event => event.title && shouldShowEvent(event, day, hour))
         .map(event => (
-          <div 
+          <EventItem
             key={event.id}
-            className="calendar-event"
-            style={{ backgroundColor: event.color }}
-            onClick={(e) => {
-              e.stopPropagation(); // Evitar que se propague al contenedor
-              handleEventClick(event);
+            event={event}
+            onClick={handleEventClick}
+            onUpdate={(updatedEvent) => {
+              console.log('Evento actualizado:', updatedEvent);
+              updateEvent(updatedEvent.id, updatedEvent);
             }}
-            data-event-id={event.id} // Añadir un atributo para identificar el evento
-          >
-            <div className="event-title">{event.title}</div>
-            <div className="event-time">
-              {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-              {' - '}
-              {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            </div>
-          </div>
+          />
         ));
     } catch (error) {
       console.error('Error al renderizar eventos:', error);
@@ -552,7 +634,7 @@ function CalendarMain() {
           )}
           {view === 'day' && (
             <h2>
-              {new Date(selectedDay).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {new Date(selectedDay).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
             </h2>
           )}
         </div>
@@ -604,6 +686,9 @@ function CalendarMain() {
           events={events}
           onEventClick={handleEventClick}
           onTimeSlotClick={handleCellClick}
+          onUpdate={(updatedEvent) => {
+            updateEvent(updatedEvent.id, updatedEvent);
+          }}
         />
       )}
 

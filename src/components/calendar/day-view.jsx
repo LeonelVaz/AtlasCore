@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatHour, formatDate } from '../../utils/date-utils';
+import EventItem from './event-item';
 
 /**
  * Componente de vista diaria para el calendario
@@ -9,7 +10,8 @@ function DayView({
   date, 
   events, 
   onEventClick, 
-  onTimeSlotClick 
+  onTimeSlotClick,
+  onUpdate  // Función para actualizar eventos
 }) {
   // Generar las horas del día (de 0 a 23)
   const generateHours = () => {
@@ -43,30 +45,24 @@ function DayView({
 
   // Renderizar eventos para una hora específica
   const renderEvents = (hour) => {
-    return events
-      .filter(event => event.title && shouldShowEvent(event, hour))
-      .map(event => (
-        <div 
-          key={event.id}
-          className="calendar-event"
-          style={{ backgroundColor: event.color }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEventClick(event);
-          }}
-          data-testid="day-view-event"
-        >
-          <div className="event-title">{event.title}</div>
-          <div className="event-time">
-            {new Date(event.start).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-            {' - '}
-            {new Date(event.end).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-          </div>
-          {event.description && (
-            <div className="event-description">{event.description}</div>
-          )}
-        </div>
-      ));
+    try {
+      return events
+        .filter(event => event.title && shouldShowEvent(event, hour))
+        .map(event => (
+          <EventItem
+            key={event.id}
+            event={event}
+            onClick={onEventClick}
+            onUpdate={(updatedEvent) => {
+              console.log('Evento actualizado en vista diaria:', updatedEvent);
+              onUpdate(updatedEvent);
+            }}
+          />
+        ));
+    } catch (error) {
+      console.error('Error al renderizar eventos en vista diaria:', error);
+      return null;
+    }
   };
 
   const hours = generateHours();

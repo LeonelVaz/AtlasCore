@@ -216,7 +216,8 @@
 }
 
 
-/* Añadir estos estilos a src/styles/calendar/calendar-main.css */
+
+
 
 /* Estilos para la vista diaria */
 .day-view-container {
@@ -227,6 +228,8 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px var(--color-shadow);
   overflow: hidden;
+  position: relative;
+  min-height: 600px;
 }
 
 .day-view-header {
@@ -246,11 +249,14 @@
 .day-view-timeline {
   flex: 1;
   overflow-y: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .day-view-hour-row {
   display: flex;
   min-height: 60px;
+  width: 100%;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -268,35 +274,19 @@
 .day-view-hour-slot {
   flex: 1;
   position: relative;
+  height: 60px;
+  min-height: 60px;
   background-color: white;
   transition: background-color 0.2s ease;
   cursor: pointer;
-  padding: var(--spacing-xs);
+  padding: 0;
+  overflow: visible;
 }
 
 .day-view-hour-slot:hover {
   background-color: #f0f7ff;
 }
 
-/* Mejoras para eventos en vista diaria */
-.day-view-hour-slot .calendar-event {
-  margin-bottom: 4px;
-  position: relative;
-  top: auto;
-  left: auto;
-  right: auto;
-  bottom: auto;
-}
-
-.day-view-hour-slot .event-description {
-  font-size: 0.75rem;
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Añadir estos estilos a src/styles/calendar/calendar-main.css */
 
 /* Botones de cambio de vista */
 .calendar-view-toggle {
@@ -320,6 +310,22 @@
 .calendar-view-toggle button.active {
   background-color: var(--color-atlas-blue);
   color: white;
+}
+
+/* Asegurar que las celdas de tiempo tienen la configuración correcta */
+.calendar-time-slot {
+  position: relative;
+  height: 60px;
+  min-height: 60px;
+  padding: 0;
+  overflow: visible; /* Importante para permitir que los eventos se arrastren fuera */
+}
+
+/* Mejorar la visualización del calendario */
+.calendar-grid {
+  position: relative;
+  z-index: 1;
+  min-height: 600px;
 }
 
 /* Actualizaciones para el encabezado */

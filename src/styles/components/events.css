@@ -1,0 +1,74 @@
+/* Estilos para eventos y sus interacciones */
+
+/* Estilos base para los eventos */
+.calendar-event {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background-color: var(--color-atlas-blue);
+  color: white;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 0.85rem;
+  overflow: hidden;
+  cursor: grab;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease;
+  z-index: 5;
+}
+
+.calendar-event:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+/* Estilos para eventos mientras se arrastran */
+.calendar-event.dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+}
+
+/* Estilos para eventos mientras se redimensionan */
+.calendar-event.resizing {
+  cursor: ns-resize;
+  opacity: 0.8;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+}
+
+/* Controlador de redimensionamiento */
+.event-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: ns-resize;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 4px 4px;
+}
+
+.event-resize-handle:hover {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Títulos y horas de los eventos */
+.event-title {
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-time {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
