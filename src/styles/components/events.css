@@ -106,3 +106,20 @@ body.dragging-active .day-view-hour-slot:hover:not(.drag-target-active) {
   position: relative;
   z-index: 5; /* Mayor z-index para que esté por encima de otras celdas pero por debajo del evento */
 }
+
+.event-wrapper {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  overflow: visible;
+  z-index: 10;
+}
+
+.event-wrapper .calendar-event {
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: relative;
+}

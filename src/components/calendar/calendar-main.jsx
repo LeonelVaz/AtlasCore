@@ -565,18 +565,64 @@ function CalendarMain() {
   const renderEvents = (day, hour) => {
     try {
       return events
-        .filter(event => event.title && shouldShowEvent(event, day, hour))
-        .map(event => (
-          <EventItem
-            key={event.id}
-            event={event}
-            onClick={handleEventClick}
-            onUpdate={(updatedEvent) => {
-              console.log('Evento actualizado:', updatedEvent);
-              updateEvent(updatedEvent.id, updatedEvent);
-            }}
-          />
-        ));
+        .filter(event => {
+          // Solo incluir eventos que comienzan exactamente en esta hora
+          if (!event.title) return false;
+          
+          const eventStart = new Date(event.start);
+          if (isNaN(eventStart.getTime())) return false;
+          
+          return (
+            eventStart.getDate() === day.getDate() &&
+            eventStart.getMonth() === day.getMonth() &&
+            eventStart.getFullYear() === day.getFullYear() &&
+            eventStart.getHours() === hour
+          );
+        })
+        .map(event => {
+          // Calcular la duración en horas
+          const start = new Date(event.start);
+          const end = new Date(event.end);
+          
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return (
+              <EventItem
+                key={event.id}
+                event={event}
+                onClick={handleEventClick}
+                onUpdate={(updatedEvent) => {
+                  updateEvent(updatedEvent.id, updatedEvent);
+                }}
+              />
+            );
+          }
+          
+          // Calcular duración en horas
+          const durationMs = end.getTime() - start.getTime();
+          const durationHours = durationMs / (1000 * 60 * 60);
+          
+          // Calcular altura basada en duración (cada celda = 60px de altura)
+          const heightPx = Math.max(60, Math.round(durationHours * 60));
+          
+          // Aplicar estilo inline para la altura
+          const eventStyle = {
+            height: `${heightPx}px`,
+            zIndex: 20 // Asegurar que esté por encima de otras celdas
+          };
+          
+          return (
+            <div className="event-wrapper" style={eventStyle} key={event.id}>
+              <EventItem
+                key={event.id}
+                event={event}
+                onClick={handleEventClick}
+                onUpdate={(updatedEvent) => {
+                  updateEvent(updatedEvent.id, updatedEvent);
+                }}
+              />
+            </div>
+          );
+        });
     } catch (error) {
       console.error('Error al renderizar eventos:', error);
       return null;
