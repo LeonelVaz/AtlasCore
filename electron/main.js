@@ -11,11 +11,17 @@ const windowManager = require('./window-manager');
 // la inicialización y esté listo para crear ventanas del navegador.
 app.on('ready', () => {
   // Determinar la URL inicial
-  const startUrl = process.env.ELECTRON_START_URL || url.format({
-    pathname: path.join(__dirname, '../dist/index.html'),
-    protocol: 'file:',
-    slashes: true
-  });
+  // En desarrollo, usar el servidor de Vite en localhost:3000
+  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+  const startUrl = isDev
+    ? 'http://localhost:3000'
+    : url.format({
+        pathname: path.join(__dirname, '../dist/index.html'),
+        protocol: 'file:',
+        slashes: true
+      });
+  
+  console.log('Iniciando Electron con URL:', startUrl);
   
   // Crear la ventana principal
   windowManager.createMainWindow(startUrl);
@@ -34,11 +40,14 @@ app.on('activate', () => {
   // En macOS es común volver a crear una ventana en la aplicación cuando el
   // icono del dock es clicado y no hay otras ventanas abiertas.
   if (!windowManager.getMainWindow()) {
-    const startUrl = process.env.ELECTRON_START_URL || url.format({
-      pathname: path.join(__dirname, '../dist/index.html'),
-      protocol: 'file:',
-      slashes: true
-    });
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    const startUrl = isDev
+      ? 'http://localhost:3000'
+      : url.format({
+          pathname: path.join(__dirname, '../dist/index.html'),
+          protocol: 'file:',
+          slashes: true
+        });
     
     windowManager.createMainWindow(startUrl);
   }
