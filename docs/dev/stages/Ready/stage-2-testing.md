@@ -198,14 +198,6 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [ ] 13.4 Las constantes EVENT_OPERATIONS se utilizan correctamente en las operaciones de eventos
 - [ ] 13.5 La aplicación utiliza constantes en lugar de valores literales para todos los valores clave
 
-## Tests a Descartar del Stage 1
-
-Estos tests del Stage 1 podrían no ser necesarios en el Stage 2 porque han sido reemplazados por pruebas más específicas o la funcionalidad ha cambiado:
-
-1. Tests de localStorage directos: ahora deberíamos probar a través de la abstracción de storageService
-2. Tests de renderizado simple: ahora deberíamos enfocarnos más en las interacciones avanzadas
-3. Tests que no consideren las múltiples vistas (día/semana): la aplicación ahora es más compleja
-
 ## Notas de Implementación para Tests
 
 Para pruebas específicas de los componentes del Stage 2, asegúrese de que estas dependencias se simulen correctamente:
