@@ -4,16 +4,16 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 1. Renderizado del Componente
 
-- [ ] 1.1 La estructura de la cuadrícula del calendario se renderiza correctamente con las franjas horarias
-- [ ] 1.2 El encabezado de hora muestra 24 horas con el formato correcto
-- [ ] 1.3 Los botones de navegación de fecha se renderizan y se puede hacer clic
-- [ ] 1.4 El título del calendario muestra el mes y el año correctos
-- [ ] 1.5 Los encabezados de día muestran las fechas con el formato correcto
-- [ ] 1.6 El formulario de evento no se muestra inicialmente
-- [ ] 1.7 El sistema de vistas alterna correctamente entre vista semanal y diaria
-- [ ] 1.8 El control de snap (imán) se renderiza correctamente
-- [ ] 1.9 Los nuevos componentes UI (Button, Dialog) se renderizan correctamente
-- [ ] 1.10 La estructura CSS modular se aplica correctamente a todos los componentes
+- [x] 1.1 La estructura de la cuadrícula del calendario se renderiza correctamente con las franjas horarias
+- [x] 1.2 El encabezado de hora muestra 24 horas con el formato correcto
+- [x] 1.3 Los botones de navegación de fecha se renderizan y se puede hacer clic
+- [x] 1.4 El título del calendario muestra el mes y el año correctos
+- [x] 1.5 Los encabezados de día muestran las fechas con el formato correcto
+- [x] 1.6 El formulario de evento no se muestra inicialmente
+- [x] 1.7 El sistema de vistas alterna correctamente entre vista semanal y diaria
+- [x] 1.8 El control de snap (imán) se renderiza correctamente
+- [x] 1.9 Los nuevos componentes UI (Button, Dialog) se renderizan correctamente
+- [x] 1.10 La estructura CSS modular se aplica correctamente a todos los componentes
 
 ## 2. Navegación por Fecha
 
