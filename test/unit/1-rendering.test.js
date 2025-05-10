@@ -251,3 +251,4 @@ describe('1. Renderizado del Componente', () => {
     expect(document.querySelector('.snap-control-container')).toBeInTheDocument();
   });
 });
+

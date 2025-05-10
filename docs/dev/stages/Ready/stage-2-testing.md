@@ -17,14 +17,14 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 2. Navegación por Fecha
 
-- [ ] 2.1 El botón de la semana anterior reduce la fecha en 7 días
-- [ ] 2.2 El botón de la semana siguiente incrementa la fecha en 7 días
-- [ ] 2.3 El botón de la semana actual se restablece a la fecha actual
-- [ ] 2.4 Los días de la semana se generan correctamente para cualquier fecha
-- [ ] 2.5 En vista diaria, el botón de día anterior reduce la fecha en 1 día
-- [ ] 2.6 En vista diaria, el botón de día siguiente incrementa la fecha en 1 día
-- [ ] 2.7 En vista diaria, el botón "Hoy" se restablece a la fecha actual
-- [ ] 2.8 El cambio de vista mantiene la fecha seleccionada correctamente
+- [x] 2.1 El botón de la semana anterior reduce la fecha en 7 días
+- [x] 2.2 El botón de la semana siguiente incrementa la fecha en 7 días
+- [x] 2.3 El botón de la semana actual se restablece a la fecha actual
+- [x] 2.4 Los días de la semana se generan correctamente para cualquier fecha
+- [x] 2.5 En vista diaria, el botón de día anterior reduce la fecha en 1 día
+- [x] 2.6 En vista diaria, el botón de día siguiente incrementa la fecha en 1 día
+- [x] 2.7 En vista diaria, el botón "Hoy" se restablece a la fecha actual
+- [x] 2.8 El cambio de vista mantiene la fecha seleccionada correctamente
 
 ## 3. Gestión de Eventos Básica
 
