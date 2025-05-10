@@ -2,7 +2,7 @@
  * Estilos para el componente principal App
  */
 
-.app-container {
+ .app-container {
   display: flex;
   flex-direction: column;
   height: 100%;

@@ -4,7 +4,7 @@
  * Estilos para el componente principal del calendario
  */
 
- .calendar-container {
+.calendar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -38,28 +38,10 @@
   text-transform: capitalize;
 }
 
-/* Botones de cambio de vista */
+/* Botones de cambio de vista - ahora usar ui-button-* clases */
 .calendar-view-toggle {
   display: flex;
   gap: 8px;
-}
-
-.calendar-view-toggle button {
-  padding: 6px 12px;
-  background-color: #f0f0f0;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.calendar-view-toggle button:hover {
-  background-color: #e0e0e0;
-}
-
-.calendar-view-toggle button.active {
-  background-color: var(--color-atlas-blue);
-  color: white;
 }
 
 /* Rejilla del calendario */
@@ -134,34 +116,7 @@
   background-color: #f0f7ff;
 }
 
-/* Formulario de eventos */
-.event-form-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 100;
-}
-
-.event-form {
-  background-color: white;
-  border-radius: 8px;
-  padding: var(--spacing-lg);
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.event-form h3 {
-  margin-bottom: var(--spacing-md);
-  color: var(--color-atlas-blue);
-}
-
+/* Estilos para formularios */
 .form-group {
   margin-bottom: var(--spacing-md);
 }
@@ -176,14 +131,6 @@
   display: flex;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-lg);
-}
-
-.delete-button {
-  background-color: #e53935;
-}
-
-.delete-button:hover {
-  background-color: #c62828;
 }
 
 /* Estilos para la vista diaria */
@@ -274,11 +221,6 @@
   .calendar-day-header {
     font-size: 0.8rem;
     padding: var(--spacing-xs);
-  }
-  
-  .event-form {
-    width: 95%;
-    padding: var(--spacing-md);
   }
   
   .calendar-view-toggle {

@@ -1,7 +1,7 @@
-// time-grid.jsx
+// time-grid.jsx (refactorizado)
 import React from 'react';
 import EventItem from './event-item';
-import { formatHour } from '../../utils/date-utils';
+import useTimeGrid from '../../hooks/use-time-grid';
 import '../../styles/components/snap-control.css';
 
 function TimeGrid({ 
@@ -13,59 +13,13 @@ function TimeGrid({
   snapValue,
   renderDayHeader 
 }) {
-  // Generar horas del día
-  const generateHours = () => {
-    const hours = [];
-    for (let i = 0; i < 24; i++) {
-      hours.push(i);
-    }
-    return hours;
-  };
-
-  const hours = generateHours();
-
-  // Verificar si un evento comienza exactamente en esta celda
-  const shouldShowEventStart = (event, day, hour) => {
-    try {
-      if (!event?.start) return false;
-      
-      const eventStart = new Date(event.start);
-      
-      if (isNaN(eventStart.getTime())) return false;
-      
-      return (
-        eventStart.getDate() === day.getDate() &&
-        eventStart.getMonth() === day.getMonth() &&
-        eventStart.getFullYear() === day.getFullYear() &&
-        eventStart.getHours() === hour
-      );
-    } catch (error) {
-      console.error('Error al verificar inicio de evento:', error, event);
-      return false;
-    }
-  };
-
-  // Verificar si un evento está activo al inicio del día
-  const isEventActiveAtStartOfDay = (event, day) => {
-    try {
-      if (!event?.start || !event?.end) return false;
-      
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      
-      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
-      
-      // Medianoche del día
-      const dayStart = new Date(day);
-      dayStart.setHours(0, 0, 0, 0);
-      
-      // El evento comenzó antes de la medianoche y termina después
-      return eventStart < dayStart && eventEnd > dayStart;
-    } catch (error) {
-      console.error('Error al verificar evento activo al inicio del día:', error, event);
-      return false;
-    }
-  };
+  // Usar el nuevo hook para la lógica de la rejilla temporal
+  const {
+    hours,
+    shouldShowEventStart,
+    isEventActiveAtStartOfDay,
+    formatTimeSlot
+  } = useTimeGrid();
 
   // Renderizar eventos que continúan desde el día anterior
   const renderContinuingEvents = (day) => {
@@ -222,7 +176,7 @@ function TimeGrid({
       {hours.map((hour) => (
         <div key={hour} className="calendar-row">
           <div className="calendar-cell calendar-time">
-            {formatHour(hour)}
+            {formatTimeSlot(hour)}
           </div>
           
           {days.map((day, dayIndex) => (

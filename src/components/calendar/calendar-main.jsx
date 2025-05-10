@@ -1,14 +1,16 @@
-// calendar-main.jsx
+// calendar-main.jsx (refactorizado)
 import React, { useState, useEffect } from 'react';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import WeekView from './week-view';
 import DayView from './day-view';
 import EventForm from './event-form';
 import SnapControl from './snap-control';
+import Button from '../ui/button';
 import useCalendarEvents from '../../hooks/use-calendar-events';
 import useCalendarNavigation from '../../hooks/use-calendar-navigation';
 import useEventForm from '../../hooks/use-event-form';
 import { setupDebugTools } from '../../utils/debug-utils';
+import { CALENDAR_VIEWS, SNAP_VALUES } from '../../core/config/constants';
 import '../../styles/calendar/calendar-main.css';
 
 /**
@@ -26,8 +28,8 @@ function CalendarMain() {
   } = useCalendarEvents();
 
   // Estado de la vista y snap
-  const [view, setView] = useState('week'); // 'week' o 'day'
-  const [snapValue, setSnapValue] = useState(0); // 0 = desactivado por defecto
+  const [view, setView] = useState(CALENDAR_VIEWS.WEEK);
+  const [snapValue, setSnapValue] = useState(SNAP_VALUES.NONE);
   
   // Usar hook de navegación
   const {
@@ -86,49 +88,58 @@ function CalendarMain() {
     }
   };
 
+  // Renderizar botones de navegación según la vista actual
+  const renderNavigationButtons = () => {
+    if (view === CALENDAR_VIEWS.WEEK) {
+      return (
+        <>
+          <Button onClick={goToPreviousWeek}>Semana anterior</Button>
+          <Button onClick={goToCurrentWeek} variant="secondary">Semana actual</Button>
+          <Button onClick={goToNextWeek}>Semana siguiente</Button>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Button onClick={goToPreviousDay}>Día anterior</Button>
+          <Button onClick={goToToday} variant="secondary">Hoy</Button>
+          <Button onClick={goToNextDay}>Día siguiente</Button>
+        </>
+      );
+    }
+  };
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
         <div className="calendar-navigation">
-          {view === 'week' ? (
-            <>
-              <button onClick={goToPreviousWeek}>Semana anterior</button>
-              <button onClick={goToCurrentWeek}>Semana actual</button>
-              <button onClick={goToNextWeek}>Semana siguiente</button>
-            </>
-          ) : (
-            <>
-              <button onClick={goToPreviousDay}>Día anterior</button>
-              <button onClick={goToToday}>Hoy</button>
-              <button onClick={goToNextDay}>Día siguiente</button>
-            </>
-          )}
+          {renderNavigationButtons()}
         </div>
         <div className="calendar-view-toggle">
-          <button 
-            className={view === 'week' ? 'active' : ''} 
-            onClick={() => toggleView('week')}
+          <Button 
+            isActive={view === CALENDAR_VIEWS.WEEK} 
+            onClick={() => toggleView(CALENDAR_VIEWS.WEEK)}
           >
             Vista Semanal
-          </button>
-          <button 
-            className={view === 'day' ? 'active' : ''} 
-            onClick={() => toggleView('day', selectedDay)}
+          </Button>
+          <Button 
+            isActive={view === CALENDAR_VIEWS.DAY} 
+            onClick={() => toggleView(CALENDAR_VIEWS.DAY, selectedDay)}
           >
             Vista Diaria
-          </button>
+          </Button>
           <SnapControl
             snapValue={snapValue}
             onSnapChange={setSnapValue}
           />
         </div>
         <div className="calendar-title">
-          {view === 'week' && (
+          {view === CALENDAR_VIEWS.WEEK && (
             <h2>
               {new Date(currentDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
             </h2>
           )}
-          {view === 'day' && (
+          {view === CALENDAR_VIEWS.DAY && (
             <h2>
               {new Date(selectedDay).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
             </h2>
@@ -136,7 +147,7 @@ function CalendarMain() {
         </div>
       </div>
 
-      {view === 'week' ? (
+      {view === CALENDAR_VIEWS.WEEK ? (
         <WeekView 
           currentDate={currentDate}
           events={events}
