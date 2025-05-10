@@ -81,11 +81,14 @@ atlas-core/
 │   │   ├── use-calendar-events.jsx # Hook para eventos del calendario
 │   │   ├── use-time-grid.jsx     # Hook para rejilla temporal
 │   │   ├── use-event-drag.jsx    # Hook para arrastrar eventos
+│   │   ├── use-event-form.jsx    # Hook para formulario de eventos
+│   │   ├── use-calendar-navigation.jsx # Hook para navegación en el calendario
 │   │   └── use-event-resize.jsx  # Hook para redimensionar eventos
 │   │
 │   ├── utils/                    # Utilidades
 │   │   ├── date-utils.js         # Utilidades de fechas
 │   │   ├── time-utils.js         # Utilidades de tiempo
+│   │   ├── debug-utils.js        # Utilidades de depuración
 │   │   └── event-utils.js        # Utilidades para eventos
 │   │
 │   └── styles/                   # Estilos
