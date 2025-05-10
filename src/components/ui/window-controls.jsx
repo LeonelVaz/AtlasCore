@@ -1,22 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * Componente para los controles de ventana en Electron
- * Con íconos totalmente consistentes
+ * Con detección de estado maximizado y dos íconos diferentes
  */
 const WindowControls = () => {
   // Verificar si estamos en Electron
   const isElectron = window.electronAPI !== undefined;
+  const [isMaximized, setIsMaximized] = useState(false);
   
   // No renderizar nada si no estamos en Electron
   if (!isElectron) return null;
+  
+  // Efecto para detectar estado maximizado
+  useEffect(() => {
+    if (!isElectron) return;
+    
+    // Consultar estado inicial
+    window.electronAPI.isMaximized().then(setIsMaximized);
+    
+    // Suscribirse a cambios
+    const unsubscribe = window.electronAPI.onMaximizeChange((maximized) => {
+      setIsMaximized(maximized);
+    });
+    
+    return unsubscribe;
+  }, []);
   
   // Handlers para controles de ventana
   const handleMinimize = () => window.electronAPI.minimize();
   const handleMaximize = () => window.electronAPI.maximize();
   const handleClose = () => window.electronAPI.close();
 
-  // Uso de divs simples en lugar de SVGs para garantizar consistencia total
   return (
     <div className="window-controls">
       {/* Botón Minimizar */}
@@ -28,13 +43,17 @@ const WindowControls = () => {
         <div className="window-icon min-icon"></div>
       </button>
       
-      {/* Botón Maximizar */}
+      {/* Botón Maximizar/Restaurar */}
       <button 
         onClick={handleMaximize} 
         className="window-button max-button"
-        aria-label="Maximizar"
+        aria-label={isMaximized ? "Restaurar" : "Maximizar"}
       >
-        <div className="window-icon max-icon"></div>
+        {isMaximized ? (
+          <div className="window-icon restore-icon"></div>
+        ) : (
+          <div className="window-icon max-icon"></div>
+        )}
       </button>
       
       {/* Botón Cerrar */}

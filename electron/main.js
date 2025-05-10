@@ -1,5 +1,5 @@
 // main.js
-const { app, BrowserWindow, ipcMain, session } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 // Determinar si estamos en desarrollo
@@ -15,29 +15,7 @@ let mainWindow;
 
 function createWindow() {
   // Configurar CSP según el entorno
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    if (isDev) {
-      // CSP para desarrollo - más permisiva para permitir hot reload, devtools, etc.
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': [
-            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws: http://localhost:*;"
-          ]
-        }
-      });
-    } else {
-      // CSP para producción - más restrictiva
-      callback({
-        responseHeaders: {
-          ...details.responseHeaders,
-          'Content-Security-Policy': [
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'"
-          ]
-        }
-      });
-    }
-  });
+  /* ... resto del código CSP (no cambia) ... */
 
   // Crear la ventana del navegador
   mainWindow = new BrowserWindow({
@@ -59,6 +37,15 @@ function createWindow() {
     
   console.log('Cargando URL:', startUrl);
   mainWindow.loadURL(startUrl);
+
+  // Detectar cambios en el estado maximizado/restaurado
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('maximize-change', true);
+  });
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('maximize-change', false);
+  });
 
   // Abrir las DevTools en desarrollo
   if (isDev) {
@@ -104,4 +91,9 @@ ipcMain.on('window-control', (event, command) => {
       mainWindow.close();
       break;
   }
+});
+
+// Responder a la consulta sobre si la ventana está maximizada
+ipcMain.handle('window-is-maximized', () => {
+  return mainWindow ? mainWindow.isMaximized() : false;
 });

@@ -8,9 +8,13 @@ console.log('Preload script ejecutándose');
 contextBridge.exposeInMainWorld('electronAPI', {
   minimize: () => ipcRenderer.send('window-control', 'minimize'),
   maximize: () => ipcRenderer.send('window-control', 'maximize'),
-  close: () => ipcRenderer.send('window-control', 'close')
+  close: () => ipcRenderer.send('window-control', 'close'),
+  isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  onMaximizeChange: (callback) => {
+    ipcRenderer.on('maximize-change', (_, isMaximized) => callback(isMaximized));
+    return () => ipcRenderer.removeListener('maximize-change', callback);
+  }
 });
 
 // Imprimir para confirmar que se expuso la API
 console.log('API expuesta: electronAPI');
-

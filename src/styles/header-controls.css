@@ -64,7 +64,7 @@
 
 /* Clase común para todos los íconos */
 .window-icon {
-  opacity: 0.6; /* Consistencia en la opacidad */
+  opacity: 0.6; /* Transparencia ajustada a 0.6 */
   transition: opacity 0.1s ease;
 }
 
@@ -85,6 +85,39 @@
   height: 10px;
   border: 1px solid white;
   box-sizing: border-box;
+  border-radius: 1px; /* Curvatura sutil en las esquinas */
+}
+
+/* Ícono de restaurar (invertido horizontalmente) */
+.restore-icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+/* El cuadrado frontal (más pequeño) - ahora en esquina inferior izquierda */
+.restore-icon::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid white;
+  box-sizing: border-box;
+  border-radius: 1px;
+  bottom: 0;
+  left: 0; /* Cambiado de right a left para efecto espejo */
+}
+
+/* Las líneas que forman el cuadrado trasero - ahora en esquina superior derecha */
+.restore-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0; /* Cambiado de left a right para efecto espejo */
+  width: 5px;
+  height: 5px;
+  border-top: 1px solid white;
+  border-right: 1px solid white; /* Cambiado de border-left a border-right */
 }
 
 .close-icon {
