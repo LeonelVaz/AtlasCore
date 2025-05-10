@@ -1,20 +1,28 @@
 // calendar-main.jsx
 import React, { useState, useEffect } from 'react';
-import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import WeekView from './week-view';
 import DayView from './day-view';
 import EventForm from './event-form';
 import SnapControl from './snap-control';
-import storageService from '../../services/storage-service';
+import useCalendarEvents from '../../hooks/use-calendar-events';
 import '../../styles/calendar/calendar-main.css';
 
 /**
  * Componente principal del calendario con vista semanal y diaria
  */
 function CalendarMain() {
+  // Usar el hook personalizado para gestión de eventos
+  const { 
+    events, 
+    getEvents, 
+    createEvent, 
+    updateEvent, 
+    deleteEvent, 
+    saveEvents 
+  } = useCalendarEvents();
+
   // Estados principales
-  const [events, setEvents] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -30,13 +38,8 @@ function CalendarMain() {
     color: '#2d4b94' // Color predeterminado (Azul Atlas)
   });
 
-  // Obtener eventos actuales
-  const getEvents = () => events;
-
-  // Cargar eventos al iniciar y registrar módulo
+  // Registrar módulo al iniciar
   useEffect(() => {
-    loadEvents();
-    
     // Registrar API del calendario
     const moduleAPI = {
       getEvents,
@@ -46,14 +49,7 @@ function CalendarMain() {
     };
     registerModule('calendar', moduleAPI);
     
-    // Suscribirse a eventos de almacenamiento
-    const unsubscribe = eventBus.subscribe(
-      `${EventCategories.STORAGE}.eventsUpdated`, 
-      loadEvents
-    );
-    
     return () => { 
-      unsubscribe && unsubscribe(); 
       unregisterModule('calendar'); 
     };
   }, []);
@@ -119,110 +115,11 @@ function CalendarMain() {
     };
   }, [events]);
 
-  // Cargar eventos desde almacenamiento
-  const loadEvents = async () => {
-    try {
-      const storedEvents = await storageService.get('atlas_events', []);
-      
-      if (!Array.isArray(storedEvents)) {
-        console.error('Error: Los datos cargados no son un array válido de eventos');
-        setEvents([]);
-        return;
-      }
-      
-      // Filtrar eventos válidos
-      const validEvents = storedEvents.filter(event => {
-        try {
-          if (!event || typeof event !== 'object') return false;
-          if (!event.id || !event.title) return false;
-          if (!event.start || !event.end) return false;
-          
-          const startDate = new Date(event.start);
-          const endDate = new Date(event.end);
-          
-          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
-          
-          return true;
-        } catch (error) {
-          console.error('Error al procesar fechas del evento:', error, event);
-          return false;
-        }
-      });
-      
-      setEvents(validEvents);
-    } catch (error) {
-      console.error('Error al cargar eventos:', error);
-      setEvents([]);
-    }
-  };
-
-  // Guardar eventos en almacenamiento
-  const saveEvents = async (updatedEvents) => {
-    try {
-      if (!Array.isArray(updatedEvents)) {
-        console.error('Error: Intentando guardar eventos que no son un array');
-        return false;
-      }
-      
-      const result = await storageService.set('atlas_events', updatedEvents);
-      return result;
-    } catch (error) {
-      console.error('Error al guardar eventos:', error);
-      return false;
-    }
-  };
-
   // Cambiar entre vistas
   const toggleView = (newView, date = null) => {
     setView(newView);
     if (date) {
       setSelectedDay(new Date(date));
-    }
-  };
-
-  // Crear evento
-  const createEvent = (eventData) => {
-    try {
-      const newEventWithId = {
-        ...eventData,
-        id: Date.now().toString() // ID único basado en timestamp
-      };
-      
-      const updatedEvents = [...events, newEventWithId];
-      setEvents(updatedEvents);
-      saveEvents(updatedEvents);
-      return newEventWithId;
-    } catch (error) {
-      console.error('Error al crear evento:', error);
-      return null;
-    }
-  };
-
-  // Actualizar evento
-  const updateEvent = (eventId, eventData) => {
-    try {
-      const updatedEvents = events.map(event => 
-        event.id === eventId ? { ...eventData } : event
-      );
-      
-      setEvents(updatedEvents);
-      saveEvents(updatedEvents);
-      
-      return updatedEvents.find(e => e.id === eventId);
-    } catch (error) {
-      console.error('Error al actualizar evento:', error);
-      return null;
-    }
-  };
-
-  // Eliminar evento
-  const deleteEvent = (eventId) => {
-    try {
-      const updatedEvents = events.filter(event => event.id !== eventId);
-      setEvents(updatedEvents);
-      saveEvents(updatedEvents);
-    } catch (error) {
-      console.error('Error al eliminar evento:', error);
     }
   };
 
