@@ -30,25 +30,25 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ### 3.1 Creación de Eventos
 
-- [ ] 3.1.1 Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
-- [ ] 3.1.2 Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
-- [ ] 3.1.3 El nuevo evento recibe un ID único
-- [ ] 3.1.4 El nuevo evento se guarda en el almacenamiento
-- [ ] 3.1.5 El evento publica una notificación de actualización a través de EventBus
-- [ ] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
-- [ ] 3.1.7 Validación de fechas funciona al crear un nuevo evento
-- [ ] 3.1.8 La creación de eventos funciona correctamente en vista diaria
-- [ ] 3.1.9 La creación de eventos utiliza correctamente el nuevo componente Dialog
+- [x] 3.1.1 Al hacer clic en una franja horaria vacía, se abre un nuevo formulario de evento
+- [x] 3.1.2 Nuevo evento creado con valores predeterminados que coinciden con la hora del clic
+- [x] 3.1.3 El nuevo evento recibe un ID único
+- [x] 3.1.4 El nuevo evento se guarda en el almacenamiento
+- [x] 3.1.5 El evento publica una notificación de actualización a través de EventBus
+- [x] 3.1.6 El nuevo evento aparece en la cuadrícula del calendario tras su creación
+- [x] 3.1.7 Validación de fechas funciona al crear un nuevo evento
+- [x] 3.1.8 La creación de eventos funciona correctamente en vista diaria
+- [x] 3.1.9 La creación de eventos utiliza correctamente el nuevo componente Dialog
 
 ### 3.2 Edición de eventos
 
 - [ ] 3.2.1 Al hacer clic en un evento existente, se abre el formulario de edición
 - [ ] 3.2.2 El formulario de edición se rellena con los datos correctos del evento
-- [ ] 3.2.3 Los cambios en el evento se guardan correctamente
-- [ ] 3.2.4 El evento actualizado se guarda en el almacenamiento
+- [x] 3.2.3 Los cambios en el evento se guardan correctamente
+- [x] 3.2.4 El evento actualizado se guarda en el almacenamiento
 - [ ] 3.2.5 El evento publica una notificación de actualización a través de EventBus
-- [ ] 3.2.6 El evento actualizado aparece con los cambios en la cuadrícula del calendario
-- [ ] 3.2.7 Validación de fechas funciona al editar un evento existente
+- [x] 3.2.6 El evento actualizado aparece con los cambios en la cuadrícula del calendario
+- [x] 3.2.7 Validación de fechas funciona al editar un evento existente
 
 ### 3.3 Eliminación de eventos
 
