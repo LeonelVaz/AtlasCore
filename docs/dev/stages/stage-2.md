@@ -92,14 +92,22 @@ atlas-core/
 │   │   └── event-utils.js        # Utilidades para eventos
 │   │
 │   └── styles/                   # Estilos
-│       ├── index.css             # Estilos globales
+│       ├── index.css             # Estilos globales e importaciones
 │       ├── app.css               # Estilos para app.jsx
-│       ├── components/           # Estilos de componentes
-│       │   ├── calendar.css      # Estilos del calendario
-│       │   └── events.css        # Estilos de eventos
 │       │
-│       └── calendar/             # Estilos específicos del calendario
-│           └── calendar-main.css # Estilos para calendar-main.jsx
+│       ├── ui/                   # Estilos de componentes UI
+│       │   ├── index.css         # Importa estilos UI
+│       │   ├── button.css        # Estilos para botones
+│       │   └── dialog.css        # Estilos para diálogos
+│       │
+│       └── calendar/             # Estilos de componentes del calendario
+│           ├── index.css         # Importa estilos del calendario
+│           ├── calendar-main.css # Estilos para el componente principal
+│           ├── time-grid.css     # Estilos para la rejilla temporal
+│           ├── event-item.css    # Estilos para eventos
+│           ├── day-view.css      # Estilos para vista diaria
+│           ├── week-view.css     # Estilos para vista semanal
+│           └── snap-control.css  # Estilos para control de snap (imán)
 │
 └── docs/                         # Documentación del proyecto
     ├── dev/                      # Documentación para desarrolladores
