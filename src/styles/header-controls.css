@@ -64,8 +64,12 @@
 
 /* Clase común para todos los íconos */
 .window-icon {
-  opacity: 0.6; /* Transparencia ajustada a 0.6 */
-  transition: opacity 0.1s ease;
+  opacity: 0.5; /* Transparencia para ventana inactiva (60%) */
+}
+
+/* Cuando la ventana está enfocada, los íconos son más visibles */
+.window-focused .window-icon {
+  opacity: 0.9; /* Opacidad cuando la ventana está enfocada (90%) */
 }
 
 /* Cuando hacemos hover, los íconos se vuelven completamente opacos */
@@ -95,7 +99,7 @@
   height: 10px;
 }
 
-/* El cuadrado frontal (más pequeño) - ahora en esquina inferior izquierda */
+/* El cuadrado frontal (más pequeño) - en esquina inferior izquierda */
 .restore-icon::before {
   content: '';
   position: absolute;
@@ -105,19 +109,19 @@
   box-sizing: border-box;
   border-radius: 1px;
   bottom: 0;
-  left: 0; /* Cambiado de right a left para efecto espejo */
+  left: 0;
 }
 
-/* Las líneas que forman el cuadrado trasero - ahora en esquina superior derecha */
+/* Las líneas que forman el cuadrado trasero - en esquina superior derecha */
 .restore-icon::after {
   content: '';
   position: absolute;
   top: 0;
-  right: 0; /* Cambiado de left a right para efecto espejo */
+  right: 0;
   width: 5px;
   height: 5px;
   border-top: 1px solid white;
-  border-right: 1px solid white; /* Cambiado de border-left a border-right */
+  border-right: 1px solid white;
 }
 
 .close-icon {

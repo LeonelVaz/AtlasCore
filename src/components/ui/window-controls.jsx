@@ -2,29 +2,41 @@ import React, { useState, useEffect } from 'react';
 
 /**
  * Componente para los controles de ventana en Electron
- * Con detección de estado maximizado y dos íconos diferentes
+ * Con detección de estado maximizado y enfoque
  */
 const WindowControls = () => {
   // Verificar si estamos en Electron
   const isElectron = window.electronAPI !== undefined;
+  
+  // Estados para maximización y enfoque
   const [isMaximized, setIsMaximized] = useState(false);
+  const [isWindowFocused, setIsWindowFocused] = useState(true); // Asumimos enfocado por defecto
   
   // No renderizar nada si no estamos en Electron
   if (!isElectron) return null;
   
-  // Efecto para detectar estado maximizado
+  // Efecto para detectar estado maximizado y enfoque
   useEffect(() => {
     if (!isElectron) return;
     
-    // Consultar estado inicial
+    // Consultar estados iniciales
     window.electronAPI.isMaximized().then(setIsMaximized);
+    window.electronAPI.isFocused().then(setIsWindowFocused);
     
-    // Suscribirse a cambios
-    const unsubscribe = window.electronAPI.onMaximizeChange((maximized) => {
+    // Suscribirse a cambios de maximización
+    const unsubscribeMaximize = window.electronAPI.onMaximizeChange((maximized) => {
       setIsMaximized(maximized);
     });
     
-    return unsubscribe;
+    // Suscribirse a cambios de enfoque
+    const unsubscribeFocus = window.electronAPI.onFocusChange((focused) => {
+      setIsWindowFocused(focused);
+    });
+    
+    return () => {
+      unsubscribeMaximize && unsubscribeMaximize();
+      unsubscribeFocus && unsubscribeFocus();
+    };
   }, []);
   
   // Handlers para controles de ventana
@@ -33,7 +45,7 @@ const WindowControls = () => {
   const handleClose = () => window.electronAPI.close();
 
   return (
-    <div className="window-controls">
+    <div className={`window-controls ${isWindowFocused ? 'window-focused' : 'window-blurred'}`}>
       {/* Botón Minimizar */}
       <button 
         onClick={handleMinimize} 

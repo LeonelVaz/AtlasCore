@@ -47,6 +47,15 @@ function createWindow() {
     mainWindow.webContents.send('maximize-change', false);
   });
 
+  // Detectar cuando la ventana recibe o pierde el enfoque
+  mainWindow.on('focus', () => {
+    mainWindow.webContents.send('focus-change', true);
+  });
+
+  mainWindow.on('blur', () => {
+    mainWindow.webContents.send('focus-change', false);
+  });
+
   // Abrir las DevTools en desarrollo
   if (isDev) {
     mainWindow.webContents.openDevTools();
@@ -96,4 +105,9 @@ ipcMain.on('window-control', (event, command) => {
 // Responder a la consulta sobre si la ventana está maximizada
 ipcMain.handle('window-is-maximized', () => {
   return mainWindow ? mainWindow.isMaximized() : false;
+});
+
+// Responder a la consulta sobre si la ventana está enfocada
+ipcMain.handle('window-is-focused', () => {
+  return mainWindow ? mainWindow.isFocused() : false;
 });
