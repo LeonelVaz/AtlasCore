@@ -28,7 +28,7 @@ class WindowManager {
       icon: require('path').join(__dirname, '../public/favicon.ico'),
       frame: false, // Sin marco para personalizar los controles de ventana
       titleBarStyle: 'hidden',
-      backgroundColor: '#FFFFFF'
+      backgroundColor: '#141B2D'
     });
 
     // Cargar la aplicación
@@ -66,6 +66,11 @@ class WindowManager {
 
     ipcMain.on('window:close', () => {
       if (this.mainWindow) this.mainWindow.close();
+    });
+    
+    // Añadir un manejador para verificar si la ventana está maximizada
+    ipcMain.handle('window:isMaximized', () => {
+      return this.mainWindow ? this.mainWindow.isMaximized() : false;
     });
   }
 

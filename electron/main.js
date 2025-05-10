@@ -1,54 +1,107 @@
-/**
- * Punto de entrada principal para la aplicación Electron
- */
-
-const { app } = require('electron');
+// main.js
+const { app, BrowserWindow, ipcMain, session } = require('electron');
 const path = require('path');
-const url = require('url');
-const windowManager = require('./window-manager');
 
-// Este método será llamado cuando Electron haya terminado
-// la inicialización y esté listo para crear ventanas del navegador.
-app.on('ready', () => {
-  // Determinar la URL inicial
-  // En desarrollo, usar el servidor de Vite en localhost:3000
-  const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+// Determinar si estamos en desarrollo
+const isDev = !app.isPackaged;
+
+// Desactivar advertencias de seguridad en modo desarrollo
+if (isDev) {
+  process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true';
+}
+
+// Mantener una referencia global del objeto window
+let mainWindow;
+
+function createWindow() {
+  // Configurar CSP según el entorno
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    if (isDev) {
+      // CSP para desarrollo - más permisiva para permitir hot reload, devtools, etc.
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+            "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws: http://localhost:*;"
+          ]
+        }
+      });
+    } else {
+      // CSP para producción - más restrictiva
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          'Content-Security-Policy': [
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'"
+          ]
+        }
+      });
+    }
+  });
+
+  // Crear la ventana del navegador
+  mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    frame: false, // Sin marco para personalizar la ventana
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false
+    }
+  });
+
+  // Cargar la URL adecuada
   const startUrl = isDev
     ? 'http://localhost:3000'
-    : url.format({
-        pathname: path.join(__dirname, '../dist/index.html'),
-        protocol: 'file:',
-        slashes: true
-      });
-  
-  console.log('Iniciando Electron con URL:', startUrl);
-  
-  // Crear la ventana principal
-  windowManager.createMainWindow(startUrl);
-});
-
-// Salir cuando todas las ventanas estén cerradas
-app.on('window-all-closed', () => {
-  // En macOS es común para las aplicaciones permanecer
-  // activas en el menú dock hasta que el usuario salga explícitamente
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  // En macOS es común volver a crear una ventana en la aplicación cuando el
-  // icono del dock es clicado y no hay otras ventanas abiertas.
-  if (!windowManager.getMainWindow()) {
-    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-    const startUrl = isDev
-      ? 'http://localhost:3000'
-      : url.format({
-          pathname: path.join(__dirname, '../dist/index.html'),
-          protocol: 'file:',
-          slashes: true
-        });
+    : `file://${path.join(__dirname, '../dist/index.html')}`;
     
-    windowManager.createMainWindow(startUrl);
+  console.log('Cargando URL:', startUrl);
+  mainWindow.loadURL(startUrl);
+
+  // Abrir las DevTools en desarrollo
+  if (isDev) {
+    mainWindow.webContents.openDevTools();
+  }
+
+  // Gestionar cuando se cierra la ventana
+  mainWindow.on('closed', function () {
+    mainWindow = null;
+  });
+}
+
+// Este método se llamará cuando Electron haya terminado
+// la inicialización y esté listo para crear ventanas del navegador.
+app.whenReady().then(createWindow);
+
+// Salir cuando todas las ventanas estén cerradas, excepto en macOS
+app.on('window-all-closed', function () {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+// En macOS, recrear una ventana cuando se hace clic en el icono
+app.on('activate', function () {
+  if (mainWindow === null) createWindow();
+});
+
+// Escuchar los eventos de control de ventana
+ipcMain.on('window-control', (event, command) => {
+  console.log('Comando recibido:', command);
+  
+  switch(command) {
+    case 'minimize':
+      mainWindow.minimize();
+      break;
+    case 'maximize':
+      if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+      } else {
+        mainWindow.maximize();
+      }
+      break;
+    case 'close':
+      mainWindow.close();
+      break;
   }
 });

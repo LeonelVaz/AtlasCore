@@ -1,5 +1,5 @@
 /**
- * Estilos para el componente principal App
+ * Estilos para el componente principal App y controles de ventana
  */
 
  .app-container {
@@ -13,10 +13,16 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 0 16px;
   background-color: var(--color-atlas-blue);
   color: white;
-  box-shadow: 0 2px 4px var(--color-shadow);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 50px;
+}
+
+/* Hacer la barra de título arrastrable en Electron */
+.app-header.draggable {
+  -webkit-app-region: drag;
 }
 
 .app-logo h1 {
@@ -27,27 +33,50 @@
   letter-spacing: 1px;
 }
 
-.app-header-controls {
-  display: flex;
-  gap: var(--spacing-md);
-}
-
 .app-content {
   flex: 1;
   overflow: auto;
-  padding: var(--spacing-md);
+  padding: 16px;
   background-color: #f9f9f9;
+}
+
+/* Controles de ventana para Electron */
+.window-controls {
+  display: flex;
+  -webkit-app-region: no-drag; /* Importante: para que los botones sean clickeables */
+}
+
+.window-button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  color: white;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-app-region: no-drag;
+  cursor: pointer;
+  margin-left: 4px;
+  border-radius: 4px;
+}
+
+.window-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.close-button:hover {
+  background-color: #e81123;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .app-header {
-    flex-direction: column;
-    padding: var(--spacing-sm);
-    gap: var(--spacing-sm);
+    padding: 0 8px;
   }
   
   .app-content {
-    padding: var(--spacing-sm);
+    padding: 8px;
   }
 }
