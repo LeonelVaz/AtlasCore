@@ -5,6 +5,7 @@
 @import './ui/index.css';
 @import './calendar/index.css';
 @import './app.css';
+@import './header-controls.css';  /* Importación del nuevo archivo CSS */
 
 /**
  * Estilos globales para la aplicación Atlas
@@ -37,7 +38,8 @@
   --font-family-mono: 'Fira Mono', monospace;
 }
 
-/* Reset básico */
+/* El resto del archivo sigue igual... */
+
 * {
   box-sizing: border-box;
   margin: 0;
