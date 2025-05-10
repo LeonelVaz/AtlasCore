@@ -18,6 +18,7 @@ function EventItem({
   // Referencias y estado
   const eventRef = useRef(null);
   const [blockClicks, setBlockClicks] = useState(false);
+  const dragStartInfo = useRef({ x: 0, y: 0, time: 0 });
   
   // Custom hooks para drag y resize
   const { dragging, handleDragStart } = useEventDrag({
@@ -40,23 +41,45 @@ function EventItem({
   
   // Manejar clic para editar
   const handleClick = (e) => {
+    // Verificar si fue un clic simple o parte de un arrastre
+    const now = Date.now();
+    const timeDiff = now - dragStartInfo.current.time;
+    const distX = Math.abs(e.clientX - dragStartInfo.current.x);
+    const distY = Math.abs(e.clientY - dragStartInfo.current.y);
+    
+    // Si el clic es rápido (< 200ms) y no hubo movimiento significativo (< 5px)
+    const isSimpleClick = timeDiff < 200 && distX < 5 && distY < 5;
+    
     if (blockClicks) {
       e.preventDefault();
       e.stopPropagation();
       return;
     }
     
-    e.preventDefault();
-    e.stopPropagation();
+    if (isSimpleClick && !dragging && !resizing) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Clic en evento, abriendo editor...');
+      onClick(event);
+    }
+  };
+  
+  // Manejar inicio de arrastre
+  const handleMouseDown = (e) => {
+    // Ignorar si es el handle de resize
+    if (e.target.classList.contains('event-resize-handle')) {
+      return;
+    }
     
-    // Añadir retardo pequeño para asegurar que no es parte de un arrastre
-    setTimeout(() => {
-      // Verificar nuevamente que no hay arrastre o redimensionamiento en curso
-      if (!dragging && !resizing) {
-        console.log('Clic en evento, abriendo editor...');
-        onClick(event);
-      }
-    }, 10);
+    // Guardar información de inicio para detectar si es clic o arrastre
+    dragStartInfo.current = {
+      x: e.clientX,
+      y: e.clientY,
+      time: Date.now()
+    };
+    
+    // Iniciar posible arrastre (tendrá efecto solo si se mueve el mouse)
+    handleDragStart(e);
   };
   
   // Desbloquear clics en caso de error
@@ -76,13 +99,12 @@ function EventItem({
                   ${continuesNextDay ? 'continues-next-day' : ''} 
                   ${continuesFromPrevDay ? 'continues-from-prev-day' : ''}`}
       style={{ backgroundColor: event.color }}
-      onMouseDown={(e) => handleDragStart(e)}
+      onMouseDown={handleMouseDown}
       onClick={handleClick}
       data-event-id={event.id}
     >
-      {/* Usando divs con evento de clic explícito para mejorar la interacción */}
-      <div className="event-title" onClick={handleClick}>{event.title}</div>
-      <div className="event-time" onClick={handleClick}>{formatEventTime(event)}</div>
+      <div className="event-title">{event.title}</div>
+      <div className="event-time">{formatEventTime(event)}</div>
       
       {/* Solo mostrar el handle de redimensionamiento si no continúa al día siguiente */}
       {!continuesNextDay && ( 

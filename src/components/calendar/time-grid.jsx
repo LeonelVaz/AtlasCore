@@ -1,21 +1,19 @@
-// day-view.jsx
+// time-grid.jsx
 import React from 'react';
-import { formatHour, formatDate } from '../../utils/date-utils';
 import EventItem from './event-item';
+import { formatHour } from '../../utils/date-utils';
+import '../../styles/components/snap-control.css';
 
-/**
- * Componente de vista diaria para el calendario
- * Muestra los eventos de un solo día con mayor detalle
- */
-function DayView({ 
-  date, 
+function TimeGrid({ 
+  days, 
   events, 
   onEventClick, 
-  onTimeSlotClick,
-  onUpdate,  // Ahora espera dos parámetros (eventId, eventData)
-  snapValue = 0 // Valor de snap en minutos (0 = desactivado)
+  onCellClick, 
+  onUpdateEvent, 
+  snapValue,
+  renderDayHeader 
 }) {
-  // Generar las horas del día (de 0 a 23)
+  // Generar horas del día
   const generateHours = () => {
     const hours = [];
     for (let i = 0; i < 24; i++) {
@@ -24,8 +22,10 @@ function DayView({
     return hours;
   };
 
-  // Verificar si un evento comienza exactamente en esta hora
-  const shouldShowEventStart = (event, hour) => {
+  const hours = generateHours();
+
+  // Verificar si un evento comienza exactamente en esta celda
+  const shouldShowEventStart = (event, day, hour) => {
     try {
       if (!event?.start) return false;
       
@@ -34,19 +34,19 @@ function DayView({
       if (isNaN(eventStart.getTime())) return false;
       
       return (
-        eventStart.getDate() === date.getDate() &&
-        eventStart.getMonth() === date.getMonth() &&
-        eventStart.getFullYear() === date.getFullYear() &&
+        eventStart.getDate() === day.getDate() &&
+        eventStart.getMonth() === day.getMonth() &&
+        eventStart.getFullYear() === day.getFullYear() &&
         eventStart.getHours() === hour
       );
     } catch (error) {
-      console.error('Error al verificar inicio de evento en vista diaria:', error, event);
+      console.error('Error al verificar inicio de evento:', error, event);
       return false;
     }
   };
-  
-  // Verificar si un evento está activo durante la hora (para eventos que continúan del día anterior)
-  const isEventActiveAtStartOfDay = (event) => {
+
+  // Verificar si un evento está activo al inicio del día
+  const isEventActiveAtStartOfDay = (event, day) => {
     try {
       if (!event?.start || !event?.end) return false;
       
@@ -55,8 +55,8 @@ function DayView({
       
       if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
       
-      // Medianoche del día actual
-      const dayStart = new Date(date);
+      // Medianoche del día
+      const dayStart = new Date(day);
       dayStart.setHours(0, 0, 0, 0);
       
       // El evento comenzó antes de la medianoche y termina después
@@ -67,22 +67,22 @@ function DayView({
     }
   };
 
-  // Renderizar eventos para la primera hora del día (00:00)
-  const renderContinuingEvents = () => {
+  // Renderizar eventos que continúan desde el día anterior
+  const renderContinuingEvents = (day) => {
     try {
       // Filtrar eventos que continúan desde el día anterior
-      const continuingEvents = events.filter(isEventActiveAtStartOfDay);
+      const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
       
       return continuingEvents.map(event => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
         
         // Normalizar día a medianoche
-        const dayStart = new Date(date);
+        const dayStart = new Date(day);
         dayStart.setHours(0, 0, 0, 0);
         
         // Fin del día (23:59:59.999)
-        const dayEnd = new Date(date);
+        const dayEnd = new Date(day);
         dayEnd.setHours(23, 59, 59, 999);
         
         // Calcular si continúa al día siguiente
@@ -107,15 +107,14 @@ function DayView({
           <div 
             className={`event-wrapper continues-from-prev-day ${continuesNextDay ? 'continues-next-day' : ''}`} 
             style={eventStyle} 
-            key={`continuing-${event.id}`}
+            key={`continuing-${event.id}-${day.getDate()}`}
           >
             <EventItem
               key={event.id}
               event={event}
               onClick={onEventClick}
               onUpdate={(updatedEvent) => {
-                // Modificado: Ahora pasamos el ID y el evento
-                onUpdate(updatedEvent.id, updatedEvent);
+                onUpdateEvent(updatedEvent.id, updatedEvent);
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={true}
@@ -125,35 +124,35 @@ function DayView({
         );
       });
     } catch (error) {
-      console.error('Error al renderizar eventos que continúan en vista diaria:', error);
+      console.error('Error al renderizar eventos que continúan:', error);
       return null;
     }
   };
 
-  // Renderizar eventos que comienzan en una hora específica
-  const renderEvents = (hour) => {
+  // Renderizar eventos en la celda
+  const renderEvents = (day, hour) => {
     try {
-      // Si es la primera hora del día, mostrar los eventos que continúan del día anterior
+      // Si es la primera hora del día, mostrar eventos que continúan del día anterior
       if (hour === 0) {
-        const continuingEvents = renderContinuingEvents();
+        const continuingEvents = renderContinuingEvents(day);
         if (continuingEvents && continuingEvents.length > 0) {
           return continuingEvents;
         }
       }
       
-      // Eventos que comienzan exactamente en esta hora
-      const eventsStartingThisHour = events.filter(event => shouldShowEventStart(event, hour));
+      // Eventos que comienzan exactamente en esta celda
+      const eventsStartingThisHour = events.filter(event => shouldShowEventStart(event, day, hour));
       
       return eventsStartingThisHour.map(event => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
         
         // Normalizar día a medianoche
-        const dayStart = new Date(date);
+        const dayStart = new Date(day);
         dayStart.setHours(0, 0, 0, 0);
         
         // Fin del día (23:59:59.999)
-        const dayEnd = new Date(date);
+        const dayEnd = new Date(day);
         dayEnd.setHours(23, 59, 59, 999);
         
         // Calcular si continúa al día siguiente
@@ -181,15 +180,14 @@ function DayView({
           <div 
             className={`event-wrapper ${continuesNextDay ? 'continues-next-day' : ''}`} 
             style={eventStyle} 
-            key={`starting-${event.id}-${hour}`}
+            key={`starting-${event.id}-${day.getDate()}-${hour}`}
           >
             <EventItem
               key={event.id}
               event={event}
               onClick={onEventClick}
               onUpdate={(updatedEvent) => {
-                // Modificado: Ahora pasamos el ID y el evento
-                onUpdate(updatedEvent.id, updatedEvent);
+                onUpdateEvent(updatedEvent.id, updatedEvent);
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={false}
@@ -199,44 +197,48 @@ function DayView({
         );
       });
     } catch (error) {
-      console.error('Error al renderizar eventos en vista diaria:', error);
+      console.error('Error al renderizar eventos:', error);
       return null;
     }
   };
 
-  const hours = generateHours();
-
   return (
-    <div className="day-view-container">
-      <div className="day-view-header">
-        <h3 className="day-view-title">
-          {formatDate(date, { 
-            weekday: 'long', 
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}
-        </h3>
-      </div>
-
-      <div className="day-view-timeline">
-        {hours.map((hour) => (
-          <div key={hour} className="day-view-hour-row">
-            <div className="day-view-hour-label">
-              {formatHour(hour)}
-            </div>
-            <div 
-              className="day-view-hour-slot"
-              onClick={() => onTimeSlotClick(date, hour)}
-              data-testid="day-view-hour-slot"
-            >
-              {renderEvents(hour)}
-            </div>
+    <div className="calendar-grid">
+      {/* Encabezado con días */}
+      <div className="calendar-row calendar-header-row">
+        <div className="calendar-cell calendar-time-header"></div>
+        {days.map((day, index) => (
+          <div 
+            key={index} 
+            className="calendar-cell calendar-day-header"
+            data-testid="calendar-day-header"
+          >
+            {renderDayHeader(day)}
           </div>
         ))}
       </div>
+
+      {/* Rejilla horaria */}
+      {hours.map((hour) => (
+        <div key={hour} className="calendar-row">
+          <div className="calendar-cell calendar-time">
+            {formatHour(hour)}
+          </div>
+          
+          {days.map((day, dayIndex) => (
+            <div 
+              key={dayIndex} 
+              className="calendar-cell calendar-time-slot"
+              data-testid="calendar-time-slot"
+              onClick={() => onCellClick(day, hour)}
+            >
+              {renderEvents(day, hour)}
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
 
-export default DayView;
+export default TimeGrid;

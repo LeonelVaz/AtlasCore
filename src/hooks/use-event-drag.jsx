@@ -1,3 +1,5 @@
+// use-event-drag.jsx
+
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
 
@@ -76,16 +78,15 @@ export function useEventDrag({
 
   // Iniciar arrastre
   const handleDragStart = (e) => {
-    // Verificar si se hizo clic en el título o la hora (permitir interacción normal)
-    if (e.target.classList.contains('event-title') || 
-        e.target.classList.contains('event-time')) {
+    // Verificar si se hace clic en el handle de resize (que debe seguir funcionando solo para resize)
+    if (e.target.classList.contains('event-resize-handle')) {
       return;
     }
     
     e.preventDefault();
     e.stopPropagation();
     
-    setBlockClicks(true);
+    // No bloquear clics inmediatamente, solo cuando se confirme el arrastre
     
     const gridInfo = initializeGridInfo(eventRef, gridSize, event);
     
@@ -114,19 +115,7 @@ export function useEventDrag({
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     
-    document.body.classList.add('dragging-active');
-    
-    // Si snap está activo, añadir clase especial
-    if (snapValue > 0) {
-      document.body.classList.add('snap-active');
-    }
-    
-    setTimeout(() => {
-      if (dragInfo.current.dragging) {
-        setDragging(true);
-        if (eventRef.current) eventRef.current.classList.add('dragging');
-      }
-    }, 100);
+    // No activar clases ni estado de arrastre hasta que haya movimiento real
   };
   
   // Manejar movimiento durante el arrastre
@@ -136,10 +125,24 @@ export function useEventDrag({
     const deltaX = e.clientX - dragInfo.current.startX;
     const deltaY = e.clientY - dragInfo.current.startY;
     
-    const movedSignificantly = Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3;
+    const movedSignificantly = Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5;
+    
+    if (movedSignificantly && !dragInfo.current.moved) {
+      // Primera vez que se detecta movimiento significativo, iniciar arrastre real
+      dragInfo.current.moved = true;
+      setBlockClicks(true);
+      document.body.classList.add('dragging-active');
+      
+      // Si snap está activo, añadir clase especial
+      if (snapValue > 0) {
+        document.body.classList.add('snap-active');
+      }
+      
+      setDragging(true);
+      if (eventRef.current) eventRef.current.classList.add('dragging');
+    }
     
     if (movedSignificantly) {
-      dragInfo.current.moved = true;
       dragInfo.current.deltaX = deltaX;
       dragInfo.current.deltaY = deltaY;
       
@@ -187,24 +190,16 @@ export function useEventDrag({
     dragInfo.current.endTime = Date.now();
     
     const wasActuallyDragged = dragInfo.current.moved;
-    const wasJustAClick = !wasActuallyDragged && 
-                         (dragInfo.current.endTime - dragInfo.current.startTime < 300);
     
-    // Si fue solo un clic, liberar para que se maneje como clic
-    if (wasJustAClick) {
+    // Si no hubo movimiento real, permitir que se maneje como clic
+    if (!wasActuallyDragged) {
       if (eventRef.current) {
         eventRef.current.classList.remove('dragging');
         eventRef.current.style.transform = '';
       }
       
       setDragging(false);
-      
       dragInfo.current = { dragging: false };
-      
-      setTimeout(() => {
-        setBlockClicks(false);
-      }, 300);
-      
       return;
     }
     
@@ -270,7 +265,7 @@ export function useEventDrag({
         onUpdate(updatedEvent);
       }
       
-      // Desactivar bloqueo de clics
+      // Desactivar bloqueo de clics después de un tiempo
       setTimeout(() => {
         setBlockClicks(false);
       }, 300);

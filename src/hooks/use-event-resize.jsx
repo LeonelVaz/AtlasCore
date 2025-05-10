@@ -1,3 +1,5 @@
+// use-event-resize.jsx
+
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, calculatePreciseTimeChange } from '../utils/event-utils';
 

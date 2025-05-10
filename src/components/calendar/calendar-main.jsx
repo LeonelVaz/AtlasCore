@@ -1,20 +1,13 @@
 // calendar-main.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../../core/bus/event-bus';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
-import { 
-  getFirstDayOfWeek, 
-  formatDate, 
-  formatHour, 
-  generateWeekDays 
-} from '../../utils/date-utils';
+import WeekView from './week-view';
 import DayView from './day-view';
-import EventItem from './event-item';
+import EventForm from './event-form';
 import SnapControl from './snap-control';
 import storageService from '../../services/storage-service';
 import '../../styles/calendar/calendar-main.css';
-import '../../styles/components/events.css';
-import '../../styles/components/snap-control.css';
 
 /**
  * Componente principal del calendario con vista semanal y diaria
@@ -140,28 +133,14 @@ function CalendarMain() {
       // Filtrar eventos válidos
       const validEvents = storedEvents.filter(event => {
         try {
-          if (!event || typeof event !== 'object') {
-            console.error('Error: Evento no válido detectado', event);
-            return false;
-          }
-          
-          if (!event.id || !event.title) {
-            console.error('Error: Evento sin ID o título detectado', event);
-            return false;
-          }
-          
-          if (!event.start || !event.end) {
-            console.error('Error: Evento sin fechas detectado', event);
-            return false;
-          }
+          if (!event || typeof event !== 'object') return false;
+          if (!event.id || !event.title) return false;
+          if (!event.start || !event.end) return false;
           
           const startDate = new Date(event.start);
           const endDate = new Date(event.end);
           
-          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            console.error('Error: Evento con fechas inválidas detectado', event);
-            return false;
-          }
+          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
           
           return true;
         } catch (error) {
@@ -264,13 +243,21 @@ function CalendarMain() {
     setCurrentDate(new Date());
   };
 
-  // Generar horas del día
-  const generateHours = () => {
-    const hours = [];
-    for (let i = 0; i < 24; i++) {
-      hours.push(i);
-    }
-    return hours;
+  // Manejar navegación de días en vista diaria
+  const goToPreviousDay = () => {
+    const prevDay = new Date(selectedDay);
+    prevDay.setDate(prevDay.getDate() - 1);
+    setSelectedDay(prevDay);
+  };
+
+  const goToNextDay = () => {
+    const nextDay = new Date(selectedDay);
+    nextDay.setDate(nextDay.getDate() + 1);
+    setSelectedDay(nextDay);
+  };
+
+  const goToToday = () => {
+    setSelectedDay(new Date());
   };
 
   // Manejar clic en celda para crear evento
@@ -450,187 +437,6 @@ function CalendarMain() {
     }
   };
 
-  // Verificar si un evento comienza exactamente en esta celda
-  const shouldShowEventStart = (event, day, hour) => {
-    try {
-      if (!event?.start) return false;
-      
-      const eventStart = new Date(event.start);
-      
-      if (isNaN(eventStart.getTime())) return false;
-      
-      return (
-        eventStart.getDate() === day.getDate() &&
-        eventStart.getMonth() === day.getMonth() &&
-        eventStart.getFullYear() === day.getFullYear() &&
-        eventStart.getHours() === hour
-      );
-    } catch (error) {
-      console.error('Error al verificar inicio de evento:', error, event);
-      return false;
-    }
-  };
-
-  // Verificar si un evento está activo al inicio del día
-  const isEventActiveAtStartOfDay = (event, day) => {
-    try {
-      if (!event?.start || !event?.end) return false;
-      
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      
-      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
-      
-      // Medianoche del día
-      const dayStart = new Date(day);
-      dayStart.setHours(0, 0, 0, 0);
-      
-      // El evento comenzó antes de la medianoche y termina después
-      return eventStart < dayStart && eventEnd > dayStart;
-    } catch (error) {
-      console.error('Error al verificar evento activo al inicio del día:', error, event);
-      return false;
-    }
-  };
-
-  // Renderizar eventos que continúan desde el día anterior
-  const renderContinuingEvents = (day) => {
-    try {
-      // Filtrar eventos que continúan desde el día anterior
-      const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
-      
-      return continuingEvents.map(event => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
-        
-        // Normalizar día a medianoche
-        const dayStart = new Date(day);
-        dayStart.setHours(0, 0, 0, 0);
-        
-        // Fin del día (23:59:59.999)
-        const dayEnd = new Date(day);
-        dayEnd.setHours(23, 59, 59, 999);
-        
-        // Calcular si continúa al día siguiente
-        const continuesNextDay = eventEnd > dayEnd;
-        const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
-        
-        // Calcular altura basada en duración visible desde medianoche
-        const durationMs = visibleEnd.getTime() - dayStart.getTime();
-        const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * 60));
-        
-        const eventStyle = {
-          position: 'absolute',
-          top: 0,
-          height: `${heightPx}px`,
-          left: '2px',
-          right: '2px',
-          zIndex: 20
-        };
-        
-        return (
-          <div 
-            className={`event-wrapper continues-from-prev-day ${continuesNextDay ? 'continues-next-day' : ''}`} 
-            style={eventStyle} 
-            key={`continuing-${event.id}-${day.getDate()}`}
-          >
-            <EventItem
-              key={event.id}
-              event={event}
-              onClick={handleEventClick}
-              onUpdate={(updatedEvent) => {
-                updateEvent(updatedEvent.id, updatedEvent);
-              }}
-              continuesNextDay={continuesNextDay}
-              continuesFromPrevDay={true}
-              snapValue={snapValue}
-            />
-          </div>
-        );
-      });
-    } catch (error) {
-      console.error('Error al renderizar eventos que continúan:', error);
-      return null;
-    }
-  };
-
-  // Renderizar eventos en la celda
-  const renderEvents = (day, hour) => {
-    try {
-      // Si es la primera hora del día, mostrar eventos que continúan del día anterior
-      if (hour === 0) {
-        const continuingEvents = renderContinuingEvents(day);
-        if (continuingEvents && continuingEvents.length > 0) {
-          return continuingEvents;
-        }
-      }
-      
-      // Eventos que comienzan exactamente en esta celda
-      const eventsStartingThisHour = events.filter(event => shouldShowEventStart(event, day, hour));
-      
-      return eventsStartingThisHour.map(event => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
-        
-        // Normalizar día a medianoche
-        const dayStart = new Date(day);
-        dayStart.setHours(0, 0, 0, 0);
-        
-        // Fin del día (23:59:59.999)
-        const dayEnd = new Date(day);
-        dayEnd.setHours(23, 59, 59, 999);
-        
-        // Calcular si continúa al día siguiente
-        const continuesNextDay = eventEnd > dayEnd;
-        const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
-        
-        // Offset basado en minutos
-        const topOffset = (eventStart.getMinutes() / 60) * 60;
-        
-        // Calcular duración visible
-        const durationMs = visibleEnd.getTime() - eventStart.getTime();
-        const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * 60));
-        
-        const eventStyle = {
-          position: 'absolute',
-          top: `${topOffset}px`,
-          height: `${heightPx}px`,
-          left: '2px',
-          right: '2px',
-          zIndex: 20
-        };
-        
-        return (
-          <div 
-            className={`event-wrapper ${continuesNextDay ? 'continues-next-day' : ''}`} 
-            style={eventStyle} 
-            key={`starting-${event.id}-${day.getDate()}-${hour}`}
-          >
-            <EventItem
-              key={event.id}
-              event={event}
-              onClick={handleEventClick}
-              onUpdate={(updatedEvent) => {
-                updateEvent(updatedEvent.id, updatedEvent);
-              }}
-              continuesNextDay={continuesNextDay}
-              continuesFromPrevDay={false}
-              snapValue={snapValue}
-            />
-          </div>
-        );
-      });
-    } catch (error) {
-      console.error('Error al renderizar eventos:', error);
-      return null;
-    }
-  };
-
-  const weekDays = generateWeekDays(currentDate);
-  const hours = generateHours();
-
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -643,17 +449,9 @@ function CalendarMain() {
             </>
           ) : (
             <>
-              <button onClick={() => {
-                const prevDay = new Date(selectedDay);
-                prevDay.setDate(prevDay.getDate() - 1);
-                setSelectedDay(prevDay);
-              }}>Día anterior</button>
-              <button onClick={() => setSelectedDay(new Date())}>Hoy</button>
-              <button onClick={() => {
-                const nextDay = new Date(selectedDay);
-                nextDay.setDate(nextDay.getDate() + 1);
-                setSelectedDay(nextDay);
-              }}>Día siguiente</button>
+              <button onClick={goToPreviousDay}>Día anterior</button>
+              <button onClick={goToToday}>Hoy</button>
+              <button onClick={goToNextDay}>Día siguiente</button>
             </>
           )}
         </div>
@@ -676,9 +474,9 @@ function CalendarMain() {
           />
         </div>
         <div className="calendar-title">
-          {view === 'week' && weekDays.length > 0 && (
+          {view === 'week' && (
             <h2>
-              {new Date(weekDays[0]).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+              {new Date(currentDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
             </h2>
           )}
           {view === 'day' && (
@@ -690,127 +488,35 @@ function CalendarMain() {
       </div>
 
       {view === 'week' ? (
-        <div className="calendar-grid">
-          {/* Encabezado con días */}
-          <div className="calendar-row calendar-header-row">
-            <div className="calendar-cell calendar-time-header"></div>
-            {weekDays.map((day, index) => (
-              <div 
-                key={index} 
-                className="calendar-cell calendar-day-header"
-                data-testid="calendar-day-header"
-              >
-                {formatDate(day, { 
-                  weekday: 'short', 
-                  day: 'numeric', 
-                  month: 'short' 
-                })}
-              </div>
-            ))}
-          </div>
-
-          {/* Rejilla horaria */}
-          {hours.map((hour) => (
-            <div key={hour} className="calendar-row">
-              <div className="calendar-cell calendar-time">
-                {formatHour(hour)}
-              </div>
-              
-              {weekDays.map((day, dayIndex) => (
-                <div 
-                  key={dayIndex} 
-                  className="calendar-cell calendar-time-slot"
-                  data-testid="calendar-time-slot"
-                  onClick={() => handleCellClick(day, hour)}
-                >
-                  {renderEvents(day, hour)}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+        <WeekView 
+          currentDate={currentDate}
+          events={events}
+          onEventClick={handleEventClick}
+          onCellClick={handleCellClick}
+          onUpdateEvent={updateEvent}
+          snapValue={snapValue}
+        />
       ) : (
         <DayView 
           date={selectedDay}
           events={events}
           onEventClick={handleEventClick}
           onTimeSlotClick={handleCellClick}
-          onUpdate={(updatedEvent) => {
-            updateEvent(updatedEvent.id, updatedEvent);
-          }}
+          onUpdate={updateEvent}
           snapValue={snapValue}
         />
       )}
 
-      {/* Formulario de evento */}
       {showEventForm && (
-        <div className="event-form-overlay" data-testid="event-form-overlay">
-          <div className="event-form">
-            <h3>{selectedEvent ? 'Editar evento' : 'Nuevo evento'}</h3>
-            
-            {formError && (
-              <div className="form-error" style={{ color: 'red', marginBottom: '10px' }}>
-                {formError}
-              </div>
-            )}
-            
-            <div className="form-group">
-              <label htmlFor="event-title">Título:</label>
-              <input 
-                id="event-title"
-                type="text" 
-                name="title" 
-                value={newEvent.title} 
-                onChange={handleEventFormChange} 
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="event-start">Inicio:</label>
-              <input 
-                id="event-start"
-                type="datetime-local" 
-                name="start" 
-                value={newEvent.startFormatted} 
-                onChange={handleEventFormChange} 
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="event-end">Fin:</label>
-              <input 
-                id="event-end"
-                type="datetime-local" 
-                name="end" 
-                value={newEvent.endFormatted} 
-                onChange={handleEventFormChange} 
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="event-color">Color:</label>
-              <input 
-                id="event-color"
-                type="color" 
-                name="color" 
-                value={newEvent.color} 
-                onChange={handleEventFormChange} 
-              />
-            </div>
-            
-            <div className="form-actions">
-              <button onClick={handleSaveEvent}>Guardar</button>
-              {selectedEvent && (
-                <button onClick={handleDeleteEvent} className="delete-button">
-                  Eliminar
-                </button>
-              )}
-              <button onClick={handleCloseForm}>
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
+        <EventForm
+          event={newEvent}
+          error={formError}
+          isEditing={Boolean(selectedEvent)}
+          onSave={handleSaveEvent}
+          onChange={handleEventFormChange}
+          onDelete={handleDeleteEvent}
+          onClose={handleCloseForm}
+        />
       )}
     </div>
   );
