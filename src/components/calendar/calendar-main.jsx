@@ -1,4 +1,4 @@
-// calendar-main.jsx (refactorizado)
+// calendar-main.jsx 
 import React, { useState, useEffect } from 'react';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import WeekView from './week-view';
@@ -11,7 +11,6 @@ import useCalendarNavigation from '../../hooks/use-calendar-navigation';
 import useEventForm from '../../hooks/use-event-form';
 import { setupDebugTools } from '../../utils/debug-utils';
 import { CALENDAR_VIEWS, SNAP_VALUES } from '../../core/config/constants';
-
 
 /**
  * Componente principal del calendario con vista semanal y diaria

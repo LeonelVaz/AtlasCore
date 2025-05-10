@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { SNAP_VALUES } from '../../core/config/constants';
 
 /**
  * Componente de control de imán (snap) para alineación automática de eventos
@@ -7,12 +8,12 @@ function SnapControl({ snapValue, onSnapChange }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   
-  // Opciones predefinidas de snap
+  // Opciones predefinidas de snap usando constantes
   const snapOptions = [
-    { label: 'Desactivado', value: 0 },
-    { label: 'Básico (1h)', value: 60 },
-    { label: 'Medio (30m)', value: 30 },
-    { label: 'Preciso (15m)', value: 15 },
+    { label: 'Desactivado', value: SNAP_VALUES.NONE },
+    { label: 'Básico (1h)', value: SNAP_VALUES.BASIC },
+    { label: 'Medio (30m)', value: SNAP_VALUES.MEDIUM },
+    { label: 'Preciso (15m)', value: SNAP_VALUES.PRECISE },
     { label: 'Personalizado', value: 'custom' }
   ];
   
@@ -40,10 +41,10 @@ function SnapControl({ snapValue, onSnapChange }) {
   
   // Obtener etiqueta para mostrar
   const getSnapLabel = () => {
-    if (snapValue === 0) return 'Off';
-    if (snapValue === 60) return '1h';
-    if (snapValue === 30) return '30m';
-    if (snapValue === 15) return '15m';
+    if (snapValue === SNAP_VALUES.NONE) return 'Off';
+    if (snapValue === SNAP_VALUES.BASIC) return '1h';
+    if (snapValue === SNAP_VALUES.MEDIUM) return '30m';
+    if (snapValue === SNAP_VALUES.PRECISE) return '15m';
     return `${snapValue}m`;
   };
   
@@ -74,7 +75,7 @@ function SnapControl({ snapValue, onSnapChange }) {
     <div className="snap-control-container">
       <button 
         className={`snap-control-toggle ${snapValue > 0 ? 'active' : ''}`}
-        onClick={() => onSnapChange(snapValue > 0 ? 0 : 60)} // Toggle entre desactivado y básico (1h)
+        onClick={() => onSnapChange(snapValue > 0 ? SNAP_VALUES.NONE : SNAP_VALUES.BASIC)} // Toggle entre desactivado y básico (1h)
         title="Activar/Desactivar imán"
       >
         <span className="snap-icon">⌁</span>

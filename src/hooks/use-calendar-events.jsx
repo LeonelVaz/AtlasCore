@@ -1,7 +1,8 @@
-// use-calendar-events.jsx
+// use-calendar-events.jsx (actualizado para usar constantes)
 import { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../core/bus/event-bus';
 import storageService from '../services/storage-service';
+import { STORAGE_KEYS, EVENT_OPERATIONS } from '../core/config/constants';
 
 /**
  * Hook para la gestión de eventos del calendario
@@ -27,7 +28,7 @@ function useCalendarEvents() {
   // Cargar eventos desde almacenamiento
   const loadEvents = async () => {
     try {
-      const storedEvents = await storageService.get('atlas_events', []);
+      const storedEvents = await storageService.get(STORAGE_KEYS.EVENTS, []);
       
       if (!Array.isArray(storedEvents)) {
         console.error('Error: Los datos cargados no son un array válido de eventos');
@@ -69,7 +70,7 @@ function useCalendarEvents() {
         return false;
       }
       
-      const result = await storageService.set('atlas_events', updatedEvents);
+      const result = await storageService.set(STORAGE_KEYS.EVENTS, updatedEvents);
       return result;
     } catch (error) {
       console.error('Error al guardar eventos:', error);
@@ -88,6 +89,10 @@ function useCalendarEvents() {
       const updatedEvents = [...events, newEventWithId];
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
+      
+      // Publicar evento de creación
+      eventBus.publish(`${EventCategories.CALENDAR}.${EVENT_OPERATIONS.CREATE}`, newEventWithId);
+      
       return newEventWithId;
     } catch (error) {
       console.error('Error al crear evento:', error);
@@ -105,7 +110,14 @@ function useCalendarEvents() {
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
       
-      return updatedEvents.find(e => e.id === eventId);
+      const updatedEvent = updatedEvents.find(e => e.id === eventId);
+      
+      // Publicar evento de actualización
+      if (updatedEvent) {
+        eventBus.publish(`${EventCategories.CALENDAR}.${EVENT_OPERATIONS.UPDATE}`, updatedEvent);
+      }
+      
+      return updatedEvent;
     } catch (error) {
       console.error('Error al actualizar evento:', error);
       return null;
@@ -115,9 +127,16 @@ function useCalendarEvents() {
   // Eliminar evento
   const deleteEvent = (eventId) => {
     try {
+      const eventToDelete = events.find(e => e.id === eventId);
       const updatedEvents = events.filter(event => event.id !== eventId);
+      
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
+      
+      // Publicar evento de eliminación
+      if (eventToDelete) {
+        eventBus.publish(`${EventCategories.CALENDAR}.${EVENT_OPERATIONS.DELETE}`, { id: eventId });
+      }
     } catch (error) {
       console.error('Error al eliminar evento:', error);
     }

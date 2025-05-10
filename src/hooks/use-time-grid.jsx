@@ -1,15 +1,18 @@
 import { useState, useCallback } from 'react';
 import { formatHour } from '../utils/date-utils';
+import { DEFAULT_HOUR_CELL_HEIGHT } from '../core/config/constants';
 
 /**
  * Hook personalizado para manejar la rejilla temporal del calendario
  * @param {number} startHour - Hora de inicio para la rejilla (por defecto 0)
  * @param {number} endHour - Hora de fin para la rejilla (por defecto 24)
+ * @param {number} cellHeight - Altura de celda (por defecto definida en constantes)
  * @returns {Object} - Funciones y datos para manejar la rejilla temporal
  */
-function useTimeGrid(startHour = 0, endHour = 24) {
+function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL_HEIGHT) {
   // Estado para manejar franjas horarias personalizadas (implementación básica, se mejorará en Stage 3)
   const [timeSlots, setTimeSlots] = useState([]);
+  const [gridHeight, setGridHeight] = useState(cellHeight);
   
   /**
    * Genera el array de horas para la rejilla
@@ -111,6 +114,16 @@ function useTimeGrid(startHour = 0, endHour = 24) {
     return formatHour(hour);
   }, []);
 
+  /**
+   * Ajusta la altura de la celda
+   * @param {number} newHeight - Nueva altura en píxeles
+   */
+  const setHourCellHeight = useCallback((newHeight) => {
+    if (newHeight > 0) {
+      setGridHeight(newHeight);
+    }
+  }, []);
+
   // Generar horas del grid
   const hours = generateHours();
 
@@ -118,6 +131,8 @@ function useTimeGrid(startHour = 0, endHour = 24) {
     hours,
     timeSlots,
     setTimeSlots,
+    gridHeight,
+    setHourCellHeight,
     generateHours,
     shouldShowEventStart,
     isEventActiveAtStartOfDay,

@@ -1,4 +1,4 @@
-// time-grid.jsx (refactorizado)
+// time-grid.jsx
 import React from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -12,7 +12,7 @@ function TimeGrid({
   snapValue,
   renderDayHeader 
 }) {
-  // Usar el nuevo hook para la lógica de la rejilla temporal
+  // Usar el hook de time-grid para la lógica de la rejilla
   const {
     hours,
     shouldShowEventStart,
@@ -23,7 +23,7 @@ function TimeGrid({
   // Renderizar eventos que continúan desde el día anterior
   const renderContinuingEvents = (day) => {
     try {
-      // Filtrar eventos que continúan desde el día anterior
+      // Filtrar eventos que continúan desde el día anterior usando el método del hook
       const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
       
       return continuingEvents.map(event => {
@@ -82,7 +82,7 @@ function TimeGrid({
     }
   };
 
-  // Renderizar eventos en la celda
+  // Renderizar eventos en la celda - Usamos shouldShowEventStart del hook
   const renderEvents = (day, hour) => {
     try {
       // Si es la primera hora del día, mostrar eventos que continúan del día anterior
@@ -93,7 +93,7 @@ function TimeGrid({
         }
       }
       
-      // Eventos que comienzan exactamente en esta celda
+      // Eventos que comienzan exactamente en esta celda usando el método del hook
       const eventsStartingThisHour = events.filter(event => shouldShowEventStart(event, day, hour));
       
       return eventsStartingThisHour.map(event => {
@@ -171,7 +171,7 @@ function TimeGrid({
         ))}
       </div>
 
-      {/* Rejilla horaria */}
+      {/* Rejilla horaria - Usamos las horas generadas por el hook */}
       {hours.map((hour) => (
         <div key={hour} className="calendar-row">
           <div className="calendar-cell calendar-time">

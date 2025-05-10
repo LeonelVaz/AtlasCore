@@ -6,6 +6,7 @@
  */
 
 import eventBus, { EventCategories } from '../core/bus/event-bus';
+import { STORAGE_KEYS } from '../core/config/constants';
 
 // Detectar si estamos en entorno Electron
 const isElectron = () => {
@@ -176,7 +177,7 @@ class StorageService {
         eventBus.publish(`${EventCategories.STORAGE}.dataChanged`, { key, value });
         
         // Publicar eventos específicos para ciertos tipos de datos
-        if (key === 'atlas_events') {
+        if (key === STORAGE_KEYS.EVENTS) {
           eventBus.publish(`${EventCategories.STORAGE}.eventsUpdated`, value);
         }
       }
