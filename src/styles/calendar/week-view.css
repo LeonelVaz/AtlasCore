@@ -1,0 +1,11 @@
+/* Estilos para la vista semanal */
+
+.week-view {
+  height: 100%;
+  overflow: auto;
+}
+
+/* Asegurar que las porciones de eventos sean visibles */
+.calendar-time-slot {
+  overflow: visible !important;
+}

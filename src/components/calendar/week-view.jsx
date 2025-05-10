@@ -2,7 +2,6 @@
 import React from 'react';
 import TimeGrid from './time-grid';
 import { generateWeekDays, formatDate } from '../../utils/date-utils';
-import '../../styles/components/events.css';
 
 function WeekView({ 
   currentDate, 

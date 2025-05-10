@@ -1,11 +1,9 @@
 /* Importar fuentes */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
 
-/* Importar todos los estilos de componentes */
-@import './components/ui.css';
-@import './components/events.css';
-@import './components/snap-control.css';
-@import './calendar/calendar-main.css';
+/* Importar estilos por categoría */
+@import './ui/index.css';
+@import './calendar/index.css';
 @import './app.css';
 
 /**
@@ -100,4 +98,21 @@ input:focus, select:focus, textarea:focus {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Estilos para formularios */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
 }

@@ -11,7 +11,7 @@ import useCalendarNavigation from '../../hooks/use-calendar-navigation';
 import useEventForm from '../../hooks/use-event-form';
 import { setupDebugTools } from '../../utils/debug-utils';
 import { CALENDAR_VIEWS, SNAP_VALUES } from '../../core/config/constants';
-import '../../styles/calendar/calendar-main.css';
+
 
 /**
  * Componente principal del calendario con vista semanal y diaria

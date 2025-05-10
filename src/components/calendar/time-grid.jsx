@@ -2,7 +2,6 @@
 import React from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
-import '../../styles/components/snap-control.css';
 
 function TimeGrid({ 
   days, 

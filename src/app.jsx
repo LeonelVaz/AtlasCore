@@ -1,6 +1,5 @@
 import React from 'react';
 import CalendarMain from './components/calendar/calendar-main';
-import './styles/app.css';
 
 /**
  * Componente principal de la aplicación Atlas
