@@ -1,4 +1,4 @@
-# Plan de Pruebas Integral para el Componente del Calendario - Stage 2
+# Plan de Pruebas Prioritarias para Atlas v0.2.0 - Stage 2
 
 Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, incluyendo las interacciones avanzadas, sistema de almacenamiento mejorado, vista diaria y registro de módulos.
 
@@ -63,23 +63,14 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 ### 4.1 Arrastrar y Soltar Eventos
 
 - [ ] 4.1.1 Los eventos se pueden arrastrar verticalmente dentro del mismo día
-- [ ] 4.1.2 Los eventos se pueden arrastrar horizontalmente entre diferentes días
-- [ ] 4.1.3 Al arrastrar, se muestra una vista previa de la nueva posición
 - [ ] 4.1.4 Al soltar, el evento actualiza sus horas de inicio y fin
-- [ ] 4.1.5 Los eventos arrastrados respetan el tiempo mínimo configurable (ej. 15min)
 - [ ] 4.1.6 Al arrastrar eventos, se aplica el valor de snap configurado
-- [ ] 4.1.7 El arrastrar y soltar funciona correctamente en vista diaria
-- [ ] 4.1.8 Al arrastrar, las celdas de destino se resaltan visualmente
 - [ ] 4.1.9 El historial de eventos de bus se actualiza al mover eventos
 
 ### 4.2 Redimensionamiento de Eventos
 
 - [ ] 4.2.1 Los eventos se pueden redimensionar desde el borde inferior
-- [ ] 4.2.2 Al redimensionar, se muestra una vista previa del nuevo tamaño
 - [ ] 4.2.3 Al soltar después de redimensionar, el evento actualiza su hora de fin
-- [ ] 4.2.4 Los eventos redimensionados respetan el tiempo mínimo configurable
-- [ ] 4.2.5 Al redimensionar eventos, se aplica el valor de snap configurado
-- [ ] 4.2.6 El redimensionamiento funciona correctamente en vista diaria
 - [ ] 4.2.7 El redimensionamiento mantiene la hora de inicio original
 - [ ] 4.2.8 El historial de eventos de bus se actualiza al redimensionar eventos
 
@@ -87,10 +78,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 - [ ] 4.3.1 El botón de snap activa/desactiva la funcionalidad de alineación
 - [ ] 4.3.2 El menú de opciones de snap muestra todos los valores predeterminados
-- [ ] 4.3.3 Cambiar el valor de snap afecta al comportamiento de arrastre/redimensionamiento
-- [ ] 4.3.4 El valor "Personalizado" permite configurar un tiempo específico
 - [ ] 4.3.5 El valor de snap se muestra correctamente en el indicador
-- [ ] 4.3.6 El menú de opciones de snap se cierra al hacer clic fuera
 - [ ] 4.3.7 La funcionalidad de snap utiliza correctamente las constantes definidas
 
 ## 5. Vista Diaria (Nueva en Stage 2)
