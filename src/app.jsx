@@ -1,6 +1,7 @@
 import React from 'react';
 import CalendarMain from './components/calendar/calendar-main';
 import WindowControls from './components/ui/window-controls';
+import { isElectronEnv } from './utils/electron-detector';
 
 /**
  * Componente principal de la aplicación Atlas
@@ -8,7 +9,7 @@ import WindowControls from './components/ui/window-controls';
  */
 function App() {
   // Verificar si estamos en Electron
-  const isElectron = window.electronAPI !== undefined;
+  const isElectron = isElectronEnv();
 
   return (
     <div className="app-container">
@@ -17,7 +18,7 @@ function App() {
           <h1>Atlas</h1>
         </div>
         
-        <WindowControls />
+        {isElectron && <WindowControls />}
       </header>
       
       <main className="app-content">

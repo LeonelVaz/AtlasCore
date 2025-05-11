@@ -5,19 +5,14 @@ import React, { useState, useEffect } from 'react';
  * Con detección de estado maximizado y enfoque
  */
 const WindowControls = () => {
-  // Verificar si estamos en Electron
-  const isElectron = window.electronAPI !== undefined;
-  
   // Estados para maximización y enfoque
   const [isMaximized, setIsMaximized] = useState(false);
   const [isWindowFocused, setIsWindowFocused] = useState(true); // Asumimos enfocado por defecto
   
-  // No renderizar nada si no estamos en Electron
-  if (!isElectron) return null;
-  
   // Efecto para detectar estado maximizado y enfoque
   useEffect(() => {
-    if (!isElectron) return;
+    // Verificar que electronAPI existe
+    if (typeof window === 'undefined' || !window.electronAPI) return;
     
     // Consultar estados iniciales
     window.electronAPI.isMaximized().then(setIsMaximized);
@@ -45,7 +40,7 @@ const WindowControls = () => {
   const handleClose = () => window.electronAPI.close();
 
   return (
-    <div className={`window-controls ${isWindowFocused ? 'window-focused' : 'window-blurred'}`}>
+    <div className={`window-controls ${isWindowFocused ? 'window-focused' : 'window-blurred'}`} data-testid="window-controls">
       {/* Botón Minimizar */}
       <button 
         onClick={handleMinimize} 
