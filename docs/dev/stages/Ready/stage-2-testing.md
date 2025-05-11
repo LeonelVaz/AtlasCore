@@ -131,11 +131,22 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 11. Componentes UI (Nuevos en Stage 2) - ui-components.test.js
 
-- [ ] 11.1 El componente Button renderiza correctamente con diferentes variantes
-- [ ] 11.2 El componente Dialog se abre y cierra correctamente
-- [ ] 11.3 El Dialog se cierra al hacer clic fuera o presionar Escape
-- [ ] 11.4 El Dialog muestra correctamente el título y contenido
-- [ ] 11.5 Los botones del Dialog funcionan correctamente
+### 11.1 Componente Button
+
+- [x] 11.1.1 El componente Button renderiza correctamente con diferentes variantes (33 ms)
+- [x] 11.1.2 El componente Button responde a diferentes tamaños (6 ms)
+- [x] 11.1.3 El componente Button maneja correctamente el estado deshabilitado (5 ms)
+- [x] 11.1.4 El componente Button llama al callback onClick cuando se hace clic (4 ms)
+- [x] 11.1.5 El componente Button maneja correctamente el estado activo (2 ms)
+
+11.2 Componente Dialog
+- [x] 11.2.1 El componente Dialog se abre y cierra correctamente (7 ms)
+- [x] 11.2.2 El Dialog se cierra al hacer clic en el botón de cerrar (7 ms)
+- [x] 11.2.3 El Dialog se cierra al hacer clic fuera o presionar Escape (4 ms)
+- [x] 11.2.4 El Dialog muestra correctamente el título y contenido (6 ms)
+- [x] 11.2.5 Los botones del Dialog funcionan correctamente (4 ms)
+- [x] 11.2.6 El Dialog muestra botones con textos personalizados (3 ms)
+- [x] 11.2.7 El Dialog no muestra el botón de confirmar si no se proporciona onConfirm (3 ms)
 
 ## 12. Uso de Constantes - constants-usage.test.js
 
