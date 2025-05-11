@@ -1,6 +1,7 @@
 // test/unit/10-custom-hooks.test.js
 import React from 'react';
-import { render, act, renderHook, waitFor } from '@testing-library/react';
+import { render, renderHook, waitFor } from '@testing-library/react';
+import { act } from 'react';
 import '@testing-library/jest-dom';
 
 // Importar los hooks a probar
@@ -14,8 +15,8 @@ const mockEvents = [
   {
     id: "event-1",
     title: "Evento de prueba para hooks",
-    start: "2025-05-10T10:00:00Z",
-    end: "2025-05-10T11:00:00Z",
+    start: "2025-05-12T10:00:00Z",
+    end: "2025-05-12T11:00:00Z",
     color: "#2D4B94"
   }
 ];
@@ -67,7 +68,7 @@ jest.mock('../../src/utils/date-utils', () => {
 });
 
 // Mock para fecha constante
-const mockDate = new Date('2025-05-10T12:00:00Z');
+const mockDate = new Date('2025-05-12T12:00:00Z');
 const mockDateNow = jest.spyOn(global.Date, 'now').mockImplementation(() => mockDate.getTime());
 
 describe('10. Uso de Hooks Personalizados', () => {
@@ -100,8 +101,8 @@ describe('10. Uso de Hooks Personalizados', () => {
     // Crear un nuevo evento
     const newEvent = {
       title: "Nuevo evento desde hook",
-      start: "2025-05-10T14:00:00Z",
-      end: "2025-05-10T15:00:00Z",
+      start: "2025-05-12T14:00:00Z",
+      end: "2025-05-12T15:00:00Z",
       color: "#26A69A"
     };
     
@@ -111,7 +112,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Llamar a la función createEvent
     await act(async () => {
-      const createdEvent = result.current.createEvent(newEvent);
+      const createdEvent = await result.current.createEvent(newEvent);
       
       // Verificar que el evento se creó con un ID
       expect(createdEvent).toBeTruthy();
@@ -143,7 +144,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Llamar a la función updateEvent
     await act(async () => {
-      const updatedEvent = result.current.updateEvent(eventToUpdate.id, updatedData);
+      const updatedEvent = await result.current.updateEvent(eventToUpdate.id, updatedData);
       
       // Verificar que el evento se actualizó
       expect(updatedEvent).toBeTruthy();
@@ -167,7 +168,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Llamar a la función deleteEvent
     await act(async () => {
-      result.current.deleteEvent(eventToDelete.id);
+      await result.current.deleteEvent(eventToDelete.id);
     });
     
     // Verificar que se guardó en el almacenamiento
@@ -209,7 +210,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     const initialSelectedDay = new Date(result.current.selectedDay);
     
     // Navegar a la semana anterior
-    act(() => {
+    await act(async () => {
       result.current.goToPreviousWeek();
     });
     
@@ -221,7 +222,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.currentDate.getMonth()).toBe(previousWeekDate.getMonth());
     
     // Navegar a la semana siguiente
-    act(() => {
+    await act(async () => {
       result.current.goToNextWeek();
     });
     
@@ -230,7 +231,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.currentDate.getMonth()).toBe(initialCurrentDate.getMonth());
     
     // Navegar al día anterior
-    act(() => {
+    await act(async () => {
       result.current.goToPreviousDay();
     });
     
@@ -241,7 +242,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.selectedDay.getDate()).toBe(previousDay.getDate());
     
     // Navegar al día siguiente
-    act(() => {
+    await act(async () => {
       result.current.goToNextDay();
     });
     
@@ -251,7 +252,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     // Establecer fechas manualmente
     const newDate = new Date('2025-06-15T12:00:00Z');
     
-    act(() => {
+    await act(async () => {
       result.current.setCurrentDate(newDate);
       result.current.setSelectedDay(newDate);
     });
@@ -263,7 +264,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.selectedDay.getDate()).toBe(15);
     
     // Volver a la fecha actual
-    act(() => {
+    await act(async () => {
       result.current.goToCurrentWeek();
       result.current.goToToday();
     });
@@ -302,7 +303,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(typeof result.current.handleDeleteEvent).toBe('function');
     
     // Probar clic en celda (creación de evento)
-    act(() => {
+    await act(async () => {
       result.current.handleCellClick(new Date(), 10); // Día actual, hora 10
     });
     
@@ -313,7 +314,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.newEvent.endFormatted).toBeTruthy();
     
     // Modificar datos del formulario
-    act(() => {
+    await act(async () => {
       result.current.handleEventFormChange({
         target: { name: 'title', value: 'Evento desde form hook' }
       });
@@ -323,8 +324,8 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.newEvent.title).toBe('Evento desde form hook');
     
     // Guardar evento
-    act(() => {
-      result.current.handleSaveEvent();
+    await act(async () => {
+      await result.current.handleSaveEvent();
     });
     
     // Verificar que se llamó a createEvent
@@ -338,12 +339,12 @@ describe('10. Uso de Hooks Personalizados', () => {
     const existingEvent = {
       id: 'existing-id',
       title: 'Evento existente',
-      start: '2025-05-10T14:00:00Z',
-      end: '2025-05-10T15:00:00Z',
+      start: '2025-05-12T14:00:00Z',
+      end: '2025-05-12T15:00:00Z',
       color: '#FF5722'
     };
     
-    act(() => {
+    await act(async () => {
       result.current.handleEventClick(existingEvent);
     });
     
@@ -354,15 +355,15 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.newEvent.title).toBe(existingEvent.title);
     
     // Modificar título del evento
-    act(() => {
+    await act(async () => {
       result.current.handleEventFormChange({
         target: { name: 'title', value: 'Evento actualizado' }
       });
     });
     
     // Guardar cambios
-    act(() => {
-      result.current.handleSaveEvent();
+    await act(async () => {
+      await result.current.handleSaveEvent();
     });
     
     // Verificar que se llamó a updateEvent
@@ -372,13 +373,13 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Probar eliminación de evento
     // Abrir el formulario nuevamente para un evento existente
-    act(() => {
+    await act(async () => {
       result.current.handleEventClick(existingEvent);
     });
     
     // Eliminar evento
-    act(() => {
-      result.current.handleDeleteEvent();
+    await act(async () => {
+      await result.current.handleDeleteEvent();
     });
     
     // Verificar que se llamó a deleteEvent
@@ -389,13 +390,13 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.showEventForm).toBe(false);
     
     // Probar cierre del formulario
-    act(() => {
+    await act(async () => {
       result.current.handleCellClick(new Date(), 15);
     });
     
     expect(result.current.showEventForm).toBe(true);
     
-    act(() => {
+    await act(async () => {
       result.current.handleCloseForm();
     });
     
@@ -443,11 +444,11 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Probar shouldShowEventStart
     const testEvent = {
-      start: '2025-05-10T10:00:00Z',
-      end: '2025-05-10T11:00:00Z'
+      start: '2025-05-12T10:00:00Z',
+      end: '2025-05-12T11:00:00Z'
     };
     
-    const testDay = new Date('2025-05-10T00:00:00Z');
+    const testDay = new Date('2025-05-12T00:00:00Z');
     const eventHour = 10;
     const nonEventHour = 11;
     
@@ -462,7 +463,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     // Probar isEventActiveAtStartOfDay para evento que cruza días
     const overnightEvent = {
       start: '2025-05-09T22:00:00Z',
-      end: '2025-05-10T02:00:00Z'
+      end: '2025-05-12T02:00:00Z'
     };
     
     const isActive = result.current.isEventActiveAtStartOfDay(overnightEvent, testDay);
@@ -470,8 +471,8 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Verificar que detecta correctamente cuando un evento NO está activo al inicio del día
     const regularEvent = {
-      start: '2025-05-10T08:00:00Z',
-      end: '2025-05-10T09:00:00Z'
+      start: '2025-05-12T08:00:00Z',
+      end: '2025-05-12T09:00:00Z'
     };
     
     const isNotActive = result.current.isEventActiveAtStartOfDay(regularEvent, testDay);
