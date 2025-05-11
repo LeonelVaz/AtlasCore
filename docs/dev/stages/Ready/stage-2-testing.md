@@ -127,7 +127,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 10.2 El hook useCalendarNavigation maneja correctamente la navegación
 - [x] 10.3 El hook useEventForm gestiona correctamente el formulario de eventos
 - [x] 10.4 Los hooks limpian correctamente sus recursos al desmontar
-- [ ] 10.5 El hook useTimeGrid proporciona la funcionalidad correcta para la rejilla temporal
+- [x] 10.5 El hook useTimeGrid proporciona la funcionalidad correcta para la rejilla temporal
 
 ## 11. Componentes UI (Nuevos en Stage 2) - ui-components.test.js
 
