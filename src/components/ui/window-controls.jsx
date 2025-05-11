@@ -5,15 +5,17 @@ import React, { useState, useEffect } from 'react';
  * Con detección de estado maximizado y enfoque
  */
 const WindowControls = () => {
+  // Verificar si electronAPI está disponible
+  if (typeof window === 'undefined' || !window.electronAPI) {
+    return null; // No renderizar nada si no estamos en Electron
+  }
+  
   // Estados para maximización y enfoque
   const [isMaximized, setIsMaximized] = useState(false);
   const [isWindowFocused, setIsWindowFocused] = useState(true); // Asumimos enfocado por defecto
   
   // Efecto para detectar estado maximizado y enfoque
   useEffect(() => {
-    // Verificar que electronAPI existe
-    if (typeof window === 'undefined' || !window.electronAPI) return;
-    
     // Consultar estados iniciales
     window.electronAPI.isMaximized().then(setIsMaximized);
     window.electronAPI.isFocused().then(setIsWindowFocused);
