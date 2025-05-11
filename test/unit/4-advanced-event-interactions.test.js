@@ -145,7 +145,7 @@ describe('4.1 Arrastrar y Soltar Eventos', () => {
     expect(updatedStart.getHours()).toBe(originalStart.getHours() + 1);
   });
   
-  test('4.1.4 Al soltar, el evento actualiza sus horas de inicio y fin', async () => {
+  test('4.1.2 Al soltar, el evento actualiza sus horas de inicio y fin', async () => {
     // Usar un enfoque aislado
     const mockOnUpdate = jest.fn();
     const testEvent = {...mockEvents[0]};
@@ -181,7 +181,7 @@ describe('4.1 Arrastrar y Soltar Eventos', () => {
     expect(updatedDuration).toBe(originalDuration);
   });
   
-  test('4.1.6 Al arrastrar eventos, se aplica el valor de snap configurado', async () => {
+  test('4.1.3 Al arrastrar eventos, se aplica el valor de snap configurado', async () => {
     // Configurar un evento y un valor de snap
     const mockOnUpdate = jest.fn();
     const testEvent = {...mockEvents[0]};
@@ -253,7 +253,7 @@ describe('4.1 Arrastrar y Soltar Eventos', () => {
     expect(mockOnUpdate).toHaveBeenCalled();
   });
   
-  test('4.1.9 El historial de eventos de bus se actualiza al mover eventos', async () => {
+  test('4.1.4 El historial de eventos de bus se actualiza al mover eventos', async () => {
     // Limpiar el mock de publicación
     mockPublish.mockClear();
     
@@ -321,7 +321,7 @@ describe('4.2 Redimensionamiento de Eventos', () => {
     expect(updatedEvent).toBeTruthy();
   });
   
-  test('4.2.3 Al soltar después de redimensionar, el evento actualiza su hora de fin', async () => {
+  test('4.2.2 Al soltar después de redimensionar, el evento actualiza su hora de fin', async () => {
     // Configuración similar al test anterior
     const mockOnUpdate = jest.fn();
     const testEvent = {...mockEvents[0]};
@@ -355,7 +355,7 @@ describe('4.2 Redimensionamiento de Eventos', () => {
     expect(updatedEnd.getHours()).toBe(originalEnd.getHours() + 1);
   });
   
-  test('4.2.7 El redimensionamiento mantiene la hora de inicio original', async () => {
+  test('4.2.3 El redimensionamiento mantiene la hora de inicio original', async () => {
     // Configuración similar a los tests anteriores
     const mockOnUpdate = jest.fn();
     const testEvent = {...mockEvents[0]};
@@ -388,7 +388,7 @@ describe('4.2 Redimensionamiento de Eventos', () => {
     expect(updatedEvent.end).not.toBe(testEvent.end);
   });
   
-  test('4.2.8 El historial de eventos de bus se actualiza al redimensionar eventos', async () => {
+  test('4.2.4 El historial de eventos de bus se actualiza al redimensionar eventos', async () => {
     // Enfoque similar al test 4.1.9
     mockPublish.mockClear();
     
@@ -505,7 +505,7 @@ describe('4.3 Sistema de Imán (Snap)', () => {
     expect(options[4].textContent).toContain('Personalizado');
   });
   
-  test('4.3.5 El valor de snap se muestra correctamente en el indicador', () => {
+  test('4.3.3 El valor de snap se muestra correctamente en el indicador', () => {
     // Prueba con diferentes valores de snap
     const snapTestCases = [
       { value: SNAP_VALUES.NONE, expected: 'Off' },
@@ -534,7 +534,7 @@ describe('4.3 Sistema de Imán (Snap)', () => {
     });
   });
   
-  test('4.3.7 La funcionalidad de snap utiliza correctamente las constantes definidas', () => {
+  test('4.3.4 La funcionalidad de snap utiliza correctamente las constantes definidas', () => {
     // Mock para callback onSnapChange
     const mockOnSnapChange = jest.fn();
     
