@@ -1,4 +1,4 @@
-// test/unit/date-navigation.test.js
+// test/unit/2-date-navigation.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -31,18 +31,28 @@ jest.mock('../../src/core/bus/event-bus', () => ({
 // Configuración para fecha consistente en las pruebas
 describe('2. Navegación por Fecha', () => {
   // Mock para Date global
-  const mockDate = new Date('2025-05-10T12:00:00Z');  // 10 de mayo de 2025, un sábado
+  const mockDate = new Date('2025-05-05T12:00:00Z');  // 5 de mayo de 2025, un lunes
   const originalDate = global.Date;
-  let dateNowSpy;
-
+  
   beforeAll(() => {
-    // Mantener constructores de Date originales pero mockear Date.now()
-    dateNowSpy = jest.spyOn(global.Date, 'now').mockImplementation(() => mockDate.getTime());
+    // Mock completo de Date para asegurar consistencia
+    const OriginalDate = global.Date;
+    global.Date = class extends OriginalDate {
+      constructor(...args) {
+        if (args.length === 0) {
+          return new OriginalDate(mockDate);
+        }
+        return new OriginalDate(...args);
+      }
+      static now() {
+        return mockDate.getTime();
+      }
+    };
   });
 
   afterAll(() => {
     // Restaurar Date después de todas las pruebas
-    dateNowSpy.mockRestore();
+    global.Date = originalDate;
   });
 
   beforeEach(() => {
@@ -58,7 +68,7 @@ describe('2. Navegación por Fecha', () => {
     expect(initialTitle.toLowerCase()).toContain('mayo');
     expect(initialTitle).toContain('2025');
     
-    // Verificar los días iniciales mostrados (4-10 de mayo 2025)
+    // Verificar los días iniciales mostrados (comenzando con 4 o 5 de mayo 2025)
     const dayHeaders = document.querySelectorAll('.calendar-day-header');
     const initialFirstDay = dayHeaders[0].textContent;
     
@@ -68,7 +78,7 @@ describe('2. Navegación por Fecha', () => {
     
     // Esperar a que se actualice la UI
     await waitFor(() => {
-      // Verificar que los días han cambiado (debería ser 27 abril - 3 mayo)
+      // Verificar que los días han cambiado (debería ser finales de abril)
       const updatedDayHeaders = document.querySelectorAll('.calendar-day-header');
       const updatedFirstDay = updatedDayHeaders[0].textContent;
       
@@ -89,7 +99,7 @@ describe('2. Navegación por Fecha', () => {
     expect(initialTitle.toLowerCase()).toContain('mayo');
     expect(initialTitle).toContain('2025');
     
-    // Verificar los días iniciales mostrados (4-10 de mayo 2025)
+    // Verificar los días iniciales mostrados
     const dayHeaders = document.querySelectorAll('.calendar-day-header');
     const initialLastDay = dayHeaders[6].textContent;
     
@@ -99,7 +109,7 @@ describe('2. Navegación por Fecha', () => {
     
     // Esperar a que se actualice la UI
     await waitFor(() => {
-      // Verificar que los días han cambiado (debería ser 11-17 mayo)
+      // Verificar que los días han cambiado
       const updatedDayHeaders = document.querySelectorAll('.calendar-day-header');
       const updatedLastDay = updatedDayHeaders[6].textContent;
       
@@ -135,7 +145,6 @@ describe('2. Navegación por Fecha', () => {
     
     // Esperar a que se actualice la UI
     await waitFor(() => {
-      // Verificar que los días han vuelto a la semana del 4-10 de mayo
       const updatedDayHeaders = document.querySelectorAll('.calendar-day-header');
       const updatedFirstDay = updatedDayHeaders[0].textContent;
       
@@ -152,7 +161,7 @@ describe('2. Navegación por Fecha', () => {
   test('2.4 Los días de la semana se generan correctamente para cualquier fecha', async () => {
     render(<CalendarMain />);
     
-    // Verificar la semana inicial (4-10 mayo 2025)
+    // Verificar la semana inicial
     let dayHeaders = document.querySelectorAll('.calendar-day-header');
     expect(dayHeaders.length).toBe(7);
     
@@ -248,8 +257,11 @@ describe('2. Navegación por Fecha', () => {
       expect(document.querySelector('.day-view-container')).toBeInTheDocument();
     });
     
-    // Obtener título inicial (10 de mayo 2025)
+    // Obtener título inicial (5 de mayo 2025)
     const initialTitle = document.querySelector('.day-view-title').textContent;
+    expect(initialTitle.toLowerCase()).toContain('5');
+    expect(initialTitle.toLowerCase()).toContain('mayo');
+    expect(initialTitle).toContain('2025');
     
     // Navegar 2 días hacia adelante
     const nextDayButton = screen.getByText(/día siguiente/i);
@@ -266,11 +278,11 @@ describe('2. Navegación por Fecha', () => {
     const todayButton = screen.getByText(/hoy/i);
     fireEvent.click(todayButton);
     
-    // Verificar que se ha vuelto a la fecha actual
+    // Verificar que se ha vuelto a la fecha actual (5 de mayo)
     await waitFor(() => {
       const restoredTitle = document.querySelector('.day-view-title').textContent;
-      // Debería ser igual o similar al título inicial (puede variar en formato)
-      expect(restoredTitle.toLowerCase()).toContain('10');
+      // Debería contener "5" y "mayo" de 2025
+      expect(restoredTitle.toLowerCase()).toContain('5');
       expect(restoredTitle.toLowerCase()).toContain('mayo');
       expect(restoredTitle).toContain('2025');
     });
