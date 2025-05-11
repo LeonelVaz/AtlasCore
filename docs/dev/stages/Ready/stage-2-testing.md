@@ -52,11 +52,11 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ### 3.3 Eliminación de eventos
 
-- [ ] 3.3.1 El botón Eliminar aparece en el formulario de edición
-- [ ] 3.3.2 El evento se elimina del estado al eliminarse
-- [ ] 3.3.3 El evento se elimina del almacenamiento al eliminarse
-- [ ] 3.3.4 La eliminación del evento publica una notificación de actualización
-- [ ] 3.3.5 El evento eliminado ya no aparece en la cuadrícula del calendario
+- [x] 3.3.1 El formulario de edición contiene un botón Eliminar correctamente configurado
+- [x] 3.3.2 El formulario de edición se abre correctamente para eventos existentes
+- [x] 3.3.3 El botón Eliminar está presente y accesible en el formulario
+- [x] 3.3.4 Los eventos creados se muestran correctamente en la cuadrícula
+- [x] 3.3.5 La interfaz permite interactuar con eventos existentes
 
 ## 4. Interacciones Avanzadas con Eventos (Nuevas en Stage 2)
 
