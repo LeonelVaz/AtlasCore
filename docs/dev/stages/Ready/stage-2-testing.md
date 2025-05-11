@@ -81,7 +81,65 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 4.3.3 El valor de snap se muestra correctamente en el indicador
 - [x] 4.3.4 La funcionalidad de snap utiliza correctamente las constantes definidas
 
+## 5. Vista Diaria (Nueva en Stage 2)
 
+- [ ] 5.1 La vista diaria muestra correctamente las 24 horas del día
+- [ ] 5.2 Los eventos se muestran correctamente en la vista diaria
+- [ ] 5.3 La navegación entre fechas funciona en la vista diaria
+- [ ] 5.4 La vista diaria gestiona correctamente los eventos que continúan desde el día anterior
+- [ ] 5.5 La vista diaria gestiona correctamente los eventos que continúan al día siguiente
+
+## 6. Representación de eventos
+
+- [ ] 6.1 Los eventos se representan en las franjas horarias correctas según la hora de inicio
+- [ ] 6.2 Los eventos se muestran con el título correcto
+- [ ] 6.3 Los eventos se muestran con el formato de hora correcto
+- [ ] 6.4 Los eventos se muestran con el color de fondo correcto
+- [ ] 6.5 Se puede hacer clic en los eventos y abren el formulario de edición
+- [ ] 6.6 Los eventos que continúan entre días muestran indicadores visuales adecuados
+
+## 7. Integración de almacenamiento mejorado
+
+- [ ] 7.1 Los eventos se cargan desde el almacenamiento al montar el componente
+- [ ] 7.2 Los eventos se guardan en el almacenamiento al crearse, actualizarse o eliminarse
+- [ ] 7.3 La gestión de errores funciona para el almacenamiento
+- [ ] 7.4 El almacenamiento maneja correctamente las operaciones asíncronas
+- [ ] 7.5 El sistema de almacenamiento utiliza correctamente las constantes para las claves
+
+## 8. Registro del módulo e interoperabilidad
+
+- [ ] 8.1 El módulo de calendario se registra correctamente al montar
+- [ ] 8.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
+- [ ] 8.3 El módulo se anula el registro (si corresponde) al desmontar
+- [ ] 8.4 La función unsubscribe se ejecuta al desmontar
+
+## 9. Integración del bus de eventos
+
+- [ ] 9.1 El componente se suscribe a los eventos apropiados
+- [ ] 9.2 El componente publica eventos cuando cambian los datos
+- [ ] 9.3 El componente limpia las suscripciones al desmontar
+- [ ] 9.4 Las operaciones de arrastre y redimensionamiento publican los eventos correctos
+
+## 10. Uso de Hooks Personalizados
+
+- [ ] 10.1 El hook useCalendarEvents gestiona correctamente los eventos
+- [ ] 10.2 El hook useCalendarNavigation maneja correctamente la navegación
+- [ ] 10.3 El hook useEventForm gestiona correctamente el formulario de eventos
+- [ ] 10.4 Los hooks limpian correctamente sus recursos al desmontar
+
+## 11. Componentes UI (Nuevos en Stage 2)
+
+- [ ] 11.1 El componente Button renderiza correctamente con diferentes variantes
+- [ ] 11.2 El componente Dialog se abre y cierra correctamente
+- [ ] 11.3 El Dialog se cierra al hacer clic fuera o presionar Escape
+- [ ] 11.4 El Dialog muestra correctamente el título y contenido
+- [ ] 11.5 Los botones del Dialog funcionan correctamente
+
+## 12. Uso de Constantes
+
+- [ ] 12.1 Las constantes CALENDAR_VIEWS se utilizan correctamente para las vistas
+- [ ] 12.2 Las constantes SNAP_VALUES se utilizan correctamente en el sistema de snap
+- [ ] 12.3 Las constantes STORAGE_KEYS se utilizan correctamente en el almacenamiento
 
 ## Notas de Implementación para Tests
 
