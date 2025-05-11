@@ -150,9 +150,11 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 12. Uso de Constantes - constants-usage.test.js
 
-- [ ] 12.1 Las constantes CALENDAR_VIEWS se utilizan correctamente para las vistas
-- [ ] 12.2 Las constantes SNAP_VALUES se utilizan correctamente en el sistema de snap
-- [ ] 12.3 Las constantes STORAGE_KEYS se utilizan correctamente en el almacenamiento
+- [x] 12.1 Las constantes CALENDAR_VIEWS se utilizan correctamente para las vistas
+- [x] 12.2 Las constantes SNAP_VALUES se utilizan correctamente en el sistema de snap
+- [x] 12.3 Las constantes STORAGE_KEYS se utilizan correctamente en el almacenamiento
+- [x] 12.4 Las constantes EVENT_OPERATIONS se utilizan correctamente en las publicaciones de eventos
+- [x] 12.5 Las constantes CALENDAR_VIEWS, SNAP_VALUES y STORAGE_KEYS tienen los valores esperados  
 
 ## Notas de Implementación para Tests
 
