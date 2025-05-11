@@ -179,8 +179,8 @@ describe('5. Vista Diaria', () => {
     expect(initialTitle.toLowerCase()).toContain('5');  // Día 5
     expect(initialTitle.toLowerCase()).toContain('mayo'); // Mayo
     
-    // Navegar al día siguiente
-    const nextDayButton = screen.getByText(/día siguiente/i);
+    // Navegar al día siguiente - FIX: Usar un selector más específico para el botón
+    const nextDayButton = screen.getByRole('button', { name: /día siguiente/i });
     fireEvent.click(nextDayButton);
     
     // Verificar que el título cambia
