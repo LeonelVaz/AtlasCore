@@ -2,7 +2,7 @@
 
 Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, incluyendo las interacciones avanzadas, sistema de almacenamiento mejorado, vista diaria y registro de módulos.
 
-## 1. Renderizado del Componente
+## 1. Renderizado del Componente - rendering.test.js
 
 - [x] 1.1 La estructura de la cuadrícula del calendario se renderiza correctamente con las franjas horarias
 - [x] 1.2 El encabezado de hora muestra 24 horas con el formato correcto
@@ -15,7 +15,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 1.9 Los nuevos componentes UI (Button, Dialog) se renderizan correctamente
 - [x] 1.10 La estructura CSS modular se aplica correctamente a todos los componentes
 
-## 2. Navegación por Fecha
+## 2. Navegación por Fecha - date-navigation.test.js
 
 - [x] 2.1 El botón de la semana anterior reduce la fecha en 7 días
 - [x] 2.2 El botón de la semana siguiente incrementa la fecha en 7 días
@@ -26,7 +26,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 2.7 En vista diaria, el botón "Hoy" se restablece a la fecha actual
 - [x] 2.8 El cambio de vista mantiene la fecha seleccionada correctamente
 
-## 3. Gestión de Eventos Básica
+## 3. Gestión de Eventos Básica - event-operations.test.js
 
 ### 3.1 Creación de Eventos
 
@@ -58,7 +58,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 3.3.4 Los eventos creados se muestran correctamente en la cuadrícula
 - [x] 3.3.5 La interfaz permite interactuar con eventos existentes
 
-## 4. Interacciones Avanzadas con Eventos (Nuevas en Stage 2)
+## 4. Interacciones Avanzadas con Eventos (Nuevas en Stage 2) - advanced-event-interactions.test.js
 
 ### 4.1 Arrastrar y Soltar Eventos
 
@@ -81,7 +81,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 4.3.3 El valor de snap se muestra correctamente en el indicador
 - [x] 4.3.4 La funcionalidad de snap utiliza correctamente las constantes definidas
 
-## 5. Vista Diaria (Nueva en Stage 2)
+## 5. Vista Diaria (Nueva en Stage 2) - daily-view.test.js
 
 - [ ] 5.1 La vista diaria muestra correctamente las 24 horas del día
 - [ ] 5.2 Los eventos se muestran correctamente en la vista diaria
@@ -89,7 +89,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [ ] 5.4 La vista diaria gestiona correctamente los eventos que continúan desde el día anterior
 - [ ] 5.5 La vista diaria gestiona correctamente los eventos que continúan al día siguiente
 
-## 6. Representación de eventos
+## 6. Representación de eventos - event-rendering.test.js
 
 - [ ] 6.1 Los eventos se representan en las franjas horarias correctas según la hora de inicio
 - [ ] 6.2 Los eventos se muestran con el título correcto
@@ -98,7 +98,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [ ] 6.5 Se puede hacer clic en los eventos y abren el formulario de edición
 - [ ] 6.6 Los eventos que continúan entre días muestran indicadores visuales adecuados
 
-## 7. Integración de almacenamiento mejorado
+## 7. Integración de almacenamiento mejorado - enhanced-storage-integration.test.js
 
 - [ ] 7.1 Los eventos se cargan desde el almacenamiento al montar el componente
 - [ ] 7.2 Los eventos se guardan en el almacenamiento al crearse, actualizarse o eliminarse
@@ -106,28 +106,28 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [ ] 7.4 El almacenamiento maneja correctamente las operaciones asíncronas
 - [ ] 7.5 El sistema de almacenamiento utiliza correctamente las constantes para las claves
 
-## 8. Registro del módulo e interoperabilidad
+## 8. Registro del módulo e interoperabilidad - module-registration.test.js
 
 - [ ] 8.1 El módulo de calendario se registra correctamente al montar
 - [ ] 8.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
 - [ ] 8.3 El módulo se anula el registro (si corresponde) al desmontar
 - [ ] 8.4 La función unsubscribe se ejecuta al desmontar
 
-## 9. Integración del bus de eventos
+## 9. Integración del bus de eventos - event-bus-integration.test.js
 
 - [ ] 9.1 El componente se suscribe a los eventos apropiados
 - [ ] 9.2 El componente publica eventos cuando cambian los datos
 - [ ] 9.3 El componente limpia las suscripciones al desmontar
 - [ ] 9.4 Las operaciones de arrastre y redimensionamiento publican los eventos correctos
 
-## 10. Uso de Hooks Personalizados
+## 10. Uso de Hooks Personalizados - custom-hooks.test.js
 
 - [ ] 10.1 El hook useCalendarEvents gestiona correctamente los eventos
 - [ ] 10.2 El hook useCalendarNavigation maneja correctamente la navegación
 - [ ] 10.3 El hook useEventForm gestiona correctamente el formulario de eventos
 - [ ] 10.4 Los hooks limpian correctamente sus recursos al desmontar
 
-## 11. Componentes UI (Nuevos en Stage 2)
+## 11. Componentes UI (Nuevos en Stage 2) - ui-components.test.js
 
 - [ ] 11.1 El componente Button renderiza correctamente con diferentes variantes
 - [ ] 11.2 El componente Dialog se abre y cierra correctamente
@@ -135,7 +135,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [ ] 11.4 El Dialog muestra correctamente el título y contenido
 - [ ] 11.5 Los botones del Dialog funcionan correctamente
 
-## 12. Uso de Constantes
+## 12. Uso de Constantes - constants-usage.test.js
 
 - [ ] 12.1 Las constantes CALENDAR_VIEWS se utilizan correctamente para las vistas
 - [ ] 12.2 Las constantes SNAP_VALUES se utilizan correctamente en el sistema de snap
