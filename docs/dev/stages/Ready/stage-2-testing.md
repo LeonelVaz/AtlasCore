@@ -91,12 +91,12 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 6. Representación de eventos - event-rendering.test.js
 
-- [ ] 6.1 Los eventos se representan en las franjas horarias correctas según la hora de inicio
-- [ ] 6.2 Los eventos se muestran con el título correcto
-- [ ] 6.3 Los eventos se muestran con el formato de hora correcto
-- [ ] 6.4 Los eventos se muestran con el color de fondo correcto
-- [ ] 6.5 Se puede hacer clic en los eventos y abren el formulario de edición
-- [ ] 6.6 Los eventos que continúan entre días muestran indicadores visuales adecuados
+- [x] 6.1 Los eventos se representan en las franjas horarias correctas según la hora de inicio
+- [x] 6.2 Los eventos se muestran con el título correcto
+- [x] 6.3 Los eventos se muestran con el formato de hora correcto
+- [x] 6.4 Los eventos se muestran con el color de fondo correcto
+- [x] 6.5 Se puede hacer clic en los eventos y abren el formulario de edición
+- [x] 6.6 Los eventos que continúan entre días muestran indicadores visuales adecuados
 
 ## 7. Integración de almacenamiento mejorado - enhanced-storage-integration.test.js
 
