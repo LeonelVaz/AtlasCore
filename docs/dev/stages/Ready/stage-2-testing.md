@@ -62,24 +62,24 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ### 4.1 Arrastrar y Soltar Eventos
 
-- [ ] 4.1.1 Los eventos se pueden arrastrar verticalmente dentro del mismo día
-- [ ] 4.1.4 Al soltar, el evento actualiza sus horas de inicio y fin
-- [ ] 4.1.6 Al arrastrar eventos, se aplica el valor de snap configurado
-- [ ] 4.1.9 El historial de eventos de bus se actualiza al mover eventos
+- [x] 4.1.1 Los eventos se pueden arrastrar verticalmente dentro del mismo día
+- [x] 4.1.4 Al soltar, el evento actualiza sus horas de inicio y fin
+- [x] 4.1.6 Al arrastrar eventos, se aplica el valor de snap configurado
+- [x] 4.1.9 El historial de eventos de bus se actualiza al mover eventos
 
 ### 4.2 Redimensionamiento de Eventos
 
-- [ ] 4.2.1 Los eventos se pueden redimensionar desde el borde inferior
-- [ ] 4.2.3 Al soltar después de redimensionar, el evento actualiza su hora de fin
-- [ ] 4.2.7 El redimensionamiento mantiene la hora de inicio original
-- [ ] 4.2.8 El historial de eventos de bus se actualiza al redimensionar eventos
+- [x] 4.2.1 Los eventos se pueden redimensionar desde el borde inferior
+- [x] 4.2.3 Al soltar después de redimensionar, el evento actualiza su hora de fin
+- [x] 4.2.7 El redimensionamiento mantiene la hora de inicio original
+- [x] 4.2.8 El historial de eventos de bus se actualiza al redimensionar eventos
 
 ### 4.3 Sistema de Imán (Snap)
 
-- [ ] 4.3.1 El botón de snap activa/desactiva la funcionalidad de alineación
-- [ ] 4.3.2 El menú de opciones de snap muestra todos los valores predeterminados
-- [ ] 4.3.5 El valor de snap se muestra correctamente en el indicador
-- [ ] 4.3.7 La funcionalidad de snap utiliza correctamente las constantes definidas
+- [x] 4.3.1 El botón de snap activa/desactiva la funcionalidad de alineación
+- [x] 4.3.2 El menú de opciones de snap muestra todos los valores predeterminados
+- [x] 4.3.5 El valor de snap se muestra correctamente en el indicador
+- [x] 4.3.7 La funcionalidad de snap utiliza correctamente las constantes definidas
 
 ## 5. Vista Diaria (Nueva en Stage 2)
 
