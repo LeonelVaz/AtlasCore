@@ -118,7 +118,7 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 - [x] 9.1 El componente se suscribe a los eventos apropiados
 - [x] 9.2 El componente publica eventos cuando cambian los datos
 - [x] 9.3 El componente limpia las suscripciones al desmontar
-- [ ] 9.4 Las operaciones de arrastre y redimensionamiento publican los eventos correctos
+- [x] 9.4 Las operaciones de arrastre y redimensionamiento publican los eventos correctos
 - [x] 9.5 Los eventos se publican con los tipos correctos definidos en constants.js
 
 ## 10. Uso de Hooks Personalizados - custom-hooks.test.js
