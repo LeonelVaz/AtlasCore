@@ -100,10 +100,10 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 7. Integración de almacenamiento mejorado - enhanced-storage-integration.test.js
 
-- [ ] 7.1 Los eventos se cargan desde el almacenamiento al montar el componente
-- [ ] 7.2 Los eventos se guardan en el almacenamiento al crearse, actualizarse o eliminarse
+- [x] 7.1 Los eventos se cargan desde el almacenamiento al montar el componente
+- [x] 7.2 Los eventos se guardan en el almacenamiento al crearse, actualizarse o eliminarse
 - [x] 7.3 La gestión de errores funciona para el almacenamiento
-- [ ] 7.4 El almacenamiento maneja correctamente las operaciones asíncronas
+- [x] 7.4 El almacenamiento maneja correctamente las operaciones asíncronas
 - [x] 7.5 El sistema de almacenamiento utiliza correctamente las constantes para las claves
 
 ## 8. Registro del módulo e interoperabilidad - module-registration.test.js

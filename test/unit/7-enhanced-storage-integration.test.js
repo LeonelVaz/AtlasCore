@@ -14,11 +14,12 @@ const mockEvents = [
   {
     id: "event-1",
     title: "Evento de almacenamiento",
-    start: "2025-05-10T10:00:00Z",
-    end: "2025-05-10T11:00:00Z",
+    start: "2025-05-12T10:00:00Z",
+    end: "2025-05-12T11:00:00Z",
     color: "#2D4B94"
   }
 ];
+
 
 const mockStorageGet = jest.fn();
 const mockStorageSet = jest.fn();
