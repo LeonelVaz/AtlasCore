@@ -1,3 +1,5 @@
+// app.jsx
+
 import React from 'react';
 import CalendarMain from './components/calendar/calendar-main';
 import WindowControls from './components/ui/window-controls';
