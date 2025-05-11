@@ -108,10 +108,10 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 
 ## 8. Registro del módulo e interoperabilidad - module-registration.test.js
 
-- [ ] 8.1 El módulo de calendario se registra correctamente al montar
-- [ ] 8.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
-- [ ] 8.3 El módulo se anula el registro (si corresponde) al desmontar
-- [ ] 8.4 La función unsubscribe se ejecuta al desmontar
+- [x] 8.1 El módulo de calendario se registra correctamente al montar
+- [x] 8.2 El módulo expone las funciones correctas de la API (getEvents, createEvent, updateEvent, deleteEvent)
+- [x] 8.3 El módulo se anula el registro (si corresponde) al desmontar
+- [x] 8.4 La función unsubscribe se ejecuta al desmontar
 
 ## 9. Integración del bus de eventos - event-bus-integration.test.js
 
