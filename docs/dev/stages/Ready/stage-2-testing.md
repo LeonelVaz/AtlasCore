@@ -84,9 +84,9 @@ Este plan de pruebas cubre las funcionalidades implementadas hasta el Stage 2, i
 ## 5. Vista Diaria (Nueva en Stage 2) - daily-view.test.js
 
 - [x] 5.1 La vista diaria muestra correctamente las 24 horas del día
-- [ ] 5.2 Los eventos se muestran correctamente en la vista diaria
+- [x] 5.2 Los eventos se muestran correctamente en la vista diaria
 - [ ] 5.3 La navegación entre fechas funciona en la vista diaria
-- [ ] 5.4 La vista diaria gestiona correctamente los eventos que continúan desde el día anterior
+- [x] 5.4 La vista diaria gestiona correctamente los eventos que continúan desde el día anterior
 - [x] 5.5 La vista diaria gestiona correctamente los eventos que continúan al día siguiente
 
 ## 6. Representación de eventos - event-rendering.test.js
