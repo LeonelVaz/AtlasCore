@@ -24,7 +24,7 @@ describe('EventBus', () => {
     
     // Verificar que la función de cancelación funciona
     unsubscribe();
-    expect(Object.keys(eventBus.subscribers[eventType]).length).toBe(0);
+    expect(eventBus.subscribers[eventType]).toBeUndefined();
   });
 
   test('EventBus publica eventos y notifica a todos los suscriptores', () => {
