@@ -31,7 +31,7 @@ jest.mock('../../src/core/bus/event-bus', () => ({
 // Configuración para fecha consistente en las pruebas
 describe('2. Navegación por Fecha', () => {
   // Mock para Date global
-  const mockDate = new Date('2025-05-05T12:00:00Z');  // 5 de mayo de 2025, un lunes
+  const mockDate = new Date('2025-05-05T12:00:00');  // 5 de mayo de 2025, un lunes
   const originalDate = global.Date;
   
   beforeAll(() => {

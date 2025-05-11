@@ -50,7 +50,7 @@ jest.mock('../../src/core/bus/event-bus', () => ({
 }));
 
 // Mock para funciones de fecha
-const mockDate = new Date('2025-05-10T12:00:00Z');
+const mockDate = new Date('2025-05-10T12:00:00');
 jest.spyOn(global.Date, 'now').mockImplementation(() => mockDate.getTime());
 
 // Mock para el hook de arrastre para evitar dependencias complejas

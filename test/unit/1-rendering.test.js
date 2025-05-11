@@ -34,7 +34,7 @@ jest.mock('../../src/core/bus/event-bus', () => ({
 }));
 
 // Mock para funciones de fecha para tener una fecha consistente en las pruebas
-const mockDate = new Date('2025-05-10T12:00:00Z');
+const mockDate = new Date('2025-05-10T12:00:00');
 const originalDate = global.Date;
 jest.spyOn(global, 'Date').mockImplementation((args) => {
   if (args) {

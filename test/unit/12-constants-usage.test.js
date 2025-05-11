@@ -46,7 +46,7 @@ jest.mock('../../src/services/storage-service', () => ({
 }));
 
 // Mock para fecha constante
-const mockDate = new Date('2025-05-10T12:00:00Z');
+const mockDate = new Date('2025-05-10T12:00:00');
 const mockDateNow = jest.spyOn(global.Date, 'now').mockImplementation(() => mockDate.getTime());
 
 describe('12. Uso de Constantes', () => {
