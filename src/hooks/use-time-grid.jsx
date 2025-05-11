@@ -35,11 +35,17 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
    */
   const shouldShowEventStart = useCallback((event, day, hour) => {
     try {
-      if (!event?.start) return false;
+      if (!event?.start) {
+        console.error('Error al verificar inicio de evento: evento sin propiedad start', event);
+        return false;
+      }
       
       const eventStart = new Date(event.start);
       
-      if (isNaN(eventStart.getTime())) return false;
+      if (isNaN(eventStart.getTime())) {
+        console.error('Error al verificar inicio de evento: fecha de inicio inválida', event);
+        return false;
+      }
       
       return (
         eventStart.getDate() === day.getDate() &&
@@ -61,12 +67,18 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
    */
   const isEventActiveAtStartOfDay = useCallback((event, day) => {
     try {
-      if (!event?.start || !event?.end) return false;
+      if (!event?.start || !event?.end) {
+        console.error('Error al verificar evento activo al inicio del día: evento sin propiedades requeridas', event);
+        return false;
+      }
       
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
       
-      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
+      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) {
+        console.error('Error al verificar evento activo al inicio del día: fechas inválidas', event);
+        return false;
+      }
       
       // Medianoche del día
       const dayStart = new Date(day);
