@@ -68,7 +68,7 @@ jest.mock('../../src/utils/date-utils', () => {
 });
 
 // Mock para fecha constante
-const mockDate = new Date('2025-05-12T12:00:00Z');
+const mockDate = new Date('2025-05-12T12:00:00');
 const mockDateNow = jest.spyOn(global.Date, 'now').mockImplementation(() => mockDate.getTime());
 
 describe('10. Uso de Hooks Personalizados', () => {
@@ -250,7 +250,7 @@ describe('10. Uso de Hooks Personalizados', () => {
     expect(result.current.selectedDay.getDate()).toBe(initialSelectedDay.getDate());
     
     // Establecer fechas manualmente
-    const newDate = new Date('2025-06-15T12:00:00Z');
+    const newDate = new Date('2025-06-15T12:00:00');
     
     await act(async () => {
       result.current.setCurrentDate(newDate);
@@ -339,8 +339,8 @@ describe('10. Uso de Hooks Personalizados', () => {
     const existingEvent = {
       id: 'existing-id',
       title: 'Evento existente',
-      start: '2025-05-12T14:00:00Z',
-      end: '2025-05-12T15:00:00Z',
+      start: '2025-05-12T14:00:00',
+      end: '2025-05-12T15:00:00',
       color: '#FF5722'
     };
     
@@ -444,11 +444,11 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Probar shouldShowEventStart
     const testEvent = {
-      start: '2025-05-12T10:00:00Z',
-      end: '2025-05-12T11:00:00Z'
+      start: '2025-05-12T10:00:00',
+      end: '2025-05-12T11:00:00'
     };
     
-    const testDay = new Date('2025-05-12T00:00:00Z');
+    const testDay = new Date('2025-05-12T00:00:00');
     const eventHour = 10;
     const nonEventHour = 11;
     
@@ -462,8 +462,8 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Probar isEventActiveAtStartOfDay para evento que cruza días
     const overnightEvent = {
-      start: '2025-05-09T22:00:00Z',
-      end: '2025-05-12T02:00:00Z'
+      start: '2025-05-09T22:00:00',
+      end: '2025-05-12T02:00:00'
     };
     
     const isActive = result.current.isEventActiveAtStartOfDay(overnightEvent, testDay);
@@ -471,8 +471,8 @@ describe('10. Uso de Hooks Personalizados', () => {
     
     // Verificar que detecta correctamente cuando un evento NO está activo al inicio del día
     const regularEvent = {
-      start: '2025-05-12T08:00:00Z',
-      end: '2025-05-12T09:00:00Z'
+      start: '2025-05-12T08:00:00',
+      end: '2025-05-12T09:00:00'
     };
     
     const isNotActive = result.current.isEventActiveAtStartOfDay(regularEvent, testDay);
