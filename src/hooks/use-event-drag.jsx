@@ -1,4 +1,4 @@
-// use-event-drag.jsx
+// src/hooks/use-event-drag.jsx
 
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
@@ -88,32 +88,49 @@ export function useEventDrag({
     
     // No bloquear clics inmediatamente, solo cuando se confirme el arrastre
     
-    const gridInfo = initializeGridInfo(eventRef, gridSize, event);
+    // Verificamos que el evento tenga las propiedades necesarias
+    if (!event || !event.start || !event.end) {
+      console.error('Error en handleDragStart: Evento sin propiedades start/end', event);
+      return;
+    }
     
-    // Guardar duración original y minutos de inicio para cálculos posteriores
-    const startDate = new Date(event.start);
-    const endDate = new Date(event.end);
-    const durationMinutes = (endDate - startDate) / (1000 * 60);
-    const startMinutes = startDate.getMinutes();
-    
-    dragInfo.current = {
-      dragging: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      deltaX: 0,
-      deltaY: 0,
-      listeners: true,
-      startTime: Date.now(),
-      endTime: 0,
-      moved: false,
-      originalDuration: durationMinutes,
-      originalStartMinutes: startMinutes,
-      grid: gridInfo,
-      highlightedCell: null
-    };
-    
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    try {
+      const gridInfo = initializeGridInfo(eventRef, gridSize, event);
+      
+      // Guardar duración original y minutos de inicio para cálculos posteriores
+      const startDate = new Date(event.start);
+      const endDate = new Date(event.end);
+      
+      // Verificar que las fechas son válidas
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.error('Error en handleDragStart: Fechas inválidas en el evento', event);
+        return;
+      }
+      
+      const durationMinutes = (endDate - startDate) / (1000 * 60);
+      const startMinutes = startDate.getMinutes();
+      
+      dragInfo.current = {
+        dragging: true,
+        startX: e.clientX,
+        startY: e.clientY,
+        deltaX: 0,
+        deltaY: 0,
+        listeners: true,
+        startTime: Date.now(),
+        endTime: 0,
+        moved: false,
+        originalDuration: durationMinutes,
+        originalStartMinutes: startMinutes,
+        grid: gridInfo,
+        highlightedCell: null
+      };
+      
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    } catch (error) {
+      console.error('Error al iniciar arrastre:', error);
+    }
     
     // No activar clases ni estado de arrastre hasta que haya movimiento real
   };
@@ -208,61 +225,77 @@ export function useEventDrag({
       let minutesDelta = 0;
       let daysDelta = 0;
       
-      // Calcular cambio por arrastre en minutos precisos
-      minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, false, gridSize, snapValue);
-      
-      // Calcular cambio en días (solo para vista semanal)
-      if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
-        daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
-      }
-      
-      if (eventRef.current) {
-        eventRef.current.classList.remove('dragging');
-        eventRef.current.style.transform = '';
-      }
-      
-      setDragging(false);
-      
-      // Actualizar si hubo cambio efectivo
-      if (minutesDelta !== 0 || daysDelta !== 0) {
-        const startDate = new Date(event.start);
-        const endDate = new Date(event.end);
+      try {
+        // Verificar que el evento tenga las propiedades necesarias
+        if (!event || !event.start || !event.end) {
+          console.error('Error en handleMouseUp: Evento sin propiedades start/end', event);
+          return;
+        }
+
+        // Calcular cambio por arrastre en minutos precisos
+        minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, false, gridSize, snapValue);
         
-        // Si no hay snap activado, alinear con la hora completa pero mantener duración
-        if (snapValue === 0) {
-          // Obtener la hora completa más cercana basada en el desplazamiento
-          const hourDelta = Math.round(dragInfo.current.deltaY / gridSize);
-          
-          // Ajustar la fecha para comenzar en una hora completa
-          startDate.setHours(startDate.getHours() + hourDelta);
-          startDate.setMinutes(0); // Resetear minutos a 0 para alinear con hora completa
-          
-          // Mantener la duración exacta original
-          const durationMinutes = dragInfo.current.originalDuration;
-          const newEndDate = new Date(startDate);
-          newEndDate.setMinutes(newEndDate.getMinutes() + durationMinutes);
-          
-          // Actualizar solo endDate después de calcular basado en startDate
-          endDate.setTime(newEndDate.getTime());
-        } else {
-          // Con snap activado, comportamiento normal
-          startDate.setMinutes(startDate.getMinutes() + minutesDelta);
-          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+        // Calcular cambio en días (solo para vista semanal)
+        if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
+          daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
         }
         
-        if (daysDelta !== 0) {
-          startDate.setDate(startDate.getDate() + daysDelta);
-          endDate.setDate(endDate.getDate() + daysDelta);
+        if (eventRef.current) {
+          eventRef.current.classList.remove('dragging');
+          eventRef.current.style.transform = '';
         }
         
-        const updatedEvent = {
-          ...event,
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        };
+        setDragging(false);
         
-        console.log('Evento actualizado:', updatedEvent);
-        onUpdate(updatedEvent);
+        // Actualizar si hubo cambio efectivo
+        if (minutesDelta !== 0 || daysDelta !== 0) {
+          const startDate = new Date(event.start);
+          const endDate = new Date(event.end);
+          
+          // Verificar que las fechas son válidas
+          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            console.error('Error en handleMouseUp: Fechas inválidas en el evento', event);
+            return;
+          }
+          
+          // Si no hay snap activado, alinear con la hora completa pero mantener duración
+          if (snapValue === 0) {
+            // Obtener la hora completa más cercana basada en el desplazamiento
+            const hourDelta = Math.round(dragInfo.current.deltaY / gridSize);
+            
+            // Ajustar la fecha para comenzar en una hora completa
+            startDate.setHours(startDate.getHours() + hourDelta);
+            startDate.setMinutes(0); // Resetear minutos a 0 para alinear con hora completa
+            
+            // Mantener la duración exacta original
+            const durationMinutes = dragInfo.current.originalDuration;
+            const newEndDate = new Date(startDate);
+            newEndDate.setMinutes(newEndDate.getMinutes() + durationMinutes);
+            
+            // Actualizar solo endDate después de calcular basado en startDate
+            endDate.setTime(newEndDate.getTime());
+          } else {
+            // Con snap activado, comportamiento normal
+            startDate.setMinutes(startDate.getMinutes() + minutesDelta);
+            endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+          }
+          
+          if (daysDelta !== 0) {
+            startDate.setDate(startDate.getDate() + daysDelta);
+            endDate.setDate(endDate.getDate() + daysDelta);
+          }
+          
+          const updatedEvent = {
+            ...event,
+            start: startDate.toISOString(),
+            end: endDate.toISOString()
+          };
+          
+          console.log('Evento actualizado:', updatedEvent);
+          onUpdate(updatedEvent);
+        }
+      } catch (error) {
+        console.error('Error al finalizar arrastre:', error);
       }
       
       // Desactivar bloqueo de clics después de un tiempo
