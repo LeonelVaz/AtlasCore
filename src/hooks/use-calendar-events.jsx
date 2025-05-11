@@ -1,4 +1,4 @@
-// use-calendar-events.jsx (actualizado para usar constantes)
+// use-calendar-events.jsx
 import { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../core/bus/event-bus';
 import storageService from '../services/storage-service';
