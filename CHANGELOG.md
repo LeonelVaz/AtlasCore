@@ -1,6 +1,6 @@
 # Registro de Cambios (Changelog)
 
-## [0.2.0] - 2025-05-15
+## [0.2.0] - 2025-05-11
 ### Añadido
 - Interacciones avanzadas con eventos del calendario
   - Arrastrar y soltar eventos entre horas y días
