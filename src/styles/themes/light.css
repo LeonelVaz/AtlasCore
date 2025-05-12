@@ -40,6 +40,10 @@
   --input-bg: #FFFFFF;
   --dropdown-bg: #FFFFFF;
   
+  /* Variables para la barra superior */
+  --topbar-bg: #2D4B94; /* Azul Atlas para el tema claro */
+  --topbar-text: white;
+  
   /* Navegación */
   --nav-active-bg: rgba(45, 75, 148, 0.1);
   --settings-nav-active-bg: rgba(45, 75, 148, 0.1);

@@ -40,6 +40,10 @@
   --input-bg: #232340;
   --dropdown-bg: #1C1C35;
   
+  /* Variables para la barra superior */
+  --topbar-bg: #6A48A4; /* Púrpura más intenso para la barra */
+  --topbar-text: #FFFFFF;
+  
   /* Navegación */
   --nav-active-bg: rgba(126, 87, 194, 0.3);
   --settings-nav-active-bg: rgba(126, 87, 194, 0.3);

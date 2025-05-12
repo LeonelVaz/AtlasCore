@@ -40,6 +40,10 @@
   --input-bg: #202020;
   --dropdown-bg: #1A1A1A;
   
+  /* Variables para la barra superior */
+  --topbar-bg: #202020; /* Gris oscuro para el tema oscuro */
+  --topbar-text: #E0E0E0;
+  
   /* Navegación */
   --nav-active-bg: rgba(120, 120, 120, 0.2);
   --settings-nav-active-bg: rgba(120, 120, 120, 0.2);

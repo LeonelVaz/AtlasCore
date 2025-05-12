@@ -1,3 +1,4 @@
+/* src/styles/header-controls.css */
 /**
  * Estilos para la barra superior y controles de ventana
  */
@@ -73,13 +74,13 @@
 .min-icon {
   width: 10px;
   height: 1px;
-  background-color: white;
+  background-color: var(--topbar-text); /* Cambiado para usar la variable de color de texto de la barra superior */
 }
 
 .max-icon {
   width: 10px;
   height: 10px;
-  border: 1px solid white;
+  border: 1px solid var(--topbar-text); /* Cambiado para usar la variable de color de texto de la barra superior */
   box-sizing: border-box;
   border-radius: 1px; /* Curvatura sutil en las esquinas */
 }
@@ -97,7 +98,7 @@
   position: absolute;
   width: 8px;
   height: 8px;
-  border: 1px solid white;
+  border: 1px solid var(--topbar-text); /* Cambiado para usar la variable de color de texto de la barra superior */
   box-sizing: border-box;
   border-radius: 1px;
   bottom: 0;
@@ -112,8 +113,8 @@
   right: 0;
   width: 5px;
   height: 5px;
-  border-top: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid var(--topbar-text); /* Cambiado para usar la variable de color de texto de la barra superior */
+  border-right: 1px solid var(--topbar-text); /* Cambiado para usar la variable de color de texto de la barra superior */
 }
 
 .close-icon {
@@ -128,7 +129,7 @@
   position: absolute;
   width: 14px;
   height: 1px;
-  background-color: white;
+  background-color: var(--topbar-text); /* Cambiado para usar la variable de color de texto de la barra superior */
   top: 50%;
   left: 50%;
 }

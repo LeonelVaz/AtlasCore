@@ -40,6 +40,10 @@
   --input-bg: var(--gray-700);
   --dropdown-bg: var(--gray-800);
   
+  /* Variables para la barra superior */
+  --topbar-bg: #1e293b; /* Azul profundo para la barra */
+  --topbar-text: white;
+  
   /* Navegación */
   --nav-active-bg: rgba(59, 130, 246, 0.2);
   --settings-nav-active-bg: rgba(59, 130, 246, 0.2);

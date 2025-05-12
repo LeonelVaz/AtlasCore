@@ -53,6 +53,10 @@
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
+  
+  /* Variables para la barra superior */
+  --topbar-bg: var(--color-atlas-blue); /* Valor por defecto para la barra superior */
+  --topbar-text: white; /* Color del texto en la barra superior */
 }
 
 /* Para garantizar que estilos de impresión sean consistentes */
