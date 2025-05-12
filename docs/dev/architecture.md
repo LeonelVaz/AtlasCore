@@ -29,6 +29,7 @@ Responsable de la interfaz de usuario y la experiencia del usuario:
 - **Gestión de Temas**: Sistema de temas y personalización visual
 - **Gestión de Vistas**: Lógica para cambiar entre vistas de día, semana, etc.
 - **Componentes UI Reutilizables**: Botones, diálogos, dropdowns, etc.
+- **Interacciones Avanzadas**: Sistema de arrastrar y soltar, redimensionamiento, snap
 
 ### 2. Capa de Lógica de Negocio
 
@@ -233,6 +234,23 @@ components/calendar/
 
 El sistema de calendario se centra en el patrón de arquitectura de componentes, con componentes reutilizables que se comunican a través del estado compartido (Context API) y eventos.
 
+#### Sistema de Interacciones Avanzadas
+
+Las interacciones de arrastrar y soltar, redimensionamiento y snap están implementadas a través de hooks personalizados que separan la lógica de interacción de los componentes de UI:
+
+```
+hooks/
+├── use-event-drag.jsx      # Hook para arrastrar eventos
+├── use-event-resize.jsx    # Hook para redimensionar eventos
+└── use-calendar-navigation.jsx # Hook para navegación
+```
+
+Estos hooks se conectan con los componentes de UI y manejan:
+- Detección de gestos (inicio de arrastre, movimiento, finalización)
+- Cálculo de posiciones y dimensiones
+- Aplicación de restricciones (snap a intervalos)
+- Publicación de eventos a través del bus
+
 ### Sistema de Plugins
 
 El sistema de plugins permite la extensibilidad de Atlas:
@@ -409,19 +427,6 @@ const FileSystemAdapter = {
   
   // Otros métodos...
 };
-```
-
-## Internacionalización
-
-El sistema de internacionalización está integrado en la arquitectura:
-
-```
-i18n/
-├── index.js             # Configuración principal
-├── config.js            # Configuración avanzada
-└── locales/             # Archivos de traducción
-    ├── es/              # Español
-    └── en/              # Inglés
 ```
 
 ## Consideraciones de Rendimiento
