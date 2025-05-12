@@ -1,6 +1,136 @@
 /* src/styles/themes/light.css */
 :root.theme-light {
-  /* Colores principales */
+  /* Colores base */
+  --primary-color: #2D4B94;         /* Atlas Blue */
+  --primary-hover: #1A3A7D;
+  --secondary-color: #546E7A;       /* Structure Gray */
+  --success-color: #26A69A;         /* Modular Green */
+  --success-hover: #00897B;
+  --warning-color: #FFB300;         /* Insight Yellow */
+  --warning-hover: #FFA000;
+  --danger-color: #E53935;          /* Alarm Red */
+  --danger-hover: #C62828;
+  --info-color: #29B6F6;
+  
+  /* Grises */
+  --gray-50: #FAFAFA;
+  --gray-100: #F5F5F5;
+  --gray-200: #EEEEEE;
+  --gray-300: #E0E0E0;
+  --gray-400: #BDBDBD;
+  --gray-500: #9E9E9E;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-900: #212121;
+  
+  /* Fondos y texto */
+  --bg-color: #FFFFFF;
+  --bg-color-secondary: #F5F5F5;
+  --text-color: #333333;
+  --text-color-secondary: #666666;
+  
+  /* Componentes UI */
+  --header-bg: #F5F5F5;
+  --sidebar-bg: #F5F5F5;
+  --titlebar-bg: #F5F5F5;
+  --card-bg: #FFFFFF;
+  --hover-color: #EEEEEE;
+  --modal-bg: #FFFFFF;
+  --input-bg: #FFFFFF;
+  --dropdown-bg: #FFFFFF;
+  
+  /* Navegación */
+  --nav-active-bg: rgba(45, 75, 148, 0.1);
+  --settings-nav-active-bg: rgba(45, 75, 148, 0.1);
+  
+  /* Calendario */
+  --day-header-hover: rgba(45, 75, 148, 0.05);
+  --day-header-today: rgba(45, 75, 148, 0.1);
+  --time-slot-hover: rgba(45, 75, 148, 0.05);
+  --add-time-row-hover: rgba(45, 75, 148, 0.1);
+  
+  /* Formularios */
+  --secondary-btn-bg: #F0F0F0;
+  --secondary-btn-text: #333333;
+  --secondary-btn-hover: #E0E0E0;
+  
+  /* Estados de videos */
+  --status-pendiente-bg: rgba(255, 179, 0, 0.1);
+  --status-pendiente-border: rgba(255, 179, 0, 0.2);
+  --status-vacio-bg: rgba(189, 189, 189, 0.1);
+  --status-vacio-border: var(--border-color);
+  --status-desarrollo-bg: rgba(45, 75, 148, 0.1);
+  --status-desarrollo-border: rgba(45, 75, 148, 0.2);
+  --status-produccion-bg: rgba(255, 179, 0, 0.1);
+  --status-produccion-border: rgba(255, 179, 0, 0.2);
+  --status-publicado-bg: rgba(38, 166, 154, 0.1);
+  --status-publicado-border: rgba(38, 166, 154, 0.2);
+  
+  /* Ingresos */
+  --income-paid-bg: rgba(38, 166, 154, 0.1);
+  --income-paid-border: rgba(38, 166, 154, 0.2);
+  --income-pending-bg: rgba(255, 179, 0, 0.1);
+  --income-pending-border: rgba(255, 179, 0, 0.2);
+  
+  /* Colores de divisa */
+  --usd-color: #2D4B94;
+  --eur-color: #7E57C2;
+  --ars-color: #26A69A;
+  
+  /* Opciones interactivas */
+  --status-option-hover: rgba(45, 75, 148, 0.05);
+  --status-option-selected: rgba(45, 75, 148, 0.1);
+  --frequency-option-hover: rgba(45, 75, 148, 0.05);
+  --frequency-option-selected: rgba(45, 75, 148, 0.1);
+  --weekday-option-hover: rgba(45, 75, 148, 0.05);
+  --weekday-option-selected: rgba(45, 75, 148, 0.1);
+  --time-slot-option-hover: rgba(45, 75, 148, 0.05);
+  --time-slot-option-selected: rgba(45, 75, 148, 0.1);
+  
+  /* Scroll */
+  --scrollbar-thumb: #E0E0E0;
+  --scrollbar-thumb-hover: #BDBDBD;
+  
+  /* Bordes */
+  --border-color: #E0E0E0;
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.375rem;
+  --border-radius-lg: 0.5rem;
+  --border-radius-xl: 0.75rem;
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Espaciado */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Transiciones */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s ease;
+  
+  /* Firma */
+  --signature-color: rgba(51, 51, 51, 0.3);
+  --signature-font: 'Amalfi Coast', cursive;
+
+  /* Slots de tiempo */
+  --time-slot-standard-bg: transparent;
+  --time-slot-medium-bg: rgba(0, 0, 0, 0.02);
+  --time-slot-short-bg: rgba(0, 0, 0, 0.04);
+  --time-slot-standard-hover: var(--time-slot-hover);
+  --time-slot-medium-hover: var(--time-slot-hover);
+  --time-slot-short-hover: var(--time-slot-hover);
+  --primary-color-rgb: 45, 75, 148;
+  
+  /* Compatibilidad con variables de Atlas originales */
   --color-atlas-blue: #2D4B94;
   --color-modular-green: #26A69A;
   --color-structure-gray: #546E7A;
@@ -8,21 +138,18 @@
   --color-custom-purple: #7E57C2;
   --color-alarm-red: #E53935;
   
-  /* Colores de interfaz */
   --color-background: #FFFFFF;
   --color-text: #333333;
   --color-text-secondary: #666666;
   --color-border: #E0E0E0;
   --color-shadow: rgba(0, 0, 0, 0.1);
   
-  /* Sidebar */
   --color-sidebar-bg: #F5F5F5;
   --color-sidebar-text: #333333;
   --color-sidebar-border: rgba(0, 0, 0, 0.1);
   --color-sidebar-hover: rgba(0, 0, 0, 0.05);
   --color-sidebar-active: rgba(45, 75, 148, 0.1);
   
-  /* Calendario */
   --color-calendar-background: #FFFFFF;
   --color-calendar-header: #F5F5F5;
   --color-calendar-grid: #FFFFFF;
@@ -32,31 +159,28 @@
   --color-calendar-today: #E3F2FD;
   --color-calendar-slot-hover: #F0F7FF;
   
-  /* Eventos */
   --color-event-default: #2D4B94;
   --color-event-text: #FFFFFF;
   --color-event-drag: rgba(45, 75, 148, 0.7);
   --color-event-resize: rgba(45, 75, 148, 0.7);
   
-  /* Formularios */
   --color-input-bg: #FFFFFF;
   --color-input-border: #E0E0E0;
   --color-input-focus: #2D4B94;
   
-  /* Botones */
   --color-button-primary-bg: #2D4B94;
   --color-button-primary-text: #FFFFFF;
   --color-button-primary-hover: #1A3A7D;
-  --color-button-primary-active: #2D4B94; /* Mismo azul que el encabezado */
+  --color-button-primary-active: #2D4B94;
   --color-button-primary-active-hover: #3A5CA5;
 
   --color-button-secondary-bg: #F0F0F0;
   --color-button-secondary-text: #333333;
   --color-button-secondary-hover: #E0E0E0;
-  --color-button-secondary-active: #2D4B94; /* Mismo azul que el encabezado */
+  --color-button-secondary-active: #2D4B94;
   --color-button-secondary-active-hover: #3A5CA5;
 
-  --color-button-active-text: #FFFFFF; /* Texto siempre blanco en botones activos */
+  --color-button-active-text: #FFFFFF;
   
   --color-button-danger-bg: #E53935;
   --color-button-danger-text: #FFFFFF;

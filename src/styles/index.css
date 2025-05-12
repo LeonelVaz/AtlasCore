@@ -5,7 +5,8 @@
 @import './ui/index.css';
 @import './calendar/index.css';
 @import './app.css';
-@import './header-controls.css';  /* Importación del nuevo archivo CSS */
+@import './header-controls.css';
+@import './variables.css';
 
 /**
  * Estilos globales para la aplicación Atlas
