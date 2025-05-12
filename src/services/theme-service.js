@@ -31,6 +31,11 @@ class ThemeService {
         id: THEMES.PURPLE_NIGHT,
         name: 'Púrpura Nocturno',
         icon: '✨'
+      },
+      {
+        id: THEMES.DEEP_OCEAN,
+        name: 'Océano Profundo',
+        icon: '🌊'
       }
     ];
   }

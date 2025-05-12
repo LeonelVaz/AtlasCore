@@ -1,3 +1,5 @@
+// src/core/config/constants.js (actualizado para incluir el nuevo tema)
+
 /**
  * Constantes globales para la aplicación Atlas
  */
@@ -7,7 +9,8 @@ export const THEMES = {
   LIGHT: 'light',
   DARK: 'dark',
   ATLAS_DARK_BLUE: 'atlas-dark-blue',
-  PURPLE_NIGHT: 'purple-night'
+  PURPLE_NIGHT: 'purple-night',
+  DEEP_OCEAN: 'deep-ocean'  // Nueva adición del tema Deep Ocean
 };
 
 // Constantes para estilos de encabezado de días

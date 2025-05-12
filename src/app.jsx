@@ -1,4 +1,4 @@
-// src/app.jsx (modificado)
+// src/app.jsx
 import React, { useState, useEffect } from 'react';
 import CalendarMain from './components/calendar/calendar-main';
 import SettingsPanel from './components/settings/SettingsPanel';
@@ -11,6 +11,7 @@ import './styles/themes/light.css';
 import './styles/themes/dark.css';
 import './styles/themes/atlas-dark-blue.css';
 import './styles/themes/purple-night.css';
+import './styles/themes/deep-ocean.css';
 
 // Íconos para los elementos del sidebar (usando caracteres emoji por simplicidad)
 const APP_SECTIONS = {
