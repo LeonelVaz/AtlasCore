@@ -2,7 +2,16 @@
  * Estilos para la barra superior y controles de ventana
  */
 
+ .app-logo {
+  display: flex;
+  align-items: center;
+}
 
+.app-logo img {
+  height: 40px;
+  width: auto;
+  margin-left: 2px; /* Ajusta según necesites */
+}
 
 /* Logo y título */
 .app-logo h1 {

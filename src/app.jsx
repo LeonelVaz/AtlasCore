@@ -58,7 +58,7 @@ function App() {
       <div className="app-container">
         <header className={isElectron ? "app-header draggable" : "app-header"}>
           <div className="app-logo">
-            <h1>Atlas</h1>
+            <img src="/logo.svg" alt="Atlas" height="40" />
           </div>
           
           {isElectron && <WindowControls />}
