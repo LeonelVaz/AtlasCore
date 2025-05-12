@@ -1,0 +1,53 @@
+/* src/styles/themes/purple-night.css */
+:root.theme-purple-night {
+  /* Colores principales */
+  --color-atlas-blue: #7E57C2;
+  --color-modular-green: #26A69A;
+  --color-structure-gray: #78909C;
+  --color-insight-yellow: #FFB300;
+  --color-custom-purple: #9575CD;
+  --color-alarm-red: #EF5350;
+  
+  /* Colores de interfaz */
+  --color-background: #1A1A2E;
+  --color-text: #E0E0E0;
+  --color-text-secondary: #B0B0B0;
+  --color-border: #2E2E4A;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  
+  /* Sidebar */
+  --color-sidebar-bg: #16213E;
+  --color-sidebar-text: #E0E0E0;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.1);
+  --color-sidebar-active: rgba(126, 87, 194, 0.3);
+  
+  /* Calendario */
+  --color-calendar-background: #1A1A2E;
+  --color-calendar-header: #16213E;
+  --color-calendar-grid: #1A1A2E;
+  --color-calendar-grid-border: #2E2E4A;
+  --color-calendar-time-label: #B0B0B0;
+  --color-calendar-day-header: #E0E0E0;
+  --color-calendar-today: #2D2A5A;
+  --color-calendar-slot-hover: #2D2A5A;
+  
+  /* Eventos */
+  --color-event-default: #7E57C2;
+  --color-event-text: #FFFFFF;
+  --color-event-drag: rgba(126, 87, 194, 0.7);
+  --color-event-resize: rgba(126, 87, 194, 0.7);
+  
+  /* Formularios */
+  --color-input-bg: #232340;
+  --color-input-border: #2E2E4A;
+  --color-input-focus: #7E57C2;
+  
+  /* Botones */
+  --color-button-primary-bg: #7E57C2;
+  --color-button-primary-text: #FFFFFF;
+  --color-button-secondary-bg: #232340;
+  --color-button-secondary-text: #E0E0E0;
+  --color-button-danger-bg: #EF5350;
+  --color-button-danger-text: #FFFFFF;
+}

@@ -9,6 +9,21 @@ export const THEMES = {
   PURPLE_NIGHT: 'purple-night'
 };
 
+// Constantes para estilos de encabezado de días
+export const DAY_HEADER_STYLES = {
+  DEFAULT: 'default',
+  MINIMAL: 'minimal',
+  DASHBOARD: 'dashboard'
+};
+
+// Constantes para visualización de horas
+export const TIME_DISPLAY_STYLES = {
+  HIDDEN: 'hidden',
+  START_ONLY: 'start-only',
+  START_END: 'start-end',
+  COMPACT: 'compact'
+};
+
 // Constantes para vistas del calendario
 export const CALENDAR_VIEWS = {
   DAY: 'day',
@@ -61,3 +76,5 @@ export const DEFAULT_EVENT_DURATION = 60;
 
 // Altura de celda de hora por defecto (en píxeles)
 export const DEFAULT_HOUR_CELL_HEIGHT = 60;
+
+

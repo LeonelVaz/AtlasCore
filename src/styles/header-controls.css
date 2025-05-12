@@ -2,24 +2,7 @@
  * Estilos para la barra superior y controles de ventana
  */
 
-/* Barra superior de la aplicación */
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-left: 16px;
-  padding-right: 0; /* Eliminamos el padding derecho para los controles */
-  background-color: var(--color-atlas-blue);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: 50px;
-  z-index: 100;
-}
 
-/* Hacer la barra de título arrastrable en Electron */
-.app-header.draggable {
-  -webkit-app-region: drag;
-}
 
 /* Logo y título */
 .app-logo h1 {
