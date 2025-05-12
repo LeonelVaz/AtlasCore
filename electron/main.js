@@ -14,20 +14,22 @@ if (isDev) {
 let mainWindow;
 
 function createWindow() {
-  // Configurar CSP según el entorno
-  /* ... resto del código CSP (no cambia) ... */
 
   // Crear la ventana del navegador
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    frame: false, // Sin marco para personalizar la ventana
+    minWidth: 800,
+    minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
-      enableRemoteModule: false
-    }
+      preload: path.join(__dirname, 'preload.js')
+    },
+    icon: path.join(__dirname, '../public/logo.png'), 
+    frame: false, 
+    titleBarStyle: 'hidden',
+    backgroundColor: '#141B2D'
   });
 
   // Cargar la URL adecuada
