@@ -25,7 +25,7 @@
 
 .snap-control-toggle.active {
   background-color: var(--color-atlas-blue);
-  color: white;
+  color: var(--color-button-active-text, white);
 }
 
 .snap-icon {
@@ -48,9 +48,11 @@
   text-align: center;
 }
 
+/* Cuando el snap está activo, el indicador de valor también debe mostrar fondo azul y texto blanco */
 .snap-control-toggle.active + .snap-value-indicator {
-  background-color: var(--color-button-secondary-active, #e0e0e0);
-  color: var(--color-button-secondary-text, var(--color-text));
+  background-color: var(--color-atlas-blue);
+  color: var(--color-button-active-text, white);
+  border-color: var(--color-atlas-blue);
 }
 
 .snap-value-indicator:hover {
@@ -114,7 +116,7 @@
   width: 100%;
   padding: 4px 0;
   background-color: var(--color-atlas-blue);
-  color: white;
+  color: var(--color-button-active-text, white);
   border: none;
   border-radius: 4px;
   cursor: pointer;

@@ -6,6 +6,7 @@
 export const THEMES = {
   LIGHT: 'light',
   DARK: 'dark',
+  ATLAS_DARK_BLUE: 'atlas-dark-blue',
   PURPLE_NIGHT: 'purple-night'
 };
 

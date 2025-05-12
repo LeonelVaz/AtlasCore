@@ -46,7 +46,7 @@
 .calendar-navigation button.active,
 .calendar-view-toggle button.active {
   background-color: var(--color-atlas-blue);
-  color: white;
+  color: var(--color-button-active-text, white);
   border-color: var(--color-atlas-blue);
 }
 
@@ -60,6 +60,24 @@
 .calendar-view-toggle {
   display: flex;
   gap: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .calendar-navigation {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+  
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .calendar-view-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 /* Responsive */

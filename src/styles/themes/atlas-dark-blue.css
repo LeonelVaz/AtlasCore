@@ -1,0 +1,60 @@
+/* src/styles/themes/atlas-dark-blue.css */
+:root.theme-atlas-dark-blue {
+  /* Colores principales */
+  --color-atlas-blue: #3F51B5;
+  --color-modular-green: #26A69A;
+  --color-structure-gray: #78909C;
+  --color-insight-yellow: #FFB300;
+  --color-custom-purple: #9575CD;
+  --color-alarm-red: #EF5350;
+  
+  /* Colores de interfaz */
+  --color-background: #121212;
+  --color-text: #EEEEEE;
+  --color-text-secondary: #AAAAAA;
+  --color-border: #333333;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  
+  /* Sidebar */
+  --color-sidebar-bg: #1A2233;
+  --color-sidebar-text: #FFFFFF;
+  --color-sidebar-border: rgba(255, 255, 255, 0.1);
+  --color-sidebar-hover: rgba(255, 255, 255, 0.1);
+  --color-sidebar-active: rgba(63, 81, 181, 0.3);
+  
+  /* Calendario - ajustado según la captura */
+  --color-calendar-background: #1A2233;
+  --color-calendar-header: #16213E;
+  --color-calendar-grid: #1E2A45;
+  --color-calendar-grid-border: #2C3A57;
+  --color-calendar-time-label: #AAAAAA;
+  --color-calendar-day-header: #EEEEEE;
+  --color-calendar-today: #242F4B;
+  --color-calendar-slot-hover: #273658;
+  
+  /* Eventos */
+  --color-event-default: #3F51B5;
+  --color-event-text: #FFFFFF;
+  --color-event-drag: rgba(63, 81, 181, 0.7);
+  --color-event-resize: rgba(63, 81, 181, 0.7);
+  
+  /* Formularios */
+  --color-input-bg: #2A2A2A;
+  --color-input-border: #444444;
+  --color-input-focus: #3F51B5;
+  
+  /* Botones */
+  --color-button-primary-bg: #3F51B5;
+  --color-button-primary-text: #FFFFFF;
+  --color-button-primary-hover: #344397;
+  --color-button-primary-active: #2C387E;
+  
+  --color-button-secondary-bg: #2A2A2A;
+  --color-button-secondary-text: #EEEEEE;
+  --color-button-secondary-hover: #3D3D3D;
+  --color-button-secondary-active: #3F51B5;
+  
+  --color-button-danger-bg: #EF5350;
+  --color-button-danger-text: #FFFFFF;
+  --color-button-danger-hover: #E53935;
+}

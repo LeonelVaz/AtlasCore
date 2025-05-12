@@ -20,7 +20,12 @@ class ThemeService {
       {
         id: THEMES.DARK,
         name: 'Oscuro',
-        icon: '🌙'
+        icon: '🌑'
+      },
+      {
+        id: THEMES.ATLAS_DARK_BLUE,
+        name: 'Azul Atlas Oscuro',
+        icon: '🌃'
       },
       {
         id: THEMES.PURPLE_NIGHT,

@@ -77,13 +77,14 @@
 
 /* Estado activo para botones toggle */
 .ui-button-active.ui-button-primary {
-  background-color: var(--color-button-primary-active, #1A3A7D);
+  background-color: var(--color-button-primary-active, var(--color-atlas-blue));
+  color: var(--color-button-active-text, white);
 }
 
 .ui-button-active.ui-button-secondary {
-  background-color: var(--color-atlas-blue);
-  color: white;
-  border-color: var(--color-atlas-blue);
+  background-color: var(--color-button-secondary-active, var(--color-atlas-blue));
+  color: var(--color-button-active-text, white);
+  border-color: var(--color-button-secondary-active, var(--color-atlas-blue));
 }
 
 /* Estado deshabilitado */

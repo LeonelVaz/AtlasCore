@@ -9,6 +9,7 @@ import ThemeProvider from './contexts/theme-context';
 import { isElectronEnv } from './utils/electron-detector';
 import './styles/themes/light.css';
 import './styles/themes/dark.css';
+import './styles/themes/atlas-dark-blue.css';
 import './styles/themes/purple-night.css';
 
 // Íconos para los elementos del sidebar (usando caracteres emoji por simplicidad)

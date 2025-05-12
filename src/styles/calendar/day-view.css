@@ -40,7 +40,7 @@
 
 .day-view-navigation button.active {
   background-color: var(--color-atlas-blue);
-  color: white;
+  color: var(--color-button-active-text, white);
   border-color: var(--color-atlas-blue);
 }
 
