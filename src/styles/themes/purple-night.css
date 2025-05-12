@@ -48,11 +48,13 @@
   --color-button-primary-text: #FFFFFF;
   --color-button-primary-hover: #6A48A4;
   --color-button-primary-active: #5E3E94;
+  --color-button-primary-active-hover: #8A67CC; 
   
   --color-button-secondary-bg: #232340;
   --color-button-secondary-text: #E0E0E0;
   --color-button-secondary-hover: #2E2E50;
   --color-button-secondary-active: #7E57C2;
+  --color-button-secondary-active-hover: #8A67CC;
   
   --color-button-danger-bg: #EF5350;
   --color-button-danger-text: #FFFFFF;

@@ -81,10 +81,14 @@
   color: var(--color-button-active-text, white);
 }
 
-.ui-button-active.ui-button-secondary {
-  background-color: var(--color-button-secondary-active, var(--color-atlas-blue));
+.ui-button-active.ui-button-primary:hover {
+  background-color: var(--color-button-primary-active-hover, #233d87);
   color: var(--color-button-active-text, white);
-  border-color: var(--color-button-secondary-active, var(--color-atlas-blue));
+}
+
+.ui-button-active.ui-button-secondary:hover {
+  background-color: var(--color-button-secondary-active-hover, #233d87);
+  color: var(--color-button-active-text, white);
 }
 
 /* Estado deshabilitado */

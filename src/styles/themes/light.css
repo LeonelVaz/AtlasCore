@@ -48,12 +48,14 @@
   --color-button-primary-text: #FFFFFF;
   --color-button-primary-hover: #1A3A7D;
   --color-button-primary-active: #2D4B94; /* Mismo azul que el encabezado */
-  
+  --color-button-primary-active-hover: #3A5CA5;
+
   --color-button-secondary-bg: #F0F0F0;
   --color-button-secondary-text: #333333;
   --color-button-secondary-hover: #E0E0E0;
   --color-button-secondary-active: #2D4B94; /* Mismo azul que el encabezado */
-  
+  --color-button-secondary-active-hover: #3A5CA5;
+
   --color-button-active-text: #FFFFFF; /* Texto siempre blanco en botones activos */
   
   --color-button-danger-bg: #E53935;
