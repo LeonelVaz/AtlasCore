@@ -429,6 +429,19 @@ const FileSystemAdapter = {
 };
 ```
 
+## Internacionalización
+
+El sistema de internacionalización está integrado en la arquitectura:
+
+```
+i18n/
+├── index.js             # Configuración principal
+├── config.js            # Configuración avanzada
+└── locales/             # Archivos de traducción
+    ├── es/              # Español
+    └── en/              # Inglés
+```
+
 ## Consideraciones de Rendimiento
 
 La arquitectura de Atlas implementa varias estrategias para optimizar el rendimiento:
