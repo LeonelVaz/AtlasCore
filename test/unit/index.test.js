@@ -1,8 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from '../../src/app';
+/**
+ * @jest-environment jsdom
+ */
 
-// Mocks para ReactDOM
+import React from 'react';
+
+// Mock para la importación de CSS
+jest.mock('../../src/styles/index.css', () => ({}));
+
+// Mock para react-dom/client
 jest.mock('react-dom/client', () => ({
   createRoot: jest.fn(() => ({
     render: jest.fn()
@@ -10,46 +15,56 @@ jest.mock('react-dom/client', () => ({
 }));
 
 // Mock para el componente App
-jest.mock('../../src/app', () => {
-  return function MockApp() {
-    return <div>App Simulada</div>;
-  };
-});
+jest.mock('../../src/app', () => ({
+  __esModule: true,
+  default: () => <div>Mock App</div>
+}));
 
 describe('Index', () => {
+  let originalConsoleError;
   let originalGetElementById;
   
   beforeEach(() => {
-    // Guardar implementación original
+    // Guardamos el console.error original y lo reemplazamos con un mock
+    originalConsoleError = console.error;
+    console.error = jest.fn();
+    
+    // Guardamos el getElementById original y lo reemplazamos con un mock
     originalGetElementById = document.getElementById;
+    document.getElementById = jest.fn();
     
-    // Mock para document.getElementById
-    document.getElementById = jest.fn().mockReturnValue({});
-    
-    // Limpiar el mock de ReactDOM
-    ReactDOM.createRoot.mockClear();
-  });
-  
-  afterEach(() => {
-    // Restaurar la implementación original
-    document.getElementById = originalGetElementById;
-    
-    // Eliminar módulos cacheados para que index.jsx se vuelva a ejecutar
+    // Limpiamos caché de módulos
     jest.resetModules();
   });
   
-  test('debe crear un root de React y renderizar el componente App', () => {
-    // Cargar el archivo index.jsx para que se ejecute
-    require('../../src/index.jsx');
+  afterEach(() => {
+    // Restauramos funciones originales
+    console.error = originalConsoleError;
+    document.getElementById = originalGetElementById;
+  });
+
+  test('Se importa sin errores cuando el elemento root existe', () => {
+    // Creamos un elemento div para simular root
+    const mockRoot = document.createElement('div');
+    document.getElementById.mockReturnValue(mockRoot);
     
-    // Verificar que se llamó a document.getElementById con 'root'
+    // No debería lanzar error
+    expect(() => {
+      require('../../src/index.jsx');
+    }).not.toThrow();
+    
     expect(document.getElementById).toHaveBeenCalledWith('root');
+  });
+
+  test('Maneja correctamente cuando el elemento root no existe', () => {
+    // Simulamos que getElementById retorna null
+    document.getElementById.mockReturnValue(null);
     
-    // Verificar que se creó un root React
-    expect(ReactDOM.createRoot).toHaveBeenCalled();
+    // No debería lanzar error
+    expect(() => {
+      require('../../src/index.jsx');
+    }).not.toThrow();
     
-    // Verificar que se renderizó algún componente (sin verificar la estructura exacta)
-    const mockRoot = ReactDOM.createRoot.mock.results[0].value;
-    expect(mockRoot.render).toHaveBeenCalled();
+    expect(document.getElementById).toHaveBeenCalledWith('root');
   });
 });

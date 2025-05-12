@@ -4,7 +4,13 @@ import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      // Configuración explícita para evitar problemas de detección
+      // Esto debería solucionar el error "can't detect preamble"
+      jsxRuntime: 'automatic'
+    })
+  ],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),

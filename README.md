@@ -1,6 +1,6 @@
 # Atlas
 
-![Versión](https://img.shields.io/badge/versión-0.1.0-blue)
+![Versión](https://img.shields.io/badge/versión-0.2.0-blue)
 
 ## Descripción
 
@@ -8,12 +8,14 @@ Atlas es una aplicación modular de gestión del tiempo con arquitectura basada 
 
 ## Estado del Proyecto
 
-Actualmente, Atlas se encuentra en la **Versión 0.1.0 (Stage 1: Fundamentos)**, que incluye:
+Actualmente, Atlas se encuentra en la **Versión 0.2.0 (Stage 2: Mejoras de Interacción y Persistencia)**, que incluye:
 
-- Arquitectura base modular
-- Sistema de Bus de Eventos
-- Calendario funcional mínimo
-- Almacenamiento simple con localStorage
+- Arrastrar y soltar eventos entre horas y días
+- Redimensionamiento de eventos para modificar duración
+- Sistema de imán (snap) para alineación automática
+- Sistema de almacenamiento mejorado con manejo de errores
+- Vista diaria con navegación fluida
+- Registro de módulos funcional para interoperabilidad
 
 ## Instalación
 
@@ -86,8 +88,8 @@ Atlas sigue un plan de desarrollo por etapas:
 
 | Stage | Versión | Descripción |
 |-------|---------|-------------|
-| 1     | 0.1.0   | Fundamentos - Arquitectura base y calendario funcional mínimo |
-| 2     | 0.2.0   | Mejoras de Interacción y Persistencia |
+| 1     | 0.1.0   | ✅ Fundamentos - Arquitectura base y calendario funcional mínimo |
+| 2     | 0.2.0   | ✅ Mejoras de Interacción y Persistencia |
 | 3     | 0.3.0   | Personalización y Primeros Plugins |
 | 4     | 0.4.0   | Robustez y Plugins Esenciales |
 | 5     | 0.5.0   | Análisis y Ecosistema Completo |

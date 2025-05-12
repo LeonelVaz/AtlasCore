@@ -97,7 +97,6 @@ git checkout main
 git checkout main
 git pull origin main
 ```
-
 ## Crea la nueva rama
 ```bash
 git checkout -b feature/nuevos-componentes-calendario-stage2
@@ -109,6 +108,12 @@ git status
 # Sube la nueva rama al repositorio remoto
 ```bash
 git push -u origin feature/nuevos-componentes-calendario-stage2
+```
+
+# Hacer coincidir la rama con main
+```bash
+git checkout feature/nuevos-componentes-calendario-stage2
+git reset --hard main
 ```
 
 ## Vite (Desarrollo Frontend)

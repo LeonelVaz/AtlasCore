@@ -8,6 +8,9 @@
 ### Tagline
 *"Sostén tu mundo, organiza tu tiempo"*
 
+### Esencia de Atlas
+Atlas trasciende el concepto de calendario para convertirse en una experiencia de vida. No se limita a ordenar tus días, sino a iluminar el sentido de tu recorrido. Con esta herramienta, descubres el poder de dar forma a tu propio camino.
+
 ### Origen del Nombre
 El nombre "Atlas" proviene de la mitología griega, donde Atlas era el titán condenado a sostener los cielos sobre sus hombros. En un contexto moderno, también representa una colección comprehensiva de mapas que guían y dan perspectiva. Esta dualidad refleja perfectamente nuestra aplicación:
 

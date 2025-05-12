@@ -75,6 +75,7 @@ atlas-core/
 │   │   │   ├── event-item.jsx    # Elemento de evento con interacciones
 │   │   │   ├── time-grid.jsx     # Rejilla temporal con escalas
 │   │   │   ├── time-slot.jsx     # Franja horaria personalizable
+│   │   │   ├── snap-control.jsx  # Control de imán
 │   │   │   └── event-form.jsx    # Formulario de eventos mejorado
 │   │   │
 │   │   ├── ui/                   # Componentes de UI reutilizables
@@ -97,12 +98,15 @@ atlas-core/
 │   │   ├── use-calendar-events.jsx # Hook para eventos del calendario
 │   │   ├── use-time-grid.jsx     # Hook para rejilla temporal
 │   │   ├── use-event-drag.jsx    # Hook para arrastrar eventos
+│   │   ├── use-event-form.jsx    # Hook para formulario de eventos
+│   │   ├── use-calendar-navigation.jsx # Hook para navegación en el calendario
 │   │   ├── use-event-resize.jsx  # Hook para redimensionar eventos
 │   │   └── use-theme.jsx         # Hook para gestión de temas
 │   │
 │   ├── utils/                    # Utilidades
 │   │   ├── date-utils.js         # Utilidades de fechas
 │   │   ├── time-utils.js         # Utilidades de tiempo
+│   │   ├── debug-utils.js        # Utilidades de depuración
 │   │   ├── event-utils.js        # Utilidades para eventos
 │   │   ├── theme-utils.js        # Utilidades para temas
 │   │   └── storage-utils.js      # Utilidades de almacenamiento

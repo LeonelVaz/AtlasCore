@@ -1,6 +1,11 @@
 /* Importar fuentes */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
 
+/* Importar estilos por categoría */
+@import './ui/index.css';
+@import './calendar/index.css';
+@import './app.css';
+@import './header-controls.css';  /* Importación del nuevo archivo CSS */
 
 /**
  * Estilos globales para la aplicación Atlas
@@ -33,7 +38,8 @@
   --font-family-mono: 'Fira Mono', monospace;
 }
 
-/* Reset básico */
+/* El resto del archivo sigue igual... */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -60,27 +66,6 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-family-heading);
   font-weight: 600;
   margin-bottom: var(--spacing-md);
-}
-
-button {
-  cursor: pointer;
-  font-family: var(--font-family-body);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--color-atlas-blue);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-button:hover {
-  background-color: #1A3A7D; /* Versión más oscura del azul Atlas */
-}
-
-button:focus {
-  outline: 2px solid var(--color-insight-yellow);
-  outline-offset: 2px;
 }
 
 input, select, textarea {
@@ -115,4 +100,21 @@ input:focus, select:focus, textarea:focus {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Estilos para formularios */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
 }

@@ -1,0 +1,139 @@
+/* Estilos para eventos del calendario */
+
+/* Evento base */
+.calendar-event {
+  /* Posicionamiento */
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  
+  /* Apariencia */
+  background-color: var(--color-atlas-blue);
+  color: white;
+  border-radius: 4px;
+  padding: 4px;
+  font-size: 0.85rem;
+  
+  /* Interacción */
+  cursor: pointer;
+  
+  /* Otros */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  z-index: 10;
+  
+  /* Estructura interna */
+  display: flex;
+  flex-direction: column;
+
+  will-change: transform; /* Optimización para transformaciones */
+  transform-origin: center center; /* Centro de transformación */
+}
+
+/* Hover */
+.calendar-event:hover {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Estados de arrastre y redimensionamiento */
+.calendar-event.dragging {
+  opacity: 0.8;
+  z-index: 100;
+  pointer-events: none; /* Evita interferencia durante el arrastre */
+  cursor: move !important; /* Cursor de movimiento más claro */
+}
+
+.calendar-event.resizing {
+  opacity: 0.8;
+  z-index: 100;
+}
+
+/* Controlador de redimensionamiento */
+.event-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: ns-resize;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 4px 4px;
+}
+
+.event-resize-handle:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Contenido del evento */
+.event-title {
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-time {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+/* Wrapper para eventos */
+.event-wrapper {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  right: 2px;
+  overflow: visible;
+  z-index: 10;
+}
+
+.event-wrapper .calendar-event {
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: relative;
+}
+
+/* Eventos que continúan entre días */
+.calendar-event.continues-next-day::after {
+  content: "▼";
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+  font-size: 10px;
+}
+
+.calendar-event.continues-from-prev-day::before {
+  content: "▲";
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  font-size: 10px;
+}
+
+.calendar-event.continues-next-day {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+.calendar-event.continues-from-prev-day {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+/* Ajustes para eventos que cruzan el límite de un día */
+.event-wrapper.continues-next-day .calendar-event {
+  /* Evento que continúa al siguiente día */
+  box-shadow: 0 4px 0 -2px rgba(0, 0, 0, 0.2);
+}
+
+.event-wrapper.continues-from-prev-day .calendar-event {
+  /* Evento que continúa desde el día anterior */
+  box-shadow: 0 -4px 0 -2px rgba(0, 0, 0, 0.2);
+}

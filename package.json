@@ -1,13 +1,13 @@
 {
   "name": "atlas-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Aplicación modular de gestión del tiempo con arquitectura basada en eventos",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "electron:dev": "concurrently \"npm run dev\" \"electron .\"",
+    "electron:dev": "concurrently \"npm run dev\" \"cross-env NODE_ENV=development electron .\"",
     "electron:build": "npm run build && electron-builder",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -18,6 +18,8 @@
     "lint:fix": "eslint --fix src/**/*.{js,jsx}"
   },
   "dependencies": {
+    "electron-store": "^8.2.0",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -30,6 +32,7 @@
     "@vitejs/plugin-react": "^4.0.0",
     "babel-jest": "^29.5.0",
     "concurrently": "^8.0.1",
+    "cross-env": "^7.0.3",
     "electron": "^24.3.0",
     "electron-builder": "^23.6.0",
     "eslint": "^8.42.0",
@@ -48,6 +51,21 @@
     "files": [
       "dist/**/*",
       "electron/**/*"
-    ]
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/favicon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office"
+    }
   }
 }
