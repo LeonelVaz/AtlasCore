@@ -1,12 +1,11 @@
-/* Estilos para la vista diaria */
-
+/* src/styles/calendar/day-view.css */
 .day-view-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: white;
+  background-color: var(--color-calendar-background, white);
   border-radius: 8px;
-  box-shadow: 0 2px 8px var(--color-shadow);
+  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.1));
   overflow: hidden;
   position: relative;
   min-height: 600px;
@@ -14,14 +13,41 @@
 
 .day-view-header {
   padding: var(--spacing-md);
-  background-color: #f5f5f5;
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-calendar-header, #f5f5f5);
+  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+}
+
+/* Botones de navegación de día */
+.day-view-navigation {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: 10px;
+}
+
+.day-view-navigation button {
+  background-color: var(--color-button-secondary-bg, #f0f0f0);
+  color: var(--color-button-secondary-text, var(--color-text));
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.day-view-navigation button:hover {
+  background-color: var(--color-button-secondary-hover, #e0e0e0);
+}
+
+.day-view-navigation button.active {
+  background-color: var(--color-atlas-blue);
+  color: white;
+  border-color: var(--color-atlas-blue);
 }
 
 .day-view-title {
   margin: 0;
   font-size: 1.2rem;
-  color: var(--color-atlas-blue);
+  color: var(--color-calendar-day-header, #333333);
   text-transform: capitalize;
   text-align: center;
 }
@@ -37,7 +63,7 @@
   display: flex;
   min-height: 60px;
   width: 100%;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
 }
 
 .day-view-hour-label {
@@ -47,8 +73,9 @@
   align-items: flex-start;
   padding-top: var(--spacing-xs);
   font-size: 0.8rem;
-  color: var(--color-structure-gray);
-  border-right: 2px solid var(--color-border);
+  color: var(--color-calendar-time-label, #666666);
+  border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);
+  background-color: var(--color-calendar-header, #f5f5f5);
 }
 
 .day-view-hour-slot {
@@ -56,7 +83,7 @@
   position: relative;
   height: 60px;
   min-height: 60px;
-  background-color: white;
+  background-color: var(--color-calendar-grid, white);
   transition: background-color 0.2s ease;
   cursor: pointer;
   padding: 0;
@@ -64,7 +91,7 @@
 }
 
 .day-view-hour-slot:hover {
-  background-color: #f0f7ff;
+  background-color: var(--color-calendar-slot-hover, #f0f7ff);
 }
 
 /* Ajuste para eventos en vista diaria */

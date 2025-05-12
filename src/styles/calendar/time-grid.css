@@ -1,5 +1,4 @@
-/* Estilos para la rejilla temporal del calendario */
-
+/* src/styles/calendar/time-grid.css */
 .calendar-grid {
   flex: 1;
   display: flex;
@@ -8,6 +7,7 @@
   position: relative;
   z-index: 1;
   min-height: 600px;
+  background-color: var(--color-calendar-grid, #FFFFFF);
 }
 
 .calendar-row {
@@ -21,21 +21,23 @@
   top: 0;
   z-index: 10;
   min-height: auto;
-  background-color: #f5f5f5;
-  border-bottom: 2px solid var(--color-border);
+  background-color: var(--color-calendar-header, #f5f5f5);
+  border-bottom: 2px solid var(--color-calendar-grid-border, #E0E0E0);
 }
 
 .calendar-cell {
   flex: 1;
-  border-right: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
   padding: var(--spacing-xs);
   position: relative;
+  background-color: var(--color-calendar-grid, #FFFFFF);
 }
 
 .calendar-time-header {
   flex: 0 0 60px;
-  border-right: 2px solid var(--color-border);
+  border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);
+  background-color: var(--color-calendar-header, #f5f5f5);
 }
 
 .calendar-day-header {
@@ -43,6 +45,8 @@
   text-align: center;
   font-weight: 500;
   text-transform: capitalize;
+  background-color: var(--color-calendar-header, #f5f5f5);
+  color: var(--color-calendar-day-header, #333333);
 }
 
 .calendar-time {
@@ -52,8 +56,9 @@
   align-items: flex-start;
   padding-top: var(--spacing-xs);
   font-size: 0.8rem;
-  color: var(--color-structure-gray);
-  border-right: 2px solid var(--color-border);
+  color: var(--color-calendar-time-label, #666666);
+  border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);
+  background-color: var(--color-calendar-header, #f5f5f5);
 }
 
 .calendar-time-slot {
@@ -62,13 +67,18 @@
   min-height: 60px;
   padding: 0;
   overflow: visible; /* Importante para permitir que los eventos se arrastren fuera */
-  background-color: white;
+  background-color: var(--color-calendar-grid, #FFFFFF);
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
 
 .calendar-time-slot:hover {
-  background-color: #f0f7ff;
+  background-color: var(--color-calendar-slot-hover, #f0f7ff);
+}
+
+/* Día actual */
+.calendar-day-today {
+  background-color: var(--color-calendar-today, #E3F2FD);
 }
 
 /* Estilos para interacciones de arrastre */

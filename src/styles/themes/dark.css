@@ -22,15 +22,15 @@
   --color-sidebar-hover: rgba(255, 255, 255, 0.1);
   --color-sidebar-active: rgba(63, 81, 181, 0.3);
   
-  /* Calendario */
-  --color-calendar-background: #1E1E1E;
-  --color-calendar-header: #1A2233;
-  --color-calendar-grid: #1E1E1E;
-  --color-calendar-grid-border: #333333;
+  /* Calendario - ajustado según la captura */
+  --color-calendar-background: #1A2233;
+  --color-calendar-header: #16213E;
+  --color-calendar-grid: #1E2A45;
+  --color-calendar-grid-border: #2C3A57;
   --color-calendar-time-label: #AAAAAA;
   --color-calendar-day-header: #EEEEEE;
   --color-calendar-today: #242F4B;
-  --color-calendar-slot-hover: #242F4B;
+  --color-calendar-slot-hover: #273658;
   
   /* Eventos */
   --color-event-default: #3F51B5;
@@ -46,8 +46,15 @@
   /* Botones */
   --color-button-primary-bg: #3F51B5;
   --color-button-primary-text: #FFFFFF;
+  --color-button-primary-hover: #344397;
+  --color-button-primary-active: #2C387E;
+  
   --color-button-secondary-bg: #2A2A2A;
   --color-button-secondary-text: #EEEEEE;
+  --color-button-secondary-hover: #3D3D3D;
+  --color-button-secondary-active: #3F51B5;
+  
   --color-button-danger-bg: #EF5350;
   --color-button-danger-text: #FFFFFF;
+  --color-button-danger-hover: #E53935;
 }

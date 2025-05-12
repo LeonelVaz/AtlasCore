@@ -46,8 +46,15 @@
   /* Botones */
   --color-button-primary-bg: #2D4B94;
   --color-button-primary-text: #FFFFFF;
+  --color-button-primary-hover: #1A3A7D;
+  --color-button-primary-active: #19336E;
+  
   --color-button-secondary-bg: #F0F0F0;
   --color-button-secondary-text: #333333;
+  --color-button-secondary-hover: #E0E0E0;
+  --color-button-secondary-active: #D0D0D0;
+  
   --color-button-danger-bg: #E53935;
   --color-button-danger-text: #FFFFFF;
+  --color-button-danger-hover: #C62828;
 }
