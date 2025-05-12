@@ -55,29 +55,6 @@
   --secondary-btn-text: #E0E0E0;
   --secondary-btn-hover: #303030;
   
-  /* Estados de videos */
-  --status-pendiente-bg: rgba(144, 144, 144, 0.15);
-  --status-pendiente-border: rgba(144, 144, 144, 0.3);
-  --status-vacio-bg: rgba(30, 41, 59, 0.5);
-  --status-vacio-border: var(--border-color);
-  --status-desarrollo-bg: rgba(112, 112, 112, 0.15);
-  --status-desarrollo-border: rgba(112, 112, 112, 0.3);
-  --status-produccion-bg: rgba(144, 144, 144, 0.15);
-  --status-produccion-border: rgba(144, 144, 144, 0.3);
-  --status-publicado-bg: rgba(112, 112, 112, 0.15);
-  --status-publicado-border: rgba(112, 112, 112, 0.3);
-  
-  /* Ingresos */
-  --income-paid-bg: rgba(112, 112, 112, 0.15);
-  --income-paid-border: rgba(112, 112, 112, 0.3);
-  --income-pending-bg: rgba(144, 144, 144, 0.15);
-  --income-pending-border: rgba(144, 144, 144, 0.3);
-  
-  /* Colores de divisa */
-  --usd-color: #707070;
-  --eur-color: #808080;
-  --ars-color: #909090;
-  
   /* Opciones interactivas */
   --status-option-hover: rgba(120, 120, 120, 0.15);
   --status-option-selected: rgba(120, 120, 120, 0.25);
