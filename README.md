@@ -17,7 +17,7 @@ Actualmente, Atlas se encuentra en la **Versión 0.2.0 (Stage 2: Mejoras de Inte
 - Vista diaria con navegación fluida
 - Registro de módulos funcional para interoperabilidad
 
-## Instalación
+## Instalación 
 
 ### Requisitos Previos
 
