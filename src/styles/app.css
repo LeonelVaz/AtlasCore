@@ -26,14 +26,6 @@
   -webkit-app-region: drag;
 }
 
-.app-logo h1 {
-  font-family: var(--font-family-heading);
-  font-weight: 700;
-  font-size: 1.8rem;
-  margin: 0;
-  letter-spacing: 1px;
-}
-
 .app-main {
   display: flex;
   flex: 1;
