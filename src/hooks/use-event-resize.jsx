@@ -1,4 +1,4 @@
-// use-event-resize.jsx - VERSIÓN CORREGIDA
+// use-event-resize.jsx - AJUSTE DE SENSIBILIDAD
 
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, calculatePreciseTimeChange } from '../utils/event-utils';
@@ -26,7 +26,8 @@ export function useEventResize({
     endTime: 0,
     moved: false,
     originalDuration: null,
-    wasActuallyResized: false, // Nueva propiedad para rastrear si hubo redimensionamiento real
+    originalEndDate: null, // Guardaremos la fecha de fin original
+    wasActuallyResized: false,
     grid: {
       containerElement: null,
       gridRect: null,
@@ -53,7 +54,7 @@ export function useEventResize({
     
     const gridInfo = initializeGridInfo(eventRef, gridSize, event);
     
-    // Guardar duración original para cálculos posteriores
+    // Guardar duración original y fecha de fin para cálculos posteriores
     const startDate = new Date(event.start);
     const endDate = new Date(event.end);
     const durationMinutes = (endDate - startDate) / (1000 * 60);
@@ -68,8 +69,9 @@ export function useEventResize({
       startTime: Date.now(),
       endTime: 0,
       moved: false,
-      wasActuallyResized: false, // Inicializado como falso
+      wasActuallyResized: false,
       originalDuration: durationMinutes,
+      originalEndDate: new Date(endDate), // Copia explícita de la fecha de fin original
       grid: {
         containerElement: gridInfo.containerElement,
         gridRect: gridInfo.gridRect,
@@ -105,7 +107,7 @@ export function useEventResize({
     
     if (movedSignificantly) {
       resizeInfo.current.moved = true;
-      resizeInfo.current.wasActuallyResized = true; // Marcar que hubo redimensionamiento real
+      resizeInfo.current.wasActuallyResized = true;
       
       // Aplicar snap al redimensionamiento
       let adjustedDeltaY = deltaY;
@@ -146,42 +148,92 @@ export function useEventResize({
     
     // Si hubo movimiento real, calcular cambios
     if (wasActuallyResized) {
-      // Calcular cambio por redimensionamiento en minutos precisos
-      const minutesDelta = calculatePreciseTimeChange(resizeInfo.current.deltaY, true, gridSize, snapValue);
-      
       if (eventRef.current) {
         eventRef.current.classList.remove('resizing');
         eventRef.current.style.height = '';
         
-        // Marcar el elemento como recientemente redimensionado
         if (wasRealResize) {
           eventRef.current.dataset.recentlyResized = 'true';
           
-          // Programar la limpieza de este estado después de un tiempo
           setTimeout(() => {
             if (eventRef.current) {
               eventRef.current.dataset.recentlyResized = 'false';
             }
-          }, 1000); // Mantener este estado por 1 segundo
+          }, 1000);
         }
       }
       
       setResizing(false);
       
       // Actualizar si hubo cambio efectivo
-      if (minutesDelta !== 0) {
-        const endDate = new Date(event.end);
+      if (snapValue === 0) {
+        // LÓGICA AJUSTADA: Usar un umbral más alto (0.5 o 50% de una casilla)
+        const deltaY = resizeInfo.current.deltaY;
+        const originalEndDate = resizeInfo.current.originalEndDate;
         
-        // Solo cambia tiempo de fin en minutos precisos
-        endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+        // Calcular el porcentaje de la casilla que se ha movido
+        const hourDeltaRaw = deltaY / gridSize;
         
-        const updatedEvent = {
-          ...event,
-          end: endDate.toISOString()
-        };
+        // Crear una nueva fecha basada en la original (para hora-minuto-segundo)
+        const newEndDate = new Date(originalEndDate);
         
-        console.log('Evento redimensionado:', updatedEvent);
-        onUpdate(updatedEvent);
+        // Obtener la hora final original y minutos
+        const originalHour = originalEndDate.getHours();
+        const originalMinutes = originalEndDate.getMinutes();
+        
+        // Calcular la nueva hora final basada en el desplazamiento
+        let newHour;
+        
+        if (hourDeltaRaw < 0) {
+          // REDUCCIÓN: Hay que mover más del 70% de una casilla hacia arriba para ir a la hora anterior
+          if (hourDeltaRaw <= -0.7) {
+            // Redondear a la hora anterior
+            newHour = originalHour - 1;
+            newEndDate.setHours(newHour, 0, 0, 0);
+          } else {
+            // No es suficiente para cambiar de hora, mantener en la hora actual
+            newHour = originalHour;
+            newEndDate.setHours(newHour, 0, 0, 0);
+          }
+        } else {
+          // EXTENSIÓN: Hay que mover más del 30% de una casilla hacia abajo para ir a la hora siguiente
+          if (hourDeltaRaw >= 0.3) {
+            // Redondear a la hora siguiente
+            newHour = originalHour + 1;
+            newEndDate.setHours(newHour, 0, 0, 0);
+          } else {
+            // No es suficiente para cambiar de hora, mantener en la hora actual
+            newHour = originalHour;
+            newEndDate.setHours(newHour, 0, 0, 0);
+          }
+        }
+        
+        // Verificar que la fecha ha cambiado antes de actualizar
+        if (newEndDate.getTime() !== originalEndDate.getTime()) {
+          const updatedEvent = {
+            ...event,
+            end: newEndDate.toISOString()
+          };
+          
+          console.log('Evento redimensionado:', updatedEvent);
+          onUpdate(updatedEvent);
+        }
+      } else {
+        // Con snap activado, comportamiento normal con minutos delta precisos
+        const minutesDelta = calculatePreciseTimeChange(resizeInfo.current.deltaY, true, gridSize, snapValue);
+        
+        if (minutesDelta !== 0) {
+          const endDate = new Date(event.end);
+          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+          
+          const updatedEvent = {
+            ...event,
+            end: endDate.toISOString()
+          };
+          
+          console.log('Evento redimensionado con snap:', updatedEvent);
+          onUpdate(updatedEvent);
+        }
       }
     } else {
       // Si no hubo movimiento, limpiar estados
@@ -195,33 +247,28 @@ export function useEventResize({
     
     // Manejar clics después del redimensionamiento
     const handleDocumentClick = (evt) => {
-      // Calcular tiempo transcurrido desde que se soltó el botón
       const timeElapsed = Date.now() - resizeInfo.current.endTime;
       
-      // Si el clic ocurre muy rápido después de soltar (menos de 300ms),
-      // detenerlo completamente para evitar abrir el diálogo de nuevo evento
       if (timeElapsed < 300) {
         evt.stopPropagation();
         evt.preventDefault();
       }
       
-      // Quitar este manejador después de procesar el evento
       document.removeEventListener('click', handleDocumentClick, true);
       return false;
     };
     
-    // Añadir el manejador al documento con fase de captura
     document.addEventListener('click', handleDocumentClick, true);
     
     // Desactivar bloqueo de clics después de un tiempo
     setTimeout(() => {
       setBlockClicks(false);
-    }, 500); // Aumentado a 500ms
+    }, 500);
     
     resizeInfo.current = { 
       resizing: false,
       endTime: resizeInfo.current.endTime,
-      wasActuallyResized: wasRealResize // Preservar esta propiedad
+      wasActuallyResized: wasRealResize
     };
   };
 
