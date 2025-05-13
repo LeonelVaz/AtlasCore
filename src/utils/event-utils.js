@@ -212,7 +212,7 @@ export function findTargetSlot(clientX, clientY, dragInfo) {
 }
 
 /**
- * Calcula el cambio de tiempo preciso teniendo en cuenta la escala de tiempo
+ * Calcula el cambio de tiempo preciso teniendo en cuenta la escala de tiempo y ajustando a límites de casillas
  * @param {number} deltaY - Delta Y en píxeles
  * @param {boolean} isResize - Indica si es redimensionamiento
  * @param {number} gridSize - Tamaño de la rejilla en píxeles (altura por hora)
@@ -223,22 +223,26 @@ export function calculatePreciseTimeChange(deltaY, isResize = false, gridSize = 
   // Calcular píxeles por minuto según la escala actual
   const pixelsPerMinute = gridSize / 60;
   
-  // Si estamos redimensionando SIN snap activado, redondeamos a horas completas
-  if (snapValue === 0 && isResize) {
-    // Calcular cuántas horas completas cambia
-    const hourDelta = Math.round(deltaY / gridSize);
-    return hourDelta * 60; // Convertir a minutos
+  // Si estamos redimensionando SIN snap activado, ajustar a casillas completas
+  if (isResize && snapValue === 0) {
+    // Determinar cuántas casillas enteras se ha desplazado
+    // Dividir el desplazamiento por el tamaño de la celda para obtener el número de casillas
+    const cellDelta = Math.round(deltaY / gridSize);
+    
+    // Convertir casillas a minutos (cada casilla es una hora = 60 minutos)
+    return cellDelta * 60;
   }
   
-  // Si no hay snap activado (pero no es redimensionamiento), usar cálculo simple
-  if (snapValue === 0) {
-    return deltaY / pixelsPerMinute;  // Retorna minutos
+  // Si hay snap activado (o no es redimensionamiento), usar la lógica normal
+  if (snapValue > 0) {
+    // Con snap activado, calcular cuántos intervalos de snap
+    const snapPixels = snapValue * pixelsPerMinute;
+    const snapIntervals = Math.round(deltaY / snapPixels);
+    
+    // Devuelve minutos exactos basados en el snap
+    return snapIntervals * snapValue;
   }
   
-  // Con snap activado, calcular cuántos intervalos de snap
-  const snapPixels = snapValue * pixelsPerMinute;
-  const snapIntervals = Math.round(deltaY / snapPixels);
-  
-  // Devuelve minutos exactos basados en el snap
-  return snapIntervals * snapValue;
+  // Para movimientos normales sin snap
+  return Math.round(deltaY / pixelsPerMinute);
 }
