@@ -1,7 +1,7 @@
-// use-event-resize.jsx - VERSIÓN CORREGIDA PARA AJUSTAR A HORAS COMPLETAS
+// use-event-resize.jsx - SOLUCIÓN ESPECÍFICA PARA HORAS INTERMEDIAS
 
 import { useState, useRef, useEffect } from 'react';
-import { initializeGridInfo, calculatePreciseTimeChange } from '../utils/event-utils';
+import { initializeGridInfo } from '../utils/event-utils';
 
 /**
  * Hook personalizado para manejar el redimensionamiento de eventos
@@ -26,7 +26,7 @@ export function useEventResize({
     endTime: 0,
     moved: false,
     originalDuration: null,
-    originalEndDate: null, // Guardaremos la fecha de fin original
+    originalEndDate: null,
     wasActuallyResized: false,
     grid: {
       containerElement: null,
@@ -165,66 +165,110 @@ export function useEventResize({
       
       setResizing(false);
       
-      // Actualizar si hubo cambio efectivo
-      if (snapValue === 0) {
-        // SIN SNAP: Calcular la diferencia en horas completas
-        const cellDelta = Math.round(resizeInfo.current.deltaY / gridSize);
-        
-        if (cellDelta !== 0) {
-          // Crear una nueva fecha para el fin
-          const endDate = new Date(event.end);
+      try {
+        // Actualizar si hubo cambio efectivo
+        if (snapValue === 0) {
+          // *** SOLUCIÓN ESPECÍFICA PARA EVENTOS CON HORAS INTERMEDIAS ***
           
-          // Si no hay snap, ajustar a horas completas (desde la hora original)
-          if (cellDelta > 0) {
-            // Aumentar: Primero redondear a la siguiente hora completa, luego añadir las horas adicionales
-            endDate.setHours(endDate.getHours() + cellDelta);
-            // Ajustar a la siguiente hora completa
-            endDate.setMinutes(0, 0, 0);
+          // Obtener fechas originales
+          const originalEnd = new Date(event.end);
+          const startDate = new Date(event.start);
+          
+          // Verificar si el evento termina en hora exacta o con minutos
+          const hasMinutes = originalEnd.getMinutes() > 0 || originalEnd.getSeconds() > 0;
+          
+          // Calcular proporción de casilla desplazada
+          const cellRatio = resizeInfo.current.deltaY / gridSize;
+          
+          // Determinar la dirección del movimiento
+          const isReducing = resizeInfo.current.deltaY < 0;
+          
+          let newEndDate = new Date(originalEnd);
+          
+          if (isReducing) {
+            // *** REDUCIENDO EL EVENTO ***
+            
+            // Caso especial: Si tiene minutos, el primer paso es ir a la hora exacta
+            if (hasMinutes) {
+              // Si el movimiento es pequeño (menos de media casilla), solo ajustamos a la hora actual
+              if (Math.abs(cellRatio) < 0.7) {
+                newEndDate.setMinutes(0, 0, 0); // Ajustar a la hora exacta actual
+              } else {
+                // Si el movimiento es grande, avanzamos a la hora anterior
+                newEndDate.setHours(originalEnd.getHours() - 1, 0, 0, 0);
+              }
+            } else {
+              // Si ya está en hora exacta, usamos el redondeo normal
+              const cellDelta = Math.round(cellRatio);
+              newEndDate.setHours(originalEnd.getHours() + cellDelta, 0, 0, 0);
+            }
           } else {
-            // Disminuir: Ajustar a la hora anterior completa
-            endDate.setHours(endDate.getHours() + cellDelta);
-            // Ajustar a la hora completa
-            endDate.setMinutes(0, 0, 0);
+            // *** AUMENTANDO EL EVENTO ***
+            
+            // Si tiene minutos, primero vamos a la siguiente hora exacta con un movimiento pequeño
+            if (hasMinutes) {
+              // Si el movimiento es pequeño (menos de media casilla), ajustamos a la siguiente hora exacta
+              if (Math.abs(cellRatio) < 0.7) {
+                newEndDate.setHours(originalEnd.getHours() + 1, 0, 0, 0);
+              } else {
+                // Si el movimiento es grande, avanzamos más horas
+                const cellDelta = Math.floor(cellRatio + 1);
+                newEndDate.setHours(originalEnd.getHours() + cellDelta, 0, 0, 0);
+              }
+            } else {
+              // Si ya está en hora exacta, usamos el redondeo normal
+              const cellDelta = Math.round(cellRatio);
+              newEndDate.setHours(originalEnd.getHours() + cellDelta, 0, 0, 0);
+            }
           }
           
           // Asegurar que la fecha de fin es posterior a la de inicio
-          const startDate = new Date(event.start);
-          if (endDate <= startDate) {
+          if (newEndDate <= startDate) {
             // Si el fin sería anterior al inicio, ajustar a 1 hora después del inicio
-            endDate.setTime(startDate.getTime() + (60 * 60 * 1000));
+            newEndDate = new Date(startDate);
+            newEndDate.setHours(startDate.getHours() + 1, 0, 0, 0);
           }
           
-          const updatedEvent = {
-            ...event,
-            end: endDate.toISOString()
-          };
-          
-          console.log('Evento redimensionado (ajustado a hora completa):', updatedEvent);
-          onUpdate(updatedEvent);
-        }
-      } else {
-        // CON SNAP: Usar el cálculo preciso con snap
-        const minutesDelta = calculatePreciseTimeChange(resizeInfo.current.deltaY, true, gridSize, snapValue);
-        
-        if (minutesDelta !== 0) {
-          const endDate = new Date(event.end);
-          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
-          
-          // Asegurar que la fecha de fin es posterior a la de inicio
-          const startDate = new Date(event.start);
-          if (endDate <= startDate) {
-            // Si el fin sería anterior al inicio, ajustar según el snap
-            endDate.setTime(startDate.getTime() + (snapValue * 60 * 1000));
+          // Solo actualizar si hay un cambio real
+          if (newEndDate.getTime() !== originalEnd.getTime()) {
+            const updatedEvent = {
+              ...event,
+              end: newEndDate.toISOString()
+            };
+            
+            console.log('Evento redimensionado:', updatedEvent);
+            onUpdate(updatedEvent);
           }
+        } else {
+          // CON SNAP: Usar cálculo preciso con snap
+          // Convertir el cambio en píxeles a minutos según el snap
+          const pixelsPerMinute = gridSize / 60;
+          const snapPixels = snapValue * pixelsPerMinute;
+          const snapIntervals = Math.round(resizeInfo.current.deltaY / snapPixels);
+          const minutesDelta = snapIntervals * snapValue;
           
-          const updatedEvent = {
-            ...event,
-            end: endDate.toISOString()
-          };
-          
-          console.log('Evento redimensionado con snap:', updatedEvent);
-          onUpdate(updatedEvent);
+          if (minutesDelta !== 0) {
+            const endDate = new Date(event.end);
+            endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+            
+            // Asegurar que la fecha de fin es posterior a la de inicio
+            const startDate = new Date(event.start);
+            if (endDate <= startDate) {
+              // Si el fin sería anterior al inicio, ajustar según el snap
+              endDate.setTime(startDate.getTime() + (snapValue * 60 * 1000));
+            }
+            
+            const updatedEvent = {
+              ...event,
+              end: endDate.toISOString()
+            };
+            
+            console.log('Evento redimensionado con snap:', updatedEvent);
+            onUpdate(updatedEvent);
+          }
         }
+      } catch (error) {
+        console.error('Error al finalizar redimensionamiento:', error);
       }
     } else {
       // Si no hubo movimiento, limpiar estados
