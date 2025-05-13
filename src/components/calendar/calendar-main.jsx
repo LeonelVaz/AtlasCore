@@ -28,7 +28,7 @@ function CalendarMain() {
 
   // Estado de la vista y snap
   const [view, setView] = useState(CALENDAR_VIEWS.WEEK);
-  const [snapValue, setSnapValue] = useState(SNAP_VALUES.NONE);
+  const [snapValue, setSnapValue] = useState(SNAP_VALUES.PRECISE);
   
   // Usar hook de navegación
   const {

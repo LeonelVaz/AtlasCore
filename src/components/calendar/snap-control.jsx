@@ -86,7 +86,7 @@ function SnapControl({ snapValue, onSnapChange }) {
     <div className="snap-control-container" ref={containerRef}>
       <button 
         className={`snap-control-toggle ${snapValue > 0 ? 'active' : ''}`}
-        onClick={() => onSnapChange(snapValue > 0 ? SNAP_VALUES.NONE : SNAP_VALUES.BASIC)} // Toggle entre desactivado y básico (1h)
+        onClick={() => onSnapChange(snapValue > 0 ? SNAP_VALUES.NONE : SNAP_VALUES.PRECISE)} // Modificado para usar PRECISE (15m) en lugar de BASIC
         title="Activar/Desactivar imán"
       >
         <span className="snap-icon">⌁</span>
