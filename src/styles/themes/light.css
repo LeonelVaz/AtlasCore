@@ -111,6 +111,18 @@
   --time-slot-short-hover: var(--time-slot-hover);
   --primary-color-rgb: 45, 75, 148;
   
+  /* Variables para diálogos */
+  --color-dialog-overlay: rgba(0, 0, 0, 0.5);
+  --color-dialog-bg: var(--bg-color);
+  --color-dialog-title: var(--color-atlas-blue);
+  --color-dialog-close: var(--gray-600);
+  --color-dialog-close-hover: var(--gray-800);
+  --color-dialog-footer: var(--gray-50);
+  --color-dialog-label: var(--text-color);
+  --color-dialog-input-shadow: rgba(45, 75, 148, 0.2);
+  --color-dialog-error-bg: rgba(229, 57, 53, 0.1);
+  --danger-color-rgb: 229, 57, 53;
+
   /* Compatibilidad con variables de Atlas originales */
   --color-atlas-blue: #2D4B94;
   --color-modular-green: #26A69A;
