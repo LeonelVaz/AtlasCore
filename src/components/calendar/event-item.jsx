@@ -1,3 +1,5 @@
+// event-item.jsx - VERSIÓN CORREGIDA
+
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -50,9 +52,18 @@ function EventItem({
     // Si el clic es rápido (< 200ms) y no hubo movimiento significativo (< 5px)
     const isSimpleClick = timeDiff < 200 && distX < 5 && distY < 5;
     
-    if (blockClicks) {
+    // Verificar si recientemente hubo un redimensionamiento
+    const recentlyResized = eventRef.current?.dataset?.recentlyResized === 'true';
+    
+    if (blockClicks || recentlyResized) {
       e.preventDefault();
       e.stopPropagation();
+      
+      // Limpiar el estado de redimensionamiento reciente
+      if (recentlyResized && eventRef.current) {
+        eventRef.current.dataset.recentlyResized = 'false';
+      }
+      
       return;
     }
     
@@ -87,7 +98,7 @@ function EventItem({
     if (blockClicks) {
       const timer = setTimeout(() => {
         setBlockClicks(false);
-      }, 1000);
+      }, 1000); // Aumentado a 1000ms para mayor seguridad
       return () => clearTimeout(timer);
     }
   }, [blockClicks]);
@@ -102,6 +113,7 @@ function EventItem({
       onMouseDown={handleMouseDown}
       onClick={handleClick}
       data-event-id={event.id}
+      data-recently-resized="false" // Inicializar el atributo de datos
     >
       <div className="event-title">{event.title}</div>
       <div className="event-time">{formatEventTime(event)}</div>

@@ -1,4 +1,4 @@
-// src/hooks/use-event-drag.jsx
+// use-event-drag.jsx - VERSIÓN CORREGIDA
 
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
@@ -25,6 +25,7 @@ export function useEventDrag({
     startTime: 0,
     endTime: 0,
     moved: false,
+    wasActuallyDragged: false, // Nueva propiedad para rastrear si hubo arrastre real
     originalStartMinutes: null,
     originalDuration: null,
     grid: {
@@ -120,6 +121,7 @@ export function useEventDrag({
         startTime: Date.now(),
         endTime: 0,
         moved: false,
+        wasActuallyDragged: false, // Inicializado como false
         originalDuration: durationMinutes,
         originalStartMinutes: startMinutes,
         grid: gridInfo,
@@ -147,6 +149,7 @@ export function useEventDrag({
     if (movedSignificantly && !dragInfo.current.moved) {
       // Primera vez que se detecta movimiento significativo, iniciar arrastre real
       dragInfo.current.moved = true;
+      dragInfo.current.wasActuallyDragged = true; // Marcar que hubo arrastre real
       setBlockClicks(true);
       document.body.classList.add('dragging-active');
       
@@ -207,6 +210,7 @@ export function useEventDrag({
     dragInfo.current.endTime = Date.now();
     
     const wasActuallyDragged = dragInfo.current.moved;
+    const wasRealDrag = dragInfo.current.wasActuallyDragged;
     
     // Si no hubo movimiento real, permitir que se maneje como clic
     if (!wasActuallyDragged) {
@@ -243,6 +247,18 @@ export function useEventDrag({
         if (eventRef.current) {
           eventRef.current.classList.remove('dragging');
           eventRef.current.style.transform = '';
+          
+          // Marcar el elemento como recientemente arrastrado
+          if (wasRealDrag) {
+            eventRef.current.dataset.recentlyDragged = 'true';
+            
+            // Programar la limpieza de este estado después de un tiempo
+            setTimeout(() => {
+              if (eventRef.current) {
+                eventRef.current.dataset.recentlyDragged = 'false';
+              }
+            }, 1000); // Mantener este estado por 1 segundo
+          }
         }
         
         setDragging(false);
@@ -298,17 +314,12 @@ export function useEventDrag({
         console.error('Error al finalizar arrastre:', error);
       }
       
-      // Desactivar bloqueo de clics después de un tiempo
-      setTimeout(() => {
-        setBlockClicks(false);
-      }, 300);
-      
-      // Manejar clics inmediatos después de soltar
-      const handleDocumentClick = (event) => {
+      // Manejar clics inmediatos después de soltar el arrastre
+      const handleDocumentClick = (evt) => {
         const timeElapsed = Date.now() - dragInfo.current.endTime;
-        if (timeElapsed < 100) {
-          event.stopPropagation();
-          event.preventDefault();
+        if (timeElapsed < 300) { // Si el clic es menos de 300ms después de soltar
+          evt.stopPropagation();
+          evt.preventDefault();
         }
         
         document.removeEventListener('click', handleDocumentClick, true);
@@ -317,12 +328,18 @@ export function useEventDrag({
       
       document.addEventListener('click', handleDocumentClick, true);
       
+      // Desactivar bloqueo de clics después de un tiempo
+      setTimeout(() => {
+        setBlockClicks(false);
+      }, 500); // Aumentado a 500ms
+      
       const containerElement = dragInfo.current.grid ? dragInfo.current.grid.containerElement : null;
       const endTime = dragInfo.current.endTime;
       
       dragInfo.current = { 
         dragging: false,
-        endTime: endTime
+        endTime: endTime,
+        wasActuallyDragged: wasRealDrag // Preservar esta propiedad
       };
       
       // Señalizar fin de arrastre
@@ -342,7 +359,7 @@ export function useEventDrag({
       
       setTimeout(() => {
         setBlockClicks(false);
-      }, 300);
+      }, 500); // Aumentado a 500ms
       
       dragInfo.current = { dragging: false };
     }

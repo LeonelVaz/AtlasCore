@@ -1,4 +1,4 @@
-// use-event-resize.jsx
+// use-event-resize.jsx - VERSIÓN CORREGIDA
 
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, calculatePreciseTimeChange } from '../utils/event-utils';
@@ -26,6 +26,7 @@ export function useEventResize({
     endTime: 0,
     moved: false,
     originalDuration: null,
+    wasActuallyResized: false, // Nueva propiedad para rastrear si hubo redimensionamiento real
     grid: {
       containerElement: null,
       gridRect: null,
@@ -67,6 +68,7 @@ export function useEventResize({
       startTime: Date.now(),
       endTime: 0,
       moved: false,
+      wasActuallyResized: false, // Inicializado como falso
       originalDuration: durationMinutes,
       grid: {
         containerElement: gridInfo.containerElement,
@@ -103,6 +105,7 @@ export function useEventResize({
     
     if (movedSignificantly) {
       resizeInfo.current.moved = true;
+      resizeInfo.current.wasActuallyResized = true; // Marcar que hubo redimensionamiento real
       
       // Aplicar snap al redimensionamiento
       let adjustedDeltaY = deltaY;
@@ -139,6 +142,7 @@ export function useEventResize({
     resizeInfo.current.endTime = Date.now();
     
     const wasActuallyResized = resizeInfo.current.moved;
+    const wasRealResize = resizeInfo.current.wasActuallyResized;
     
     // Si hubo movimiento real, calcular cambios
     if (wasActuallyResized) {
@@ -148,6 +152,18 @@ export function useEventResize({
       if (eventRef.current) {
         eventRef.current.classList.remove('resizing');
         eventRef.current.style.height = '';
+        
+        // Marcar el elemento como recientemente redimensionado
+        if (wasRealResize) {
+          eventRef.current.dataset.recentlyResized = 'true';
+          
+          // Programar la limpieza de este estado después de un tiempo
+          setTimeout(() => {
+            if (eventRef.current) {
+              eventRef.current.dataset.recentlyResized = 'false';
+            }
+          }, 1000); // Mantener este estado por 1 segundo
+        }
       }
       
       setResizing(false);
@@ -177,12 +193,36 @@ export function useEventResize({
       setResizing(false);
     }
     
-    // Desactivar bloqueo de clics
+    // Manejar clics después del redimensionamiento
+    const handleDocumentClick = (evt) => {
+      // Calcular tiempo transcurrido desde que se soltó el botón
+      const timeElapsed = Date.now() - resizeInfo.current.endTime;
+      
+      // Si el clic ocurre muy rápido después de soltar (menos de 300ms),
+      // detenerlo completamente para evitar abrir el diálogo de nuevo evento
+      if (timeElapsed < 300) {
+        evt.stopPropagation();
+        evt.preventDefault();
+      }
+      
+      // Quitar este manejador después de procesar el evento
+      document.removeEventListener('click', handleDocumentClick, true);
+      return false;
+    };
+    
+    // Añadir el manejador al documento con fase de captura
+    document.addEventListener('click', handleDocumentClick, true);
+    
+    // Desactivar bloqueo de clics después de un tiempo
     setTimeout(() => {
       setBlockClicks(false);
-    }, 300);
+    }, 500); // Aumentado a 500ms
     
-    resizeInfo.current = { resizing: false };
+    resizeInfo.current = { 
+      resizing: false,
+      endTime: resizeInfo.current.endTime,
+      wasActuallyResized: wasRealResize // Preservar esta propiedad
+    };
   };
 
   return { resizing, handleResizeStart };
