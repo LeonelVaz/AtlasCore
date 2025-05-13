@@ -1,4 +1,4 @@
-/* src/components/settings/settings-panel.css */
+/* src/components/settings/settings-panel.css (corregido) */
 .settings-panel {
   display: flex;
   height: 100%;
@@ -28,6 +28,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+/* Estilos específicos para los iconos y texto en el panel de configuración */
+.settings-sections .sidebar-item-icon .material-icons {
+  font-size: 20px;
+  color: var(--color-text);
+  transition: color 0.2s;
+}
+
+/* Corregido: asegurar que tanto icono como texto se coloreen en azul cuando está activo */
+.settings-sections .sidebar-item.active .sidebar-item-icon .material-icons,
+.settings-sections .sidebar-item.active .sidebar-item-label {
+  color: var(--color-atlas-blue);
 }
 
 .settings-content {

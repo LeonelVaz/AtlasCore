@@ -4,12 +4,12 @@ import ThemeConfig from './ThemeConfig';
 import SidebarItem from '../ui/sidebar/SidebarItem';
 import './settings-panel.css';
 
-// Iconos para las secciones de configuración (usando caracteres emoji por simplicidad)
+// Iconos para las secciones de configuración (usando Material Icons)
 const SECTION_ICONS = {
-  GENERAL: '⚙️',
-  APPEARANCE: '🎨',
-  CALENDAR: '📅',
-  BACKUP: '🔄'
+  GENERAL: 'settings',
+  APPEARANCE: 'palette',
+  CALENDAR: 'calendar_today',
+  BACKUP: 'backup'
 };
 
 /**

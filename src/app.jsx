@@ -13,10 +13,10 @@ import './styles/themes/atlas-dark-blue.css';
 import './styles/themes/purple-night.css';
 import './styles/themes/deep-ocean.css';
 
-// Íconos para los elementos del sidebar (usando caracteres emoji por simplicidad)
+// Iconos para los elementos del sidebar usando Material Icons
 const APP_SECTIONS = {
-  CALENDAR: { id: 'calendar', label: 'Calendario', icon: '📅' },
-  SETTINGS: { id: 'settings', label: 'Configuración', icon: '⚙️' },
+  CALENDAR: { id: 'calendar', label: 'Calendario', icon: 'calendar_today' },
+  SETTINGS: { id: 'settings', label: 'Configuración', icon: 'settings' },
 };
 
 /**
