@@ -1,6 +1,7 @@
 /* src/components/settings/theme-config.css */
 .theme-config {
   padding: 20px;
+  max-width: 100%;
 }
 
 .theme-config-title {
@@ -17,13 +18,13 @@
 .theme-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
   margin-bottom: 30px;
 }
 
 .theme-option {
   position: relative;
-  width: 150px;
+  width: 180px;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
@@ -34,48 +35,283 @@
 
 .theme-option:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 8px var(--color-shadow);
+  box-shadow: 0 4px 12px var(--color-shadow);
 }
 
 .theme-option.selected {
-  box-shadow: 0 0 0 2px var(--color-atlas-blue), 0 4px 8px var(--color-shadow);
+  box-shadow: 0 0 0 2px var(--color-atlas-blue), 0 4px 12px var(--color-shadow);
 }
 
+/* Estilos base para las previsualizaciones */
 .theme-preview {
-  height: 100px;
+  height: 120px;
   width: 100%;
+  display: flex;
+  overflow: hidden;
 }
 
-.theme-preview-light {
-  background-color: #FFFFFF;
-  border-bottom: 1px solid #E0E0E0;
-}
-
-.theme-preview-dark {
-  background-color: #1A2233;
-  border-bottom: 1px solid #333333;
-}
-
-.theme-preview-purple-night {
-  background-color: #1A1A2E;
-  border-bottom: 1px solid #2E2E4A;
-}
-
-.theme-preview-content {
+/* Barra lateral */
+.preview-sidebar {
+  width: 28px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 8px;
+  gap: 12px;
+}
+
+.preview-sidebar-item {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+.sidebar-logo {
+  margin-bottom: 5px;
+}
+
+/* Contenido principal */
+.preview-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.theme-option-info {
-  display: flex;
-  align-items: center;
-  padding: 10px;
+.preview-header {
+  height: 26px;
+  width: 100%;
 }
 
-.theme-option-icon {
-  margin-right: 8px;
-  font-size: 1.1rem;
+.preview-calendar {
+  flex: 1;
+  position: relative;
+  padding: 10px 8px;
+}
+
+.preview-event {
+  position: absolute;
+  height: 18px;
+  left: 8px;
+  right: 20px;
+  top: 20px;
+  border-radius: 3px;
+}
+
+.preview-event-alt {
+  position: absolute;
+  height: 18px;
+  left: 8px;
+  right: 35px;
+  top: 50px;
+  border-radius: 3px;
+}
+
+/* Tema Light */
+.light {
+  background: #FFFFFF;
+}
+
+.light .preview-sidebar {
+  background-color: #F5F5F5;
+  border-right: 1px solid #E0E0E0;
+}
+
+.light .sidebar-logo {
+  background-color: #2D4B94;
+}
+
+.light .sidebar-active {
+  background-color: rgba(45, 75, 148, 0.2);
+  border-left: 2px solid #2D4B94;
+}
+
+.light .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
+  background-color: #EEEEEE;
+}
+
+.light .preview-header {
+  background-color: #F5F5F5;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.light .preview-calendar {
+  background-color: #FFFFFF;
+}
+
+.light .preview-event {
+  background-color: #2D4B94;
+}
+
+.light .preview-event-alt {
+  background-color: #26A69A;
+}
+
+/* Tema Dark */
+.dark {
+  background: #121212;
+}
+
+.dark .preview-sidebar {
+  background-color: #1A1A1A;
+  border-right: 1px solid #2A2A2A;
+}
+
+.dark .sidebar-logo {
+  background-color: #707070;
+}
+
+.dark .sidebar-active {
+  background-color: rgba(112, 112, 112, 0.2);
+  border-left: 2px solid #707070;
+}
+
+.dark .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
+  background-color: #252525;
+}
+
+.dark .preview-header {
+  background-color: #202020;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.dark .preview-calendar {
+  background-color: #171717;
+}
+
+.dark .preview-event {
+  background-color: #707070;
+}
+
+.dark .preview-event-alt {
+  background-color: #505050;
+}
+
+/* Tema Atlas Dark Blue */
+.atlas-dark-blue {
+  background: #121212;
+}
+
+.atlas-dark-blue .preview-sidebar {
+  background-color: #1A2233;
+  border-right: 1px solid #2C3A57;
+}
+
+.atlas-dark-blue .sidebar-logo {
+  background-color: #3F51B5;
+}
+
+.atlas-dark-blue .sidebar-active {
+  background-color: rgba(63, 81, 181, 0.2);
+  border-left: 2px solid #3F51B5;
+}
+
+.atlas-dark-blue .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
+  background-color: #16213E;
+}
+
+.atlas-dark-blue .preview-header {
+  background-color: #1A2233;
+  border-bottom: 1px solid #2C3A57;
+}
+
+.atlas-dark-blue .preview-calendar {
+  background-color: #1E2A45;
+}
+
+.atlas-dark-blue .preview-event {
+  background-color: #3F51B5;
+}
+
+.atlas-dark-blue .preview-event-alt {
+  background-color: #26A69A;
+}
+
+/* Tema Purple Night */
+.purple-night {
+  background: #1A1A2E;
+}
+
+.purple-night .preview-sidebar {
+  background-color: #16213E;
+  border-right: 1px solid #2E2E4A;
+}
+
+.purple-night .sidebar-logo {
+  background-color: #7E57C2;
+}
+
+.purple-night .sidebar-active {
+  background-color: rgba(126, 87, 194, 0.2);
+  border-left: 2px solid #7E57C2;
+}
+
+.purple-night .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
+  background-color: #232340;
+}
+
+.purple-night .preview-header {
+  background-color: #16213E;
+  border-bottom: 1px solid #2E2E4A;
+}
+
+.purple-night .preview-calendar {
+  background-color: #1C1C35;
+}
+
+.purple-night .preview-event {
+  background-color: #7E57C2;
+}
+
+.purple-night .preview-event-alt {
+  background-color: #26A69A;
+}
+
+/* Tema Deep Ocean */
+.deep-ocean {
+  background: #0f172a;
+}
+
+.deep-ocean .preview-sidebar {
+  background-color: #1e293b;
+  border-right: 1px solid #334155;
+}
+
+.deep-ocean .sidebar-logo {
+  background-color: #3b82f6;
+}
+
+.deep-ocean .sidebar-active {
+  background-color: rgba(59, 130, 246, 0.2);
+  border-left: 2px solid #3b82f6;
+}
+
+.deep-ocean .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
+  background-color: #334155;
+}
+
+.deep-ocean .preview-header {
+  background-color: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.deep-ocean .preview-calendar {
+  background-color: #0f172a;
+}
+
+.deep-ocean .preview-event {
+  background-color: #3b82f6;
+}
+
+.deep-ocean .preview-event-alt {
+  background-color: #10b981;
+}
+
+/* Información del tema */
+.theme-option-info {
+  padding: 10px;
+  text-align: center;
+  background-color: var(--color-background);
 }
 
 .theme-option-name {
@@ -93,6 +329,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 5;
 }
 
 .checkmark {
@@ -130,13 +367,5 @@
 @media (max-width: 768px) {
   .theme-options {
     justify-content: center;
-  }
-  
-  .theme-option {
-    width: 130px;
-  }
-  
-  .theme-preview {
-    height: 80px;
   }
 }

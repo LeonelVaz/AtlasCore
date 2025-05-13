@@ -25,11 +25,22 @@ const ThemeConfig = () => {
             className={`theme-option ${currentTheme === theme.id ? 'selected' : ''}`}
             onClick={() => handleThemeChange(theme.id)}
           >
-            <div className={`theme-preview theme-preview-${theme.id}`}>
-              <div className="theme-preview-content"></div>
+            <div className={`theme-preview ${theme.id}`}>
+              {/* Simulación minimalista de la interfaz */}
+              <div className="preview-sidebar">
+                <div className="preview-sidebar-item sidebar-logo"></div>
+                <div className="preview-sidebar-item sidebar-active"></div>
+                <div className="preview-sidebar-item"></div>
+              </div>
+              <div className="preview-content">
+                <div className="preview-header"></div>
+                <div className="preview-calendar">
+                  <div className="preview-event"></div>
+                  <div className="preview-event-alt"></div>
+                </div>
+              </div>
             </div>
             <div className="theme-option-info">
-              <span className="theme-option-icon">{theme.icon}</span>
               <span className="theme-option-name">{theme.name}</span>
             </div>
             {currentTheme === theme.id && (
@@ -46,7 +57,6 @@ const ThemeConfig = () => {
         <p className="theme-section-description">
           Elige cómo se muestran los días en el calendario.
         </p>
-        {/* Esta sección será implementada después */}
         <div className="theme-section-placeholder">
           Esta funcionalidad se implementará próximamente
         </div>
@@ -57,7 +67,6 @@ const ThemeConfig = () => {
         <p className="theme-section-description">
           Configura cómo se muestra la hora dentro de los eventos del calendario.
         </p>
-        {/* Esta sección será implementada después */}
         <div className="theme-section-placeholder">
           Esta funcionalidad se implementará próximamente
         </div>
