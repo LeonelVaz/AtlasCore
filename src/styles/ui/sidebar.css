@@ -15,6 +15,11 @@
   width: 60px;
 }
 
+.version-info {
+  font-size: 0.7rem;
+  margin: -10px;
+}
+
 .sidebar-header {
   display: flex;
   align-items: center;
