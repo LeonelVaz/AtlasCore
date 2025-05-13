@@ -14,28 +14,23 @@ class ThemeService {
     this.availableThemes = [
       {
         id: THEMES.LIGHT,
-        name: 'Claro',
-        icon: '☀️'
+        name: 'Light',
       },
       {
         id: THEMES.DARK,
-        name: 'Oscuro',
-        icon: '🌑'
+        name: 'Dark',
       },
       {
         id: THEMES.ATLAS_DARK_BLUE,
-        name: 'Azul Atlas Oscuro',
-        icon: '🌃'
+        name: 'Atlas Dark Blue',
       },
       {
         id: THEMES.PURPLE_NIGHT,
-        name: 'Púrpura Nocturno',
-        icon: '✨'
+        name: 'Purple Night',
       },
       {
         id: THEMES.DEEP_OCEAN,
-        name: 'Océano Profundo',
-        icon: '🌊'
+        name: 'Deep Ocean',
       }
     ];
   }
