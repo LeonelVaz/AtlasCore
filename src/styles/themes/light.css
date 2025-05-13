@@ -59,6 +59,9 @@
   --secondary-btn-text: #333333;
   --secondary-btn-hover: #E0E0E0;
 
+  /* Botones alternativa */
+  --tertiary-btn-bg: var(--gray-300);
+
   /* Opciones interactivas */
   --status-option-hover: rgba(45, 75, 148, 0.05);
   --status-option-selected: rgba(45, 75, 148, 0.1);
@@ -172,6 +175,8 @@
   --color-button-secondary-hover: #E0E0E0;
   --color-button-secondary-active: #2D4B94;
   --color-button-secondary-active-hover: #3A5CA5;
+
+  --tertiary-color-button-bg: var(--tertiary-btn-bg);
 
   --color-button-active-text: #FFFFFF;
   

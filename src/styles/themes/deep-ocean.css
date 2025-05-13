@@ -58,6 +58,9 @@
   --secondary-btn-bg: var(--gray-700);
   --secondary-btn-text: var(--gray-200);
   --secondary-btn-hover: var(--gray-600);
+
+  /* Botones alternativa */
+  --tertiary-btn-bg: var(--gray-700);
   
   /* Opciones interactivas */
   --status-option-hover: rgba(59, 130, 246, 0.1);
@@ -166,6 +169,8 @@
   --color-button-secondary-text: var(--secondary-btn-text);
   --color-button-secondary-hover: var(--secondary-btn-hover);
   
+  --tertiary-color-button-bg: var(--tertiary-btn-bg);
+
   --color-input-bg: var(--input-bg);
   --color-input-border: var(--border-color);
   --color-input-focus: var(--primary-color);
