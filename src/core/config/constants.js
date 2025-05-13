@@ -87,8 +87,8 @@ export const TIME_SCALES = {
   COMPACT: {
     id: 'compact',
     name: 'Compacta',
-    height: 45,  // Aumentado de 40 a 45px
-    pixelsPerMinute: 45 / 60
+    height: 40,
+    pixelsPerMinute: 40 / 60
   },
   STANDARD: {
     id: 'standard',
