@@ -19,7 +19,7 @@ const Sidebar = ({ children }) => {
   return (
     <div className={`sidebar ${expanded ? 'expanded' : 'collapsed'}`}>
       <div className="sidebar-header">
-        <h2 className="sidebar-title">Atlas</h2>
+        <h2 className="sidebar-title">Atlas Core</h2>
         <button 
           className="sidebar-toggle" 
           onClick={toggleSidebar}
