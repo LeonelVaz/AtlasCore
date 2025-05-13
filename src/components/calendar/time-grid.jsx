@@ -1,7 +1,9 @@
-// time-grid.jsx
-import React from 'react';
+// src/components/calendar/time-grid.jsx (actualización)
+import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
+import { TimeScaleContext } from '../../contexts/time-scale-context';
+import { TIME_SCALES } from '../../core/config/constants';
 
 function TimeGrid({ 
   days, 
@@ -12,13 +14,23 @@ function TimeGrid({
   snapValue,
   renderDayHeader 
 }) {
+  // Obtener la escala de tiempo del contexto
+  const timeScaleContext = useContext(TimeScaleContext);
+  
+  // Obtener la altura de celda desde el contexto de escala, con fallback al valor por defecto
+  const cellHeight = timeScaleContext?.currentTimeScale?.height || 60;
+  
+  // Determinar si estamos usando escala compacta
+  const isCompactScale = timeScaleContext?.currentTimeScale?.id === TIME_SCALES.COMPACT.id || 
+                      (timeScaleContext?.currentTimeScale?.id === 'custom' && cellHeight <= 45);
+  
   // Usar el hook de time-grid para la lógica de la rejilla
   const {
     hours,
     shouldShowEventStart,
     isEventActiveAtStartOfDay,
     formatTimeSlot
-  } = useTimeGrid();
+  } = useTimeGrid(0, 24, cellHeight);
 
   // Renderizar eventos que continúan desde el día anterior
   const renderContinuingEvents = (day) => {
@@ -45,7 +57,10 @@ function TimeGrid({
         // Calcular altura basada en duración visible desde medianoche
         const durationMs = visibleEnd.getTime() - dayStart.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * 60));
+        const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
+        
+        // Determinar si es un evento pequeño (menos de 30 minutos)
+        const isMicroEvent = heightPx < 25;
         
         const eventStyle = {
           position: 'absolute',
@@ -71,7 +86,9 @@ function TimeGrid({
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={true}
+              gridSize={cellHeight}
               snapValue={snapValue}
+              isMicroEvent={isMicroEvent}
             />
           </div>
         );
@@ -113,12 +130,15 @@ function TimeGrid({
         const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
         
         // Offset basado en minutos
-        const topOffset = (eventStart.getMinutes() / 60) * 60;
+        const topOffset = (eventStart.getMinutes() / 60) * cellHeight;
         
         // Calcular duración visible
         const durationMs = visibleEnd.getTime() - eventStart.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * 60));
+        const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
+        
+        // Determinar si es un evento pequeño (menos de 30 minutos)
+        const isMicroEvent = heightPx < 25;
         
         const eventStyle = {
           position: 'absolute',
@@ -144,7 +164,9 @@ function TimeGrid({
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={false}
+              gridSize={cellHeight}
               snapValue={snapValue}
+              isMicroEvent={isMicroEvent}
             />
           </div>
         );
@@ -156,7 +178,7 @@ function TimeGrid({
   };
 
   return (
-    <div className="calendar-grid">
+    <div className={`calendar-grid ${isCompactScale ? 'time-scale-compact' : ''}`}>
       {/* Encabezado con días */}
       <div className="calendar-row calendar-header-row">
         <div className="calendar-cell calendar-time-header"></div>
@@ -174,7 +196,7 @@ function TimeGrid({
       {/* Rejilla horaria - Usamos las horas generadas por el hook */}
       {hours.map((hour) => (
         <div key={hour} className="calendar-row">
-          <div className="calendar-cell calendar-time">
+          <div className="calendar-cell calendar-time" style={{ height: `${cellHeight}px` }}>
             {formatTimeSlot(hour)}
           </div>
           
@@ -184,6 +206,7 @@ function TimeGrid({
               className="calendar-cell calendar-time-slot"
               data-testid="calendar-time-slot"
               onClick={() => onCellClick(day, hour)}
+              style={{ height: `${cellHeight}px`, minHeight: `${cellHeight}px` }}
             >
               {renderEvents(day, hour)}
             </div>

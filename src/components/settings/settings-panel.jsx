@@ -1,5 +1,7 @@
+// src/components/settings/settings-panel.jsx (actualizado)
 import React, { useState } from 'react';
 import ThemeConfig from './theme-config';
+import TimeScaleConfig from './time-scale-config';
 import SidebarItem from '../ui/sidebar/sidebar-item';
 
 // Iconos para las secciones de configuración (usando Material Icons)
@@ -7,6 +9,7 @@ const SECTION_ICONS = {
   GENERAL: 'settings',
   APPEARANCE: 'palette',
   CALENDAR: 'calendar_today',
+  TIME_SCALE: 'schedule',
   BACKUP: 'backup'
 };
 
@@ -21,6 +24,7 @@ const SettingsPanel = () => {
   const sections = [
     { id: 'general', label: 'General', icon: SECTION_ICONS.GENERAL },
     { id: 'appearance', label: 'Apariencia', icon: SECTION_ICONS.APPEARANCE },
+    { id: 'time_scale', label: 'Escala de Tiempo', icon: SECTION_ICONS.TIME_SCALE },
     { id: 'calendar', label: 'Calendario', icon: SECTION_ICONS.CALENDAR },
     { id: 'backup', label: 'Respaldo', icon: SECTION_ICONS.BACKUP }
   ];
@@ -35,6 +39,8 @@ const SettingsPanel = () => {
     switch (activeSection) {
       case 'appearance':
         return <ThemeConfig />;
+      case 'time_scale':
+        return <TimeScaleConfig />;
       case 'general':
       case 'calendar':
       case 'backup':

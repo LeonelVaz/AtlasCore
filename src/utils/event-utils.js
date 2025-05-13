@@ -1,5 +1,5 @@
 /**
- * Utilidades para manejar eventos de calendario
+ * Utilidades para manejar eventos con soporte para diferentes escalas de tiempo
  */
 
 /**
@@ -170,11 +170,13 @@ export function findTargetSlot(clientX, clientY, dragInfo) {
   // Aplicar snap a la posición vertical (tiempo)
   let adjustedDeltaY = deltaY;
   if (dragInfo.snapValue > 0) {
-    // Convertir snapValue (minutos) a pixeles
-    const snapPixels = dragInfo.snapValue * (dragInfo.grid.hourHeight / 60);
+    // Convertir snapValue (minutos) a pixeles según la escala actual
+    const pixelsPerMinute = dragInfo.grid.hourHeight / 60;
+    const snapPixels = dragInfo.snapValue * pixelsPerMinute;
     adjustedDeltaY = Math.round(deltaY / snapPixels) * snapPixels;
   }
   
+  // Calcular cambio en horas considerando la escala actual
   const hourDelta = Math.round(adjustedDeltaY / dragInfo.grid.hourHeight);
   let dayDelta = 0;
   
@@ -210,14 +212,17 @@ export function findTargetSlot(clientX, clientY, dragInfo) {
 }
 
 /**
- * Calcula el cambio de tiempo preciso
+ * Calcula el cambio de tiempo preciso teniendo en cuenta la escala de tiempo
  * @param {number} deltaY - Delta Y en píxeles
  * @param {boolean} isResize - Indica si es redimensionamiento
- * @param {number} gridSize - Tamaño de la rejilla en píxeles
+ * @param {number} gridSize - Tamaño de la rejilla en píxeles (altura por hora)
  * @param {number} snapValue - Valor de snap en minutos
  * @returns {number} Cambio en minutos
  */
 export function calculatePreciseTimeChange(deltaY, isResize = false, gridSize = 60, snapValue = 0) {
+  // Calcular píxeles por minuto según la escala actual
+  const pixelsPerMinute = gridSize / 60;
+  
   // Si estamos redimensionando SIN snap activado, redondeamos a horas completas
   if (snapValue === 0 && isResize) {
     // Calcular cuántas horas completas cambia
@@ -227,12 +232,10 @@ export function calculatePreciseTimeChange(deltaY, isResize = false, gridSize = 
   
   // Si no hay snap activado (pero no es redimensionamiento), usar cálculo simple
   if (snapValue === 0) {
-    const pixelsPerMinute = gridSize / 60;
     return deltaY / pixelsPerMinute;  // Retorna minutos
   }
   
   // Con snap activado, calcular cuántos intervalos de snap
-  const pixelsPerMinute = gridSize / 60;
   const snapPixels = snapValue * pixelsPerMinute;
   const snapIntervals = Math.round(deltaY / snapPixels);
   

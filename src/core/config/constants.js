@@ -1,4 +1,4 @@
-// src/core/config/constants.js (actualizado para incluir el nuevo tema)
+// src/core/config/constants.js (actualizado para incluir escalas de tiempo)
 
 /**
  * Constantes globales para la aplicación Atlas
@@ -10,7 +10,7 @@ export const THEMES = {
   DARK: 'dark',
   ATLAS_DARK_BLUE: 'atlas-dark-blue',
   PURPLE_NIGHT: 'purple-night',
-  DEEP_OCEAN: 'deep-ocean'  // Nueva adición del tema Deep Ocean
+  DEEP_OCEAN: 'deep-ocean'
 };
 
 // Constantes para estilos de encabezado de días
@@ -65,7 +65,8 @@ export const STORAGE_KEYS = {
   EVENTS: 'atlas_events',
   SETTINGS: 'atlas_settings',
   THEME: 'atlas_theme',
-  SNAP_VALUE: 'atlas_snap_value'
+  SNAP_VALUE: 'atlas_snap_value',
+  TIME_SCALE: 'atlas_time_scale'  // Nueva clave para almacenar la escala de tiempo
 };
 
 // Constantes para el sistema de módulos
@@ -81,4 +82,34 @@ export const DEFAULT_EVENT_DURATION = 60;
 // Altura de celda de hora por defecto (en píxeles)
 export const DEFAULT_HOUR_CELL_HEIGHT = 60;
 
-
+// Nuevas constantes para escalas de tiempo
+export const TIME_SCALES = {
+  COMPACT: {
+    id: 'compact',
+    name: 'Compacta',
+    height: 45,  // Aumentado de 40 a 45px
+    pixelsPerMinute: 45 / 60
+  },
+  STANDARD: {
+    id: 'standard',
+    name: 'Estándar',
+    height: 60,
+    pixelsPerMinute: 60 / 60
+  },
+  COMFORTABLE: {
+    id: 'comfortable',
+    name: 'Confortable',
+    height: 80,
+    pixelsPerMinute: 80 / 60
+  },
+  SPACIOUS: {
+    id: 'spacious',
+    name: 'Espaciosa',
+    height: 100,
+    pixelsPerMinute: 100 / 60
+  },
+  CUSTOM: {
+    id: 'custom',
+    name: 'Personalizada'
+  }
+};

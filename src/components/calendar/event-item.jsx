@@ -1,5 +1,4 @@
-// event-item.jsx - VERSIÓN CORREGIDA
-
+// src/components/calendar/event-item.jsx (actualizado)
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -15,7 +14,8 @@ function EventItem({
   continuesNextDay = false,
   continuesFromPrevDay = false,
   gridSize = 60, // Altura de una celda (1 hora)
-  snapValue = 0  // Valor de snap en minutos (0 = desactivado)
+  snapValue = 0,  // Valor de snap en minutos (0 = desactivado)
+  isMicroEvent = false // Indicador de evento pequeño
 }) {
   // Referencias y estado
   const eventRef = useRef(null);
@@ -70,7 +70,6 @@ function EventItem({
     if (isSimpleClick && !dragging && !resizing) {
       e.preventDefault();
       e.stopPropagation();
-      console.log('Clic en evento, abriendo editor...');
       onClick(event);
     }
   };
@@ -108,7 +107,8 @@ function EventItem({
       ref={eventRef}
       className={`calendar-event ${dragging ? 'dragging' : ''} ${resizing ? 'resizing' : ''} 
                   ${continuesNextDay ? 'continues-next-day' : ''} 
-                  ${continuesFromPrevDay ? 'continues-from-prev-day' : ''}`}
+                  ${continuesFromPrevDay ? 'continues-from-prev-day' : ''}
+                  ${isMicroEvent ? 'micro-event' : ''}`}
       style={{ backgroundColor: event.color }}
       onMouseDown={handleMouseDown}
       onClick={handleClick}

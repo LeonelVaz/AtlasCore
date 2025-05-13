@@ -1,4 +1,4 @@
-// src/app.jsx
+// src/app.jsx (actualizado)
 import React, { useState, useEffect } from 'react';
 import CalendarMain from './components/calendar/calendar-main';
 import SettingsPanel from './components/settings/settings-panel';
@@ -6,6 +6,7 @@ import Sidebar from './components/ui/sidebar/Sidebar';
 import SidebarItem from './components/ui/sidebar/sidebar-item';
 import WindowControls from './components/ui/window-controls';
 import ThemeProvider from './contexts/theme-context';
+import TimeScaleProvider from './contexts/time-scale-context';  // Nuevo import
 import { isElectronEnv } from './utils/electron-detector';
 import './styles/themes/light.css';
 import './styles/themes/dark.css';
@@ -55,33 +56,35 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="app-container">
-        <header className={isElectron ? "app-header draggable" : "app-header"}>
-          <div className="app-logo">
-            <img src="/logo-white.png" alt="Atlas" height="40" />
+      <TimeScaleProvider>
+        <div className="app-container">
+          <header className={isElectron ? "app-header draggable" : "app-header"}>
+            <div className="app-logo">
+              <img src="/logo-white.png" alt="Atlas" height="40" />
+            </div>
+            
+            {isElectron && <WindowControls />}
+          </header>
+          
+          <div className="app-main">
+            <Sidebar>
+              {sidebarSections.map(section => (
+                <SidebarItem
+                  key={section.id}
+                  icon={section.icon}
+                  label={section.label}
+                  active={activeSection === section.id}
+                  onClick={() => handleSectionChange(section.id)}
+                />
+              ))}
+            </Sidebar>
+            
+            <main className="app-content">
+              {renderContent()}
+            </main>
           </div>
-          
-          {isElectron && <WindowControls />}
-        </header>
-        
-        <div className="app-main">
-          <Sidebar>
-            {sidebarSections.map(section => (
-              <SidebarItem
-                key={section.id}
-                icon={section.icon}
-                label={section.label}
-                active={activeSection === section.id}
-                onClick={() => handleSectionChange(section.id)}
-              />
-            ))}
-          </Sidebar>
-          
-          <main className="app-content">
-            {renderContent()}
-          </main>
         </div>
-      </div>
+      </TimeScaleProvider>
     </ThemeProvider>
   );
 }

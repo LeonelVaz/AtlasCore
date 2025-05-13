@@ -1,7 +1,9 @@
-// day-view.jsx (modificado)
-import React from 'react';
+// day-view.jsx (actualizado para modo compacto)
+import React, { useContext } from 'react';
 import { formatHour, formatDate } from '../../utils/date-utils';
 import EventItem from './event-item';
+import { TimeScaleContext } from '../../contexts/time-scale-context';
+import { TIME_SCALES } from '../../core/config/constants';
 
 /**
  * Componente de vista diaria para el calendario
@@ -15,6 +17,16 @@ function DayView({
   onUpdate,
   snapValue = 0
 }) {
+  // Obtener la escala de tiempo del contexto
+  const timeScaleContext = useContext(TimeScaleContext);
+  
+  // Obtener la altura de celda desde el contexto de escala, con fallback al valor por defecto
+  const cellHeight = timeScaleContext?.currentTimeScale?.height || 60;
+  
+  // Determinar si estamos usando escala compacta
+  const isCompactScale = timeScaleContext?.currentTimeScale?.id === TIME_SCALES.COMPACT.id || 
+                      (timeScaleContext?.currentTimeScale?.id === 'custom' && cellHeight <= 45);
+  
   // Generar las horas del día (de 0 a 23)
   const generateHours = () => {
     const hours = [];
@@ -92,7 +104,10 @@ function DayView({
         // Calcular altura basada en duración visible desde medianoche
         const durationMs = visibleEnd.getTime() - dayStart.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * 60));
+        const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
+        
+        // Determinar si es un evento pequeño (menos de 30 minutos)
+        const isMicroEvent = heightPx < 25;
         
         const eventStyle = {
           position: 'absolute',
@@ -118,7 +133,9 @@ function DayView({
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={true}
+              gridSize={cellHeight}
               snapValue={snapValue}
+              isMicroEvent={isMicroEvent}
             />
           </div>
         );
@@ -160,12 +177,15 @@ function DayView({
         const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
         
         // Offset basado en minutos
-        const topOffset = (eventStart.getMinutes() / 60) * 60;
+        const topOffset = (eventStart.getMinutes() / 60) * cellHeight;
         
         // Calcular duración visible
         const durationMs = visibleEnd.getTime() - eventStart.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * 60));
+        const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
+        
+        // Determinar si es un evento pequeño (menos de 30 minutos) 
+        const isMicroEvent = heightPx < 25;
         
         const eventStyle = {
           position: 'absolute',
@@ -191,7 +211,9 @@ function DayView({
               }}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={false}
+              gridSize={cellHeight}
               snapValue={snapValue}
+              isMicroEvent={isMicroEvent}
             />
           </div>
         );
@@ -215,7 +237,7 @@ function DayView({
   };
 
   return (
-    <div className="day-view-container">
+    <div className={`day-view-container ${isCompactScale ? 'time-scale-compact' : ''}`}>
       <div className="day-view-header">
         <h3 className="day-view-title">
           {getDayTitle()}
@@ -224,14 +246,15 @@ function DayView({
 
       <div className="day-view-timeline">
         {hours.map((hour) => (
-          <div key={hour} className="day-view-hour-row">
-            <div className="day-view-hour-label">
+          <div key={hour} className="day-view-hour-row" style={{ minHeight: `${cellHeight}px` }}>
+            <div className="day-view-hour-label" style={{ height: `${cellHeight}px` }}>
               {formatHour(hour)}
             </div>
             <div 
               className="day-view-hour-slot"
               onClick={() => onTimeSlotClick(date, hour)}
               data-testid="day-view-hour-slot"
+              style={{ height: `${cellHeight}px`, minHeight: `${cellHeight}px` }}
             >
               {renderEvents(hour)}
             </div>

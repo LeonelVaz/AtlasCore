@@ -1,0 +1,236 @@
+/* src/styles/settings/time-scale-config.css */
+.time-scale-config {
+  padding: 20px;
+  max-width: 100%;
+}
+
+.time-scale-config-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: var(--color-atlas-blue);
+}
+
+.time-scale-config-description {
+  margin-bottom: 20px;
+  color: var(--color-text-secondary);
+}
+
+/* Previsualización de la escala */
+.time-scale-preview {
+  display: flex;
+  margin-bottom: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  height: 400px;
+  background-color: var(--color-calendar-grid);
+}
+
+.time-scale-hours {
+  flex: 0 0 60px;
+  background-color: var(--color-calendar-header);
+  border-right: 1px solid var(--color-border);
+}
+
+.time-scale-hour {
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.3s ease;
+}
+
+.time-scale-hour-label {
+  font-size: 0.8rem;
+  color: var(--color-calendar-time-label);
+}
+
+.time-scale-events {
+  flex: 1;
+  position: relative;
+}
+
+.time-scale-event {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  background-color: var(--color-atlas-blue);
+  color: white;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px var(--color-shadow);
+  transition: height 0.3s ease, top 0.3s ease;
+}
+
+.time-scale-event-alt {
+  background-color: var(--color-modular-green);
+}
+
+/* Opciones de escalas */
+.time-scale-options {
+  margin-bottom: 30px;
+}
+
+.time-scale-options h4 {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  color: var(--color-text);
+}
+
+.time-scale-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.time-scale-option {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  background-color: var(--color-background);
+}
+
+.time-scale-option:hover {
+  border-color: var(--color-atlas-blue);
+  box-shadow: 0 2px 10px var(--color-shadow);
+  transform: translateY(-2px);
+}
+
+.time-scale-option.selected {
+  border-color: var(--color-atlas-blue);
+  box-shadow: 0 0 0 2px var(--color-atlas-blue);
+}
+
+.time-scale-option-preview {
+  height: 60px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 5px;
+  background-color: var(--color-calendar-grid);
+  border-radius: 4px;
+  transition: height 0.2s ease;
+}
+
+.time-scale-option-line {
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+.time-scale-option-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.time-scale-option-size {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.time-scale-option-custom-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.time-scale-option-custom-icon .material-icons {
+  font-size: 24px;
+  color: var(--color-atlas-blue);
+}
+
+/* Formulario para escala personalizada */
+.time-scale-custom-form {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-calendar-header);
+}
+
+.time-scale-custom-input {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.time-scale-custom-input label {
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.time-scale-custom-input input {
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+}
+
+.time-scale-custom-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.time-scale-custom-apply,
+.time-scale-custom-cancel {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.time-scale-custom-apply {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.time-scale-custom-apply:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.time-scale-custom-cancel {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+}
+
+.time-scale-custom-cancel:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+
+/* Información adicional */
+.time-scale-info {
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--color-calendar-header);
+}
+
+.time-scale-info h4 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+.time-scale-info p {
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .time-scale-options-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .time-scale-preview {
+    height: 300px;
+  }
+}

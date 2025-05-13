@@ -1,3 +1,4 @@
+// src/hooks/use-time-grid.jsx (actualizado)
 import { useState, useCallback } from 'react';
 import { formatHour } from '../utils/date-utils';
 import { DEFAULT_HOUR_CELL_HEIGHT } from '../core/config/constants';
@@ -138,6 +139,11 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
 
   // Generar horas del grid
   const hours = generateHours();
+
+  // Efecto para actualizar la altura de la rejilla cuando cambia cellHeight
+  if (gridHeight !== cellHeight) {
+    setGridHeight(cellHeight);
+  }
 
   return {
     hours,
