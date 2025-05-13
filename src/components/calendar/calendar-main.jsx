@@ -1,4 +1,4 @@
-// calendar-main.jsx 
+// calendar-main.jsx con snap desactivado por defecto
 import React, { useState, useEffect } from 'react';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import WeekView from './week-view';
@@ -28,7 +28,8 @@ function CalendarMain() {
 
   // Estado de la vista y snap
   const [view, setView] = useState(CALENDAR_VIEWS.WEEK);
-  const [snapValue, setSnapValue] = useState(SNAP_VALUES.PRECISE);
+  // CAMBIO: Inicializar snap como desactivado (NONE = 0)
+  const [snapValue, setSnapValue] = useState(SNAP_VALUES.NONE);
   
   // Usar hook de navegación
   const {

@@ -1,9 +1,9 @@
+// src/components/calendar/snap-control.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { SNAP_VALUES } from '../../core/config/constants';
 
 /**
  * Componente de control de imán (snap) para alineación automática de eventos
- * Versión modificada con menú más ancho
  */
 function SnapControl({ snapValue, onSnapChange }) {
   const [showMenu, setShowMenu] = useState(false);
