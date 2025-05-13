@@ -3,10 +3,12 @@ import { SNAP_VALUES } from '../../core/config/constants';
 
 /**
  * Componente de control de imán (snap) para alineación automática de eventos
+ * Versión modificada con menú más ancho
  */
 function SnapControl({ snapValue, onSnapChange }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const containerRef = useRef(null);
   
   // Opciones predefinidas de snap usando constantes
   const snapOptions = [
@@ -70,9 +72,18 @@ function SnapControl({ snapValue, onSnapChange }) {
     onSnapChange(customValue);
     setShowMenu(false);
   };
+
+  // Medimos el ancho del contenedor para ajustar el menú
+  useEffect(() => {
+    if (containerRef.current && menuRef.current && showMenu) {
+      const containerWidth = containerRef.current.offsetWidth;
+      // Asegurar que el menú sea al menos tan ancho como el contenedor
+      menuRef.current.style.minWidth = `${Math.max(containerWidth, 200)}px`;
+    }
+  }, [showMenu]);
   
   return (
-    <div className="snap-control-container">
+    <div className="snap-control-container" ref={containerRef}>
       <button 
         className={`snap-control-toggle ${snapValue > 0 ? 'active' : ''}`}
         onClick={() => onSnapChange(snapValue > 0 ? SNAP_VALUES.NONE : SNAP_VALUES.BASIC)} // Toggle entre desactivado y básico (1h)
@@ -90,7 +101,7 @@ function SnapControl({ snapValue, onSnapChange }) {
       </div>
       
       {showMenu && (
-        <div ref={menuRef} className="snap-options-menu">
+        <div ref={menuRef} className="snap-options-menu" data-testid="snap-menu">
           {snapOptions.map((option) => (
             <div 
               key={option.value}
@@ -102,26 +113,24 @@ function SnapControl({ snapValue, onSnapChange }) {
           ))}
           
           {/* Sección para valor personalizado */}
-          {snapOptions.find(option => option.value === 'custom') && (
-            <div className="snap-custom-section">
-              <div className="snap-custom-input">
-                <input 
-                  type="number" 
-                  min="1" 
-                  max="60" 
-                  value={customValue}
-                  onChange={handleCustomValueChange}
-                />
-                <span>minutos</span>
-              </div>
-              <button 
-                className="snap-apply-custom"
-                onClick={applyCustomValue}
-              >
-                Aplicar
-              </button>
+          <div className="snap-custom-section">
+            <div className="snap-custom-input">
+              <input 
+                type="number" 
+                min="1" 
+                max="60" 
+                value={customValue}
+                onChange={handleCustomValueChange}
+              />
+              <span>minutos</span>
             </div>
-          )}
+            <button 
+              className="snap-apply-custom"
+              onClick={applyCustomValue}
+            >
+              Aplicar
+            </button>
+          </div>
         </div>
       )}
     </div>

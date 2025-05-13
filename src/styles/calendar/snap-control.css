@@ -1,4 +1,4 @@
-/* src/styles/calendar/snap-control.css (modificado) */
+/* src/styles/calendar/snap-control.css */
 /* Estilos para el control de snap (imán) */
 
 /* Contenedor principal */
@@ -58,7 +58,7 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Menú de opciones */
+/* Menú de opciones - VERSIÓN MEJORADA MÁS COMPACTA */
 .snap-options-menu {
   position: absolute;
   top: 100%;
@@ -67,14 +67,15 @@
   border: 1px solid var(--color-border);
   border-radius: 4px;
   box-shadow: 0 3px 8px var(--color-shadow);
-  width: 180px;
+  width: 140px; /* Reducido de 180px */
   z-index: 100;
   margin-top: 4px;
   overflow: hidden;
+  font-size: 0.85rem; /* Texto más pequeño para mayor compacidad */
 }
 
 .snap-option {
-  padding: 8px 12px;
+  padding: 6px 10px; /* Reducido de 8px 12px */
   cursor: pointer;
   transition: background-color 0.2s ease;
   color: var(--color-text);
@@ -90,35 +91,41 @@
   font-weight: 500;
 }
 
-/* Sección de valor personalizado */
+/* Sección de valor personalizado - VERSIÓN MEJORADA MÁS COMPACTA */
 .snap-custom-section {
-  padding: 8px 12px;
+  padding: 6px; /* Reducido de 8px 12px */
   border-top: 1px solid var(--color-border);
 }
 
 .snap-custom-input {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reducido de 8px */
 }
 
 .snap-custom-input input {
-  width: 50px;
-  padding: 4px;
-  margin-right: 8px;
+  width: 40px; /* Reducido de 50px */
+  padding: 3px 4px; /* Reducido de 4px */
+  margin-right: 4px; /* Reducido de 8px */
   background-color: var(--color-input-bg);
   color: var(--color-text);
   border: 1px solid var(--color-border);
+  font-size: 0.85rem; /* Texto más pequeño */
+}
+
+.snap-custom-input span {
+  font-size: 0.8rem; /* Texto más pequeño */
 }
 
 .snap-apply-custom {
   width: 100%;
-  padding: 4px 0;
+  padding: 3px 0; /* Reducido de 4px 0 */
   background-color: var(--color-atlas-blue);
   color: var(--color-button-active-text, white);
   border: none;
-  border-radius: 4px;
+  border-radius: 3px; /* Reducido de 4px */
   cursor: pointer;
+  font-size: 0.85rem; /* Texto más pequeño */
 }
 
 .snap-apply-custom:hover {
