@@ -1,8 +1,5 @@
-// src/components/ui/sidebar/Sidebar.jsx
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import SidebarItem from './SidebarItem';
-import './sidebar.css';
 
 /**
  * Componente del panel lateral de navegación

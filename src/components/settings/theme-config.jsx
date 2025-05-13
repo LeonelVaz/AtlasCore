@@ -1,7 +1,5 @@
-// src/components/settings/ThemeConfig.jsx
 import React from 'react';
 import useTheme from '../../hooks/use-theme';
-import './theme-config.css';
 
 /**
  * Componente para la configuración de temas

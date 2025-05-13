@@ -1,6 +1,7 @@
 /* Índice de componentes UI */
 @import './button.css';
 @import './dialog.css';
+@import './sidebar.css';
 
 /* Animaciones compartidas */
 @keyframes fadeIn {

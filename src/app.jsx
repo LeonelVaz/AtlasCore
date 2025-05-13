@@ -1,9 +1,9 @@
 // src/app.jsx
 import React, { useState, useEffect } from 'react';
 import CalendarMain from './components/calendar/calendar-main';
-import SettingsPanel from './components/settings/SettingsPanel';
+import SettingsPanel from './components/settings/settings-panel';
 import Sidebar from './components/ui/sidebar/Sidebar';
-import SidebarItem from './components/ui/sidebar/SidebarItem';
+import SidebarItem from './components/ui/sidebar/sidebar-item';
 import WindowControls from './components/ui/window-controls';
 import ThemeProvider from './contexts/theme-context';
 import { isElectronEnv } from './utils/electron-detector';

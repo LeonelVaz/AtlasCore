@@ -1,8 +1,6 @@
-// src/components/settings/SettingsPanel.jsx
 import React, { useState } from 'react';
-import ThemeConfig from './ThemeConfig';
-import SidebarItem from '../ui/sidebar/SidebarItem';
-import './settings-panel.css';
+import ThemeConfig from './theme-config';
+import SidebarItem from '../ui/sidebar/sidebar-item';
 
 // Iconos para las secciones de configuración (usando Material Icons)
 const SECTION_ICONS = {
