@@ -40,6 +40,7 @@ function useCalendarNavigation() {
 
   const goToToday = () => {
     setSelectedDay(new Date());
+    setCurrentDate(new Date()); // También actualizar la semana actual para sincronizar ambas vistas
   };
   
   return {

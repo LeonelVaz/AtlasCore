@@ -87,22 +87,37 @@ function CalendarMain() {
     }
   };
 
+  // Obtener el mes y año actual para mostrar en el título
+  const getFormattedMonthYear = () => {
+    const month = new Date(currentDate).toLocaleDateString('es-ES', { month: 'long' });
+    const year = new Date(currentDate).getFullYear();
+    return `${month.charAt(0).toUpperCase() + month.slice(1)} de ${year}`;
+  };
+
   // Renderizar botones de navegación según la vista actual
   const renderNavigationButtons = () => {
     if (view === CALENDAR_VIEWS.WEEK) {
       return (
         <>
-          <Button onClick={goToPreviousWeek}>Semana anterior</Button>
-          <Button onClick={goToCurrentWeek} variant="secondary">Semana actual</Button>
-          <Button onClick={goToNextWeek}>Semana siguiente</Button>
+          <Button onClick={goToPreviousWeek} variant="text" aria-label="Semana anterior">
+            <span className="material-icons">chevron_left</span>
+          </Button>
+          <Button onClick={goToCurrentWeek} variant="text">Hoy</Button>
+          <Button onClick={goToNextWeek} variant="text" aria-label="Semana siguiente">
+            <span className="material-icons">chevron_right</span>
+          </Button>
         </>
       );
     } else {
       return (
         <>
-          <Button onClick={goToPreviousDay}>Día anterior</Button>
-          <Button onClick={goToToday} variant="secondary">Hoy</Button>
-          <Button onClick={goToNextDay}>Día siguiente</Button>
+          <Button onClick={goToPreviousDay} variant="text" aria-label="Día anterior">
+            <span className="material-icons">chevron_left</span>
+          </Button>
+          <Button onClick={goToToday} variant="text">Hoy</Button>
+          <Button onClick={goToNextDay} variant="text" aria-label="Día siguiente">
+            <span className="material-icons">chevron_right</span>
+          </Button>
         </>
       );
     }
@@ -114,35 +129,33 @@ function CalendarMain() {
         <div className="calendar-navigation">
           {renderNavigationButtons()}
         </div>
+        
+        <div className="calendar-title">
+          <h2>{view === CALENDAR_VIEWS.WEEK ? getFormattedMonthYear() : 
+               new Date(selectedDay).toLocaleDateString('es-ES', { 
+                 month: 'long', 
+                 year: 'numeric',
+                 day: 'numeric'
+               })}</h2>
+        </div>
+        
         <div className="calendar-view-toggle">
           <Button 
             isActive={view === CALENDAR_VIEWS.WEEK} 
             onClick={() => toggleView(CALENDAR_VIEWS.WEEK)}
           >
-            Vista Semanal
+            Semana
           </Button>
           <Button 
             isActive={view === CALENDAR_VIEWS.DAY} 
             onClick={() => toggleView(CALENDAR_VIEWS.DAY, selectedDay)}
           >
-            Vista Diaria
+            Día
           </Button>
           <SnapControl
             snapValue={snapValue}
             onSnapChange={setSnapValue}
           />
-        </div>
-        <div className="calendar-title">
-          {view === CALENDAR_VIEWS.WEEK && (
-            <h2>
-              {new Date(currentDate).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-            </h2>
-          )}
-          {view === CALENDAR_VIEWS.DAY && (
-            <h2>
-              {new Date(selectedDay).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
-            </h2>
-          )}
         </div>
       </div>
 

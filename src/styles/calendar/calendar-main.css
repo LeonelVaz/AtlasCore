@@ -1,4 +1,4 @@
-/* src/styles/calendar/calendar-main.css */
+/* src/styles/calendar/calendar-main.css (modificado) */
 .calendar-container {
   display: flex;
   flex-direction: column;
@@ -24,76 +24,82 @@
 .calendar-navigation {
   display: flex;
   gap: var(--spacing-sm);
+  margin-right: auto; /* Asegura que esté a la izquierda */
 }
 
-/* Botones de navegación */
-.calendar-navigation button,
-.calendar-view-toggle button {
-  background-color: var(--color-button-secondary-bg, #f0f0f0);
-  color: var(--color-button-secondary-text, var(--color-text));
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.calendar-navigation button:hover,
-.calendar-view-toggle button:hover {
-  background-color: var(--color-button-secondary-hover, #e0e0e0);
-}
-
-.calendar-navigation button.active,
-.calendar-view-toggle button.active {
-  background-color: var(--color-atlas-blue);
-  color: var(--color-button-active-text, white);
-  border-color: var(--color-atlas-blue);
+/* Título central */
+.calendar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
 }
 
 .calendar-title h2 {
   margin: 0;
   font-size: 1.2rem;
-  color: var(--color-atlas-blue, #2D4B94);
+  color: var(--topbar-text);
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
+/* Botones de navegación */
+.calendar-navigation button {
+  background-color: transparent;
+  color: var(--color-button-secondary-text, var(--color-text));
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-navigation button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.calendar-navigation button.active {
+  background-color: var(--color-atlas-blue);
+  color: var(--color-button-active-text, white);
+}
+
+/* Contenedor de los controles de vista (a la derecha) */
 .calendar-view-toggle {
   display: flex;
   gap: 8px;
+  margin-left: auto; /* Asegura que esté a la derecha */
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .calendar-navigation {
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-  
   .calendar-header {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm);
   }
   
-  .calendar-view-toggle {
-    width: 100%;
-    justify-content: space-between;
+  .calendar-title {
+    position: static;
+    transform: none;
+    order: 2;
+    flex: 1;
+    text-align: center;
   }
-}
 
-/* Responsive */
-@media (max-width: 768px) {
   .calendar-navigation {
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-  
-  .calendar-header {
-    flex-direction: column;
-    align-items: flex-start;
+    order: 1;
+    margin-right: 0;
   }
   
   .calendar-view-toggle {
+    order: 3;
+    margin-left: 0;
     width: 100%;
-    justify-content: space-between;
+    margin-top: var(--spacing-sm);
+    justify-content: center;
   }
 }

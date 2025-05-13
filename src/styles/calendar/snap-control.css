@@ -1,4 +1,4 @@
-/* src/styles/calendar/snap-control.css */
+/* src/styles/calendar/snap-control.css (modificado) */
 /* Estilos para el control de snap (imán) */
 
 /* Contenedor principal */
@@ -9,11 +9,11 @@
   position: relative;
 }
 
-/* Botón de toggle */
+/* Botón de toggle - sin fondo cuando está desactivado */
 .snap-control-toggle {
-  background-color: var(--color-button-secondary-bg, #f0f0f0);
+  background-color: transparent;
   color: var(--color-button-secondary-text, var(--color-text));
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: 4px 0 0 4px;
   padding: 6px 8px;
   cursor: pointer;
@@ -23,6 +23,7 @@
   justify-content: center;
 }
 
+/* Solo activo cuando está encendido */
 .snap-control-toggle.active {
   background-color: var(--color-atlas-blue);
   color: var(--color-button-active-text, white);
@@ -33,12 +34,11 @@
   font-weight: bold;
 }
 
-/* Indicador de valor */
+/* Indicador de valor - sin fondo cuando está desactivado */
 .snap-value-indicator {
-  background-color: var(--color-button-secondary-bg, #f0f0f0);
+  background-color: transparent;
   color: var(--color-button-secondary-text, var(--color-text));
-  border: 1px solid var(--color-border);
-  border-left: none;
+  border: none;
   border-radius: 0 4px 4px 0;
   padding: 6px 8px;
   cursor: pointer;
@@ -49,14 +49,13 @@
 }
 
 /* Cuando el snap está activo, el indicador de valor también debe mostrar fondo azul y texto blanco */
-.snap-control-toggle.active + .snap-value-indicator {
+.snap-value-indicator.active {
   background-color: var(--color-atlas-blue);
   color: var(--color-button-active-text, white);
-  border-color: var(--color-atlas-blue);
 }
 
 .snap-value-indicator:hover {
-  background-color: var(--color-button-secondary-hover, #e0e0e0);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Menú de opciones */

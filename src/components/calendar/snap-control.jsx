@@ -82,7 +82,7 @@ function SnapControl({ snapValue, onSnapChange }) {
       </button>
       
       <div 
-        className="snap-value-indicator"
+        className={`snap-value-indicator ${snapValue > 0 ? 'active' : ''}`}
         onClick={() => setShowMenu(!showMenu)}
         title="Configurar precisión de imán"
       >

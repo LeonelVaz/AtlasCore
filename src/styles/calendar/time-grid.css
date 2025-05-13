@@ -1,4 +1,4 @@
-/* src/styles/calendar/time-grid.css */
+/* src/styles/calendar/time-grid.css (modificado) */
 .calendar-grid {
   flex: 1;
   display: flex;
@@ -44,7 +44,6 @@
   padding: var(--spacing-sm);
   text-align: center;
   font-weight: 500;
-  text-transform: capitalize;
   background-color: var(--color-calendar-header, #f5f5f5);
   color: var(--color-calendar-day-header, #333333);
 }
@@ -52,13 +51,13 @@
 .calendar-time {
   flex: 0 0 60px;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding-top: var(--spacing-xs);
+  justify-content: center; /* Centrado horizontal */
+  align-items: center; /* Centrado vertical */
   font-size: 0.8rem;
   color: var(--color-calendar-time-label, #666666);
   border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);
   background-color: var(--color-calendar-header, #f5f5f5);
+  padding: 0; /* Eliminar padding para centrado preciso */
 }
 
 .calendar-time-slot {

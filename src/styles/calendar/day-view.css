@@ -1,4 +1,4 @@
-/* src/styles/calendar/day-view.css */
+/* src/styles/calendar/day-view.css (modificado) */
 .day-view-container {
   display: flex;
   flex-direction: column;
@@ -15,6 +15,7 @@
   padding: var(--spacing-md);
   background-color: var(--color-calendar-header, #f5f5f5);
   border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+  text-align: center;
 }
 
 /* Botones de navegación de día */
@@ -22,6 +23,7 @@
   display: flex;
   gap: var(--spacing-sm);
   margin-bottom: 10px;
+  justify-content: center;
 }
 
 .day-view-navigation button {
@@ -49,7 +51,6 @@
   font-size: 1.2rem;
   color: var(--color-calendar-day-header, #333333);
   text-transform: capitalize;
-  text-align: center;
 }
 
 .day-view-timeline {
@@ -70,8 +71,7 @@
   flex: 0 0 60px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: var(--spacing-xs);
+  align-items: center;
   font-size: 0.8rem;
   color: var(--color-calendar-time-label, #666666);
   border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);

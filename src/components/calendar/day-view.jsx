@@ -1,4 +1,4 @@
-// day-view.jsx
+// day-view.jsx (modificado)
 import React from 'react';
 import { formatHour, formatDate } from '../../utils/date-utils';
 import EventItem from './event-item';
@@ -12,8 +12,8 @@ function DayView({
   events, 
   onEventClick, 
   onTimeSlotClick,
-  onUpdate,  // Ahora espera dos parámetros (eventId, eventData)
-  snapValue = 0 // Valor de snap en minutos (0 = desactivado)
+  onUpdate,
+  snapValue = 0
 }) {
   // Generar las horas del día (de 0 a 23)
   const generateHours = () => {
@@ -114,7 +114,6 @@ function DayView({
               event={event}
               onClick={onEventClick}
               onUpdate={(updatedEvent) => {
-                // Modificado: Ahora pasamos el ID y el evento
                 onUpdate(updatedEvent.id, updatedEvent);
               }}
               continuesNextDay={continuesNextDay}
@@ -188,7 +187,6 @@ function DayView({
               event={event}
               onClick={onEventClick}
               onUpdate={(updatedEvent) => {
-                // Modificado: Ahora pasamos el ID y el evento
                 onUpdate(updatedEvent.id, updatedEvent);
               }}
               continuesNextDay={continuesNextDay}
@@ -206,16 +204,21 @@ function DayView({
 
   const hours = generateHours();
 
+  // Formato del encabezado del día con nombre completo
+  const getDayTitle = () => {
+    return formatDate(date, { 
+      weekday: 'long', 
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   return (
     <div className="day-view-container">
       <div className="day-view-header">
         <h3 className="day-view-title">
-          {formatDate(date, { 
-            weekday: 'long', 
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}
+          {getDayTitle()}
         </h3>
       </div>
 
