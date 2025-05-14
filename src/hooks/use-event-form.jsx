@@ -21,13 +21,23 @@ function useEventForm(createEvent, updateEvent, deleteEvent) {
   });
   
   // Manejar clic en celda para crear evento
-  const handleCellClick = (day, hour) => {
+  const handleCellClick = (day, hour, minutes = 0) => {
     try {
-      const startDate = new Date(day);
-      startDate.setHours(hour, 0, 0, 0);
+      let startDate;
+      
+      // Verificar si day es ya un objeto Date completo (con horas y minutos configurados)
+      if (day instanceof Date && !isNaN(day.getTime()) && 
+          (day.getHours() !== 0 || day.getMinutes() !== 0)) {
+        // Usar la fecha tal como está, ya tiene la hora y minutos configurados
+        startDate = new Date(day);
+      } else {
+        // Configurar fecha con hora y minutos proporcionados
+        startDate = new Date(day);
+        startDate.setHours(hour, minutes, 0, 0);
+      }
       
       const endDate = new Date(startDate);
-      endDate.setHours(hour + 1, 0, 0, 0);
+      endDate.setHours(startDate.getHours() + 1, 0, 0, 0);
       
       setSelectedEvent(null);
       setFormError('');

@@ -1,4 +1,3 @@
-// time-grid.jsx - VERSIÓN CORREGIDA COMPLETA
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -262,25 +261,31 @@ function TimeGrid({
                 {formatTimeSlot(hour)}
               </div>
               
-              {days.map((day, dayIndex) => (
-                <div 
-                  key={dayIndex} 
-                  className={`calendar-cell calendar-time-slot ${
-                    standardSlotDuration === 15 ? 'time-slot-short' : 
-                    standardSlotDuration === 30 ? 'time-slot-medium' : 
-                    standardSlotDuration === 45 ? 'time-slot-large' : 
-                    'time-slot-standard'
-                  }`}
-                  data-testid="calendar-time-slot"
-                  onClick={() => onCellClick(day, hour)}
-                  style={{ 
-                    height: `${standardSlotHeight}px`, 
-                    minHeight: `${standardSlotHeight}px` 
-                  }}
-                >
-                  {renderEvents(day, hour, 0, standardSlotDuration)}
-                </div>
-              ))}
+              {days.map((day, dayIndex) => {
+                // Crear una fecha completa para pasar a handleCellClick
+                const dateWithTime = new Date(day);
+                dateWithTime.setHours(hour, 0, 0, 0);
+                
+                return (
+                  <div 
+                    key={dayIndex} 
+                    className={`calendar-cell calendar-time-slot ${
+                      standardSlotDuration === 15 ? 'time-slot-short' : 
+                      standardSlotDuration === 30 ? 'time-slot-medium' : 
+                      standardSlotDuration === 45 ? 'time-slot-large' : 
+                      'time-slot-standard'
+                    }`}
+                    data-testid="calendar-time-slot"
+                    onClick={() => onCellClick(dateWithTime, hour, 0)} // Pasar fecha completa, hora y minutos explícitamente
+                    style={{ 
+                      height: `${standardSlotHeight}px`, 
+                      minHeight: `${standardSlotHeight}px` 
+                    }}
+                  >
+                    {renderEvents(day, hour, 0, standardSlotDuration)}
+                  </div>
+                );
+              })}
             </div>
             
             {/* Agregar botón + entre horas si no hay subdivisión a las XX:30 */}
@@ -368,29 +373,31 @@ function TimeGrid({
                       {formatTimeSlot(hour, slot.minutes)}
                     </div>
                     
-                    {days.map((day, dayIndex) => (
-                      <div 
-                        key={dayIndex} 
-                        className={`calendar-cell calendar-time-slot ${
-                          slotDuration === 15 ? 'time-slot-short' : 
-                          slotDuration === 30 ? 'time-slot-medium' : 
-                          slotDuration === 45 ? 'time-slot-large' : 
-                          'time-slot-standard'
-                        }`}
-                        data-testid="calendar-time-slot-custom"
-                        onClick={() => {
-                          const date = new Date(day);
-                          date.setHours(hour, slot.minutes, 0, 0);
-                          onCellClick(date, hour);
-                        }}
-                        style={{ 
-                          height: `${slotHeight}px`, 
-                          minHeight: `${slotHeight}px` 
-                        }}
-                      >
-                        {renderEvents(day, hour, slot.minutes, slotDuration)}
-                      </div>
-                    ))}
+                    {days.map((day, dayIndex) => {
+                      // Crear una fecha completa con la hora y minutos precisos
+                      const dateWithTime = new Date(day);
+                      dateWithTime.setHours(hour, slot.minutes, 0, 0);
+                      
+                      return (
+                        <div 
+                          key={dayIndex} 
+                          className={`calendar-cell calendar-time-slot ${
+                            slotDuration === 15 ? 'time-slot-short' : 
+                            slotDuration === 30 ? 'time-slot-medium' : 
+                            slotDuration === 45 ? 'time-slot-large' : 
+                            'time-slot-standard'
+                          }`}
+                          data-testid="calendar-time-slot-custom"
+                          onClick={() => onCellClick(dateWithTime, hour, slot.minutes)}
+                          style={{ 
+                            height: `${slotHeight}px`, 
+                            minHeight: `${slotHeight}px` 
+                          }}
+                        >
+                          {renderEvents(day, hour, slot.minutes, slotDuration)}
+                        </div>
+                      );
+                    })}
                   </div>
                   
                   {/* Agregar botón + entre franjas si es necesario */}
