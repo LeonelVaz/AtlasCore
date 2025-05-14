@@ -139,12 +139,10 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   const validateSubdivisionOrder = useCallback((hour, minutes) => {
     const hourSlots = customSlots[hour] || [];
     
-    // Si se intenta crear XX:15 y no existe XX:30, no permitir
-    if (minutes === 15 && !hourSlots.some(slot => slot.minutes === 30)) {
-      console.warn(`No se puede crear franja a las ${hour}:15 sin crear primero franja a las ${hour}:30`);
-      return false;
-    }
+    // Eliminamos la restricción para las franjas de 15 minutos
+    // Ahora se permite crear XX:15 sin necesidad de que exista XX:30
     
+    // Mantenemos la validación solo para las franjas de 45 minutos
     // Si se intenta crear XX:45 y no existe XX:30, no permitir
     if (minutes === 45 && !hourSlots.some(slot => slot.minutes === 30)) {
       console.warn(`No se puede crear franja a las ${hour}:45 sin crear primero franja a las ${hour}:30`);
