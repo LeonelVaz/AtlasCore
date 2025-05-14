@@ -1,4 +1,4 @@
-/* src/styles/calendar/time-slots.css (corregido) */
+/* src/styles/calendar/time-slots.css (con corrección para el botón de eliminación) */
 /* Estilos para franjas horarias personalizadas */
 
 /* Estilos base para todas las franjas */
@@ -91,6 +91,48 @@
 .calendar-time-custom {
   color: var(--color-text-secondary);
   font-size: 0.75rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible !important; /* Asegura que el botón no se recorte */
+}
+
+/* Botón para eliminar franja personalizada */
+.remove-time-slot-button {
+  position: absolute;
+  left: -10px; /* Posición original, mitad fuera de la celda */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-alarm-red, #E53935);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 100; /* Z-index muy alto para asegurar visibilidad */
+  box-shadow: 0 0 0 2px var(--color-background, white); /* Borde blanco para separarlo visualmente */
+}
+
+.calendar-time-custom:hover .remove-time-slot-button {
+  opacity: 1;
+}
+
+.remove-time-slot-button .material-icons {
+  font-size: 14px;
+  color: white;
+  filter: drop-shadow(0 0 1px rgba(0,0,0,0.5)); /* Sombra sutil para mejorar legibilidad */
+}
+
+.remove-time-slot-button:hover {
+  transform: translateY(-50%) scale(1.2);
 }
 
 /* Ajustes para el visor de tiempo personalizado */
@@ -312,8 +354,18 @@
     font-size: 20px;
   }
   
+  .remove-time-slot-button {
+    opacity: 0.9; /* Hacerlo más visible en móviles */
+    left: -3px; /* Ajuste para móviles */
+  }
+  
   .custom-slot-form-row {
     flex-direction: column;
     gap: 5px;
   }
+}
+
+.calendar-row {
+  position: relative;
+  overflow: visible !important;
 }

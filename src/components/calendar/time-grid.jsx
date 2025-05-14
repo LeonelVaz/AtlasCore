@@ -1,4 +1,4 @@
-// src/components/calendar/time-grid.jsx (corregido para ajustar tamaños proporcionales)
+// src/components/calendar/time-grid.jsx (con botón para eliminar franjas)
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -32,6 +32,7 @@ function TimeGrid({
     isEventActiveAtStartOfDay,
     formatTimeSlot,
     addCustomTimeSlot,
+    removeCustomTimeSlot,
     canAddIntermediateSlot
   } = useTimeGrid(0, 24, cellHeight);
 
@@ -186,6 +187,12 @@ function TimeGrid({
       addCustomTimeSlot(hour, 30);
     }
   };
+  
+  // Manejar clic en botón de eliminar franja personalizada
+  const handleRemoveCustomSlot = (e, hour, minutes) => {
+    e.stopPropagation(); // Evitar que se propague el clic
+    removeCustomTimeSlot(hour, minutes);
+  };
 
   return (
     <div className={`calendar-grid ${isCompactScale ? 'time-scale-compact' : ''}`}>
@@ -291,7 +298,7 @@ function TimeGrid({
               const slotHeight = (slotDuration / 60) * cellHeight;
               
               return (
-                <div key={`custom-${hour}-${slot.minutes}`} className="calendar-row">
+                <div key={`custom-${hour}-${slot.minutes}`} className="calendar-row time-row-with-delete">
                   <div 
                     className="calendar-cell calendar-time calendar-time-custom" 
                     style={{ 
@@ -299,6 +306,16 @@ function TimeGrid({
                       minHeight: `${slotHeight}px` 
                     }}
                   >
+                    {/* Botón para eliminar franja personalizada */}
+                    <button 
+                      className="remove-time-slot-button"
+                      onClick={(e) => handleRemoveCustomSlot(e, hour, slot.minutes)}
+                      title={`Eliminar franja ${hour}:${slot.minutes.toString().padStart(2, '0')}`}
+                      aria-label="Eliminar franja horaria"
+                    >
+                      <span className="material-icons">clear</span>
+                    </button>
+                    
                     {formatTimeSlot(hour, slot.minutes)}
                   </div>
                   
