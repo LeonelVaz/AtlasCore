@@ -3,7 +3,8 @@
 @import './calendar-main.css';
 @import './time-grid.css';
 @import './event-item.css';
-@import './event-item-compact.css'; /* Nuevo archivo para la vista compacta */
+@import './event-item-compact.css'; 
 @import './day-view.css';
 @import './week-view.css';
 @import './snap-control.css';
+@import './time-slots.css'; /* Importamos los nuevos estilos para franjas */

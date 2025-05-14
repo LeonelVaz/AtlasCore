@@ -1,4 +1,4 @@
-// src/components/calendar/time-grid.jsx (actualización)
+// src/components/calendar/time-grid.jsx (corregido para ajustar tamaños proporcionales)
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -27,15 +27,18 @@ function TimeGrid({
   // Usar el hook de time-grid para la lógica de la rejilla
   const {
     hours,
+    customSlots,
     shouldShowEventStart,
     isEventActiveAtStartOfDay,
-    formatTimeSlot
+    formatTimeSlot,
+    addCustomTimeSlot,
+    canAddIntermediateSlot
   } = useTimeGrid(0, 24, cellHeight);
 
   // Renderizar eventos que continúan desde el día anterior
   const renderContinuingEvents = (day) => {
     try {
-      // Filtrar eventos que continúan desde el día anterior usando el método del hook
+      // Filtrar eventos que continúan desde el día anterior
       const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
       
       return continuingEvents.map(event => {
@@ -99,21 +102,23 @@ function TimeGrid({
     }
   };
 
-  // Renderizar eventos en la celda - Usamos shouldShowEventStart del hook
-  const renderEvents = (day, hour) => {
+  // Renderizar eventos en la celda
+  const renderEvents = (day, hour, minutes = 0, duration) => {
     try {
       // Si es la primera hora del día, mostrar eventos que continúan del día anterior
-      if (hour === 0) {
+      if (hour === 0 && minutes === 0) {
         const continuingEvents = renderContinuingEvents(day);
         if (continuingEvents && continuingEvents.length > 0) {
           return continuingEvents;
         }
       }
       
-      // Eventos que comienzan exactamente en esta celda usando el método del hook
-      const eventsStartingThisHour = events.filter(event => shouldShowEventStart(event, day, hour));
+      // Eventos que comienzan exactamente en esta celda
+      const eventsStartingInSlot = events.filter(event => 
+        shouldShowEventStart(event, day, hour, minutes)
+      );
       
-      return eventsStartingThisHour.map(event => {
+      return eventsStartingInSlot.map(event => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
         
@@ -129,9 +134,6 @@ function TimeGrid({
         const continuesNextDay = eventEnd > dayEnd;
         const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
         
-        // Offset basado en minutos
-        const topOffset = (eventStart.getMinutes() / 60) * cellHeight;
-        
         // Calcular duración visible
         const durationMs = visibleEnd.getTime() - eventStart.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
@@ -142,7 +144,7 @@ function TimeGrid({
         
         const eventStyle = {
           position: 'absolute',
-          top: `${topOffset}px`,
+          top: 0,
           height: `${heightPx}px`,
           left: '2px',
           right: '2px',
@@ -153,7 +155,7 @@ function TimeGrid({
           <div 
             className={`event-wrapper ${continuesNextDay ? 'continues-next-day' : ''}`} 
             style={eventStyle} 
-            key={`starting-${event.id}-${day.getDate()}-${hour}`}
+            key={`event-${event.id}-${day.getDate()}-${hour}-${minutes}`}
           >
             <EventItem
               key={event.id}
@@ -177,6 +179,14 @@ function TimeGrid({
     }
   };
 
+  // Manejar clic en botón de agregar franja intermedia
+  const handleAddIntermediateClick = (hour) => {
+    if(hour < 23) { // No agregamos botón en la última hora
+      // Por defecto, añadir a los 30 minutos de la hora
+      addCustomTimeSlot(hour, 30);
+    }
+  };
+
   return (
     <div className={`calendar-grid ${isCompactScale ? 'time-scale-compact' : ''}`}>
       {/* Encabezado con días */}
@@ -194,25 +204,128 @@ function TimeGrid({
       </div>
 
       {/* Rejilla horaria - Usamos las horas generadas por el hook */}
-      {hours.map((hour) => (
-        <div key={hour} className="calendar-row">
-          <div className="calendar-cell calendar-time" style={{ height: `${cellHeight}px` }}>
-            {formatTimeSlot(hour)}
-          </div>
-          
-          {days.map((day, dayIndex) => (
-            <div 
-              key={dayIndex} 
-              className="calendar-cell calendar-time-slot"
-              data-testid="calendar-time-slot"
-              onClick={() => onCellClick(day, hour)}
-              style={{ height: `${cellHeight}px`, minHeight: `${cellHeight}px` }}
-            >
-              {renderEvents(day, hour)}
+      {hours.map((hour, hourIndex) => {
+        // Calcular la altura proporcional para las celdas estándar
+        // Si hay franjas personalizadas para esta hora, la altura debe reducirse
+        const hasCustomSlots = customSlots[hour] && customSlots[hour].length > 0;
+        
+        // Calcular la duración efectiva de la celda estándar (hora completa)
+        let standardSlotDuration = 60; // Minutos por defecto
+        
+        if (hasCustomSlots) {
+          // Si hay franjas personalizadas, la duración es hasta la primera franja
+          const firstCustomSlot = [...customSlots[hour]].sort((a, b) => a.minutes - b.minutes)[0];
+          standardSlotDuration = firstCustomSlot.minutes;
+        }
+        
+        // Calcular la altura proporcional
+        const standardSlotHeight = (standardSlotDuration / 60) * cellHeight;
+        
+        return (
+          <React.Fragment key={hour}>
+            <div className="calendar-row">
+              <div 
+                className="calendar-cell calendar-time" 
+                style={{ 
+                  height: `${standardSlotHeight}px`,
+                  minHeight: `${standardSlotHeight}px`
+                }}
+              >
+                {formatTimeSlot(hour)}
+              </div>
+              
+              {days.map((day, dayIndex) => (
+                <div 
+                  key={dayIndex} 
+                  className="calendar-cell calendar-time-slot"
+                  data-testid="calendar-time-slot"
+                  onClick={() => onCellClick(day, hour)}
+                  style={{ 
+                    height: `${standardSlotHeight}px`, 
+                    minHeight: `${standardSlotHeight}px` 
+                  }}
+                >
+                  {renderEvents(day, hour, 0, standardSlotDuration)}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      ))}
+            
+            {/* Agregar botón + entre horas, solo en la columna de horas */}
+            {hourIndex < hours.length - 1 && canAddIntermediateSlot(hour, 0) && (
+              <div className="time-separator-row">
+                <div className="time-separator-cell">
+                  <button 
+                    className="add-time-slot-button"
+                    onClick={() => handleAddIntermediateClick(hour)}
+                    title={`Añadir franja ${hour}:30`}
+                  >
+                    <span className="material-icons">add_circle</span>
+                  </button>
+                </div>
+                
+                {/* Celdas vacías para mantener la estructura de la tabla */}
+                {days.map((_, dayIndex) => (
+                  <div key={dayIndex} className="time-separator-placeholder"></div>
+                ))}
+              </div>
+            )}
+            
+            {/* Renderizar franjas personalizadas si existen para esta hora */}
+            {hasCustomSlots && customSlots[hour].map(slot => {
+              // Calcular la duración real de esta franja personalizada
+              let slotDuration = slot.duration || 30; // Valor predeterminado
+              
+              // Si hay más franjas, la duración es hasta la siguiente franja
+              const sortedSlots = [...customSlots[hour]].sort((a, b) => a.minutes - b.minutes);
+              const slotIndex = sortedSlots.findIndex(s => s.minutes === slot.minutes);
+              
+              if (slotIndex < sortedSlots.length - 1) {
+                // Si hay una siguiente franja, la duración es hasta ella
+                slotDuration = sortedSlots[slotIndex + 1].minutes - slot.minutes;
+              } else {
+                // Si es la última franja, la duración es hasta la siguiente hora
+                slotDuration = 60 - slot.minutes;
+              }
+              
+              // Calcular la altura proporcional
+              const slotHeight = (slotDuration / 60) * cellHeight;
+              
+              return (
+                <div key={`custom-${hour}-${slot.minutes}`} className="calendar-row">
+                  <div 
+                    className="calendar-cell calendar-time calendar-time-custom" 
+                    style={{ 
+                      height: `${slotHeight}px`,
+                      minHeight: `${slotHeight}px` 
+                    }}
+                  >
+                    {formatTimeSlot(hour, slot.minutes)}
+                  </div>
+                  
+                  {days.map((day, dayIndex) => (
+                    <div 
+                      key={dayIndex} 
+                      className={`calendar-cell calendar-time-slot time-slot-${slot.minutes === 30 ? 'medium' : 'short'}`}
+                      data-testid="calendar-time-slot-custom"
+                      onClick={() => {
+                        const date = new Date(day);
+                        date.setHours(hour, slot.minutes, 0, 0);
+                        onCellClick(date, hour);
+                      }}
+                      style={{ 
+                        height: `${slotHeight}px`, 
+                        minHeight: `${slotHeight}px` 
+                      }}
+                    >
+                      {renderEvents(day, hour, slot.minutes, slotDuration)}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </React.Fragment>
+        );
+      })}
     </div>
   );
 }

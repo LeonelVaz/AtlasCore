@@ -1,0 +1,319 @@
+/* src/styles/calendar/time-slots.css (corregido) */
+/* Estilos para franjas horarias personalizadas */
+
+/* Estilos base para todas las franjas */
+.calendar-time-slot {
+  position: relative;
+  padding: 0;
+  overflow: visible !important;
+  background-color: var(--time-slot-standard-bg, var(--color-calendar-grid, white));
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+}
+
+.calendar-time-slot:hover {
+  background-color: var(--time-slot-standard-hover, var(--color-calendar-slot-hover, #f0f7ff));
+}
+
+/* Diferenciación visual por tipo de franja */
+.time-slot-medium {
+  background-color: var(--time-slot-medium-bg, rgba(0, 0, 0, 0.02));
+}
+
+.time-slot-medium:hover {
+  background-color: var(--time-slot-medium-hover, var(--color-calendar-slot-hover));
+}
+
+.time-slot-short {
+  background-color: var(--time-slot-short-bg, rgba(0, 0, 0, 0.04));
+}
+
+.time-slot-short:hover {
+  background-color: var(--time-slot-short-hover, var(--color-calendar-slot-hover));
+}
+
+/* Separador entre horas para añadir franjas intermedias */
+.time-separator-row {
+  display: flex;
+  width: 100%;
+  height: 0;
+  position: relative;
+  z-index: 15;
+}
+
+.time-separator-cell {
+  flex: 0 0 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.time-separator-placeholder {
+  flex: 1;
+}
+
+/* Botón para agregar franja entre horas */
+.add-time-slot-button {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: -11px;
+  opacity: 0; /* Inicialmente invisible */
+  transition: opacity 0.2s ease;
+}
+
+.time-separator-cell:hover .add-time-slot-button {
+  opacity: 1; /* Mostrar al hacer hover */
+}
+
+.add-time-slot-button .material-icons {
+  font-size: 22px;
+  color: var(--color-atlas-blue);
+  filter: drop-shadow(0px 0px 2px rgba(255, 255, 255, 0.8));
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.add-time-slot-button:hover .material-icons {
+  transform: scale(1.2);
+  color: var(--color-button-primary-hover);
+}
+
+/* Estilo para el tiempo intermedio en la columna de horas */
+.calendar-time-custom {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+/* Ajustes para el visor de tiempo personalizado */
+.custom-time-viewer {
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.custom-time-viewer-header {
+  background-color: var(--color-calendar-header);
+  padding: 10px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.custom-time-scales {
+  display: flex;
+  padding: 0;
+}
+
+.custom-time-hour {
+  flex: 0 0 60px;
+  background-color: var(--color-calendar-header);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-time-slots {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-time-hour-label {
+  padding: 5px;
+  text-align: center;
+  font-size: 0.8rem;
+  border-bottom: 1px solid var(--color-border);
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-time-slot {
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+  min-height: 30px;
+}
+
+.custom-time-slot-standard {
+  background-color: var(--time-slot-standard-bg);
+}
+
+.custom-time-slot-medium {
+  background-color: var(--time-slot-medium-bg);
+}
+
+.custom-time-slot-short {
+  background-color: var(--time-slot-short-bg);
+}
+
+.custom-time-slot-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.custom-time-slot-actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.2s, background-color 0.2s;
+}
+
+.custom-time-slot-actions button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--color-text);
+}
+
+.custom-time-slot-actions .material-icons {
+  font-size: 16px;
+}
+
+/* Botón para agregar franja en el editor */
+.add-custom-slot-button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: var(--color-atlas-blue);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.add-custom-slot-button:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.add-custom-slot-button .material-icons {
+  font-size: 16px;
+}
+
+/* Form para agregar franja personalizada */
+.custom-slot-form {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: var(--color-calendar-header);
+  border-radius: 4px;
+}
+
+.custom-slot-form-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.custom-slot-form-field {
+  flex: 1;
+}
+
+.custom-slot-form-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.custom-slot-form-field select,
+.custom-slot-form-field input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+}
+
+.custom-slot-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.custom-slot-form-actions button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.custom-slot-form-actions .cancel-button {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+}
+
+.custom-slot-form-actions .cancel-button:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+
+.custom-slot-form-actions .save-button {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.custom-slot-form-actions .save-button:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+/* Guía de franjas horarias */
+.time-slot-guide {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--color-calendar-header);
+  border-radius: 8px;
+}
+
+.time-slot-guide h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.time-slot-guide ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.time-slot-guide li {
+  margin-bottom: 5px;
+}
+
+/* Media queries para responsive */
+@media (max-width: 768px) {
+  .add-time-slot-button {
+    opacity: 0.7; /* Hacerlo más visible en móviles */
+  }
+  
+  .add-time-slot-button .material-icons {
+    font-size: 20px;
+  }
+  
+  .custom-slot-form-row {
+    flex-direction: column;
+    gap: 5px;
+  }
+}

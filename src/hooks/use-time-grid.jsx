@@ -1,40 +1,250 @@
-// src/hooks/use-time-grid.jsx (actualizado)
-import { useState, useCallback } from 'react';
+// src/hooks/use-time-grid.jsx (para cálculo correcto de duración)
+import { useState, useEffect, useCallback } from 'react';
 import { formatHour } from '../utils/date-utils';
-import { DEFAULT_HOUR_CELL_HEIGHT } from '../core/config/constants';
+import { DEFAULT_HOUR_CELL_HEIGHT, STORAGE_KEYS } from '../core/config/constants';
+import storageService from '../services/storage-service';
+import eventBus from '../core/bus/event-bus';
 
 /**
- * Hook personalizado para manejar la rejilla temporal del calendario
+ * Hook personalizado para manejar la rejilla temporal del calendario con soporte para franjas personalizadas
  * @param {number} startHour - Hora de inicio para la rejilla (por defecto 0)
  * @param {number} endHour - Hora de fin para la rejilla (por defecto 24)
  * @param {number} cellHeight - Altura de celda (por defecto definida en constantes)
  * @returns {Object} - Funciones y datos para manejar la rejilla temporal
  */
 function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL_HEIGHT) {
-  // Estado para manejar franjas horarias personalizadas (implementación básica, se mejorará en Stage 3)
-  const [timeSlots, setTimeSlots] = useState([]);
+  // Estado para manejar franjas horarias personalizadas
+  const [customSlots, setCustomSlots] = useState({});
   const [gridHeight, setGridHeight] = useState(cellHeight);
+  const [isLoading, setIsLoading] = useState(true);
   
-  /**
-   * Genera el array de horas para la rejilla
-   * @returns {Array} - Array de horas (números)
-   */
-  const generateHours = useCallback(() => {
-    const hours = [];
-    for (let i = startHour; i < endHour; i++) {
-      hours.push(i);
+  // Cargar franjas personalizadas al iniciar
+  useEffect(() => {
+    const loadCustomSlots = async () => {
+      try {
+        const savedSlots = await storageService.get(STORAGE_KEYS.CUSTOM_TIME_SLOTS, {});
+        
+        // Asegurar que las franjas tienen duración calculada
+        const slotsWithDuration = {};
+        
+        Object.entries(savedSlots).forEach(([hour, slots]) => {
+          const hourNum = parseInt(hour, 10);
+          
+          // Ordenar las franjas por minutos
+          const sortedSlots = [...slots].sort((a, b) => a.minutes - b.minutes);
+          
+          // Calcular las duraciones
+          slotsWithDuration[hourNum] = sortedSlots.map((slot, index) => {
+            let duration;
+            
+            if (index < sortedSlots.length - 1) {
+              // Si hay una siguiente franja, la duración es hasta ella
+              duration = sortedSlots[index + 1].minutes - slot.minutes;
+            } else {
+              // Si es la última franja, la duración es hasta la siguiente hora
+              duration = 60 - slot.minutes;
+            }
+            
+            return {
+              ...slot,
+              duration
+            };
+          });
+        });
+        
+        setCustomSlots(slotsWithDuration);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error al cargar franjas horarias personalizadas:', error);
+        setCustomSlots({});
+        setIsLoading(false);
+      }
+    };
+
+    loadCustomSlots();
+  }, []);
+
+  // Guardar franjas personalizadas cuando cambien
+  useEffect(() => {
+    if (!isLoading) {
+      storageService.set(STORAGE_KEYS.CUSTOM_TIME_SLOTS, customSlots);
+      
+      // Notificar al sistema del cambio en las franjas horarias
+      eventBus.publish('calendar.timeSlotsChanged', customSlots);
     }
-    return hours;
-  }, [startHour, endHour]);
+  }, [customSlots, isLoading]);
+
+  /**
+   * Calcula la duración de una franja horaria
+   * @param {number} hour - Hora de la franja
+   * @param {number} minutes - Minutos de la franja
+   * @param {Array} allSlots - Todas las franjas de la hora
+   * @returns {number} - Duración en minutos
+   */
+  const calculateSlotDuration = (hour, minutes, allSlots) => {
+    // Ordenar las franjas por minutos
+    const sortedSlots = [...allSlots].sort((a, b) => a.minutes - b.minutes);
+    
+    // Encontrar el índice de esta franja
+    const slotIndex = sortedSlots.findIndex(slot => slot.minutes === minutes);
+    
+    if (slotIndex === -1) {
+      // Si no se encuentra (no debería pasar), devolver duración predeterminada
+      return 60 - minutes;
+    }
+    
+    if (slotIndex < sortedSlots.length - 1) {
+      // Si hay una siguiente franja, la duración es hasta ella
+      return sortedSlots[slotIndex + 1].minutes - minutes;
+    } else {
+      // Si es la última franja, la duración es hasta la siguiente hora
+      return 60 - minutes;
+    }
+  };
+
+  /**
+   * Recalcula las duraciones de todas las franjas de una hora
+   * @param {number} hour - Hora a recalcular
+   * @param {Array} slots - Franjas de la hora
+   * @returns {Array} - Franjas con duraciones actualizadas
+   */
+  const recalculateSlotDurations = (hour, slots) => {
+    // Ordenar las franjas por minutos
+    const sortedSlots = [...slots].sort((a, b) => a.minutes - b.minutes);
+    
+    // Calcular duración para cada franja
+    return sortedSlots.map((slot, index) => {
+      if (index < sortedSlots.length - 1) {
+        // Si hay una siguiente franja, la duración es hasta ella
+        return {
+          ...slot,
+          duration: sortedSlots[index + 1].minutes - slot.minutes
+        };
+      } else {
+        // Si es la última franja, la duración es hasta la siguiente hora
+        return {
+          ...slot,
+          duration: 60 - slot.minutes
+        };
+      }
+    });
+  };
+
+  /**
+   * Agrega una franja horaria personalizada
+   * @param {number} hour - Hora base (0-23)
+   * @param {number} minutes - Minutos (múltiplos de 15)
+   * @returns {boolean} - true si se agregó correctamente
+   */
+  const addCustomTimeSlot = useCallback((hour, minutes) => {
+    try {
+      // Validar parámetros
+      if (hour < 0 || hour >= 24 || minutes < 0 || minutes >= 60) {
+        console.error('Parámetros de franja horaria inválidos:', hour, minutes);
+        return false;
+      }
+      
+      // Asegurar que minutes sea múltiplo de 15
+      const validMinutes = Math.round(minutes / 15) * 15;
+      if (validMinutes !== minutes) {
+        console.warn(`Minutos ajustados de ${minutes} a ${validMinutes}`);
+        minutes = validMinutes;
+      }
+      
+      // Verificar si la franja ya existe
+      const hourSlots = customSlots[hour] || [];
+      if (hourSlots.some(slot => slot.minutes === minutes)) {
+        console.warn(`La franja ${hour}:${minutes} ya existe`);
+        return false;
+      }
+      
+      // Agregar la nueva franja
+      setCustomSlots(prev => {
+        const updatedSlots = { ...prev };
+        const newHourSlots = [...(updatedSlots[hour] || []), { minutes }];
+        
+        // Recalcular duraciones para todas las franjas de esta hora
+        updatedSlots[hour] = recalculateSlotDurations(hour, newHourSlots);
+        
+        return updatedSlots;
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error al agregar franja horaria personalizada:', error);
+      return false;
+    }
+  }, [customSlots]);
+
+  /**
+   * Elimina una franja horaria personalizada
+   * @param {number} hour - Hora base (0-23)
+   * @param {number} minutes - Minutos
+   * @returns {boolean} - true si se eliminó correctamente
+   */
+  const removeCustomTimeSlot = useCallback((hour, minutes) => {
+    try {
+      // Validar parámetros
+      if (hour < 0 || hour >= 24 || minutes <= 0 || minutes >= 60) {
+        console.error('Parámetros de franja horaria inválidos:', hour, minutes);
+        return false;
+      }
+      
+      // Verificar si la franja existe
+      const hourSlots = customSlots[hour] || [];
+      if (!hourSlots.some(slot => slot.minutes === minutes)) {
+        console.warn(`La franja ${hour}:${minutes} no existe`);
+        return false;
+      }
+      
+      // Eliminar la franja
+      setCustomSlots(prev => {
+        const updatedSlots = { ...prev };
+        const filteredSlots = updatedSlots[hour].filter(slot => slot.minutes !== minutes);
+        
+        // Si no quedan franjas para esta hora, eliminar la entrada
+        if (filteredSlots.length === 0) {
+          delete updatedSlots[hour];
+        } else {
+          // Recalcular duraciones para las franjas restantes
+          updatedSlots[hour] = recalculateSlotDurations(hour, filteredSlots);
+        }
+        
+        return updatedSlots;
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar franja horaria personalizada:', error);
+      return false;
+    }
+  }, [customSlots]);
+
+  /**
+   * Verifica si se puede agregar una franja intermedia a una hora
+   * @param {number} hour - Hora base
+   * @param {number} minutes - Minutos
+   * @returns {boolean} - true si se puede agregar
+   */
+  const canAddIntermediateSlot = useCallback((hour, minutes) => {
+    // Si no hay minutos, verificar si ya existe una franja a los 30 minutos
+    if (minutes === 0) {
+      const hourSlots = customSlots[hour] || [];
+      return !hourSlots.some(slot => slot.minutes === 30);
+    }
+    
+    return false;
+  }, [customSlots]);
 
   /**
    * Verifica si un evento comienza exactamente en esta celda
    * @param {Object} event - Evento a verificar
    * @param {Date} day - Día a verificar
    * @param {number} hour - Hora a verificar
+   * @param {number} minutes - Minutos a verificar (0 por defecto)
    * @returns {boolean} - true si el evento comienza en esta celda
    */
-  const shouldShowEventStart = useCallback((event, day, hour) => {
+  const shouldShowEventStart = useCallback((event, day, hour, minutes = 0) => {
     try {
       if (!event?.start) {
         console.error('Error al verificar inicio de evento: evento sin propiedad start', event);
@@ -52,7 +262,8 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
         eventStart.getDate() === day.getDate() &&
         eventStart.getMonth() === day.getMonth() &&
         eventStart.getFullYear() === day.getFullYear() &&
-        eventStart.getHours() === hour
+        eventStart.getHours() === hour &&
+        eventStart.getMinutes() === minutes
       );
     } catch (error) {
       console.error('Error al verificar inicio de evento:', error, event);
@@ -94,37 +305,17 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   }, []);
 
   /**
-   * Filtra eventos para un día y hora específicos
-   * @param {Array} events - Todos los eventos
-   * @param {Date} day - Día a verificar
-   * @param {number} hour - Hora a verificar
-   * @returns {Array} - Eventos que comienzan en esa hora/día
-   */
-  const getEventsForTimeSlot = useCallback((events, day, hour) => {
-    if (!Array.isArray(events) || !day) return [];
-    
-    return events.filter(event => shouldShowEventStart(event, day, hour));
-  }, [shouldShowEventStart]);
-
-  /**
-   * Filtra eventos que continúan desde el día anterior
-   * @param {Array} events - Todos los eventos
-   * @param {Date} day - Día a verificar
-   * @returns {Array} - Eventos que continúan desde el día anterior
-   */
-  const getContinuingEvents = useCallback((events, day) => {
-    if (!Array.isArray(events) || !day) return [];
-    
-    return events.filter(event => isEventActiveAtStartOfDay(event, day));
-  }, [isEventActiveAtStartOfDay]);
-  
-  /**
    * Formatea las horas para mostrar
    * @param {number} hour - Hora a formatear
+   * @param {number} minutes - Minutos a formatear (0 por defecto)
    * @returns {string} - Hora formateada
    */
-  const formatTimeSlot = useCallback((hour) => {
-    return formatHour(hour);
+  const formatTimeSlot = useCallback((hour, minutes = 0) => {
+    if (minutes === 0) {
+      return formatHour(hour);
+    } else {
+      return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
   }, []);
 
   /**
@@ -137,8 +328,11 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
     }
   }, []);
 
-  // Generar horas del grid
-  const hours = generateHours();
+  // Generar horas del grid (solo las horas principales)
+  const hours = [];
+  for (let i = startHour; i < endHour; i++) {
+    hours.push(i);
+  }
 
   // Efecto para actualizar la altura de la rejilla cuando cambia cellHeight
   if (gridHeight !== cellHeight) {
@@ -147,16 +341,16 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
 
   return {
     hours,
-    timeSlots,
-    setTimeSlots,
+    customSlots,
     gridHeight,
     setHourCellHeight,
-    generateHours,
     shouldShowEventStart,
     isEventActiveAtStartOfDay,
-    getEventsForTimeSlot,
-    getContinuingEvents,
-    formatTimeSlot
+    formatTimeSlot,
+    addCustomTimeSlot,
+    removeCustomTimeSlot,
+    canAddIntermediateSlot,
+    isLoading
   };
 }
 

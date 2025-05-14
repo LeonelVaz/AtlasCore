@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import ThemeConfig from './theme-config';
 import TimeScaleConfig from './time-scale-config';
+import TimeSlotEditor from './time-slot-editor';
 import SidebarItem from '../ui/sidebar/sidebar-item';
 
 // Iconos para las secciones de configuración (usando Material Icons)
@@ -10,6 +11,7 @@ const SECTION_ICONS = {
   APPEARANCE: 'palette',
   CALENDAR: 'calendar_today',
   TIME_SCALE: 'schedule',
+  TIME_SLOTS: 'horizontal_split',
   BACKUP: 'backup'
 };
 
@@ -25,6 +27,7 @@ const SettingsPanel = () => {
     { id: 'general', label: 'General', icon: SECTION_ICONS.GENERAL },
     { id: 'appearance', label: 'Apariencia', icon: SECTION_ICONS.APPEARANCE },
     { id: 'time_scale', label: 'Escala de Tiempo', icon: SECTION_ICONS.TIME_SCALE },
+    { id: 'time_slots', label: 'Franjas Horarias', icon: SECTION_ICONS.TIME_SLOTS },
     { id: 'calendar', label: 'Calendario', icon: SECTION_ICONS.CALENDAR },
     { id: 'backup', label: 'Respaldo', icon: SECTION_ICONS.BACKUP }
   ];
@@ -41,6 +44,8 @@ const SettingsPanel = () => {
         return <ThemeConfig />;
       case 'time_scale':
         return <TimeScaleConfig />;
+      case 'time_slots':
+        return <TimeSlotEditor />;
       case 'general':
       case 'calendar':
       case 'backup':
