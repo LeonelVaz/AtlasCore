@@ -104,8 +104,7 @@
 
 /* Cuando se hace hover, desplazar el contenido hacia la derecha */
 .calendar-time-custom:hover {
-  padding-left: 12px; /* Reducido para movimiento más sutil */
-  justify-content: flex-end;
+  padding-left: 15px; /* Reducido para movimiento más sutil */
   padding-right: 6px; /* Balancear el espacio */
 }
 
