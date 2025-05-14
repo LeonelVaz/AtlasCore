@@ -1,4 +1,4 @@
-// src/components/calendar/time-grid.jsx (versión completa corregida)
+// src/components/calendar/time-grid.jsx (versión corregida)
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -34,7 +34,8 @@ function TimeGrid({
     addCustomTimeSlot,
     removeCustomTimeSlot,
     canAddIntermediateSlot,
-    canAddIntermediateSlotAt15
+    canAddIntermediateSlotAt15,
+    getEventPositionInSlot
   } = useTimeGrid(0, 24, cellHeight);
 
   // Renderizar eventos que continúan desde el día anterior
@@ -115,9 +116,9 @@ function TimeGrid({
         }
       }
       
-      // Eventos que comienzan exactamente en esta celda
+      // Eventos que comienzan dentro de esta celda
       const eventsStartingInSlot = events.filter(event => 
-        shouldShowEventStart(event, day, hour, minutes)
+        shouldShowEventStart(event, day, hour, minutes, duration)
       );
       
       return eventsStartingInSlot.map(event => {
@@ -141,12 +142,15 @@ function TimeGrid({
         const durationHours = durationMs / (1000 * 60 * 60);
         const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
         
+        // Calcular posición relativa dentro de la celda
+        const { offsetPixels } = getEventPositionInSlot(event, hour, minutes, duration, cellHeight);
+        
         // Determinar si es un evento pequeño (menos de 30 minutos)
         const isMicroEvent = heightPx < 25;
         
         const eventStyle = {
           position: 'absolute',
-          top: 0,
+          top: `${offsetPixels}px`,
           height: `${heightPx}px`,
           left: '2px',
           right: '2px',

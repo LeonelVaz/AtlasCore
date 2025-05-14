@@ -287,14 +287,15 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   }, [customSlots]);
 
   /**
-   * Verifica si un evento comienza exactamente en esta celda
+   * Verifica si un evento comienza dentro de esta celda
    * @param {Object} event - Evento a verificar
    * @param {Date} day - Día a verificar
    * @param {number} hour - Hora a verificar
-   * @param {number} minutes - Minutos a verificar (0 por defecto)
-   * @returns {boolean} - true si el evento comienza en esta celda
+   * @param {number} minutes - Minutos del inicio de la celda
+   * @param {number} duration - Duración de la celda en minutos
+   * @returns {boolean} - true si el evento comienza dentro de esta celda
    */
-  const shouldShowEventStart = useCallback((event, day, hour, minutes = 0) => {
+  const shouldShowEventStart = useCallback((event, day, hour, minutes = 0, duration = 60) => {
     try {
       if (!event?.start) {
         console.error('Error al verificar inicio de evento: evento sin propiedad start', event);
@@ -308,13 +309,24 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
         return false;
       }
       
-      return (
+      // Verificar mismo día
+      const sameDay = (
         eventStart.getDate() === day.getDate() &&
         eventStart.getMonth() === day.getMonth() &&
-        eventStart.getFullYear() === day.getFullYear() &&
-        eventStart.getHours() === hour &&
-        eventStart.getMinutes() === minutes
+        eventStart.getFullYear() === day.getFullYear()
       );
+      
+      if (!sameDay) return false;
+      
+      // Calcular el rango de tiempo de la celda en minutos desde medianoche
+      const cellStartMinutes = hour * 60 + minutes;
+      const cellEndMinutes = cellStartMinutes + duration;
+      
+      // Calcular minutos desde medianoche para el evento
+      const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+      
+      // El evento debe comenzar dentro del rango de esta celda
+      return eventStartMinutes >= cellStartMinutes && eventStartMinutes < cellEndMinutes;
     } catch (error) {
       console.error('Error al verificar inicio de evento:', error, event);
       return false;
@@ -351,6 +363,43 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
     } catch (error) {
       console.error('Error al verificar evento activo al inicio del día:', error, event);
       return false;
+    }
+  }, []);
+
+  /**
+   * Calcula la posición relativa de un evento dentro de una celda
+   * @param {Object} event - Evento a posicionar
+   * @param {number} hour - Hora de la celda
+   * @param {number} minutes - Minutos del inicio de la celda
+   * @param {number} duration - Duración de la celda en minutos
+   * @param {number} cellHeight - Altura de la celda en píxeles
+   * @returns {Object} - Objeto con offsetPercent y offsetPixels
+   */
+  const getEventPositionInSlot = useCallback((event, hour, minutes = 0, duration = 60, cellHeight = 60) => {
+    try {
+      if (!event?.start) return { offsetPercent: 0, offsetPixels: 0 };
+      
+      const eventStart = new Date(event.start);
+      if (isNaN(eventStart.getTime())) return { offsetPercent: 0, offsetPixels: 0 };
+      
+      // Calcular minutos desde el inicio de la celda
+      const cellStartMinutes = hour * 60 + minutes;
+      const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+      const offsetMinutes = eventStartMinutes - cellStartMinutes;
+      
+      // Limitar a un offset máximo del 100%
+      const limitedOffsetMinutes = Math.max(0, Math.min(duration, offsetMinutes));
+      
+      // Convertir a porcentaje (0-100)
+      const offsetPercent = (limitedOffsetMinutes / duration) * 100;
+      
+      // Convertir a píxeles para posicionar correctamente
+      const offsetPixels = (limitedOffsetMinutes / 60) * cellHeight;
+      
+      return { offsetPercent, offsetPixels };
+    } catch (error) {
+      console.error('Error al calcular posición del evento:', error);
+      return { offsetPercent: 0, offsetPixels: 0 };
     }
   }, []);
 
@@ -402,7 +451,8 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
     canAddIntermediateSlot,
     canAddIntermediateSlotAt15,
     validateSubdivisionOrder,
-    isLoading
+    isLoading,
+    getEventPositionInSlot
   };
 }
 
