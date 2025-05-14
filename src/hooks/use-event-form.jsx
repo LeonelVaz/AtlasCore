@@ -21,7 +21,7 @@ function useEventForm(createEvent, updateEvent, deleteEvent) {
   });
   
   // Manejar clic en celda para crear evento
-  const handleCellClick = (day, hour, minutes = 0) => {
+  const handleCellClick = (day, hour, minutes = 0, slotDuration = 60) => {
     try {
       let startDate;
       
@@ -36,8 +36,16 @@ function useEventForm(createEvent, updateEvent, deleteEvent) {
         startDate.setHours(hour, minutes, 0, 0);
       }
       
+      // Calcular la fecha de fin según la duración de la celda
       const endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 1, 0, 0, 0);
+      
+      // Calcular la hora y minutos de fin según la duración proporcionada
+      const durationInMinutes = slotDuration || 60; // Valor predeterminado: 60 minutos (1 hora)
+      const startMinutes = startDate.getMinutes();
+      const endMinutes = (startMinutes + durationInMinutes) % 60;
+      const hoursToAdd = Math.floor((startMinutes + durationInMinutes) / 60);
+      
+      endDate.setHours(startDate.getHours() + hoursToAdd, endMinutes, 0, 0);
       
       setSelectedEvent(null);
       setFormError('');

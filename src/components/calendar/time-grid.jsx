@@ -276,7 +276,7 @@ function TimeGrid({
                       'time-slot-standard'
                     }`}
                     data-testid="calendar-time-slot"
-                    onClick={() => onCellClick(dateWithTime, hour, 0)} // Pasar fecha completa, hora y minutos explícitamente
+                    onClick={() => onCellClick(dateWithTime, hour, 0, standardSlotDuration)} // Pasar duración de la celda
                     style={{ 
                       height: `${standardSlotHeight}px`, 
                       minHeight: `${standardSlotHeight}px` 
@@ -388,7 +388,7 @@ function TimeGrid({
                             'time-slot-standard'
                           }`}
                           data-testid="calendar-time-slot-custom"
-                          onClick={() => onCellClick(dateWithTime, hour, slot.minutes)}
+                          onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)} // Pasar duración de la celda
                           style={{ 
                             height: `${slotHeight}px`, 
                             minHeight: `${slotHeight}px` 

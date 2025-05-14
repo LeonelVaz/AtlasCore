@@ -1,4 +1,4 @@
-// src/components/calendar/day-view.jsx (corregido)
+// src/components/calendar/day-view.jsx (solución final)
 import React from 'react';
 import TimeGrid from './time-grid';
 import { formatDate } from '../../utils/date-utils';
@@ -35,10 +35,10 @@ function DayView({
     );
   };
 
-  // Modificar el manejador para pasar correctamente los minutos
-  const handleTimeSlotClick = (dateWithTime, hour, minutes = 0) => {
-    // Pasar la fecha completa al handler original para conservar hora y minutos
-    onTimeSlotClick(dateWithTime, hour, minutes);
+  // Modificar el manejador para pasar correctamente los minutos y la duración
+  const handleTimeSlotClick = (dateWithTime, hour, minutes = 0, slotDuration = 60) => {
+    // Pasar la fecha completa y la duración al handler original
+    onTimeSlotClick(dateWithTime, hour, minutes, slotDuration);
   };
 
   return (
