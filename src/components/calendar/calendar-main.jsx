@@ -1,4 +1,4 @@
-// calendar-main.jsx con snap desactivado por defecto
+// calendar-main.jsx
 import React, { useState, useEffect } from 'react';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import WeekView from './week-view';

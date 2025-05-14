@@ -1,4 +1,4 @@
-// day-view.jsx (actualizado para modo compacto)
+// day-view.jsx
 import React, { useContext } from 'react';
 import { formatHour, formatDate } from '../../utils/date-utils';
 import EventItem from './event-item';
