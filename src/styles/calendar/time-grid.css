@@ -35,7 +35,7 @@
 }
 
 .calendar-time-header {
-  flex: 0 0 68px; /* MODIFICADO: Ancho aumentado para acomodar botones */
+  flex: 0 0 80px; /* MODIFICADO: Ancho aumentado para acomodar botones */
   border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);
   background-color: var(--color-calendar-header, #f5f5f5);
 }
@@ -49,7 +49,7 @@
 }
 
 .calendar-time {
-  flex: 0 0 68px; /* MODIFICADO: Ancho aumentado para acomodar botones */
+  flex: 0 0 80px; /* MODIFICADO: Ancho aumentado para acomodar botones */
   display: flex;
   justify-content: center; /* Centrado horizontal */
   align-items: center; /* Centrado vertical */

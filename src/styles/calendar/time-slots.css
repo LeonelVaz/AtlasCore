@@ -98,7 +98,7 @@
   align-items: center;
   justify-content: center; /* Mantener centrado normalmente */
   overflow: visible !important;
-  min-width: 68px;
+  min-width: 80px;
   transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1); /* Transición más suave */
 }
 
@@ -170,7 +170,7 @@
 }
 
 .custom-time-hour {
-  flex: 0 0 68px; /* MODIFICADO: Ancho aumentado */
+  flex: 0 0 80px; /* MODIFICADO: Ancho aumentado */
   background-color: var(--color-calendar-header);
   border-right: 1px solid var(--color-border);
   display: flex;
