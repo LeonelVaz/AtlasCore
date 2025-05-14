@@ -43,7 +43,7 @@
 }
 
 .time-separator-cell {
-  flex: 0 0 60px;
+  flex: 0 0 80px;
   display: flex;
   justify-content: center;
   align-items: center;
