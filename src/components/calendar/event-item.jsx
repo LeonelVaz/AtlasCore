@@ -1,4 +1,4 @@
-// src/components/calendar/event-item.jsx (actualizado)
+// event-item.jsx - MODIFICADO PARA PASAR LAS FRANJAS PERSONALIZADAS
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -14,8 +14,9 @@ function EventItem({
   continuesNextDay = false,
   continuesFromPrevDay = false,
   gridSize = 60, // Altura de una celda (1 hora)
-  snapValue = 0,  // Valor de snap en minutos (0 = desactivado)
-  isMicroEvent = false // Indicador de evento pequeño
+  snapValue = 0, // Valor de snap en minutos (0 = desactivado)
+  isMicroEvent = false, // Indicador de evento pequeño
+  customSlots = {} // Añadido: info de franjas personalizadas
 }) {
   // Referencias y estado
   const eventRef = useRef(null);
@@ -29,7 +30,8 @@ function EventItem({
     onUpdate,
     gridSize,
     snapValue,
-    setBlockClicks
+    setBlockClicks,
+    customSlots // Pasar la información de franjas personalizadas
   });
   
   const { resizing, handleResizeStart } = useEventResize({
@@ -38,7 +40,8 @@ function EventItem({
     onUpdate,
     gridSize,
     snapValue,
-    setBlockClicks
+    setBlockClicks,
+    customSlots // Pasar la información de franjas personalizadas
   });
   
   // Manejar clic para editar

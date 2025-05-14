@@ -1,4 +1,4 @@
-// use-event-drag.jsx - VERSIÓN CORREGIDA
+// use-event-drag.jsx - CORREGIDO (ARREGLANDO ERROR DE startDate)
 
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
@@ -12,7 +12,8 @@ export function useEventDrag({
   onUpdate,
   gridSize = 60,
   snapValue = 0,
-  setBlockClicks
+  setBlockClicks,
+  customSlots = {} // Añadido: recibe información de franjas personalizadas
 }) {
   const [dragging, setDragging] = useState(false);
   const dragInfo = useRef({
@@ -25,7 +26,7 @@ export function useEventDrag({
     startTime: 0,
     endTime: 0,
     moved: false,
-    wasActuallyDragged: false, // Nueva propiedad para rastrear si hubo arrastre real
+    wasActuallyDragged: false,
     originalStartMinutes: null,
     originalDuration: null,
     grid: {
@@ -87,8 +88,6 @@ export function useEventDrag({
     e.preventDefault();
     e.stopPropagation();
     
-    // No bloquear clics inmediatamente, solo cuando se confirme el arrastre
-    
     // Verificamos que el evento tenga las propiedades necesarias
     if (!event || !event.start || !event.end) {
       console.error('Error en handleDragStart: Evento sin propiedades start/end', event);
@@ -121,7 +120,7 @@ export function useEventDrag({
         startTime: Date.now(),
         endTime: 0,
         moved: false,
-        wasActuallyDragged: false, // Inicializado como false
+        wasActuallyDragged: false,
         originalDuration: durationMinutes,
         originalStartMinutes: startMinutes,
         grid: gridInfo,
@@ -133,8 +132,6 @@ export function useEventDrag({
     } catch (error) {
       console.error('Error al iniciar arrastre:', error);
     }
-    
-    // No activar clases ni estado de arrastre hasta que haya movimiento real
   };
   
   // Manejar movimiento durante el arrastre
@@ -149,7 +146,7 @@ export function useEventDrag({
     if (movedSignificantly && !dragInfo.current.moved) {
       // Primera vez que se detecta movimiento significativo, iniciar arrastre real
       dragInfo.current.moved = true;
-      dragInfo.current.wasActuallyDragged = true; // Marcar que hubo arrastre real
+      dragInfo.current.wasActuallyDragged = true;
       setBlockClicks(true);
       document.body.classList.add('dragging-active');
       
@@ -167,23 +164,8 @@ export function useEventDrag({
       dragInfo.current.deltaY = deltaY;
       
       if (eventRef.current) {
-        // Si snap está activado, ajustar la visualización de la transformación
-        if (snapValue > 0) {
-          // Convertir snapValue (minutos) a pixeles
-          const snapPixels = snapValue * (dragInfo.current.grid.hourHeight / 60);
-          const adjustedDeltaY = Math.round(deltaY / snapPixels) * snapPixels;
-          
-          // Aproximar horizontalmente a días
-          let adjustedDeltaX = deltaX;
-          if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
-            adjustedDeltaX = Math.round(deltaX / dragInfo.current.grid.dayWidth) * dragInfo.current.grid.dayWidth;
-          }
-          
-          eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-        } else {
-          // Sin snap, transformación normal
-          eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-        }
+        // Transformación visual durante el arrastre
+        eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
       }
       
       const targetSlot = findTargetSlot(e.clientX, e.clientY, dragInfo.current);
@@ -236,12 +218,74 @@ export function useEventDrag({
           return;
         }
 
-        // Calcular cambio por arrastre en minutos precisos
-        minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, false, gridSize, snapValue);
-        
+        // Inicializar fechas de inicio y fin
+        const startDate = new Date(event.start);
+        const endDate = new Date(event.end);
+
         // Calcular cambio en días (solo para vista semanal)
         if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
           daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
+        }
+        
+        // MODIFICADO: Cálculo de ajuste de tiempo considerando franjas personalizadas
+        if (snapValue === 0) {
+          // Calcular el cambio aproximado en horas basado en el desplazamiento
+          const hourDelta = dragInfo.current.deltaY / gridSize;
+          
+          // Obtener hora actual
+          const currentHour = startDate.getHours();
+          const currentMinutes = startDate.getMinutes();
+          
+          // NUEVA LÓGICA: Buscar la franja más cercana a la posición de destino
+          // Calculamos la nueva hora y minutos deseados basados en el arrastre
+          let newHour = currentHour + Math.floor(hourDelta);
+          let remainingMinutesFraction = hourDelta - Math.floor(hourDelta);
+          let newMinutes = currentMinutes + Math.round(remainingMinutesFraction * 60);
+          
+          // Normalizar hora y minutos
+          if (newMinutes >= 60) {
+            newHour += 1;
+            newMinutes -= 60;
+          } else if (newMinutes < 0) {
+            newHour -= 1;
+            newMinutes += 60;
+          }
+          
+          // Asegurar que la hora está en el rango válido
+          newHour = Math.max(0, Math.min(23, newHour));
+          
+          // Determinar la posición válida más cercana
+          let validPositions = [0]; // Siempre tenemos la hora en punto (XX:00)
+          
+          // Añadir las franjas personalizadas para esta hora si existen
+          if (customSlots[newHour]) {
+            customSlots[newHour].forEach(slot => {
+              validPositions.push(slot.minutes);
+            });
+          }
+          
+          // Encontrar la posición válida más cercana
+          validPositions.sort((a, b) => a - b);
+          const closestMinute = validPositions.reduce((prev, curr) => 
+            Math.abs(curr - newMinutes) < Math.abs(prev - newMinutes) ? curr : prev, validPositions[0]);
+          
+          // Ajustar a la posición válida más cercana
+          startDate.setHours(newHour, closestMinute, 0, 0);
+          
+          // Mantener la duración original
+          const newEndDate = new Date(startDate.getTime() + (dragInfo.current.originalDuration * 60 * 1000));
+          endDate.setTime(newEndDate.getTime());
+        } else {
+          // Con snap activado, usar el comportamiento normal
+          minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, false, gridSize, snapValue);
+          startDate.setMinutes(startDate.getMinutes() + minutesDelta);
+          endDate.setMinutes(endDate.getMinutes() + minutesDelta);
+        }
+        
+        // Aplicar cambio de día (si hay)
+        if (daysDelta !== 0) {
+          startDate.setDate(startDate.getDate() + daysDelta);
+          endDate.setDate(endDate.getDate() + daysDelta);
         }
         
         if (eventRef.current) {
@@ -257,59 +301,21 @@ export function useEventDrag({
               if (eventRef.current) {
                 eventRef.current.dataset.recentlyDragged = 'false';
               }
-            }, 1000); // Mantener este estado por 1 segundo
+            }, 1000);
           }
         }
         
         setDragging(false);
         
-        // Actualizar si hubo cambio efectivo
-        if (minutesDelta !== 0 || daysDelta !== 0) {
-          const startDate = new Date(event.start);
-          const endDate = new Date(event.end);
-          
-          // Verificar que las fechas son válidas
-          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            console.error('Error en handleMouseUp: Fechas inválidas en el evento', event);
-            return;
-          }
-          
-          // Si no hay snap activado, alinear con la hora completa pero mantener duración
-          if (snapValue === 0) {
-            // Obtener la hora completa más cercana basada en el desplazamiento
-            const hourDelta = Math.round(dragInfo.current.deltaY / gridSize);
-            
-            // Ajustar la fecha para comenzar en una hora completa
-            startDate.setHours(startDate.getHours() + hourDelta);
-            startDate.setMinutes(0); // Resetear minutos a 0 para alinear con hora completa
-            
-            // Mantener la duración exacta original
-            const durationMinutes = dragInfo.current.originalDuration;
-            const newEndDate = new Date(startDate);
-            newEndDate.setMinutes(newEndDate.getMinutes() + durationMinutes);
-            
-            // Actualizar solo endDate después de calcular basado en startDate
-            endDate.setTime(newEndDate.getTime());
-          } else {
-            // Con snap activado, comportamiento normal
-            startDate.setMinutes(startDate.getMinutes() + minutesDelta);
-            endDate.setMinutes(endDate.getMinutes() + minutesDelta);
-          }
-          
-          if (daysDelta !== 0) {
-            startDate.setDate(startDate.getDate() + daysDelta);
-            endDate.setDate(endDate.getDate() + daysDelta);
-          }
-          
-          const updatedEvent = {
-            ...event,
-            start: startDate.toISOString(),
-            end: endDate.toISOString()
-          };
-          
-          console.log('Evento actualizado:', updatedEvent);
-          onUpdate(updatedEvent);
-        }
+        // Actualizar evento
+        const updatedEvent = {
+          ...event,
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
+        };
+        
+        console.log('Evento actualizado:', updatedEvent);
+        onUpdate(updatedEvent);
       } catch (error) {
         console.error('Error al finalizar arrastre:', error);
       }
@@ -331,35 +337,20 @@ export function useEventDrag({
       // Desactivar bloqueo de clics después de un tiempo
       setTimeout(() => {
         setBlockClicks(false);
-      }, 500); // Aumentado a 500ms
-      
-      const containerElement = dragInfo.current.grid ? dragInfo.current.grid.containerElement : null;
-      const endTime = dragInfo.current.endTime;
+      }, 500);
       
       dragInfo.current = { 
         dragging: false,
-        endTime: endTime,
-        wasActuallyDragged: wasRealDrag // Preservar esta propiedad
+        endTime: dragInfo.current.endTime,
+        wasActuallyDragged: wasRealDrag
       };
-      
-      // Señalizar fin de arrastre
-      if (containerElement) {
-        containerElement.classList.add('just-dragged');
-        containerElement.setAttribute('data-drag-time', String(endTime));
-        
-        setTimeout(() => {
-          if (containerElement) {
-            containerElement.classList.remove('just-dragged');
-          }
-        }, 150);
-      }
     } else {
       // Si no hubo movimiento, limpiar estados
       setDragging(false);
       
       setTimeout(() => {
         setBlockClicks(false);
-      }, 500); // Aumentado a 500ms
+      }, 500);
       
       dragInfo.current = { dragging: false };
     }

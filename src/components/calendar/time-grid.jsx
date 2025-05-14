@@ -1,4 +1,4 @@
-// src/components/calendar/time-grid.jsx (versión corregida)
+// time-grid.jsx - VERSIÓN CORREGIDA COMPLETA
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -95,6 +95,7 @@ function TimeGrid({
               gridSize={cellHeight}
               snapValue={snapValue}
               isMicroEvent={isMicroEvent}
+              customSlots={customSlots} // Pasar información de franjas personalizadas
             />
           </div>
         );
@@ -175,6 +176,7 @@ function TimeGrid({
               gridSize={cellHeight}
               snapValue={snapValue}
               isMicroEvent={isMicroEvent}
+              customSlots={customSlots} // Pasar información de franjas personalizadas
             />
           </div>
         );
