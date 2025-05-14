@@ -1,4 +1,4 @@
-// src/components/calendar/time-grid.jsx (con botón para eliminar franjas modificado)
+// src/components/calendar/time-grid.jsx (corregido)
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -244,7 +244,12 @@ function TimeGrid({
               {days.map((day, dayIndex) => (
                 <div 
                   key={dayIndex} 
-                  className="calendar-cell calendar-time-slot"
+                  className={`calendar-cell calendar-time-slot ${
+                    standardSlotDuration === 15 ? 'time-slot-short' : 
+                    standardSlotDuration === 30 ? 'time-slot-medium' : 
+                    standardSlotDuration === 45 ? 'time-slot-large' : 
+                    'time-slot-standard'
+                  }`}
                   data-testid="calendar-time-slot"
                   onClick={() => onCellClick(day, hour)}
                   style={{ 
@@ -266,7 +271,6 @@ function TimeGrid({
                     onClick={() => handleAddIntermediateClick(hour)}
                     title={`Añadir franja ${hour}:30`}
                   >
-                    {/* MODIFICADO: Cambiado a add en lugar de add_circle para un estilo más simple */}
                     <span className="material-icons">add</span>
                   </button>
                 </div>
@@ -307,7 +311,6 @@ function TimeGrid({
                       minHeight: `${slotHeight}px` 
                     }}
                   >
-                    {/* MODIFICADO: Botón para eliminar franja personalizada con icono clear */}
                     <button 
                       className="remove-time-slot-button"
                       onClick={(e) => handleRemoveCustomSlot(e, hour, slot.minutes)}
@@ -323,7 +326,12 @@ function TimeGrid({
                   {days.map((day, dayIndex) => (
                     <div 
                       key={dayIndex} 
-                      className={`calendar-cell calendar-time-slot time-slot-${slot.minutes === 30 ? 'medium' : 'short'}`}
+                      className={`calendar-cell calendar-time-slot ${
+                        slotDuration === 15 ? 'time-slot-short' : 
+                        slotDuration === 30 ? 'time-slot-medium' : 
+                        slotDuration === 45 ? 'time-slot-large' : 
+                        'time-slot-standard'
+                      }`}
                       data-testid="calendar-time-slot-custom"
                       onClick={() => {
                         const date = new Date(day);

@@ -73,6 +73,7 @@ export const STORAGE_KEYS = {
 // Constantes para tipos de franjas horarias
 export const TIME_SLOT_TYPES = {
   STANDARD: 'standard', // Franja de hora completa (60 minutos)
+  LARGE: 'large',       // Franja de duración grande (45 minutos)
   MEDIUM: 'medium',     // Franja de duración media (30 minutos)
   SHORT: 'short'        // Franja corta (15 minutos)
 };

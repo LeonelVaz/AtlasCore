@@ -117,7 +117,12 @@ const TimeSlotEditor = () => {
                 return hourSlots.map(slot => (
                   <div 
                     key={`slot-${hour}-${slot.minutes}`} 
-                    className={`custom-time-slot custom-time-slot-${slot.type}`}
+                    className={`custom-time-slot custom-time-slot-${
+                      slot.minutes === 15 ? 'short' : 
+                      slot.minutes === 30 ? 'medium' : 
+                      slot.minutes === 45 ? 'large' : 
+                      'standard'
+                    }`}
                   >
                     <span>{`${hour}:${slot.minutes.toString().padStart(2, '0')}`}</span>
                     {slot.minutes > 0 && (

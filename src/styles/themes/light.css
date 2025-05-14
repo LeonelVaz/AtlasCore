@@ -107,9 +107,11 @@
 
   /* Slots de tiempo */
   --time-slot-standard-bg: transparent;
-  --time-slot-medium-bg: rgba(0, 0, 0, 0.02);
-  --time-slot-short-bg: rgba(0, 0, 0, 0.04);
+  --time-slot-large-bg: rgba(0, 0, 0, 0.03);    /* Nueva variable para franjas de 45 minutos */
+  --time-slot-medium-bg: rgba(0, 0, 0, 0.04);   /* Franjas de 30 minutos */
+  --time-slot-short-bg: rgba(0, 0, 0, 0.06);    /* Franjas de 15 minutos */
   --time-slot-standard-hover: var(--time-slot-hover);
+  --time-slot-large-hover: var(--time-slot-hover);    /* Nueva variable */
   --time-slot-medium-hover: var(--time-slot-hover);
   --time-slot-short-hover: var(--time-slot-hover);
   --primary-color-rgb: 45, 75, 148;

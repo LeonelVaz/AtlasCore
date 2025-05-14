@@ -17,6 +17,14 @@
 }
 
 /* Diferenciación visual por tipo de franja */
+.time-slot-large {
+  background-color: var(--time-slot-large-bg, rgba(0, 0, 0, 0.03));
+}
+
+.time-slot-large:hover {
+  background-color: var(--time-slot-large-hover, var(--color-calendar-slot-hover));
+}
+
 .time-slot-medium {
   background-color: var(--time-slot-medium-bg, rgba(0, 0, 0, 0.02));
 }
@@ -204,6 +212,10 @@
 
 .custom-time-slot-standard {
   background-color: var(--time-slot-standard-bg);
+}
+
+.custom-time-slot-large {
+  background-color: var(--time-slot-large-bg, rgba(0, 0, 0, 0.03));
 }
 
 .custom-time-slot-medium {
