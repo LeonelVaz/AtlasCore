@@ -1,4 +1,4 @@
-// use-event-drag.jsx - CORREGIDO (ARREGLANDO ERROR DE startDate)
+// use-event-drag.jsx - VERSIÓN CORREGIDA COMPLETA
 
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
@@ -13,7 +13,7 @@ export function useEventDrag({
   gridSize = 60,
   snapValue = 0,
   setBlockClicks,
-  customSlots = {} // Añadido: recibe información de franjas personalizadas
+  customSlots = {} // Recibe información de franjas personalizadas
 }) {
   const [dragging, setDragging] = useState(false);
   const dragInfo = useRef({
@@ -22,6 +22,7 @@ export function useEventDrag({
     startY: 0,
     deltaX: 0,
     deltaY: 0,
+    virtualDeltaY: undefined, // Nuevo campo para coordinar con el previsualizador
     listeners: false,
     startTime: 0,
     endTime: 0,
@@ -36,8 +37,10 @@ export function useEventDrag({
       hourHeight: gridSize,
       days: [],
       dayElements: [],
+      inWeekView: false,
       startDay: null,
       startHour: 0,
+      startMinute: 0,
       timeSlots: [],
       startSlot: null,
       targetSlot: null
@@ -116,6 +119,7 @@ export function useEventDrag({
         startY: e.clientY,
         deltaX: 0,
         deltaY: 0,
+        virtualDeltaY: undefined, // Inicializado como undefined
         listeners: true,
         startTime: Date.now(),
         endTime: 0,
@@ -156,7 +160,12 @@ export function useEventDrag({
       }
       
       setDragging(true);
-      if (eventRef.current) eventRef.current.classList.add('dragging');
+      if (eventRef.current) {
+        eventRef.current.classList.add('dragging');
+        
+        // Añadimos una ligera opacidad para ayudar a detectar elementos debajo
+        eventRef.current.style.opacity = '0.8';
+      }
     }
     
     if (movedSignificantly) {
@@ -168,13 +177,63 @@ export function useEventDrag({
         eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
       }
       
+      // Usar la función mejorada de findTargetSlot que actualiza virtualDeltaY
       const targetSlot = findTargetSlot(e.clientX, e.clientY, dragInfo.current);
+      
+      // Esto es clave: asegurarnos de que siempre resaltamos algún slot
+      // incluso cuando el cursor está sobre el propio evento
       if (targetSlot) {
-        dragInfo.current.grid.targetSlot = targetSlot;
         highlightTargetSlot(targetSlot);
+      } else if (dragInfo.current.grid && dragInfo.current.grid.timeSlots.length > 0) {
+        // Fallback: si no encontramos slot, buscar uno cercano a la posición actual
+        const bestGuessSlot = findBestGuessSlot(e.clientX, e.clientY, dragInfo.current);
+        if (bestGuessSlot) {
+          highlightTargetSlot(bestGuessSlot);
+        }
       }
     }
   };
+  
+  /**
+   * Función auxiliar para encontrar la mejor estimación de slot cuando no es fácil detectar uno
+   * Esta función se llamaría desde handleMouseMove cuando findTargetSlot devuelve null
+   */
+  function findBestGuessSlot(clientX, clientY, dragInfo) {
+    if (!dragInfo.grid || !dragInfo.grid.timeSlots.length) return null;
+    
+    const slots = dragInfo.grid.timeSlots;
+    
+    // 1. Intentar una búsqueda por proximidad espacial
+    let nearestSlot = null;
+    let minDistance = Infinity;
+    
+    for (const slot of slots) {
+      const rect = slot.getBoundingClientRect();
+      
+      // Verificar si el cursor está dentro de los límites horizontales de la celda
+      if (clientX >= rect.left && clientX <= rect.right) {
+        const distance = Math.min(
+          Math.abs(clientY - rect.top),
+          Math.abs(clientY - rect.bottom)
+        );
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestSlot = slot;
+        }
+      }
+    }
+    
+    // Si encontramos una celda, actualizar virtualDeltaY
+    if (nearestSlot && dragInfo.grid.startSlot) {
+      const targetRect = nearestSlot.getBoundingClientRect();
+      const originalRect = dragInfo.grid.startSlot.getBoundingClientRect();
+      dragInfo.virtualDeltaY = targetRect.top - originalRect.top;
+      dragInfo.grid.targetSlot = nearestSlot;
+    }
+    
+    return nearestSlot;
+  }
   
   // Finalizar arrastre
   const handleMouseUp = (e) => {
@@ -227,10 +286,15 @@ export function useEventDrag({
           daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
         }
         
+        // IMPORTANTE: Usar virtualDeltaY si está disponible, para sincronizar con el previsualizador
+        const deltaY = dragInfo.current.virtualDeltaY !== undefined 
+                     ? dragInfo.current.virtualDeltaY 
+                     : dragInfo.current.deltaY;
+        
         // MODIFICADO: Cálculo de ajuste de tiempo considerando franjas personalizadas
         if (snapValue === 0) {
           // Calcular el cambio aproximado en horas basado en el desplazamiento
-          const hourDelta = dragInfo.current.deltaY / gridSize;
+          const hourDelta = deltaY / gridSize;
           
           // Obtener hora actual
           const currentHour = startDate.getHours();
@@ -277,7 +341,7 @@ export function useEventDrag({
           endDate.setTime(newEndDate.getTime());
         } else {
           // Con snap activado, usar el comportamiento normal
-          minutesDelta = calculatePreciseTimeChange(dragInfo.current.deltaY, false, gridSize, snapValue);
+          minutesDelta = calculatePreciseTimeChange(deltaY, false, gridSize, snapValue);
           startDate.setMinutes(startDate.getMinutes() + minutesDelta);
           endDate.setMinutes(endDate.getMinutes() + minutesDelta);
         }

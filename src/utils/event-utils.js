@@ -152,8 +152,9 @@ export function getMonthIndex(monthName) {
   return -1;
 }
 
+
 /**
- * Encuentra la celda destino según posición
+ * Encuentra la celda destino según posición del cursor y actualiza la información de arrastre
  * @param {number} clientX - Posición X del cursor
  * @param {number} clientY - Posición Y del cursor
  * @param {Object} dragInfo - Información del arrastre
@@ -164,51 +165,99 @@ export function findTargetSlot(clientX, clientY, dragInfo) {
     return null;
   }
   
-  const deltaY = clientY - dragInfo.startY;
-  const deltaX = clientX - dragInfo.startX;
-  
-  // Aplicar snap a la posición vertical (tiempo)
-  let adjustedDeltaY = deltaY;
-  if (dragInfo.snapValue > 0) {
-    // Convertir snapValue (minutos) a pixeles según la escala actual
-    const pixelsPerMinute = dragInfo.grid.hourHeight / 60;
-    const snapPixels = dragInfo.snapValue * pixelsPerMinute;
-    adjustedDeltaY = Math.round(deltaY / snapPixels) * snapPixels;
-  }
-  
-  // Calcular cambio en horas considerando la escala actual
-  const hourDelta = Math.round(adjustedDeltaY / dragInfo.grid.hourHeight);
-  let dayDelta = 0;
-  
-  if (dragInfo.grid.inWeekView && dragInfo.grid.dayWidth > 0) {
-    dayDelta = Math.round(deltaX / dragInfo.grid.dayWidth);
-  }
-  
-  if (hourDelta === 0 && dayDelta === 0) {
-    return dragInfo.grid.startSlot;
-  }
-  
+  // 1. Obtener todas las celdas visibles
   const slots = dragInfo.grid.timeSlots;
-  if (!slots.length) return null;
   
-  const startSlotIndex = slots.indexOf(dragInfo.grid.startSlot);
-  if (startSlotIndex === -1) return null;
+  // 2. Identificar el elemento en la posición actual del cursor
+  // Uso de elementsFromPoint para obtener todos los elementos apilados
+  const elementsAtPoint = document.elementsFromPoint(clientX, clientY);
   
-  const rowSize = dragInfo.grid.inWeekView ? 7 : 1;
-  
-  let targetRowIndex = Math.floor(startSlotIndex / rowSize) + hourDelta;
-  let targetColIndex = startSlotIndex % rowSize + dayDelta;
-  
-  targetRowIndex = Math.max(0, Math.min(targetRowIndex, Math.floor((slots.length - 1) / rowSize)));
-  targetColIndex = Math.max(0, Math.min(targetColIndex, rowSize - 1));
-  
-  const targetIndex = targetRowIndex * rowSize + targetColIndex;
-  
-  if (targetIndex >= 0 && targetIndex < slots.length) {
-    return slots[targetIndex];
+  // 3. Primera estrategia: Buscar una celda directamente en la pila de elementos
+  let targetSlot = null;
+  for (const element of elementsAtPoint) {
+    if (element.classList && (element.classList.contains('calendar-time-slot') || 
+                             element.classList.contains('day-view-hour-slot'))) {
+      targetSlot = element;
+      break;
+    }
   }
   
-  return null;
+  // 4. Segunda estrategia: Si no encontramos una celda, buscar por coordenadas
+  if (!targetSlot) {
+    // Ocultar temporalmente el evento que se está arrastrando para ver qué hay debajo
+    const draggingEvent = document.querySelector('.calendar-event.dragging');
+    let originalVisibility = null;
+    
+    if (draggingEvent) {
+      originalVisibility = draggingEvent.style.visibility;
+      draggingEvent.style.visibility = 'hidden';
+      
+      // Intentar de nuevo con el evento oculto
+      const elementUnderEvent = document.elementFromPoint(clientX, clientY);
+      
+      // Restaurar visibilidad
+      draggingEvent.style.visibility = originalVisibility;
+      
+      if (elementUnderEvent) {
+        // Buscar la celda más cercana en el árbol DOM
+        let current = elementUnderEvent;
+        while (current && !targetSlot) {
+          if (current.classList && (current.classList.contains('calendar-time-slot') || 
+                                   current.classList.contains('day-view-hour-slot'))) {
+            targetSlot = current;
+          } else if (current.parentElement) {
+            current = current.parentElement;
+          } else {
+            break;
+          }
+        }
+      }
+    }
+  }
+  
+  // 5. Tercera estrategia: Si aún no encontramos una celda, encontrar la celda por proximidad espacial
+  if (!targetSlot) {
+    // Calcular qué celda está más cerca del cursor
+    let closestDistance = Infinity;
+    
+    for (const slot of slots) {
+      const rect = slot.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      const distance = Math.sqrt(
+        Math.pow(clientX - centerX, 2) + 
+        Math.pow(clientY - centerY, 2)
+      );
+      
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        targetSlot = slot;
+      }
+    }
+  }
+  
+  // 6. Actualizar la posición Y virtual para sincronizar con el destino real
+  if (targetSlot) {
+    // Actualizar el grid con información de la celda objetivo
+    dragInfo.grid.targetSlot = targetSlot;
+    
+    // Obtener el rectángulo de la celda objetivo
+    const targetRect = targetSlot.getBoundingClientRect();
+    
+    if (dragInfo.grid.startSlot) {
+      // Sincronizar la posición virtual de arrastre con la posición real del objetivo
+      // para garantizar que la previsualización y el drop coincidan
+      const originalRect = dragInfo.grid.startSlot.getBoundingClientRect();
+      const virtualDeltaY = targetRect.top - originalRect.top;
+      
+      // Esto garantiza que el cálculo en handleMouseUp use este valor sincronizado
+      // en lugar del deltaY del mouse
+      dragInfo.virtualDeltaY = virtualDeltaY;
+    }
+  }
+  
+  return targetSlot;
 }
 
 /**

@@ -1,4 +1,4 @@
-// event-item.jsx - MODIFICADO PARA PASAR LAS FRANJAS PERSONALIZADAS
+// event-item.jsx - VERSIÓN MEJORADA PARA EVENTOS GRANDES
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -16,7 +16,7 @@ function EventItem({
   gridSize = 60, // Altura de una celda (1 hora)
   snapValue = 0, // Valor de snap en minutos (0 = desactivado)
   isMicroEvent = false, // Indicador de evento pequeño
-  customSlots = {} // Añadido: info de franjas personalizadas
+  customSlots = {} // Info de franjas personalizadas
 }) {
   // Referencias y estado
   const eventRef = useRef(null);
@@ -31,7 +31,7 @@ function EventItem({
     gridSize,
     snapValue,
     setBlockClicks,
-    customSlots // Pasar la información de franjas personalizadas
+    customSlots
   });
   
   const { resizing, handleResizeStart } = useEventResize({
@@ -41,8 +41,20 @@ function EventItem({
     gridSize,
     snapValue,
     setBlockClicks,
-    customSlots // Pasar la información de franjas personalizadas
+    customSlots
   });
+  
+  // Cuando un evento comienza a arrastrarse, añadimos una clase especial
+  // para que la función findTargetSlot pueda distinguirlo más fácilmente
+  useEffect(() => {
+    if (eventRef.current) {
+      if (dragging) {
+        eventRef.current.dataset.beingDragged = 'true';
+      } else {
+        eventRef.current.dataset.beingDragged = 'false';
+      }
+    }
+  }, [dragging]);
   
   // Manejar clic para editar
   const handleClick = (e) => {
@@ -116,7 +128,8 @@ function EventItem({
       onMouseDown={handleMouseDown}
       onClick={handleClick}
       data-event-id={event.id}
-      data-recently-resized="false" // Inicializar el atributo de datos
+      data-recently-resized="false"
+      data-being-dragged="false" // Añadido para identificar el evento durante el arrastre
     >
       <div className="event-title">{event.title}</div>
       <div className="event-time">{formatEventTime(event)}</div>
