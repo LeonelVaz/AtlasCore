@@ -1,4 +1,4 @@
-// src/hooks/use-time-grid.jsx (para cálculo correcto de duración)
+// src/hooks/use-time-grid.jsx (versión completa corregida)
 import { useState, useEffect, useCallback } from 'react';
 import { formatHour } from '../utils/date-utils';
 import { DEFAULT_HOUR_CELL_HEIGHT, STORAGE_KEYS } from '../core/config/constants';
@@ -131,6 +131,30 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   };
 
   /**
+   * Validar que no se creen subdivisiones en un orden incorrecto
+   * @param {number} hour - Hora base (0-23)
+   * @param {number} minutes - Minutos (múltiplos de 15)
+   * @returns {boolean} - true si es válido crear la subdivisión
+   */
+  const validateSubdivisionOrder = useCallback((hour, minutes) => {
+    const hourSlots = customSlots[hour] || [];
+    
+    // Si se intenta crear XX:15 y no existe XX:30, no permitir
+    if (minutes === 15 && !hourSlots.some(slot => slot.minutes === 30)) {
+      console.warn(`No se puede crear franja a las ${hour}:15 sin crear primero franja a las ${hour}:30`);
+      return false;
+    }
+    
+    // Si se intenta crear XX:45 y no existe XX:30, no permitir
+    if (minutes === 45 && !hourSlots.some(slot => slot.minutes === 30)) {
+      console.warn(`No se puede crear franja a las ${hour}:45 sin crear primero franja a las ${hour}:30`);
+      return false;
+    }
+    
+    return true;
+  }, [customSlots]);
+
+  /**
    * Agrega una franja horaria personalizada
    * @param {number} hour - Hora base (0-23)
    * @param {number} minutes - Minutos (múltiplos de 15)
@@ -158,6 +182,11 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
         return false;
       }
       
+      // Validar orden de creación
+      if (!validateSubdivisionOrder(hour, minutes)) {
+        return false;
+      }
+      
       // Agregar la nueva franja
       setCustomSlots(prev => {
         const updatedSlots = { ...prev };
@@ -174,7 +203,7 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
       console.error('Error al agregar franja horaria personalizada:', error);
       return false;
     }
-  }, [customSlots]);
+  }, [customSlots, validateSubdivisionOrder]);
 
   /**
    * Elimina una franja horaria personalizada
@@ -227,13 +256,36 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
    * @returns {boolean} - true si se puede agregar
    */
   const canAddIntermediateSlot = useCallback((hour, minutes) => {
-    // Si no hay minutos, verificar si ya existe una franja a los 30 minutos
+    const hourSlots = customSlots[hour] || [];
+    
+    // Para la franja estándar de una hora (XX:00)
     if (minutes === 0) {
-      const hourSlots = customSlots[hour] || [];
+      // Solo mostrar botón + si no hay subdivisión a las XX:30
       return !hourSlots.some(slot => slot.minutes === 30);
     }
     
+    // Para la franja de 30 minutos (XX:30-XX+1:00)
+    if (minutes === 30) {
+      // Solo mostrar botón + si no hay subdivisión a las XX:45
+      return !hourSlots.some(slot => slot.minutes === 45);
+    }
+    
+    // No mostrar botón + para otras franjas (incluyendo XX:15 y XX:45)
     return false;
+  }, [customSlots]);
+
+  /**
+   * Verifica si se puede agregar una franja intermedia a las XX:15
+   * @param {number} hour - Hora base (0-23)
+   * @returns {boolean} - true si se puede agregar una franja intermedia a las XX:15
+   */
+  const canAddIntermediateSlotAt15 = useCallback((hour) => {
+    const hourSlots = customSlots[hour] || [];
+    
+    // Verificar si existe una franja a las XX:30 (requisito)
+    // y no existe una franja a las XX:15
+    return hourSlots.some(slot => slot.minutes === 30) && 
+           !hourSlots.some(slot => slot.minutes === 15);
   }, [customSlots]);
 
   /**
@@ -350,6 +402,8 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
     addCustomTimeSlot,
     removeCustomTimeSlot,
     canAddIntermediateSlot,
+    canAddIntermediateSlotAt15,
+    validateSubdivisionOrder,
     isLoading
   };
 }

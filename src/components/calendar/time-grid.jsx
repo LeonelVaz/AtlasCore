@@ -1,4 +1,4 @@
-// src/components/calendar/time-grid.jsx (corregido)
+// src/components/calendar/time-grid.jsx (versión completa corregida)
 import React, { useContext } from 'react';
 import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
@@ -33,7 +33,8 @@ function TimeGrid({
     formatTimeSlot,
     addCustomTimeSlot,
     removeCustomTimeSlot,
-    canAddIntermediateSlot
+    canAddIntermediateSlot,
+    canAddIntermediateSlotAt15
   } = useTimeGrid(0, 24, cellHeight);
 
   // Renderizar eventos que continúan desde el día anterior
@@ -181,10 +182,24 @@ function TimeGrid({
   };
 
   // Manejar clic en botón de agregar franja intermedia
-  const handleAddIntermediateClick = (hour) => {
-    if(hour < 23) { // No agregamos botón en la última hora
-      // Por defecto, añadir a los 30 minutos de la hora
-      addCustomTimeSlot(hour, 30);
+  const handleAddIntermediateClick = (hour, minutes = 0) => {
+    if (hour < 23) { // No agregamos botón en la última hora
+      // Para la franja estándar de una hora, añadir subdivisión a las XX:30
+      if (minutes === 0) {
+        addCustomTimeSlot(hour, 30);
+      }
+      // Para la franja de 30 minutos (XX:30-XX+1:00), añadir subdivisión a las XX:45
+      else if (minutes === 30) {
+        addCustomTimeSlot(hour, 45);
+      }
+    }
+  };
+  
+  // Manejar clic en botón de agregar franja a las XX:15
+  const handleAddIntermediateSlotAt15 = (hour) => {
+    if (hour < 23) {
+      // Añadir subdivisión a las XX:15 (solo si ya existe XX:30)
+      addCustomTimeSlot(hour, 15);
     }
   };
   
@@ -262,14 +277,34 @@ function TimeGrid({
               ))}
             </div>
             
-            {/* Agregar botón + entre horas, solo en la columna de horas */}
+            {/* Agregar botón + entre horas si no hay subdivisión a las XX:30 */}
             {hourIndex < hours.length - 1 && canAddIntermediateSlot(hour, 0) && (
               <div className="time-separator-row">
                 <div className="time-separator-cell">
                   <button 
                     className="add-time-slot-button"
-                    onClick={() => handleAddIntermediateClick(hour)}
+                    onClick={() => handleAddIntermediateClick(hour, 0)}
                     title={`Añadir franja ${hour}:30`}
+                  >
+                    <span className="material-icons">add</span>
+                  </button>
+                </div>
+                
+                {/* Celdas vacías para mantener la estructura de la tabla */}
+                {days.map((_, dayIndex) => (
+                  <div key={dayIndex} className="time-separator-placeholder"></div>
+                ))}
+              </div>
+            )}
+            
+            {/* Agregar botón + para crear franja a las XX:15 (solo si ya existe XX:30) */}
+            {hourIndex < hours.length - 1 && canAddIntermediateSlotAt15(hour) && (
+              <div className="time-separator-row">
+                <div className="time-separator-cell">
+                  <button 
+                    className="add-time-slot-button"
+                    onClick={() => handleAddIntermediateSlotAt15(hour)}
+                    title={`Añadir franja ${hour}:15`}
                   >
                     <span className="material-icons">add</span>
                   </button>
@@ -302,51 +337,76 @@ function TimeGrid({
               // Calcular la altura proporcional
               const slotHeight = (slotDuration / 60) * cellHeight;
               
+              // Verificar si se puede añadir un botón + después de esta franja
+              const canAddAfterThisSlot = canAddIntermediateSlot(hour, slot.minutes);
+              
               return (
-                <div key={`custom-${hour}-${slot.minutes}`} className="calendar-row time-row-with-delete">
-                  <div 
-                    className="calendar-cell calendar-time calendar-time-custom" 
-                    style={{ 
-                      height: `${slotHeight}px`,
-                      minHeight: `${slotHeight}px` 
-                    }}
-                  >
-                    <button 
-                      className="remove-time-slot-button"
-                      onClick={(e) => handleRemoveCustomSlot(e, hour, slot.minutes)}
-                      title={`Eliminar franja ${hour}:${slot.minutes.toString().padStart(2, '0')}`}
-                      aria-label="Eliminar franja horaria"
-                    >
-                      <span className="material-icons">clear</span>
-                    </button>
-                    
-                    {formatTimeSlot(hour, slot.minutes)}
-                  </div>
-                  
-                  {days.map((day, dayIndex) => (
+                <React.Fragment key={`custom-fragment-${hour}-${slot.minutes}`}>
+                  <div key={`custom-${hour}-${slot.minutes}`} className="calendar-row time-row-with-delete">
                     <div 
-                      key={dayIndex} 
-                      className={`calendar-cell calendar-time-slot ${
-                        slotDuration === 15 ? 'time-slot-short' : 
-                        slotDuration === 30 ? 'time-slot-medium' : 
-                        slotDuration === 45 ? 'time-slot-large' : 
-                        'time-slot-standard'
-                      }`}
-                      data-testid="calendar-time-slot-custom"
-                      onClick={() => {
-                        const date = new Date(day);
-                        date.setHours(hour, slot.minutes, 0, 0);
-                        onCellClick(date, hour);
-                      }}
+                      className="calendar-cell calendar-time calendar-time-custom" 
                       style={{ 
-                        height: `${slotHeight}px`, 
+                        height: `${slotHeight}px`,
                         minHeight: `${slotHeight}px` 
                       }}
                     >
-                      {renderEvents(day, hour, slot.minutes, slotDuration)}
+                      <button 
+                        className="remove-time-slot-button"
+                        onClick={(e) => handleRemoveCustomSlot(e, hour, slot.minutes)}
+                        title={`Eliminar franja ${hour}:${slot.minutes.toString().padStart(2, '0')}`}
+                        aria-label="Eliminar franja horaria"
+                      >
+                        <span className="material-icons">clear</span>
+                      </button>
+                      
+                      {formatTimeSlot(hour, slot.minutes)}
                     </div>
-                  ))}
-                </div>
+                    
+                    {days.map((day, dayIndex) => (
+                      <div 
+                        key={dayIndex} 
+                        className={`calendar-cell calendar-time-slot ${
+                          slotDuration === 15 ? 'time-slot-short' : 
+                          slotDuration === 30 ? 'time-slot-medium' : 
+                          slotDuration === 45 ? 'time-slot-large' : 
+                          'time-slot-standard'
+                        }`}
+                        data-testid="calendar-time-slot-custom"
+                        onClick={() => {
+                          const date = new Date(day);
+                          date.setHours(hour, slot.minutes, 0, 0);
+                          onCellClick(date, hour);
+                        }}
+                        style={{ 
+                          height: `${slotHeight}px`, 
+                          minHeight: `${slotHeight}px` 
+                        }}
+                      >
+                        {renderEvents(day, hour, slot.minutes, slotDuration)}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Agregar botón + entre franjas si es necesario */}
+                  {canAddAfterThisSlot && (
+                    <div className="time-separator-row">
+                      <div className="time-separator-cell">
+                        <button 
+                          className="add-time-slot-button"
+                          onClick={() => handleAddIntermediateClick(hour, slot.minutes)}
+                          title={`Añadir franja ${hour}:${slot.minutes === 30 ? '45' : '30'}`}
+                        >
+                          <span className="material-icons">add</span>
+                        </button>
+                      </div>
+                      
+                      {/* Celdas vacías para mantener la estructura de la tabla */}
+                      {days.map((_, dayIndex) => (
+                        <div key={dayIndex} className="time-separator-placeholder"></div>
+                      ))}
+                    </div>
+                  )}
+                </React.Fragment>
               );
             })}
           </React.Fragment>
