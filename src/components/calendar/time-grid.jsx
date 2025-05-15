@@ -5,68 +5,43 @@ import { TimeScaleContext } from '../../contexts/time-scale-context';
 import { TIME_SCALES } from '../../core/config/constants';
 
 function TimeGrid({ 
-  days, 
-  events, 
-  onEventClick, 
-  onCellClick, 
-  onUpdateEvent, 
-  snapValue,
-  renderDayHeader,
-  maxSimultaneousEvents = 3 // Número máximo de eventos simultáneos (por defecto 3)
+  days, events, onEventClick, onCellClick, onUpdateEvent, 
+  snapValue, renderDayHeader, maxSimultaneousEvents = 3 
 }) {
-  // Obtener la escala de tiempo del contexto
+  // Obtener configuración de escala de tiempo
   const timeScaleContext = useContext(TimeScaleContext);
-  
-  // Obtener la altura de celda desde el contexto de escala, con fallback al valor por defecto
   const cellHeight = timeScaleContext?.currentTimeScale?.height || 60;
-  
-  // Determinar si estamos usando escala compacta
   const isCompactScale = timeScaleContext?.currentTimeScale?.id === TIME_SCALES.COMPACT.id || 
                       (timeScaleContext?.currentTimeScale?.id === 'custom' && cellHeight <= 45);
   
-  // Usar el hook de time-grid para la lógica de la rejilla
+  // Usar hook para lógica de rejilla
   const {
-    hours,
-    customSlots,
-    shouldShowEventStart,
-    isEventActiveAtStartOfDay,
-    formatTimeSlot,
-    addCustomTimeSlot,
-    removeCustomTimeSlot,
-    canAddIntermediateSlot,
-    canAddIntermediateSlotAt15,
-    getEventPositionInSlot,
-    eventsOverlapInTimeSlot
+    hours, customSlots, shouldShowEventStart, isEventActiveAtStartOfDay,
+    formatTimeSlot, addCustomTimeSlot, removeCustomTimeSlot, 
+    canAddIntermediateSlot, canAddIntermediateSlotAt15, 
+    getEventPositionInSlot, eventsOverlapInTimeSlot
   } = useTimeGrid(0, 24, cellHeight);
 
-  // Renderizar eventos que continúan desde el día anterior
+  // Renderizar eventos continuos
   const renderContinuingEvents = (day) => {
     try {
-      // Filtrar eventos que continúan desde el día anterior
       const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
       
       return continuingEvents.map(event => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
-        
-        // Normalizar día a medianoche
         const dayStart = new Date(day);
         dayStart.setHours(0, 0, 0, 0);
         
-        // Fin del día (23:59:59.999)
         const dayEnd = new Date(day);
         dayEnd.setHours(23, 59, 59, 999);
         
-        // Calcular si continúa al día siguiente
+        const eventEnd = new Date(event.end);
         const continuesNextDay = eventEnd > dayEnd;
         const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
         
-        // Calcular altura basada en duración visible desde medianoche
+        // Calcular altura basada en duración visible
         const durationMs = visibleEnd.getTime() - dayStart.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
         const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
-        
-        // Determinar si es un evento pequeño (menos de 30 minutos)
         const isMicroEvent = heightPx < 25;
         
         const eventStyle = {
@@ -88,9 +63,7 @@ function TimeGrid({
               key={event.id}
               event={event}
               onClick={onEventClick}
-              onUpdate={(updatedEvent) => {
-                onUpdateEvent(updatedEvent.id, updatedEvent);
-              }}
+              onUpdate={(updatedEvent) => onUpdateEvent(updatedEvent.id, updatedEvent)}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={true}
               gridSize={cellHeight}
@@ -103,26 +76,17 @@ function TimeGrid({
         );
       });
     } catch (error) {
-      console.error('Error al renderizar eventos que continúan:', error);
+      console.error('Error al renderizar eventos continuos:', error);
       return null;
     }
   };
 
-  /**
-   * Calcula el posicionamiento de eventos simultáneos en una casilla
-   * @param {Array} eventsInSlot - Eventos en la casilla
-   * @param {Date} day - Día actual
-   * @param {number} hour - Hora
-   * @param {number} minutes - Minutos
-   * @param {number} duration - Duración
-   * @param {number} maxSimultaneousEvents - Máximo de eventos simultáneos permitidos
-   * @returns {Array} - Posiciones de eventos
-   */
-  const calculateEventPositioning = (eventsInSlot, day, hour, minutes, duration, maxSimultaneousEvents) => {
+  // Calcular posicionamiento de eventos simultáneos
+  const calculateEventPositioning = (eventsInSlot, day) => {
     try {
-      if (!eventsInSlot || eventsInSlot.length === 0) return [];
+      if (!eventsInSlot?.length) return [];
       
-      // Si hay un solo evento, use todo el ancho disponible
+      // Un solo evento usa todo el ancho
       if (eventsInSlot.length === 1) {
         return [{
           event: eventsInSlot[0],
@@ -135,30 +99,23 @@ function TimeGrid({
       const eventPositions = [];
       let columns = [];
       
-      // Ordenar eventos por hora de inicio
+      // Ordenar por hora de inicio
       const sortedEvents = [...eventsInSlot].sort((a, b) => {
-        const startA = new Date(a.start).getTime();
-        const startB = new Date(b.start).getTime();
-        return startA - startB;
+        return new Date(a.start).getTime() - new Date(b.start).getTime();
       });
       
-      // Contar cuántos eventos ya existen en este slot
+      // Contar eventos existentes
       const existingEventsCount = sortedEvents.length;
       
-      // MEJORADO: Buscar la casilla específica utilizando el selector correcto
-      // Utilizamos el selector más específico posible para evitar seleccionar elementos incorrectos
+      // Actualizar conteo en el DOM
       const targetSlot = document.querySelector(
-        `.calendar-time-slot[data-hour="${hour}"][data-minutes="${minutes}"]`
+        `.calendar-time-slot[data-hour="${day.hour}"][data-minutes="${day.minutes}"]`
       );
       
       if (targetSlot) {
-        // Actualizar el atributo con el conteo correcto
         targetSlot.setAttribute('data-events-count', existingEventsCount.toString());
         
-        // Marcar visualmente si estamos en el límite
         if (existingEventsCount >= maxSimultaneousEvents) {
-          // No aplicamos la clase exceed-limit aquí, ya que puede causar problemas
-          // Solo marcamos el atributo para que la lógica de arrastre pueda detectarlo
           targetSlot.setAttribute('data-exceed-limit', 'true');
         } else {
           targetSlot.removeAttribute('data-exceed-limit');
@@ -167,16 +124,13 @@ function TimeGrid({
       
       // Asignar columnas a cada evento
       sortedEvents.forEach(event => {
-        // Buscar la primera columna disponible
         let column = 0;
-        while (columns[column] && eventsOverlapInTimeSlot(event, columns[column], day)) {
+        while (columns[column] && eventsOverlapInTimeSlot(event, columns[column], day.date)) {
           column++;
         }
         
-        // Asignar el evento a esta columna
         columns[column] = event;
         
-        // Guardar la posición del evento
         eventPositions.push({
           event,
           column,
@@ -184,7 +138,7 @@ function TimeGrid({
         });
       });
       
-      // Actualizar el recuento de columnas para todos los eventos
+      // Actualizar el recuento de columnas para todos
       const maxColumn = Math.max(...eventPositions.map(ep => ep.column)) + 1;
       eventPositions.forEach(ep => {
         ep.columnCount = maxColumn;
@@ -192,50 +146,43 @@ function TimeGrid({
       
       return eventPositions;
     } catch (error) {
-      console.error('Error al calcular posicionamiento de eventos:', error, {
-        day, hour, minutes, duration
-      });
+      console.error('Error al calcular posicionamiento:', error);
       return [];
     }
   };
 
-
-  // Renderizar eventos en la celda (actualizado para manejar eventos simultáneos)
+  // Renderizar eventos en la celda
   const renderEvents = (day, hour, minutes = 0, duration) => {
     try {
-      // Si es la primera hora del día, mostrar eventos que continúan del día anterior
+      // Eventos continuos al inicio del día
       if (hour === 0 && minutes === 0) {
         const continuingEvents = renderContinuingEvents(day);
-        if (continuingEvents && continuingEvents.length > 0) {
-          return continuingEvents;
-        }
+        if (continuingEvents?.length) return continuingEvents;
       }
       
-      // Eventos que comienzan dentro de esta celda
+      // Eventos que comienzan en esta celda
       const eventsStartingInSlot = events.filter(event => 
         shouldShowEventStart(event, day, hour, minutes, duration)
       );
       
-      // Si no hay eventos, retornar null
-      if (eventsStartingInSlot.length === 0) return null;
+      if (!eventsStartingInSlot.length) return null;
       
       // Calcular posicionamiento para eventos simultáneos
-      const eventPositions = calculateEventPositioning(eventsStartingInSlot, day, hour, minutes, duration);
+      const eventPositions = calculateEventPositioning(eventsStartingInSlot, {
+        date: day, hour, minutes
+      });
       
-      // Renderizar los eventos con su posicionamiento
+      // Renderizar eventos posicionados
       return eventPositions.map(({ event, column, columnCount }) => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
         
-        // Normalizar día a medianoche
         const dayStart = new Date(day);
         dayStart.setHours(0, 0, 0, 0);
         
-        // Fin del día (23:59:59.999)
         const dayEnd = new Date(day);
         dayEnd.setHours(23, 59, 59, 999);
         
-        // Calcular si continúa al día siguiente
         const continuesNextDay = eventEnd > dayEnd;
         const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
         
@@ -247,19 +194,15 @@ function TimeGrid({
         // Calcular posición relativa dentro de la celda
         const { offsetPixels } = getEventPositionInSlot(event, hour, minutes, duration, cellHeight);
         
-        // Determinar si es un evento pequeño (menos de 30 minutos)
         const isMicroEvent = heightPx < 25;
-        
-        // Calcular ancho en función del número de columnas y la posición
         const columnWidth = 100 / columnCount;
         
-        // Estilo actualizado para manejar eventos simultáneos
         const eventStyle = {
           position: 'absolute',
           top: `${offsetPixels}px`,
           height: `${heightPx}px`,
           left: `calc(${column * columnWidth}% + 2px)`,
-          width: `calc(${columnWidth}% - 4px)`, // Reducir 4px para dejar margen
+          width: `calc(${columnWidth}% - 4px)`,
           zIndex: 20
         };
         
@@ -273,9 +216,7 @@ function TimeGrid({
               key={event.id}
               event={event}
               onClick={onEventClick}
-              onUpdate={(updatedEvent) => {
-                onUpdateEvent(updatedEvent.id, updatedEvent);
-              }}
+              onUpdate={(updatedEvent) => onUpdateEvent(updatedEvent.id, updatedEvent)}
               continuesNextDay={continuesNextDay}
               continuesFromPrevDay={false}
               gridSize={cellHeight}
@@ -293,37 +234,29 @@ function TimeGrid({
     }
   };
 
-  // Manejar clic en botón de agregar franja intermedia
+  // Handlers para botones de franja
   const handleAddIntermediateClick = (hour, minutes = 0) => {
-    if (hour < 23) { // No agregamos botón en la última hora
-      // Para la franja estándar de una hora, añadir subdivisión a las XX:30
+    if (hour < 23) {
       if (minutes === 0) {
         addCustomTimeSlot(hour, 30);
-      }
-      // Para la franja de 30 minutos (XX:30-XX+1:00), añadir subdivisión a las XX:45
-      else if (minutes === 30) {
+      } else if (minutes === 30) {
         addCustomTimeSlot(hour, 45);
       }
     }
   };
   
-  // Manejar clic en botón de agregar franja a las XX:15
   const handleAddIntermediateSlotAt15 = (hour) => {
-    if (hour < 23) {
-      // Añadir subdivisión a las XX:15 (solo si ya existe XX:30)
-      addCustomTimeSlot(hour, 15);
-    }
+    if (hour < 23) addCustomTimeSlot(hour, 15);
   };
   
-  // Manejar clic en botón de eliminar franja personalizada
   const handleRemoveCustomSlot = (e, hour, minutes) => {
-    e.stopPropagation(); // Evitar que se propague el clic
+    e.stopPropagation();
     removeCustomTimeSlot(hour, minutes);
   };
 
   return (
     <div className={`calendar-grid ${isCompactScale ? 'time-scale-compact' : ''}`}>
-      {/* Encabezado con días */}
+      {/* Encabezado */}
       <div className="calendar-row calendar-header-row">
         <div className="calendar-cell calendar-time-header"></div>
         {days.map((day, index) => (
@@ -337,26 +270,22 @@ function TimeGrid({
         ))}
       </div>
 
-      {/* Rejilla horaria - Usamos las horas generadas por el hook */}
+      {/* Rejilla horaria */}
       {hours.map((hour, hourIndex) => {
-        // Calcular la altura proporcional para las celdas estándar
-        // Si hay franjas personalizadas para esta hora, la altura debe reducirse
-        const hasCustomSlots = customSlots[hour] && customSlots[hour].length > 0;
-        
-        // Calcular la duración efectiva de la celda estándar (hora completa)
-        let standardSlotDuration = 60; // Minutos por defecto
+        // Calcular altura y duración de celda estándar
+        const hasCustomSlots = customSlots[hour]?.length > 0;
+        let standardSlotDuration = 60;
         
         if (hasCustomSlots) {
-          // Si hay franjas personalizadas, la duración es hasta la primera franja
           const firstCustomSlot = [...customSlots[hour]].sort((a, b) => a.minutes - b.minutes)[0];
           standardSlotDuration = firstCustomSlot.minutes;
         }
         
-        // Calcular la altura proporcional
         const standardSlotHeight = (standardSlotDuration / 60) * cellHeight;
         
         return (
           <React.Fragment key={hour}>
+            {/* Fila de hora estándar */}
             <div className="calendar-row">
               <div 
                 className="calendar-cell calendar-time" 
@@ -369,7 +298,6 @@ function TimeGrid({
               </div>
               
               {days.map((day, dayIndex) => {
-                // Crear una fecha completa para pasar a handleCellClick
                 const dateWithTime = new Date(day);
                 dateWithTime.setHours(hour, 0, 0, 0);
                 
@@ -397,7 +325,7 @@ function TimeGrid({
               })}
             </div>
             
-            {/* Agregar botón + entre horas si no hay subdivisión a las XX:30 */}
+            {/* Botones de agregar franjas */}
             {hourIndex < hours.length - 1 && canAddIntermediateSlot(hour, 0) && (
               <div className="time-separator-row">
                 <div className="time-separator-cell">
@@ -409,15 +337,10 @@ function TimeGrid({
                     <span className="material-icons">add</span>
                   </button>
                 </div>
-                
-                {/* Celdas vacías para mantener la estructura de la tabla */}
-                {days.map((_, dayIndex) => (
-                  <div key={dayIndex} className="time-separator-placeholder"></div>
-                ))}
+                {days.map((_, idx) => <div key={idx} className="time-separator-placeholder"></div>)}
               </div>
             )}
             
-            {/* Agregar botón + para crear franja a las XX:15 (solo si ya existe XX:30) */}
             {hourIndex < hours.length - 1 && canAddIntermediateSlotAt15(hour) && (
               <div className="time-separator-row">
                 <div className="time-separator-cell">
@@ -429,40 +352,29 @@ function TimeGrid({
                     <span className="material-icons">add</span>
                   </button>
                 </div>
-                
-                {/* Celdas vacías para mantener la estructura de la tabla */}
-                {days.map((_, dayIndex) => (
-                  <div key={dayIndex} className="time-separator-placeholder"></div>
-                ))}
+                {days.map((_, idx) => <div key={idx} className="time-separator-placeholder"></div>)}
               </div>
             )}
             
-            {/* Renderizar franjas personalizadas si existen para esta hora */}
+            {/* Franjas personalizadas */}
             {hasCustomSlots && customSlots[hour].map(slot => {
-              // Calcular la duración real de esta franja personalizada
-              let slotDuration = slot.duration || 30; // Valor predeterminado
-              
-              // Si hay más franjas, la duración es hasta la siguiente franja
+              // Calcular duración de la franja
               const sortedSlots = [...customSlots[hour]].sort((a, b) => a.minutes - b.minutes);
               const slotIndex = sortedSlots.findIndex(s => s.minutes === slot.minutes);
               
+              let slotDuration = slot.duration || 30;
               if (slotIndex < sortedSlots.length - 1) {
-                // Si hay una siguiente franja, la duración es hasta ella
                 slotDuration = sortedSlots[slotIndex + 1].minutes - slot.minutes;
               } else {
-                // Si es la última franja, la duración es hasta la siguiente hora
                 slotDuration = 60 - slot.minutes;
               }
               
-              // Calcular la altura proporcional
               const slotHeight = (slotDuration / 60) * cellHeight;
-              
-              // Verificar si se puede añadir un botón + después de esta franja
               const canAddAfterThisSlot = canAddIntermediateSlot(hour, slot.minutes);
               
               return (
                 <React.Fragment key={`custom-fragment-${hour}-${slot.minutes}`}>
-                  <div key={`custom-${hour}-${slot.minutes}`} className="calendar-row time-row-with-delete">
+                  <div className="calendar-row time-row-with-delete">
                     <div 
                       className="calendar-cell calendar-time calendar-time-custom" 
                       style={{ 
@@ -483,7 +395,6 @@ function TimeGrid({
                     </div>
                     
                     {days.map((day, dayIndex) => {
-                      // Crear una fecha completa con la hora y minutos precisos
                       const dateWithTime = new Date(day);
                       dateWithTime.setHours(hour, slot.minutes, 0, 0);
                       
@@ -511,7 +422,6 @@ function TimeGrid({
                     })}
                   </div>
                   
-                  {/* Agregar botón + entre franjas si es necesario */}
                   {canAddAfterThisSlot && (
                     <div className="time-separator-row">
                       <div className="time-separator-cell">
@@ -523,11 +433,7 @@ function TimeGrid({
                           <span className="material-icons">add</span>
                         </button>
                       </div>
-                      
-                      {/* Celdas vacías para mantener la estructura de la tabla */}
-                      {days.map((_, dayIndex) => (
-                        <div key={dayIndex} className="time-separator-placeholder"></div>
-                      ))}
+                      {days.map((_, idx) => <div key={idx} className="time-separator-placeholder"></div>)}
                     </div>
                   )}
                 </React.Fragment>
