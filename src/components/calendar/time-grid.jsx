@@ -108,6 +108,7 @@ function TimeGrid({
     }
   };
 
+  // Función calculateEventPositioning en src/components/calendar/time-grid.jsx
   // FUNCIÓN: Calcular posicionamiento de eventos simultáneos
   const calculateEventPositioning = (eventsInSlot, day, hour, minutes, duration) => {
     try {
@@ -123,7 +124,6 @@ function TimeGrid({
       }
       
       // Analizar solapamientos y ubicar en columnas
-      // Esta es una implementación básica que puede mejorarse con algoritmos más sofisticados
       const eventPositions = [];
       let columns = [];
       
@@ -138,31 +138,25 @@ function TimeGrid({
       const existingEventsCount = sortedEvents.length;
       
       // Para marcar casillas con atributos de conteo, usamos un enfoque diferente
-      // ya que no tenemos dragInfo disponible en este contexto
       const targetSlot = document.querySelector(`.calendar-cell[data-hour="${hour}"][data-minutes="${minutes}"]`);
       if (targetSlot) {
         targetSlot.setAttribute('data-events-count', existingEventsCount.toString());
         
-        // Si ya estamos en el límite máximo, marcar para rebote
+        // Si ya estamos en el límite, marcar casilla
         if (existingEventsCount >= maxSimultaneousEvents) {
-          targetSlot.classList.add('will-bounce');
+          targetSlot.classList.add('exceed-limit');
         } else {
-          targetSlot.classList.remove('will-bounce');
+          targetSlot.classList.remove('exceed-limit');
         }
       }
       
-      // Asignar columnas a cada evento
+      // Asignar columnas a cada evento (COMPORTAMIENTO NO RETROACTIVO)
+      // Siempre mostrar todos los eventos existentes aunque excedan el límite
       sortedEvents.forEach(event => {
         // Buscar la primera columna disponible
         let column = 0;
         while (columns[column] && eventsOverlapInTimeSlot(event, columns[column], day)) {
           column++;
-          
-          // Si superamos el máximo de eventos simultáneos permitidos, rebotamos
-          if (column >= maxSimultaneousEvents) {
-            console.warn(`Evento ${event.id} rebotado: máximo de eventos simultáneos alcanzado (${maxSimultaneousEvents})`);
-            return; // Omitir este evento
-          }
         }
         
         // Asignar el evento a esta columna

@@ -61,7 +61,7 @@ function CalendarMain() {
     handleCloseForm,
     handleSaveEvent,
     handleDeleteEvent
-  } = useEventForm(createEvent, updateEvent, deleteEvent);
+  } = useEventForm(createEvent, updateEvent, deleteEvent, events, maxSimultaneousEvents);
 
   // NUEVO: Cargar configuración de eventos simultáneos y suscribirse a cambios
   useEffect(() => {

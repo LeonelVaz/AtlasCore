@@ -6,9 +6,11 @@ import { formatDateForInput } from '../utils/date-utils';
  * @param {Function} createEvent - Función para crear eventos
  * @param {Function} updateEvent - Función para actualizar eventos
  * @param {Function} deleteEvent - Función para eliminar eventos
+ * @param {Array} allEvents - Todos los eventos actuales
+ * @param {Number} maxSimultaneousEvents - Límite máximo de eventos simultáneos
  * @returns {Object} - Funciones y estados para el formulario
  */
-function useEventForm(createEvent, updateEvent, deleteEvent) {
+function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], maxSimultaneousEvents = 3) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [formError, setFormError] = useState('');
@@ -19,6 +21,33 @@ function useEventForm(createEvent, updateEvent, deleteEvent) {
     end: '',
     color: '#2d4b94' // Color predeterminado (Azul Atlas)
   });
+  
+  // Verificar si el evento se solaparía con demasiados eventos existentes
+  const wouldExceedLimit = (eventToCheck) => {
+    if (!eventToCheck || !eventToCheck.start || !eventToCheck.end) return false;
+    
+    const start = new Date(eventToCheck.start);
+    const end = new Date(eventToCheck.end);
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    
+    // Contar eventos que se solapan con el evento a verificar
+    // Excluir el evento actual si es una edición
+    const overlappingEvents = allEvents.filter(existing => {
+      // Si estamos editando este evento, excluirlo del conteo
+      if (selectedEvent && existing.id === selectedEvent.id) return false;
+      
+      const existingStart = new Date(existing.start);
+      const existingEnd = new Date(existing.end);
+      
+      if (isNaN(existingStart.getTime()) || isNaN(existingEnd.getTime())) return false;
+      
+      // Verificar solapamiento
+      return start < existingEnd && existingStart < end;
+    });
+    
+    return overlappingEvents.length >= maxSimultaneousEvents;
+  };
   
   // Manejar clic en celda para crear evento
   const handleCellClick = (day, hour, minutes = 0, slotDuration = 60) => {
@@ -165,6 +194,13 @@ function useEventForm(createEvent, updateEvent, deleteEvent) {
         end: newEvent.end,
         color: newEvent.color || '#2d4b94'
       };
+      
+      // Verificar si excedería el límite (sólo para nuevos eventos o cambios de horario)
+      // Para los eventos existentes que solo cambian título o color, no verificamos
+      if (wouldExceedLimit(eventToSave)) {
+        setFormError(`No se puede crear el evento: excedería el límite de ${maxSimultaneousEvents} eventos simultáneos`);
+        return;
+      }
       
       if (selectedEvent && selectedEvent.id) {
         // Actualizar existente

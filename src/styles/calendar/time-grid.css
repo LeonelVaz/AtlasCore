@@ -104,3 +104,18 @@ body.dragging-active .calendar-time-slot:hover:not(.drag-target-active) {
     padding: var(--spacing-xs);
   }
 }
+
+/* Estilos para indicar cuando se excede el límite de eventos por casilla */
+.exceed-limit {
+  background-color: rgba(229, 57, 53, 0.1);
+}
+
+.exceed-limit-slot {
+  background-color: rgba(229, 57, 53, 0.15);
+  border: 1px dashed rgba(229, 57, 53, 0.5);
+}
+
+.calendar-event.cannot-place {
+  opacity: 0.6 !important;
+  border: 1px dashed rgba(229, 57, 53, 0.8);
+}

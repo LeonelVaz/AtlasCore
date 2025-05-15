@@ -1,4 +1,4 @@
-// event-item.jsx - Actualizado para soporte de animación de rebote
+// event-item.jsx - Actualizado para eliminar animaciones de rebote
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -33,7 +33,7 @@ function EventItem({
     snapValue,
     setBlockClicks,
     customSlots,
-    maxSimultaneousEvents // Pasar el parámetro
+    maxSimultaneousEvents
   });
   
   const { resizing, handleResizeStart } = useEventResize({
@@ -47,7 +47,6 @@ function EventItem({
   });
   
   // Cuando un evento comienza a arrastrarse, añadimos una clase especial
-  // para que la función findTargetSlot pueda distinguirlo más fácilmente
   useEffect(() => {
     if (eventRef.current) {
       if (dragging) {
@@ -114,7 +113,7 @@ function EventItem({
     if (blockClicks) {
       const timer = setTimeout(() => {
         setBlockClicks(false);
-      }, 1000); // Aumentado a 1000ms para mayor seguridad
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [blockClicks]);
