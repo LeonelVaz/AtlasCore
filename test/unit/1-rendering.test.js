@@ -88,9 +88,11 @@ describe('1. Renderizado del Componente', () => {
     renderCalendarMain();
     
     // Verificar que existen los botones de navegación
-    const prevButton = screen.getByText(/semana anterior/i);
-    const nextButton = screen.getByText(/semana siguiente/i);
-    const currentButton = screen.getByText(/semana actual/i);
+    // Buscar por aria-label para los botones con iconos
+    const prevButton = screen.getByLabelText(/semana anterior/i);
+    const nextButton = screen.getByLabelText(/semana siguiente/i);
+    // Buscar el botón "Hoy" en lugar de "semana actual"
+    const currentButton = screen.getByText(/hoy/i);
     
     expect(prevButton).toBeInTheDocument();
     expect(nextButton).toBeInTheDocument();
@@ -102,7 +104,7 @@ describe('1. Renderizado del Componente', () => {
     fireEvent.click(currentButton);
     
     // No hay error al hacer clic (prueba implícita)
-  });
+  });  
 
   test('1.4 El título del calendario muestra el mes y el año correctos', () => {
     renderCalendarMain();
@@ -148,8 +150,8 @@ describe('1. Renderizado del Componente', () => {
     // Verificar que inicialmente está en vista semanal
     expect(document.querySelector('.week-view')).toBeInTheDocument();
     
-    // Cambiar a vista diaria
-    const dayViewButton = screen.getByText(/vista diaria/i);
+    // Cambiar a vista diaria (botón tiene texto "Día" en lugar de "vista diaria")
+    const dayViewButton = screen.getByText(/día/i);
     fireEvent.click(dayViewButton);
     
     // Verificar que cambia a vista diaria
@@ -157,8 +159,8 @@ describe('1. Renderizado del Componente', () => {
       expect(document.querySelector('.day-view-container')).toBeInTheDocument();
     });
     
-    // Volver a vista semanal
-    const weekViewButton = screen.getByText(/vista semanal/i);
+    // Volver a vista semanal (botón tiene texto "Semana" en lugar de "vista semanal")
+    const weekViewButton = screen.getByText(/semana/i);
     fireEvent.click(weekViewButton);
     
     // Verificar que vuelve a vista semanal
