@@ -344,7 +344,7 @@ export function useEventDrag({
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
     removeAllHighlights();
-    removeAllLimitIndicators(); // NUEVO: Limpiar indicadores de límite
+    removeAllLimitIndicators(); // Limpiar indicadores de límite
     document.body.classList.remove('dragging-active');
     document.body.classList.remove('snap-active');
     
@@ -364,10 +364,11 @@ export function useEventDrag({
       
       setDragging(false);
       dragInfo.current = { dragging: false };
+      setBlockClicks(false); // Asegurarse de que no bloquee clics
       return;
     }
     
-    // PUNTO CLAVE: Verificar si excedería el límite antes de aplicar cambios
+    // Verificar si excedería el límite antes de aplicar cambios
     const wouldExceedLimit = dragInfo.current.wouldExceedLimit;
     
     // Si hubo movimiento real pero excedería el límite, bloquear la acción
@@ -384,6 +385,9 @@ export function useEventDrag({
       
       // Finalizar arrastre sin actualizaciones
       setDragging(false);
+      
+      // Bloquear temporalmente los clics para evitar la apertura del panel
+      setBlockClicks(true);
       setTimeout(() => {
         setBlockClicks(false);
       }, 500);
@@ -408,17 +412,21 @@ export function useEventDrag({
           console.error('Error en handleMouseUp: Evento sin propiedades start/end', event);
           return;
         }
-
+  
         // Inicializar fechas de inicio y fin
         const startDate = new Date(event.start);
         const endDate = new Date(event.end);
-
+  
+        // Guardar los valores originales para comparar después
+        const originalStart = new Date(event.start).getTime();
+        const originalEnd = new Date(event.end).getTime();
+  
         // Calcular cambio en días (solo para vista semanal)
         if (dragInfo.current.grid.inWeekView && dragInfo.current.grid.dayWidth > 0) {
           daysDelta = Math.round(dragInfo.current.deltaX / dragInfo.current.grid.dayWidth);
         }
         
-        // IMPORTANTE: Usar virtualDeltaY si está disponible, para sincronizar con el previsualizador
+        // Usar virtualDeltaY si está disponible
         const deltaY = dragInfo.current.virtualDeltaY !== undefined 
                      ? dragInfo.current.virtualDeltaY 
                      : dragInfo.current.deltaY;
@@ -483,14 +491,19 @@ export function useEventDrag({
           endDate.setDate(endDate.getDate() + daysDelta);
         }
         
+        // NUEVA VERIFICACIÓN: Comprobar si el evento realmente cambió de posición
+        const newStart = startDate.getTime();
+        const newEnd = endDate.getTime();
+        const noRealChange = (newStart === originalStart && newEnd === originalEnd);
+        
         if (eventRef.current) {
           eventRef.current.classList.remove('dragging');
           eventRef.current.classList.remove('cannot-place');
           eventRef.current.style.transform = '';
           eventRef.current.style.opacity = '1';
           
-          // Marcar el elemento como recientemente arrastrado
-          if (wasRealDrag) {
+          // Marcar el elemento como recientemente arrastrado solo si hubo cambio real
+          if (wasRealDrag && !noRealChange) {
             eventRef.current.dataset.recentlyDragged = 'true';
             
             // Programar la limpieza de este estado después de un tiempo
@@ -504,15 +517,19 @@ export function useEventDrag({
         
         setDragging(false);
         
-        // Actualizar evento
-        const updatedEvent = {
-          ...event,
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        };
-        
-        console.log('Evento actualizado:', updatedEvent);
-        onUpdate(updatedEvent);
+        // CORRECIÓN CLAVE: Actualizar evento SOLO si hubo un cambio real
+        if (!noRealChange) {
+          const updatedEvent = {
+            ...event,
+            start: startDate.toISOString(),
+            end: endDate.toISOString()
+          };
+          
+          console.log('Evento actualizado:', updatedEvent);
+          onUpdate(updatedEvent);
+        } else {
+          console.log('No hubo cambio real en la posición del evento - no se actualiza');
+        }
       } catch (error) {
         console.error('Error al finalizar arrastre:', error);
         
@@ -539,7 +556,8 @@ export function useEventDrag({
       
       document.addEventListener('click', handleDocumentClick, true);
       
-      // Desactivar bloqueo de clics después de un tiempo
+      // SIEMPRE bloquear clics brevemente después de un arrastre
+      setBlockClicks(true);
       setTimeout(() => {
         setBlockClicks(false);
       }, 500);
@@ -560,6 +578,8 @@ export function useEventDrag({
       
       setDragging(false);
       
+      // Asegurarse de bloquear clics brevemente
+      setBlockClicks(true);
       setTimeout(() => {
         setBlockClicks(false);
       }, 500);
@@ -567,6 +587,7 @@ export function useEventDrag({
       dragInfo.current = { dragging: false };
     }
   };
+  
 
   return { dragging, handleDragStart };
 }
