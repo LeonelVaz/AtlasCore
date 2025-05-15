@@ -1,4 +1,4 @@
-/* src/styles/calendar/snap-control.css - OPTIMIZADO */
+/* snap-control.css (optimizado) */
 .snap-control-container {
   display: flex;
   align-items: center;
@@ -6,49 +6,44 @@
   position: relative;
 }
 
-.snap-control-toggle {
+.snap-control-toggle,
+.snap-value-indicator {
   background-color: transparent;
-  color: var(--color-button-secondary-text, var(--color-text));
+  color: var(--color-button-secondary-text);
   border: none;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.snap-control-toggle {
   border-radius: 4px 0 0 4px;
   padding: 6px 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.snap-control-toggle.active {
-  background-color: var(--color-atlas-blue);
-  color: var(--color-button-active-text, white);
-}
-
-.snap-icon {
-  font-size: 16px;
-  font-weight: bold;
-}
-
 .snap-value-indicator {
-  background-color: transparent;
-  color: var(--color-button-secondary-text, var(--color-text));
-  border: none;
   border-radius: 0 4px 4px 0;
   padding: 6px 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   font-size: 13px;
   min-width: 36px;
   text-align: center;
 }
 
+.snap-control-toggle.active,
 .snap-value-indicator.active {
   background-color: var(--color-atlas-blue);
-  color: var(--color-button-active-text, white);
+  color: var(--color-button-active-text);
 }
 
 .snap-value-indicator:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255,255,255,.1);
+}
+
+.snap-icon {
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .snap-options-menu {
@@ -63,13 +58,13 @@
   z-index: 100;
   margin-top: 4px;
   overflow: hidden;
-  font-size: 0.85rem;
+  font-size: .85rem;
 }
 
 .snap-option {
   padding: 6px 10px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color .2s;
   color: var(--color-text);
 }
 
@@ -78,7 +73,7 @@
 }
 
 .snap-option.selected {
-  background-color: var(--color-sidebar-active, rgba(45, 75, 148, 0.1));
+  background-color: var(--color-sidebar-active);
   color: var(--color-atlas-blue);
   font-weight: 500;
 }
@@ -101,30 +96,30 @@
   background-color: var(--color-input-bg);
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  font-size: 0.85rem;
+  font-size: .85rem;
 }
 
 .snap-custom-input span {
-  font-size: 0.8rem;
+  font-size: .8rem;
 }
 
 .snap-apply-custom {
   width: 100%;
   padding: 3px 0;
   background-color: var(--color-atlas-blue);
-  color: var(--color-button-active-text, white);
+  color: var(--color-button-active-text);
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: .85rem;
 }
 
 .snap-apply-custom:hover {
-  background-color: var(--color-button-primary-hover, #1A3A7D);
+  background-color: var(--color-button-primary-hover);
 }
 
-/* Ajustes para transiciones durante snap */
+/* Transiciones durante snap */
 .snap-active .calendar-time-slot,
 .snap-active .day-view-hour-slot {
-  transition: background-color 0.05s ease;
+  transition: background-color .05s;
 }

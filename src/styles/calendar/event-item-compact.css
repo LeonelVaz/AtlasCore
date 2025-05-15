@@ -1,22 +1,21 @@
-/* src/styles/calendar/event-item-compact.css - OPTIMIZADO */
-/* Estilos para eventos en modo compacto */
+/* event-item-compact.css (optimizado) */
 .time-scale-compact .calendar-event {
   padding: 2px 4px;
-  font-size: 0.75rem;
+  font-size: .75rem;
   border-radius: 3px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
   min-height: 18px;
 }
 
 .time-scale-compact .event-title {
   margin-bottom: 0;
-  font-size: 0.75rem;
+  font-size: .75rem;
   line-height: 1.2;
 }
 
 .time-scale-compact .event-time {
-  font-size: 0.65rem;
-  opacity: 0.85;
+  font-size: .65rem;
+  opacity: .85;
 }
 
 .time-scale-compact .event-resize-handle {
@@ -29,13 +28,10 @@
 }
 
 .time-scale-compact .calendar-cell {
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--color-calendar-grid-border);
-  box-sizing: border-box;
+  border: 1px solid var(--color-calendar-grid-border);
 }
 
-/* Micro eventos (eventos muy pequeños) */
+/* Micro eventos */
 .time-scale-compact .calendar-event.micro-event {
   padding: 1px 3px;
 }
@@ -47,7 +43,7 @@
 /* Etiquetas de hora */
 .time-scale-compact .calendar-time,
 .time-scale-compact .day-view-hour-label {
-  font-size: 0.7rem;
+  font-size: .7rem;
   display: flex;
   align-items: center;
   justify-content: center;

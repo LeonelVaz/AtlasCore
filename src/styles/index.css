@@ -1,8 +1,5 @@
-/* src/styles/index.css - OPTIMIZADO */
-/* Importar fuentes */
+/* index.css (optimizado) */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
-
-/* Importar estilos por categoría */
 @import './settings/index.css';
 @import './ui/index.css';
 @import './calendar/index.css';
@@ -10,7 +7,6 @@
 @import './header-controls.css';
 @import './variables.css';
 
-/* Reset y estilos globales */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -67,9 +63,9 @@ input:focus, select:focus, textarea:focus {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip: rect(0,0,0,0);
   white-space: nowrap;
-  border-width: 0;
+  border: 0;
 }
 
 /* Formularios */

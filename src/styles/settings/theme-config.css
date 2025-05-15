@@ -1,4 +1,4 @@
-/* src/styles/settings/theme-config.css - OPTIMIZADO */
+/* theme-config.css (optimizado) */
 .theme-config {
   padding: 20px;
   max-width: 100%;
@@ -29,7 +29,7 @@
   overflow: hidden;
   cursor: pointer;
   box-shadow: 0 2px 5px var(--color-shadow);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform .2s, box-shadow .2s;
   background-color: var(--color-background);
 }
 
@@ -105,11 +105,12 @@
   border-radius: 3px;
 }
 
-/* Tema Light */
-.light {
-  background: #FFFFFF;
+/* Temas específicos */
+.light, .dark, .atlas-dark-blue, .purple-night, .deep-ocean {
+  background-position: 0 0;
 }
 
+/* Tema Light */
 .light .preview-sidebar {
   background-color: #F5F5F5;
   border-right: 1px solid #E0E0E0;
@@ -120,12 +121,12 @@
 }
 
 .light .sidebar-active {
-  background-color: rgba(45, 75, 148, 0.2);
+  background-color: rgba(45,75,148,.2);
   border-left: 2px solid #2D4B94;
 }
 
 .light .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
-  background-color: #EEEEEE;
+  background-color: #EEE;
 }
 
 .light .preview-header {
@@ -134,7 +135,7 @@
 }
 
 .light .preview-calendar {
-  background-color: #FFFFFF;
+  background-color: #FFF;
 }
 
 .light .preview-event {
@@ -146,164 +147,84 @@
 }
 
 /* Tema Dark */
-.dark {
-  background: #121212;
-}
-
+.dark {background: #121212;}
 .dark .preview-sidebar {
   background-color: #1A1A1A;
   border-right: 1px solid #2A2A2A;
 }
-
-.dark .sidebar-logo {
-  background-color: #707070;
-}
-
+.dark .sidebar-logo {background-color: #707070;}
 .dark .sidebar-active {
-  background-color: rgba(112, 112, 112, 0.2);
+  background-color: rgba(112,112,112,.2);
   border-left: 2px solid #707070;
 }
-
-.dark .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
-  background-color: #252525;
-}
-
+.dark .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {background-color: #252525;}
 .dark .preview-header {
   background-color: #202020;
   border-bottom: 1px solid #2A2A2A;
 }
-
-.dark .preview-calendar {
-  background-color: #171717;
-}
-
-.dark .preview-event {
-  background-color: #707070;
-}
-
-.dark .preview-event-alt {
-  background-color: #505050;
-}
+.dark .preview-calendar {background-color: #171717;}
+.dark .preview-event {background-color: #707070;}
+.dark .preview-event-alt {background-color: #505050;}
 
 /* Tema Atlas Dark Blue */
-.atlas-dark-blue {
-  background: #121212;
-}
-
+.atlas-dark-blue {background: #121212;}
 .atlas-dark-blue .preview-sidebar {
   background-color: #1A2233;
   border-right: 1px solid #2C3A57;
 }
-
-.atlas-dark-blue .sidebar-logo {
-  background-color: #3F51B5;
-}
-
+.atlas-dark-blue .sidebar-logo {background-color: #3F51B5;}
 .atlas-dark-blue .sidebar-active {
-  background-color: rgba(63, 81, 181, 0.2);
+  background-color: rgba(63,81,181,.2);
   border-left: 2px solid #3F51B5;
 }
-
-.atlas-dark-blue .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
-  background-color: #16213E;
-}
-
+.atlas-dark-blue .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {background-color: #16213E;}
 .atlas-dark-blue .preview-header {
   background-color: #1A2233;
   border-bottom: 1px solid #2C3A57;
 }
-
-.atlas-dark-blue .preview-calendar {
-  background-color: #1E2A45;
-}
-
-.atlas-dark-blue .preview-event {
-  background-color: #3F51B5;
-}
-
-.atlas-dark-blue .preview-event-alt {
-  background-color: #26A69A;
-}
+.atlas-dark-blue .preview-calendar {background-color: #1E2A45;}
+.atlas-dark-blue .preview-event {background-color: #3F51B5;}
+.atlas-dark-blue .preview-event-alt {background-color: #26A69A;}
 
 /* Tema Purple Night */
-.purple-night {
-  background: #1A1A2E;
-}
-
+.purple-night {background: #1A1A2E;}
 .purple-night .preview-sidebar {
   background-color: #16213E;
   border-right: 1px solid #2E2E4A;
 }
-
-.purple-night .sidebar-logo {
-  background-color: #7E57C2;
-}
-
+.purple-night .sidebar-logo {background-color: #7E57C2;}
 .purple-night .sidebar-active {
-  background-color: rgba(126, 87, 194, 0.2);
+  background-color: rgba(126,87,194,.2);
   border-left: 2px solid #7E57C2;
 }
-
-.purple-night .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
-  background-color: #232340;
-}
-
+.purple-night .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {background-color: #232340;}
 .purple-night .preview-header {
   background-color: #16213E;
   border-bottom: 1px solid #2E2E4A;
 }
-
-.purple-night .preview-calendar {
-  background-color: #1C1C35;
-}
-
-.purple-night .preview-event {
-  background-color: #7E57C2;
-}
-
-.purple-night .preview-event-alt {
-  background-color: #26A69A;
-}
+.purple-night .preview-calendar {background-color: #1C1C35;}
+.purple-night .preview-event {background-color: #7E57C2;}
+.purple-night .preview-event-alt {background-color: #26A69A;}
 
 /* Tema Deep Ocean */
-.deep-ocean {
-  background: #0f172a;
-}
-
+.deep-ocean {background: #0f172a;}
 .deep-ocean .preview-sidebar {
   background-color: #1e293b;
   border-right: 1px solid #334155;
 }
-
-.deep-ocean .sidebar-logo {
-  background-color: #3b82f6;
-}
-
+.deep-ocean .sidebar-logo {background-color: #3b82f6;}
 .deep-ocean .sidebar-active {
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: rgba(59,130,246,.2);
   border-left: 2px solid #3b82f6;
 }
-
-.deep-ocean .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {
-  background-color: #334155;
-}
-
+.deep-ocean .preview-sidebar-item:not(.sidebar-logo):not(.sidebar-active) {background-color: #334155;}
 .deep-ocean .preview-header {
   background-color: #1e293b;
   border-bottom: 1px solid #334155;
 }
-
-.deep-ocean .preview-calendar {
-  background-color: #0f172a;
-}
-
-.deep-ocean .preview-event {
-  background-color: #3b82f6;
-}
-
-.deep-ocean .preview-event-alt {
-  background-color: #10b981;
-}
+.deep-ocean .preview-calendar {background-color: #0f172a;}
+.deep-ocean .preview-event {background-color: #3b82f6;}
+.deep-ocean .preview-event-alt {background-color: #10b981;}
 
 /* Información del tema */
 .theme-option-info {
@@ -332,7 +253,7 @@
 
 .checkmark {
   color: white;
-  font-size: 0.9rem;
+  font-size: .9rem;
 }
 
 .theme-section {

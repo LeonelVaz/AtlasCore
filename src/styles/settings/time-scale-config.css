@@ -1,4 +1,4 @@
-/* src/styles/settings/time-scale-config.css - OPTIMIZADO */
+/* time-scale-config.css (optimizado) */
 .time-scale-config {
   padding: 20px;
   max-width: 100%;
@@ -38,11 +38,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: height 0.3s ease;
+  transition: height .3s;
 }
 
 .time-scale-hour-label {
-  font-size: 0.8rem;
+  font-size: .8rem;
   color: var(--color-calendar-time-label);
 }
 
@@ -59,9 +59,9 @@
   color: white;
   border-radius: 4px;
   padding: 8px;
-  font-size: 0.9rem;
+  font-size: .9rem;
   box-shadow: 0 2px 4px var(--color-shadow);
-  transition: height 0.3s ease, top 0.3s ease;
+  transition: height .3s, top .3s;
 }
 
 .time-scale-event-alt {
@@ -90,7 +90,7 @@
   border-radius: 8px;
   padding: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s;
   text-align: center;
   background-color: var(--color-background);
 }
@@ -115,7 +115,7 @@
   padding: 5px;
   background-color: var(--color-calendar-grid);
   border-radius: 4px;
-  transition: height 0.2s ease;
+  transition: height .2s;
 }
 
 .time-scale-option-line {
@@ -129,7 +129,7 @@
 }
 
 .time-scale-option-size {
-  font-size: 0.8rem;
+  font-size: .8rem;
   color: var(--color-text-secondary);
 }
 
@@ -185,7 +185,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.2s ease;
+  transition: background-color .2s;
 }
 
 .time-scale-custom-apply {

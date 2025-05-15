@@ -1,4 +1,4 @@
-/* src/styles/app.css - OPTIMIZADO */
+/* app.css (optimizado) */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -12,13 +12,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-left: 16px;
-  padding-right: 0;
+  padding: 0 0 0 16px;
   background-color: var(--topbar-bg);
   color: var(--topbar-text);
   box-shadow: 0 2px 4px var(--color-shadow);
-  height: var(--header-height, 50px);
-  z-index: var(--z-index-header, 100);
+  height: var(--header-height);
+  z-index: var(--z-index-header);
 }
 
 .app-header.draggable {

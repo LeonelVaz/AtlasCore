@@ -1,4 +1,4 @@
-/* src/styles/settings/settings-panel.css - OPTIMIZADO */
+/* settings-panel.css (optimizado) */
 .settings-panel {
   display: flex;
   height: 100%;
@@ -34,7 +34,7 @@
 .settings-sections .sidebar-item-icon .material-icons {
   font-size: 20px;
   color: var(--color-text);
-  transition: color 0.2s;
+  transition: color .2s;
 }
 
 .settings-sections .sidebar-item.active .sidebar-item-icon .material-icons,
@@ -60,7 +60,6 @@
   color: var(--color-text);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .settings-panel {
     flex-direction: column;

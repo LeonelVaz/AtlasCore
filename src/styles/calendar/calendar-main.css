@@ -1,11 +1,11 @@
-/* src/styles/calendar/calendar-main.css - OPTIMIZADO */
+/* calendar-main.css (optimizado) */
 .calendar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--color-calendar-background, white);
+  background-color: var(--color-calendar-background);
   border-radius: 8px;
-  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 2px 8px var(--color-shadow);
   overflow: hidden;
 }
 
@@ -14,8 +14,8 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-md);
-  background-color: var(--color-calendar-header, #f5f5f5);
-  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+  background-color: var(--color-calendar-header);
+  border-bottom: 1px solid var(--color-calendar-grid-border);
   flex-wrap: wrap;
   gap: var(--spacing-sm);
 }
@@ -42,26 +42,26 @@
 }
 
 .calendar-navigation button {
-  font-size: 0.8rem;
+  font-size: .8rem;
   background-color: var(--tertiary-color-button-bg);
-  color: var(--color-button-secondary-text, var(--color-text));
-  border: none;
+  color: var(--color-button-secondary-text);
+  border: 0;
   border-radius: 4px;
   padding: 6px 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .calendar-navigation button:hover {
-  background-color: rgba(255, 255, 255, 0.048);
+  background-color: rgba(255,255,255,.048);
 }
 
 .calendar-navigation button.active {
   background-color: var(--color-atlas-blue);
-  color: var(--color-button-active-text, white);
+  color: var(--color-button-active-text);
 }
 
 .calendar-view-toggle {

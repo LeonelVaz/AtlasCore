@@ -1,11 +1,11 @@
-/* src/styles/calendar/day-view.css - OPTIMIZADO */
+/* day-view.css (optimizado) */
 .day-view-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--color-calendar-background, white);
+  background-color: var(--color-calendar-background);
   border-radius: 8px;
-  box-shadow: 0 2px 8px var(--color-shadow, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 2px 8px var(--color-shadow);
   overflow: hidden;
   position: relative;
   min-height: 600px;
@@ -13,8 +13,8 @@
 
 .day-view-header {
   padding: var(--spacing-md);
-  background-color: var(--color-calendar-header, #f5f5f5);
-  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+  background-color: var(--color-calendar-header);
+  border-bottom: 1px solid var(--color-calendar-grid-border);
   text-align: center;
 }
 
@@ -26,29 +26,29 @@
 }
 
 .day-view-navigation button {
-  background-color: var(--color-button-secondary-bg, #f0f0f0);
-  color: var(--color-button-secondary-text, var(--color-text));
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
   border: 1px solid var(--color-border);
   border-radius: 4px;
   padding: 6px 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s;
 }
 
 .day-view-navigation button:hover {
-  background-color: var(--color-button-secondary-hover, #e0e0e0);
+  background-color: var(--color-button-secondary-hover);
 }
 
 .day-view-navigation button.active {
   background-color: var(--color-atlas-blue);
-  color: var(--color-button-active-text, white);
+  color: var(--color-button-active-text);
   border-color: var(--color-atlas-blue);
 }
 
 .day-view-title {
   margin: 0;
   font-size: 1.2rem;
-  color: var(--color-calendar-day-header, #333333);
+  color: var(--color-calendar-day-header);
   text-transform: capitalize;
 }
 
@@ -62,7 +62,7 @@
 .day-view-hour-row {
   display: flex;
   width: 100%;
-  border-bottom: 1px solid var(--color-calendar-grid-border, #E0E0E0);
+  border-bottom: 1px solid var(--color-calendar-grid-border);
 }
 
 .day-view-hour-label {
@@ -70,25 +70,25 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 0.8rem;
-  color: var(--color-calendar-time-label, #666666);
-  border-right: 2px solid var(--color-calendar-grid-border, #E0E0E0);
-  background-color: var(--color-calendar-header, #f5f5f5);
+  font-size: .8rem;
+  color: var(--color-calendar-time-label);
+  border-right: 2px solid var(--color-calendar-grid-border);
+  background-color: var(--color-calendar-header);
 }
 
 .day-view-hour-slot {
   flex: 1;
   position: relative;
   height: 80px;
-  background-color: var(--color-calendar-grid, white);
-  transition: background-color 0.2s ease;
+  background-color: var(--color-calendar-grid);
+  transition: background-color .2s;
   cursor: pointer;
   padding: 0;
   overflow: visible !important;
 }
 
 .day-view-hour-slot:hover {
-  background-color: var(--color-calendar-slot-hover, #f0f7ff);
+  background-color: var(--color-calendar-slot-hover);
 }
 
 .day-view-hour-slot .event-wrapper {

@@ -1,22 +1,19 @@
-/* src/styles/ui/dialog.css - OPTIMIZADO */
+/* dialog.css (optimizado) */
 .ui-dialog-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--color-dialog-overlay, rgba(0, 0, 0, 0.5));
+  inset: 0;
+  background-color: var(--color-dialog-overlay);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: var(--z-index-modal, 900);
-  animation: fadeIn 0.2s ease;
+  z-index: var(--z-index-modal);
+  animation: fadeIn .2s;
 }
 
 .ui-dialog {
-  background-color: var(--color-dialog-bg, var(--color-background));
+  background-color: var(--color-dialog-bg);
   color: var(--color-text);
-  border-radius: var(--border-radius-lg, 8px);
+  border-radius: var(--border-radius-lg);
   padding: 0;
   width: 90%;
   max-width: 500px;
@@ -24,7 +21,7 @@
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.3s ease;
+  animation: slideIn .3s;
 }
 
 .ui-dialog-header {
@@ -39,7 +36,7 @@
 .ui-dialog-title {
   margin: 0;
   font-weight: 600;
-  color: var(--color-dialog-title, var(--color-atlas-blue));
+  color: var(--color-dialog-title);
 }
 
 .ui-dialog-close {
@@ -49,19 +46,19 @@
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  color: var(--color-dialog-close, var(--color-text-secondary));
+  color: var(--color-dialog-close);
   transition: color var(--transition-fast);
 }
 
 .ui-dialog-close:hover {
-  color: var(--color-dialog-close-hover, var(--color-text));
+  color: var(--color-dialog-close-hover);
 }
 
 .ui-dialog-body {
   padding: var(--spacing-lg);
   overflow-y: auto;
   flex: 1;
-  background-color: var(--color-dialog-body, var(--color-background));
+  background-color: var(--color-dialog-body);
 }
 
 .ui-dialog-footer {
@@ -70,7 +67,7 @@
   gap: var(--spacing-sm);
   padding: var(--spacing-md) var(--spacing-lg);
   border-top: 1px solid var(--color-border);
-  background-color: var(--color-dialog-footer, var(--color-background));
+  background-color: var(--color-dialog-footer);
 }
 
 /* Formularios dentro de diálogos */
@@ -96,16 +93,16 @@
 .ui-dialog input:focus,
 .ui-dialog select:focus,
 .ui-dialog textarea:focus {
-  border-color: var(--color-input-focus, var(--color-atlas-blue));
-  box-shadow: 0 0 0 2px var(--color-dialog-input-shadow, rgba(var(--primary-color-rgb), 0.2));
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 2px var(--color-dialog-input-shadow);
   outline: none;
 }
 
 .ui-dialog .form-error {
   color: var(--color-button-danger-bg);
-  font-size: 0.9rem;
+  font-size: .9rem;
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm);
-  background-color: var(--color-dialog-error-bg, rgba(var(--danger-color-rgb, 229, 57, 53), 0.1));
+  background-color: var(--color-dialog-error-bg);
   border-radius: var(--border-radius-sm);
 }
