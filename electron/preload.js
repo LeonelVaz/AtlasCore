@@ -22,6 +22,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onFocusChange: (callback) => {
     ipcRenderer.on('focus-change', (_, isFocused) => callback(isFocused));
     return () => ipcRenderer.removeListener('focus-change', callback);
+  },
+  
+  // API para plugins
+  plugins: {
+    // Cargar todos los plugins disponibles
+    loadPlugins: () => ipcRenderer.invoke('plugins:load'),
+    
+    // Seleccionar un plugin para instalar
+    selectPlugin: () => ipcRenderer.invoke('plugins:select')
   }
 });
 

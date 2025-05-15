@@ -1,6 +1,7 @@
 // main.js
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const { setupPluginsSystem } = require('./plugins-integration');
 
 // Determinar si estamos en desarrollo
 const isDev = !app.isPackaged;
@@ -39,6 +40,9 @@ function createWindow() {
     
   console.log('Cargando URL:', startUrl);
   mainWindow.loadURL(startUrl);
+
+  // Configurar sistema de plugins
+  setupPluginsSystem(mainWindow);
 
   // Detectar cambios en el estado maximizado/restaurado
   mainWindow.on('maximize', () => {

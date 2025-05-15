@@ -30,6 +30,8 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        console.log('Iniciando sistema de plugins...');
+        
         // Crear objeto core con APIs para plugins
         const pluginCore = createPluginCore({
           events: eventBus,
@@ -40,6 +42,17 @@ function App() {
         
         // Inicializar el sistema de plugins
         await initializePlugins(pluginCore);
+        
+        // Si está disponible un API para cargar plugins (solo en Electron)
+        if (window.electronAPI?.plugins?.loadPlugins) {
+          try {
+            // Este método sería proporcionado por Electron para cargar plugins desde el sistema de archivos
+            const loadedPlugins = await window.electronAPI.plugins.loadPlugins();
+            console.log('Plugins cargados desde el sistema de archivos:', loadedPlugins);
+          } catch (err) {
+            console.warn('No se pudieron cargar plugins locales:', err);
+          }
+        }
         
         setPluginsInitialized(true);
         console.log('Sistema de plugins inicializado correctamente');

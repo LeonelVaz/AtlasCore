@@ -17,6 +17,9 @@
 
 /* Error */
 .plugins-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 12px 16px;
   margin-bottom: 20px;
   background-color: rgba(229,57,53,.1);
@@ -25,12 +28,49 @@
   border-radius: 4px;
 }
 
+.plugins-error-close {
+  background: none;
+  border: none;
+  color: var(--color-alarm-red);
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
 /* Estado vacío */
 .plugins-empty {
   text-align: center;
   padding: 40px 20px;
   background-color: var(--color-calendar-header);
   border-radius: 8px;
+  color: var(--color-text-secondary);
+  margin-top: 20px;
+}
+
+.plugins-empty-hint {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  opacity: 0.8;
+}
+
+/* Acciones */
+.plugins-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: var(--color-calendar-header);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-atlas-blue);
+}
+
+.plugins-install-hint {
+  flex-basis: 100%;
+  margin-top: 12px;
+  font-size: 0.9rem;
   color: var(--color-text-secondary);
 }
 
@@ -100,6 +140,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .plugins-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
   .plugin-item {
     flex-direction: column;
     align-items: flex-start;

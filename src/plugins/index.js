@@ -18,6 +18,15 @@ export async function initializePlugins(core) {
 }
 
 /**
+ * Registra un plugin en el sistema
+ * @param {Object} plugin - Objeto del plugin con métodos init y cleanup
+ * @returns {boolean} - true si se registró correctamente
+ */
+export function registerPlugin(plugin) {
+  return pluginLoader.registerPlugin(plugin);
+}
+
+/**
  * Crea el objeto core con las APIs para los plugins
  * @param {Object} apis - APIs de la aplicación principal
  * @returns {Object} - Objeto core para inicializar plugins

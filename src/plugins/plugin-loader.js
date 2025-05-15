@@ -6,9 +6,7 @@
 import eventBus, { EventCategories } from '../core/bus/event-bus';
 import storageService from '../services/storage-service';
 import { STORAGE_KEYS } from '../core/config/constants';
-
-// Plugins integrados en el sistema
-import notesManager from './notes-manager';
+import { isElectronEnv } from '../utils/electron-detector';
 
 // Canal de eventos específico para plugins
 export const PLUGIN_EVENTS = {
@@ -17,6 +15,12 @@ export const PLUGIN_EVENTS = {
   ERROR: 'plugin.error',
   ENABLED: 'plugin.enabled',
   DISABLED: 'plugin.disabled'
+};
+
+// Directorio base para plugins integrados (importados como módulos)
+const PLUGIN_MODULES = {
+  // Aquí podrían definirse plugins integrados en una fase más avanzada
+  // 'notes-manager': () => import('./notes-manager')
 };
 
 class PluginLoader {
@@ -41,8 +45,8 @@ class PluginLoader {
       // Cargar configuración de plugins habilitados
       const storedPluginState = await storageService.get(STORAGE_KEYS.PLUGINS_STATE, {});
       
-      // Registrar plugins integrados
-      this.registerBuiltInPlugins();
+      // Descubrir plugins disponibles
+      await this.discoverPlugins();
       
       // Inicializar plugins habilitados
       await this.initializeEnabledPlugins(storedPluginState);
@@ -60,13 +64,68 @@ class PluginLoader {
   }
 
   /**
-   * Registra los plugins integrados en el sistema
+   * Descubre los plugins disponibles en el sistema
+   * @returns {Promise<void>}
    */
-  registerBuiltInPlugins() {
-    // Registrar plugin de notas (solo en v0.3.0 y superiores)
-    this.registerPlugin(notesManager);
-    
-    // Aquí se registrarían otros plugins integrados en futuras versiones
+  async discoverPlugins() {
+    try {
+      console.log('Buscando plugins disponibles...');
+      
+      // Intentar cargar plugins desde el sistema de archivos en Electron
+      if (isElectronEnv() && window.electronAPI?.plugins?.loadPlugins) {
+        try {
+          console.log('Detectado entorno Electron, cargando plugins del sistema...');
+          const plugins = await window.electronAPI.plugins.loadPlugins();
+          
+          if (Array.isArray(plugins) && plugins.length > 0) {
+            console.log(`Se encontraron ${plugins.length} plugins en el sistema.`);
+            plugins.forEach(plugin => this.registerPlugin(plugin));
+          } else {
+            console.log('No se encontraron plugins en el sistema de archivos.');
+          }
+        } catch (err) {
+          console.warn('Error al cargar plugins desde Electron:', err);
+        }
+      } else {
+        // En entorno web, intentar cargar plugins usando import dinámico
+        try {
+          console.log('Entorno web detectado, intentando cargar plugins con import dinámico');
+          
+          // Intenta cargar el plugin de notes-manager si existe
+          try {
+            const notesModule = await import('./notes-manager');
+            if (notesModule && notesModule.default) {
+              this.registerPlugin(notesModule.default);
+            }
+          } catch (err) {
+            // Es normal que falle si el módulo no existe
+            console.log('Plugin notes-manager no encontrado o no cargado correctamente.');
+          }
+          
+          // Aquí podrían intentarse cargar otros plugins conocidos
+          
+        } catch (err) {
+          console.warn('Error al cargar plugins mediante import dinámico:', err);
+        }
+      }
+      
+      // Cargar plugins integrados (definidos en PLUGIN_MODULES)
+      for (const [pluginId, importFunc] of Object.entries(PLUGIN_MODULES)) {
+        try {
+          const moduleExport = await importFunc();
+          const plugin = moduleExport.default;
+          
+          if (plugin && this.validatePluginStructure(plugin)) {
+            this.registerPlugin(plugin);
+          }
+        } catch (err) {
+          console.warn(`Error al cargar plugin integrado ${pluginId}:`, err);
+        }
+      }
+      
+    } catch (error) {
+      console.error('Error al descubrir plugins:', error);
+    }
   }
 
   /**

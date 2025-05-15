@@ -74,6 +74,15 @@ class PluginRegistry {
   }
 
   /**
+   * Registra un nuevo plugin
+   * @param {Object} plugin - Plugin a registrar
+   * @returns {boolean} - Resultado del registro
+   */
+  registerPlugin(plugin) {
+    return pluginLoader.registerPlugin(plugin);
+  }
+
+  /**
    * Habilita un plugin específico
    * @param {string} pluginId - ID del plugin a habilitar
    * @returns {Promise<boolean>} - Resultado de la habilitación
@@ -148,6 +157,20 @@ class PluginRegistry {
     } catch (error) {
       console.error(`Error al cargar configuración del plugin ${pluginId}:`, error);
       return {};
+    }
+  }
+  
+  /**
+   * Recarga los plugins disponibles en el sistema
+   * @returns {Promise<Array>} - Plugins cargados
+   */
+  async refreshPlugins() {
+    try {
+      await pluginLoader.discoverPlugins();
+      return this.getAllPlugins();
+    } catch (error) {
+      console.error('Error al recargar plugins:', error);
+      return [];
     }
   }
 }
