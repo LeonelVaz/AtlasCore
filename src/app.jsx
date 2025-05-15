@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CalendarMain from './components/calendar/calendar-main';
 import SettingsPanel from './components/settings/settings-panel';
 import Sidebar from './components/ui/sidebar/Sidebar';
@@ -6,6 +6,10 @@ import SidebarItem from './components/ui/sidebar/sidebar-item';
 import WindowControls from './components/ui/window-controls';
 import ConfigProvider from './contexts/config-provider';
 import { isElectronEnv } from './utils/electron-detector';
+import { initializePlugins, createPluginCore } from './plugins';
+import eventBus from './core/bus/event-bus';
+import storageService from './services/storage-service';
+import { registerModule, getModule } from './core/module/module-registry';
 import './styles/themes/index.css';
 
 // Iconos para los elementos del sidebar
@@ -20,6 +24,32 @@ const APP_SECTIONS = {
 function App() {
   const isElectron = isElectronEnv();
   const [activeSection, setActiveSection] = useState(APP_SECTIONS.CALENDAR.id);
+  const [pluginsInitialized, setPluginsInitialized] = useState(false);
+  
+  // Inicializar sistema de plugins
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Crear objeto core con APIs para plugins
+        const pluginCore = createPluginCore({
+          events: eventBus,
+          storage: storageService,
+          getModule,
+          registerModule
+        });
+        
+        // Inicializar el sistema de plugins
+        await initializePlugins(pluginCore);
+        
+        setPluginsInitialized(true);
+        console.log('Sistema de plugins inicializado correctamente');
+      } catch (error) {
+        console.error('Error al inicializar el sistema de plugins:', error);
+      }
+    };
+    
+    initializeApp();
+  }, []);
   
   const sidebarSections = [
     APP_SECTIONS.CALENDAR,

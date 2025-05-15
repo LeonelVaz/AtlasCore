@@ -1,0 +1,113 @@
+/* src/styles/settings/plugins-config.css */
+.plugins-config {
+  padding: 20px;
+  max-width: 100%;
+}
+
+.plugins-config-title {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: var(--color-atlas-blue);
+}
+
+.plugins-config-description {
+  margin-bottom: 20px;
+  color: var(--color-text-secondary);
+}
+
+/* Error */
+.plugins-error {
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background-color: rgba(229,57,53,.1);
+  color: var(--color-alarm-red);
+  border-left: 3px solid var(--color-alarm-red);
+  border-radius: 4px;
+}
+
+/* Estado vacío */
+.plugins-empty {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: var(--color-calendar-header);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+}
+
+/* Lista de plugins */
+.plugins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.plugin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: var(--color-calendar-header);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-atlas-blue);
+}
+
+.plugin-info {
+  flex: 1;
+}
+
+.plugin-header {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.plugin-name {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--color-text);
+}
+
+.plugin-version {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: normal;
+}
+
+.plugin-description {
+  margin: 0 0 8px 0;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.plugin-metadata {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.plugin-actions {
+  margin-left: 16px;
+}
+
+/* Estados de carga */
+.plugins-config.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plugin-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .plugin-actions {
+    margin-left: 0;
+    margin-top: 16px;
+    align-self: flex-end;
+  }
+}

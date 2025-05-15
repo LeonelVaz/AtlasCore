@@ -66,7 +66,10 @@ export const STORAGE_KEYS = {
   SNAP_VALUE: 'atlas_snap_value',
   TIME_SCALE: 'atlas_time_scale',
   CUSTOM_TIME_SLOTS: 'atlas_custom_time_slots',
-  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events'
+  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events',
+  // Nuevas claves para el sistema de plugins
+  PLUGINS_STATE: 'atlas_plugins_state',
+  PLUGIN_CONFIG: 'atlas_plugin_config'
 };
 
 // Tipos de franja horaria
