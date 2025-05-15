@@ -13,6 +13,61 @@ import { CALENDAR_VIEWS, SNAP_VALUES, STORAGE_KEYS } from '../../core/config/con
 import storageService from '../../services/storage-service';
 import eventBus from '../../core/bus/event-bus';
 
+// Componente que renderiza extensiones de plugins en un punto específico
+const PluginExtensionPoint = ({ pointId, extraProps = {} }) => {
+  const [extensions, setExtensions] = useState([]);
+  
+  // Obtener extensiones registradas para este punto
+  useEffect(() => {
+    // Función para obtener extensiones actuales
+    const getExtensions = () => {
+      if (!window.__pluginExtensions || !window.__pluginExtensions[pointId]) {
+        return [];
+      }
+      return window.__pluginExtensions[pointId];
+    };
+    
+    // Obtener extensiones iniciales
+    setExtensions(getExtensions());
+    
+    // Suscribirse a cambios en extensiones
+    const handleComponentRegistered = (data) => {
+      if (data.pointId === pointId) {
+        setExtensions(getExtensions());
+      }
+    };
+    
+    // Suscribirse al evento de registro de componentes
+    eventBus.subscribe('app.pluginComponentRegistered', handleComponentRegistered);
+    
+    return () => {
+      // Desuscribirse al desmontar
+      eventBus.unsubscribe('app.pluginComponentRegistered', handleComponentRegistered);
+    };
+  }, [pointId]);
+  
+  // No renderizar nada si no hay extensiones
+  if (extensions.length === 0) return null;
+  
+  // Renderizar cada extensión
+  return (
+    <div className={`plugin-extension-point plugin-point-${pointId}`}>
+      {extensions.map((extension, index) => {
+        const Component = extension.component;
+        return (
+          <div key={`${extension.pluginId}-${index}`} className="plugin-extension-container">
+            <Component 
+              {...extraProps} 
+              pluginId={extension.pluginId}
+              options={extension.options}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 function CalendarMain() {
   // Hooks para gestión de eventos
   const { 
@@ -167,6 +222,16 @@ function CalendarMain() {
             snapValue={snapValue}
             onSnapChange={setSnapValue}
           />
+          
+          {/* Punto de extensión para botones en la barra de herramientas */}
+          <PluginExtensionPoint 
+            pointId="calendar.toolbar" 
+            extraProps={{
+              currentDate,
+              view,
+              setView: toggleView
+            }}
+          />
         </div>
       </div>
 
@@ -201,7 +266,16 @@ function CalendarMain() {
           onChange={handleEventFormChange}
           onDelete={handleDeleteEvent}
           onClose={handleCloseForm}
-        />
+        >
+          {/* Punto de extensión para campos en el formulario de eventos */}
+          <PluginExtensionPoint 
+            pointId={selectedEvent ? 'form.eventEdit' : 'form.eventCreate'} 
+            extraProps={{
+              event: newEvent,
+              onChange: handleEventFormChange
+            }}
+          />
+        </EventForm>
       )}
     </div>
   );

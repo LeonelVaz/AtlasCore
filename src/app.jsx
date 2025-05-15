@@ -18,6 +18,59 @@ const APP_SECTIONS = {
   SETTINGS: { id: 'settings', label: 'Configuración', icon: 'settings' },
 };
 
+// Permite renderizar elementos de barra lateral agregados por plugins
+const DynamicSidebarItems = () => {
+  const [pluginItems, setPluginItems] = useState([]);
+  
+  useEffect(() => {
+    // Función para obtener elementos registrados
+    const updateSidebarItems = () => {
+      if (!window.__pluginExtensions || !window.__pluginExtensions['app.sidebar']) {
+        setPluginItems([]);
+        return;
+      }
+      
+      setPluginItems(window.__pluginExtensions['app.sidebar']);
+    };
+    
+    // Obtener elementos actuales
+    updateSidebarItems();
+    
+    // Suscribirse a cambios
+    const handleComponentRegistered = (data) => {
+      if (data.pointId === 'app.sidebar') {
+        updateSidebarItems();
+      }
+    };
+    
+    // Registrar listener
+    eventBus.subscribe('app.pluginComponentRegistered', handleComponentRegistered);
+    
+    return () => {
+      eventBus.unsubscribe('app.pluginComponentRegistered', handleComponentRegistered);
+    };
+  }, []);
+  
+  // No renderizar nada si no hay elementos
+  if (pluginItems.length === 0) return null;
+  
+  // Renderizar cada elemento
+  return (
+    <>
+      {pluginItems.map((registration, index) => {
+        const Component = registration.component;
+        return (
+          <Component 
+            key={`${registration.pluginId}-${index}`}
+            pluginId={registration.pluginId}
+            options={registration.options}
+          />
+        );
+      })}
+    </>
+  );
+};
+
 /**
  * Componente principal de la aplicación
  */
@@ -25,9 +78,13 @@ function App() {
   const isElectron = isElectronEnv();
   const [activeSection, setActiveSection] = useState(APP_SECTIONS.CALENDAR.id);
   const [pluginsInitialized, setPluginsInitialized] = useState(false);
+  const [pluginSections, setPluginSections] = useState({});
   
   // Inicializar sistema de plugins
   useEffect(() => {
+    // Establecer la versión de la aplicación en una variable global
+    window.APP_VERSION = '0.3.0';
+    
     const initializeApp = async () => {
       try {
         console.log('Iniciando sistema de plugins...');
@@ -41,19 +98,24 @@ function App() {
         });
         
         // Inicializar el sistema de plugins
-        await initializePlugins(pluginCore);
+        const enabledPlugins = await initializePlugins(pluginCore);
+        console.log(`${enabledPlugins.length} plugins inicializados:`, 
+                    enabledPlugins.map(p => p.name).join(', '));
         
-        // Si está disponible un API para cargar plugins (solo en Electron)
-        if (window.electronAPI?.plugins?.loadPlugins) {
-          try {
-            // Este método sería proporcionado por Electron para cargar plugins desde el sistema de archivos
-            const loadedPlugins = await window.electronAPI.plugins.loadPlugins();
-            console.log('Plugins cargados desde el sistema de archivos:', loadedPlugins);
-          } catch (err) {
-            console.warn('No se pudieron cargar plugins locales:', err);
+        // Buscar plugins que registren secciones en la aplicación principal
+        const sections = {};
+        enabledPlugins.forEach(plugin => {
+          if (plugin.section) {
+            sections[plugin.id] = {
+              id: plugin.id,
+              label: plugin.section.label || plugin.name,
+              icon: plugin.section.icon || 'extension',
+              component: plugin.section.component
+            };
           }
-        }
+        });
         
+        setPluginSections(sections);
         setPluginsInitialized(true);
         console.log('Sistema de plugins inicializado correctamente');
       } catch (error) {
@@ -64,6 +126,7 @@ function App() {
     initializeApp();
   }, []);
   
+  // Secciones fijas de la barra lateral
   const sidebarSections = [
     APP_SECTIONS.CALENDAR,
     APP_SECTIONS.SETTINGS
@@ -71,11 +134,19 @@ function App() {
   
   // Renderizar contenido según sección activa
   const renderContent = () => {
+    // Secciones principales de la aplicación
     switch (activeSection) {
       case APP_SECTIONS.SETTINGS.id:
         return <SettingsPanel />;
       case APP_SECTIONS.CALENDAR.id:
+        return <CalendarMain />;
       default:
+        // Verificar si es una sección de un plugin
+        if (pluginSections[activeSection] && pluginSections[activeSection].component) {
+          const PluginComponent = pluginSections[activeSection].component;
+          return <PluginComponent />;
+        }
+        // Fallback por defecto
         return <CalendarMain />;
     }
   };
@@ -93,6 +164,7 @@ function App() {
         
         <div className="app-main">
           <Sidebar>
+            {/* Secciones estándar */}
             {sidebarSections.map(section => (
               <SidebarItem
                 key={section.id}
@@ -102,6 +174,20 @@ function App() {
                 onClick={() => setActiveSection(section.id)}
               />
             ))}
+            
+            {/* Secciones de plugins */}
+            {Object.values(pluginSections).map(section => (
+              <SidebarItem
+                key={section.id}
+                icon={section.icon}
+                label={section.label}
+                active={activeSection === section.id}
+                onClick={() => setActiveSection(section.id)}
+              />
+            ))}
+            
+            {/* Elementos de sidebar dinámicos */}
+            <DynamicSidebarItems />
           </Sidebar>
           
           <main className="app-content">

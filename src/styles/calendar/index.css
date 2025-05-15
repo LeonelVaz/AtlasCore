@@ -1,4 +1,4 @@
-/* calendar/index.css (optimizado) */
+/* styles/calendar/index.css (optimizado) */
 @import './calendar-main.css';
 @import './time-grid.css';
 @import './event-item.css';
@@ -7,3 +7,5 @@
 @import './week-view.css';
 @import './snap-control.css';
 @import './time-slots.css';
+@import './event-decorators.css';
+@import './event-form.css';

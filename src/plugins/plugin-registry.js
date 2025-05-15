@@ -8,6 +8,11 @@ import eventBus, { EventCategories } from '../core/bus/event-bus';
 import storageService from '../services/storage-service';
 import pluginLoader, { PLUGIN_EVENTS } from './plugin-loader';
 import { STORAGE_KEYS } from '../core/config/constants';
+import { 
+  getDefaultPermissions, 
+  isValidPermission, 
+  hasHighRiskPermissions 
+} from './plugin-permissions';
 
 // Versión actual de la aplicación (debe actualizarse con cada versión)
 const APP_VERSION = '0.3.0';
@@ -16,6 +21,7 @@ class PluginRegistry {
   constructor() {
     this.isInitialized = false;
     this.core = null;
+    this.pluginPermissions = {}; // Almacena permisos por plugin
   }
 
   /**
@@ -29,6 +35,9 @@ class PluginRegistry {
     this.core = core;
     
     try {
+      // Cargar permisos guardados
+      await this._loadPermissions();
+      
       await pluginLoader.initialize(core);
       
       // Registrar eventos para el registry
@@ -58,6 +67,50 @@ class PluginRegistry {
   }
 
   /**
+   * Carga los permisos guardados para los plugins
+   * @private
+   */
+  async _loadPermissions() {
+    try {
+      // Cargar permisos existentes
+      const savedPermissions = await storageService.get('atlas_plugins_permissions', {});
+      this.pluginPermissions = savedPermissions;
+      
+      // Para cada plugin, asegurar que tiene los permisos predeterminados
+      const plugins = pluginLoader.getAllPlugins();
+      
+      for (const plugin of plugins) {
+        if (!this.pluginPermissions[plugin.id]) {
+          // Si no tiene permisos guardados, asignar los predeterminados
+          this.pluginPermissions[plugin.id] = getDefaultPermissions();
+        }
+      }
+      
+      // Guardar permisos actualizados
+      await this._savePermissions();
+      
+      console.log('Permisos de plugins cargados');
+    } catch (error) {
+      console.error('Error al cargar permisos de plugins:', error);
+      this.pluginPermissions = {};
+    }
+  }
+
+  /**
+   * Guarda los permisos actuales de los plugins
+   * @private
+   */
+  async _savePermissions() {
+    try {
+      await storageService.set('atlas_plugins_permissions', this.pluginPermissions);
+      return true;
+    } catch (error) {
+      console.error('Error al guardar permisos de plugins:', error);
+      return false;
+    }
+  }
+
+  /**
    * Obtiene la lista completa de plugins
    * @returns {Array} - Lista de plugins con su estado
    */
@@ -79,6 +132,18 @@ class PluginRegistry {
    * @returns {boolean} - Resultado del registro
    */
   registerPlugin(plugin) {
+    // Verificar compatibilidad antes de registrar
+    if (!this.checkPluginCompatibility(plugin)) {
+      console.error(`Plugin ${plugin.id} no es compatible con esta versión de Atlas`);
+      return false;
+    }
+    
+    // Inicializar permisos predeterminados si no existen
+    if (!this.pluginPermissions[plugin.id]) {
+      this.pluginPermissions[plugin.id] = getDefaultPermissions();
+      this._savePermissions();
+    }
+    
     return pluginLoader.registerPlugin(plugin);
   }
 
@@ -172,6 +237,107 @@ class PluginRegistry {
       console.error('Error al recargar plugins:', error);
       return [];
     }
+  }
+  
+  /**
+   * Verifica si un plugin tiene un permiso específico
+   * @param {string} pluginId - ID del plugin
+   * @param {string} permissionId - ID del permiso
+   * @returns {boolean} - true si tiene el permiso
+   */
+  hasPermission(pluginId, permissionId) {
+    // Verificar validez del permiso
+    if (!isValidPermission(permissionId)) {
+      console.warn(`Permiso no válido: ${permissionId}`);
+      return false;
+    }
+    
+    // Si no hay permisos para este plugin, usar predeterminados
+    if (!this.pluginPermissions[pluginId]) {
+      this.pluginPermissions[pluginId] = getDefaultPermissions();
+      this._savePermissions();
+    }
+    
+    return this.pluginPermissions[pluginId][permissionId] === true;
+  }
+  
+  /**
+   * Solicita un permiso adicional para un plugin
+   * @param {string} pluginId - ID del plugin
+   * @param {string} permissionId - ID del permiso
+   * @returns {Promise<boolean>} - true si se concedió el permiso
+   */
+  async requestPermission(pluginId, permissionId) {
+    // Verificar validez del permiso
+    if (!isValidPermission(permissionId)) {
+      console.warn(`Permiso no válido: ${permissionId}`);
+      return false;
+    }
+    
+    // Si es de alto riesgo, mostrar confirmación al usuario
+    if (hasHighRiskPermissions([permissionId])) {
+      // En una implementación real, aquí se mostraría un diálogo al usuario
+      
+      // Por ahora, denegar automáticamente permisos de alto riesgo
+      console.warn(`Permiso de alto riesgo ${permissionId} solicitado por ${pluginId}`);
+      return false;
+    }
+    
+    // Para permisos de bajo o medio riesgo, conceder automáticamente
+    if (!this.pluginPermissions[pluginId]) {
+      this.pluginPermissions[pluginId] = getDefaultPermissions();
+    }
+    
+    this.pluginPermissions[pluginId][permissionId] = true;
+    await this._savePermissions();
+    
+    return true;
+  }
+  
+  /**
+   * Establece explícitamente los permisos para un plugin
+   * @param {string} pluginId - ID del plugin
+   * @param {Object} permissions - Objeto de permisos
+   * @returns {Promise<boolean>} - true si se actualizaron los permisos
+   */
+  async setPluginPermissions(pluginId, permissions) {
+    // Validar permisos
+    const invalidPermissions = Object.keys(permissions).filter(
+      permId => !isValidPermission(permId)
+    );
+    
+    if (invalidPermissions.length > 0) {
+      console.warn(`Permisos no válidos para ${pluginId}:`, invalidPermissions);
+    }
+    
+    // Actualizar permisos válidos
+    if (!this.pluginPermissions[pluginId]) {
+      this.pluginPermissions[pluginId] = getDefaultPermissions();
+    }
+    
+    // Solo actualizar permisos válidos
+    Object.keys(permissions).forEach(permId => {
+      if (isValidPermission(permId)) {
+        this.pluginPermissions[pluginId][permId] = !!permissions[permId];
+      }
+    });
+    
+    await this._savePermissions();
+    return true;
+  }
+  
+  /**
+   * Obtiene los permisos actuales de un plugin
+   * @param {string} pluginId - ID del plugin
+   * @returns {Object} - Objeto de permisos
+   */
+  getPluginPermissions(pluginId) {
+    if (!this.pluginPermissions[pluginId]) {
+      this.pluginPermissions[pluginId] = getDefaultPermissions();
+      this._savePermissions();
+    }
+    
+    return { ...this.pluginPermissions[pluginId] };
   }
 }
 

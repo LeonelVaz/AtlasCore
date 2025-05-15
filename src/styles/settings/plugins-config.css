@@ -1,4 +1,4 @@
-/* src/styles/settings/plugins-config.css */
+/* plugins-config.css */
 .plugins-config {
   padding: 20px;
   max-width: 100%;
@@ -125,8 +125,15 @@
   color: var(--color-text-secondary);
 }
 
+.plugin-status-error {
+  color: var(--color-alarm-red);
+  margin-left: 8px;
+}
+
 .plugin-actions {
   margin-left: 16px;
+  display: flex;
+  gap: 8px;
 }
 
 /* Estados de carga */
@@ -138,7 +145,151 @@
   color: var(--color-text-secondary);
 }
 
-/* Responsive */
+/* Diálogo de detalles */
+.plugin-details {
+  padding: 0;
+}
+
+.plugin-details-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--color-text-secondary);
+}
+
+.plugin-info-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.plugin-detail-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.plugin-detail-label {
+  font-weight: 500;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.plugin-detail-value {
+  flex: 1;
+}
+
+.plugin-detail-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+.plugin-status-initialized {
+  background-color: var(--color-modular-green);
+  color: white;
+}
+
+.plugin-status-error {
+  background-color: var(--color-alarm-red);
+  color: white;
+}
+
+.plugin-status-disabled {
+  background-color: var(--color-text-secondary);
+  color: white;
+}
+
+.plugin-detail-error {
+  color: var(--color-alarm-red);
+}
+
+.plugin-permissions-section h3 {
+  margin-bottom: 16px;
+}
+
+.permissions-category {
+  margin-bottom: 16px;
+}
+
+.permissions-category-title {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.permissions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.permission-item {
+  background-color: var(--color-background);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.permission-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.permission-toggle input {
+  margin-right: 8px;
+  width: auto;
+}
+
+.permission-name {
+  font-weight: 500;
+}
+
+.permission-description {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.permission-risk {
+  font-size: 0.8rem;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.permission-risk-low {
+  background-color: var(--color-modular-green);
+  color: white;
+}
+
+.permission-risk-medium {
+  background-color: var(--color-insight-yellow);
+  color: black;
+}
+
+.permission-risk-high {
+  background-color: var(--color-alarm-red);
+  color: white;
+}
+
+.plugin-details-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* Componentes de extensión */
+.plugin-extension-point {
+  display: flex;
+  gap: 8px;
+}
+
+.plugin-extension-container {
+  margin: 0 4px;
+}
+
+/* Respuesive */
 @media (max-width: 768px) {
   .plugins-actions {
     flex-direction: column;
@@ -154,5 +305,14 @@
     margin-left: 0;
     margin-top: 16px;
     align-self: flex-end;
+  }
+  
+  .plugin-detail-row {
+    flex-direction: column;
+  }
+  
+  .plugin-detail-label {
+    width: 100%;
+    margin-bottom: 4px;
   }
 }
