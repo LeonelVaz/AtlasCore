@@ -60,30 +60,8 @@ const PluginsConfig = () => {
   
   // Manejar carga de plugin desde archivo (en Electron)
   const handleLoadPlugin = async () => {
-    if (!window.electronAPI?.plugins?.selectPlugin) {
-      setError('Esta funcionalidad solo está disponible en la versión de escritorio');
-      return;
-    }
-    
-    try {
-      setError(null);
-      const plugin = await window.electronAPI.plugins.selectPlugin();
-      
-      if (plugin) {
-        // Registrar el plugin
-        const success = pluginLoader.registerPlugin(plugin);
-        
-        if (success) {
-          // Forzar actualización de la lista
-          setRefreshKey(prev => prev + 1);
-        } else {
-          setError('El plugin seleccionado no es válido o ya está instalado');
-        }
-      }
-    } catch (err) {
-      console.error('Error al cargar plugin:', err);
-      setError('Error al cargar el plugin seleccionado');
-    }
+    setError("Esta funcionalidad aún no está disponible");
+    // La implementación real se añadirá en fases posteriores
   };
   
   // Recargar plugins (útil para detectar nuevos plugins en el sistema)
@@ -124,20 +102,16 @@ const PluginsConfig = () => {
       )}
       
       <div className="plugins-actions">
-        {isElectron && (
-          <Button onClick={handleLoadPlugin} variant="primary">
-            Instalar Plugin...
-          </Button>
-        )}
+        <Button onClick={handleLoadPlugin} variant="primary">
+          Instalar Plugin...
+        </Button>
         
         <Button onClick={handleRefreshPlugins} variant="secondary">
           Recargar Plugins
         </Button>
         
         <p className="plugins-install-hint">
-          {isElectron 
-            ? 'Para instalar un plugin, descárgalo y selecciona el archivo o colócalo en la carpeta de plugins.'
-            : 'Los plugins se activan automáticamente al colocarlos en la carpeta de plugins.'}
+          Para instalar un plugin, colócalo en la carpeta de plugins y haz clic en "Recargar Plugins".
         </p>
       </div>
       
@@ -145,9 +119,7 @@ const PluginsConfig = () => {
         <div className="plugins-empty">
           <p>No hay plugins instalados.</p>
           <p className="plugins-empty-hint">
-            {isElectron 
-              ? 'Descarga plugins y añádelos usando el botón "Instalar Plugin" de arriba.' 
-              : 'Coloca plugins en la carpeta "plugins" y usa el botón "Recargar Plugins".'}
+            Coloca plugins en la carpeta "plugins" y usa el botón "Recargar Plugins".
           </p>
         </div>
       ) : (
