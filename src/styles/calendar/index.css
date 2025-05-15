@@ -1,5 +1,4 @@
-/* src/styles/calendar/index.css */
-/* Índice de estilos del calendario */
+/* src/styles/calendar/index.css - OPTIMIZADO */
 @import './calendar-main.css';
 @import './time-grid.css';
 @import './event-item.css';
@@ -7,4 +6,4 @@
 @import './day-view.css';
 @import './week-view.css';
 @import './snap-control.css';
-@import './time-slots.css'; /* Importamos los nuevos estilos para franjas */
+@import './time-slots.css';

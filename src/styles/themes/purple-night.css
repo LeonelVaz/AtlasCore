@@ -1,14 +1,14 @@
-/* src/styles/themes/purple-night.css */
+/* src/styles/themes/purple-night.css - OPTIMIZADO */
 :root.theme-purple-night {
   /* Colores base */
-  --primary-color: #7E57C2;         /* Púrpura principal */
+  --primary-color: #7E57C2;
   --primary-hover: #6A48A4;
-  --secondary-color: #78909C;       /* Structure Gray */
-  --success-color: #26A69A;         /* Modular Green */
+  --secondary-color: #78909C;
+  --success-color: #26A69A;
   --success-hover: #00897B;
-  --warning-color: #FFB300;         /* Insight Yellow */
+  --warning-color: #FFB300;
   --warning-hover: #FFA000;
-  --danger-color: #EF5350;          /* Alarm Red */
+  --danger-color: #EF5350;
   --danger-hover: #E53935;
   --info-color: #29B6F6;
   
@@ -33,99 +33,59 @@
   /* Componentes UI */
   --header-bg: #16213E;
   --sidebar-bg: #16213E;
-  --titlebar-bg: #16213E;
   --card-bg: #1C1C35;
   --hover-color: #2D2A5A;
   --modal-bg: #1C1C35;
   --input-bg: #232340;
-  --dropdown-bg: #1C1C35;
   
-  /* Variables para la barra superior */
-  --topbar-bg: #6A48A4; /* Púrpura más intenso para la barra */
+  /* Barra superior */
+  --topbar-bg: #6A48A4;
   --topbar-text: #FFFFFF;
   
   /* Navegación */
   --nav-active-bg: rgba(126, 87, 194, 0.3);
-  --settings-nav-active-bg: rgba(126, 87, 194, 0.3);
   
   /* Calendario */
   --day-header-hover: rgba(126, 87, 194, 0.15);
   --day-header-today: rgba(126, 87, 194, 0.3);
   --time-slot-hover: rgba(126, 87, 194, 0.15);
-  --add-time-row-hover: rgba(126, 87, 194, 0.3);
   
   /* Formularios */
   --secondary-btn-bg: #232340;
   --secondary-btn-text: #E0E0E0;
   --secondary-btn-hover: #2E2E50;
 
-  /* Opciones interactivas */
-  --status-option-hover: rgba(126, 87, 194, 0.15);
-  --status-option-selected: rgba(126, 87, 194, 0.3);
-  --frequency-option-hover: rgba(126, 87, 194, 0.15);
-  --frequency-option-selected: rgba(126, 87, 194, 0.3);
-  --weekday-option-hover: rgba(126, 87, 194, 0.15);
-  --weekday-option-selected: rgba(126, 87, 194, 0.3);
-  --time-slot-option-hover: rgba(126, 87, 194, 0.15);
-  --time-slot-option-selected: rgba(126, 87, 194, 0.3);
-  
   /* Scroll */
   --scrollbar-thumb: #2E2E4A;
   --scrollbar-thumb-hover: #3A3A5E;
   
   /* Bordes */
   --border-color: #2E2E4A;
-  --border-radius-sm: 0.25rem;
-  --border-radius-md: 0.375rem;
-  --border-radius-lg: 0.5rem;
-  --border-radius-xl: 0.75rem;
   
   /* Sombras */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
   
-  /* Espaciado */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  
-  /* Transiciones */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
-  --transition-slow: 0.4s ease;
-  
-  /* Firma */
-  --signature-color: rgba(224, 224, 224, 0.4);
-  --signature-font: 'Amalfi Coast', cursive;
-
   /* Slots de tiempo */
   --time-slot-standard-bg: transparent;
-  --time-slot-large-bg: rgba(255, 255, 255, 0.02);    /* Nueva variable para franjas de 45 minutos */
-  --time-slot-medium-bg: rgba(255, 255, 255, 0.03);   /* Franjas de 30 minutos */
-  --time-slot-short-bg: rgba(255, 255, 255, 0.06);    /* Franjas de 15 minutos */
-  --time-slot-standard-hover: var(--time-slot-hover);
-  --time-slot-large-hover: var(--time-slot-hover);    /* Nueva variable */
-  --time-slot-medium-hover: var(--time-slot-hover);
-  --time-slot-short-hover: var(--time-slot-hover);
+  --time-slot-large-bg: rgba(255, 255, 255, 0.02);
+  --time-slot-medium-bg: rgba(255, 255, 255, 0.03);
+  --time-slot-short-bg: rgba(255, 255, 255, 0.06);
   --primary-color-rgb: 126, 87, 194;
   
-  /* Variables para diálogos */
+  /* Diálogos */
   --color-dialog-overlay: rgba(0, 0, 0, 0.7);
-  --color-dialog-bg: var(--card-bg, #1C1C35);
+  --color-dialog-bg: #1C1C35;
   --color-dialog-title: var(--primary-color);
   --color-dialog-close: var(--gray-400);
   --color-dialog-close-hover: var(--gray-200);
   --color-dialog-footer: rgba(46, 46, 74, 0.7);
-  --color-dialog-label: var(--text-color);
   --color-dialog-input-shadow: rgba(126, 87, 194, 0.3);
   --color-dialog-error-bg: rgba(239, 83, 80, 0.2);
   --danger-color-rgb: 239, 83, 80;
 
-  /* Compatibilidad con variables de Atlas originales */
+  /* Compatibilidad */
   --color-atlas-blue: #7E57C2;
   --color-modular-green: #26A69A;
   --color-structure-gray: #78909C;
@@ -156,8 +116,6 @@
   
   --color-event-default: #7E57C2;
   --color-event-text: #FFFFFF;
-  --color-event-drag: rgba(126, 87, 194, 0.7);
-  --color-event-resize: rgba(126, 87, 194, 0.7);
   
   --color-input-bg: #232340;
   --color-input-border: #2E2E4A;
@@ -167,15 +125,12 @@
   --color-button-primary-text: #FFFFFF;
   --color-button-primary-hover: #6A48A4;
   --color-button-primary-active: #5E3E94;
-  --color-button-primary-active-hover: #8A67CC;
   
   --color-button-secondary-bg: #232340;
   --color-button-secondary-text: #E0E0E0;
   --color-button-secondary-hover: #2E2E50;
   --color-button-secondary-active: #7E57C2;
-  --color-button-secondary-active-hover: #8A67CC;
   
   --color-button-danger-bg: #EF5350;
   --color-button-danger-text: #FFFFFF;
-  --color-button-danger-hover: #E53935;
 }

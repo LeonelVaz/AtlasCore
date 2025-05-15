@@ -1,66 +1,50 @@
-/* src/styles/calendar/event-item-compact.css */
-/* Estilos específicos para eventos en vista compacta */
-
-/* Aplicar estos estilos cuando la altura de la celda es menor a 50px */
+/* src/styles/calendar/event-item-compact.css - OPTIMIZADO */
+/* Estilos para eventos en modo compacto */
 .time-scale-compact .calendar-event {
-  /* Reducir el padding */
   padding: 2px 4px;
-  /* Ajustar el tamaño de la fuente */
   font-size: 0.75rem;
-  /* Reducir bordes redondeados */
   border-radius: 3px;
-  /* Reducir sombra */
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  min-height: 18px;
 }
 
-/* Ajustar el título para ocupar menos espacio */
 .time-scale-compact .event-title {
   margin-bottom: 0;
   font-size: 0.75rem;
   line-height: 1.2;
 }
 
-/* Estilos para la hora del evento */
 .time-scale-compact .event-time {
   font-size: 0.65rem;
   opacity: 0.85;
 }
 
-/* Ajustar el controlador de redimensionamiento */
 .time-scale-compact .event-resize-handle {
   height: 6px;
 }
 
-/* Mejorar los indicadores de continuación */
 .time-scale-compact .calendar-event.continues-next-day::after,
 .time-scale-compact .calendar-event.continues-from-prev-day::before {
   font-size: 8px;
 }
 
-/* Ajustar los bordes de la rejilla */
 .time-scale-compact .calendar-cell {
-  /* Sutilizar los bordes */
   border-width: 1px;
   border-style: solid;
   border-color: var(--color-calendar-grid-border);
   box-sizing: border-box;
 }
 
-/* Manejo específico para eventos pequeños */
-.time-scale-compact .calendar-event {
-  min-height: 18px; /* Establece una altura mínima */
-}
-
-/* Cuando el evento es muy pequeño, priorizar el título */
+/* Micro eventos (eventos muy pequeños) */
 .time-scale-compact .calendar-event.micro-event {
   padding: 1px 3px;
 }
 
 .time-scale-compact .calendar-event.micro-event .event-time {
-  display: none; /* Ocultar la hora en eventos muy pequeños */
+  display: none;
 }
 
-/* Ajustes para las etiquetas de hora */
+/* Etiquetas de hora */
 .time-scale-compact .calendar-time,
 .time-scale-compact .day-view-hour-label {
   font-size: 0.7rem;

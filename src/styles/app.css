@@ -1,4 +1,4 @@
-/* src/styles/app.css  */
+/* src/styles/app.css - OPTIMIZADO */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -17,11 +17,10 @@
   background-color: var(--topbar-bg);
   color: var(--topbar-text);
   box-shadow: 0 2px 4px var(--color-shadow);
-  height: 50px;
-  z-index: 100;
+  height: var(--header-height, 50px);
+  z-index: var(--z-index-header, 100);
 }
 
-/* Hacer la barra de título arrastrable en Electron */
 .app-header.draggable {
   -webkit-app-region: drag;
 }
@@ -39,13 +38,12 @@
   background-color: var(--color-background);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .app-content {
     padding: 8px;
   }
   
   .app-main {
-    position: relative; /* Para que el sidebar se posicione correctamente */
+    position: relative;
   }
 }

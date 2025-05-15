@@ -1,4 +1,4 @@
-/* src/styles/calendar/day-view.css  */
+/* src/styles/calendar/day-view.css - OPTIMIZADO */
 .day-view-container {
   display: flex;
   flex-direction: column;
@@ -18,7 +18,6 @@
   text-align: center;
 }
 
-/* Botones de navegación de día */
 .day-view-navigation {
   display: flex;
   gap: var(--spacing-sm);
@@ -85,17 +84,11 @@
   transition: background-color 0.2s ease;
   cursor: pointer;
   padding: 0;
-  overflow: visible;
+  overflow: visible !important;
 }
 
 .day-view-hour-slot:hover {
   background-color: var(--color-calendar-slot-hover, #f0f7ff);
-}
-
-/* Ajuste para eventos en vista diaria */
-.day-view-hour-slot {
-  position: relative;
-  overflow: visible !important; /* Asegura que los eventos puedan extenderse fuera del slot */
 }
 
 .day-view-hour-slot .event-wrapper {
@@ -116,7 +109,6 @@
   right: 0;
 }
 
-/* Cuando se está arrastrando, desactivar hovers */
 body.dragging-active .day-view-hour-slot:hover:not(.drag-target-active) {
   background-color: inherit;
 }

@@ -1,3 +1,4 @@
+/* src/styles/index.css - OPTIMIZADO */
 /* Importar fuentes */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
 
@@ -9,39 +10,7 @@
 @import './header-controls.css';
 @import './variables.css';
 
-/**
- * Estilos globales para la aplicación Atlas
- */
-
-:root {
-  /* Colores principales según la guía de marca */
-  --color-atlas-blue: #2D4B94;    /* Azul Atlas - confiabilidad y estabilidad */
-  --color-modular-green: #26A69A; /* Verde Modular - adaptabilidad y crecimiento */
-  --color-structure-gray: #546E7A; /* Gris Estructura - elementos de soporte */
-  --color-insight-yellow: #FFB300; /* Amarillo Perspicacia - análisis e insights */
-  --color-custom-purple: #7E57C2; /* Púrpura Personalización */
-  
-  /* Colores de interfaz */
-  --color-background: #FFFFFF;
-  --color-text: #333333;
-  --color-border: #E0E0E0;
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  
-  /* Espaciado */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  
-  /* Fuentes */
-  --font-family-heading: 'Montserrat', sans-serif;
-  --font-family-body: 'Inter', sans-serif;
-  --font-family-mono: 'Fira Mono', monospace;
-}
-
-/* El resto del archivo sigue igual... */
-
+/* Reset y estilos globales */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -91,7 +60,6 @@ input:focus, select:focus, textarea:focus {
   padding: 0 var(--spacing-md);
 }
 
-/* Accesibilidad */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -104,7 +72,7 @@ input:focus, select:focus, textarea:focus {
   border-width: 0;
 }
 
-/* Estilos para formularios */
+/* Formularios */
 .form-group {
   margin-bottom: var(--spacing-md);
 }

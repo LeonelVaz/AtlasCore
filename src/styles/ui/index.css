@@ -1,10 +1,10 @@
-/* Índice de componentes UI */
+/* src/styles/ui/index.css - OPTIMIZADO */
 @import './button.css';
 @import './dialog.css';
 @import './sidebar.css';
 @import './scrollbar.css';
 
-/* Animaciones compartidas */
+/* Animaciones compartidas - definidas aquí para no duplicarlas */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

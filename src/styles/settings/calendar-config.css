@@ -1,4 +1,4 @@
-/* src/styles/settings/calendar-config.css */
+/* src/styles/settings/calendar-config.css - OPTIMIZADO */
 .calendar-config {
   padding: 20px;
   max-width: 100%;
@@ -62,7 +62,6 @@
 
 .max-events-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  appearance: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;

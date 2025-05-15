@@ -1,4 +1,4 @@
-/* src/components/settings/theme-config.css */
+/* src/styles/settings/theme-config.css - OPTIMIZADO */
 .theme-config {
   padding: 20px;
   max-width: 100%;
@@ -42,7 +42,7 @@
   box-shadow: 0 0 0 2px var(--color-atlas-blue), 0 4px 12px var(--color-shadow);
 }
 
-/* Estilos base para las previsualizaciones */
+/* Previsualizaciones */
 .theme-preview {
   height: 120px;
   width: 100%;
@@ -50,7 +50,6 @@
   overflow: hidden;
 }
 
-/* Barra lateral */
 .preview-sidebar {
   width: 28px;
   height: 100%;
@@ -71,7 +70,6 @@
   margin-bottom: 5px;
 }
 
-/* Contenido principal */
 .preview-content {
   flex: 1;
   display: flex;
@@ -338,8 +336,7 @@
 }
 
 .theme-section {
-  margin-top: 30px;
-  margin-bottom: 30px;
+  margin: 30px 0;
   padding-top: 20px;
   border-top: 1px solid var(--color-border);
 }
@@ -363,7 +360,6 @@
   color: var(--color-text-secondary);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .theme-options {
     justify-content: center;

@@ -1,4 +1,4 @@
-/* src/styles/settings/time-scale-config.css */
+/* src/styles/settings/time-scale-config.css - OPTIMIZADO */
 .time-scale-config {
   padding: 20px;
   max-width: 100%;
@@ -15,7 +15,7 @@
   color: var(--color-text-secondary);
 }
 
-/* Previsualización de la escala */
+/* Previsualización */
 .time-scale-preview {
   display: flex;
   margin-bottom: 30px;
@@ -145,7 +145,7 @@
   color: var(--color-atlas-blue);
 }
 
-/* Formulario para escala personalizada */
+/* Formulario de escala personalizada */
 .time-scale-custom-form {
   margin-top: 20px;
   padding: 15px;
@@ -224,7 +224,6 @@
   color: var(--color-text-secondary);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .time-scale-options-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));

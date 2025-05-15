@@ -1,16 +1,9 @@
-/* src/styles/calendar/week-view.css  */
-
+/* src/styles/calendar/week-view.css - OPTIMIZADO */
 .week-view {
   height: 100%;
   overflow: auto;
 }
 
-/* Asegurar que las porciones de eventos sean visibles */
-.calendar-time-slot {
-  overflow: visible !important;
-}
-
-/* Estilo para los encabezados de día */
 .day-header-content {
   display: flex;
   flex-direction: column;

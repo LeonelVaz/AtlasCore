@@ -1,5 +1,4 @@
-/* Estilos para el componente Button */
-
+/* src/styles/ui/button.css - OPTIMIZADO */
 .ui-button {
   display: inline-flex;
   align-items: center;
@@ -15,9 +14,9 @@
   color: var(--color-button-text, white);
 }
 
-/* Variantes de botón */
+/* Variantes */
 .ui-button-primary {
-  background-color: var(--tertiary-color-button-bg, var(--color-button-primary-bg), var(--color-atlas-blue));
+  background-color: var(--color-button-primary-bg, var(--color-atlas-blue));
   color: var(--color-button-primary-text, white);
 }
 
@@ -57,7 +56,7 @@
   background-color: transparent;
 }
 
-/* Tamaños de botón */
+/* Tamaños */
 .ui-button-small {
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -73,7 +72,7 @@
   font-size: 1.1rem;
 }
 
-/* Estado activo para botones toggle */
+/* Estados */
 .ui-button-active.ui-button-primary {
   background-color: var(--color-button-primary-active, var(--color-atlas-blue));
   color: var(--color-button-active-text, white);
@@ -81,7 +80,6 @@
 
 .ui-button-active.ui-button-primary:hover {
   background-color: var(--color-button-primary-active-hover, #233d87);
-  color: var(--color-button-active-text, white);
 }
 
 .ui-button-active.ui-button-secondary:hover {
@@ -89,7 +87,6 @@
   color: var(--color-button-active-text, white);
 }
 
-/* Estado deshabilitado */
 .ui-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;

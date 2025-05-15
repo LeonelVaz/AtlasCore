@@ -1,4 +1,4 @@
-/* src/styles/calendar/calendar-main.css  */
+/* src/styles/calendar/calendar-main.css - OPTIMIZADO */
 .calendar-container {
   display: flex;
   flex-direction: column;
@@ -9,7 +9,6 @@
   overflow: hidden;
 }
 
-/* Cabecera del calendario */
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -24,10 +23,9 @@
 .calendar-navigation {
   display: flex;
   gap: var(--spacing-sm);
-  margin-right: auto; /* Asegura que esté a la izquierda */
+  margin-right: auto;
 }
 
-/* Título central */
 .calendar-title {
   position: absolute;
   left: 50%;
@@ -43,7 +41,6 @@
   white-space: nowrap;
 }
 
-/* Botones de navegación */
 .calendar-navigation button {
   font-size: 0.8rem;
   background-color: var(--tertiary-color-button-bg);
@@ -67,14 +64,12 @@
   color: var(--color-button-active-text, white);
 }
 
-/* Contenedor de los controles de vista (a la derecha) */
 .calendar-view-toggle {
   display: flex;
   gap: 8px;
-  margin-left: auto; /* Asegura que esté a la derecha */
+  margin-left: auto;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .calendar-header {
     flex-direction: row;

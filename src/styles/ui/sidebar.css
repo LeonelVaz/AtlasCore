@@ -1,8 +1,8 @@
-/* src/components/ui/sidebar/sidebar.css (corregido) */
+/* src/styles/ui/sidebar.css - OPTIMIZADO */
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 240px;
+  width: var(--sidebar-width, 240px);
   height: 100%;
   background-color: var(--color-sidebar-bg, #1a2233);
   color: var(--color-sidebar-text, #ffffff);
@@ -12,12 +12,7 @@
 }
 
 .sidebar.collapsed {
-  width: 60px;
-}
-
-.version-info {
-  font-size: 0.7rem;
-  margin: -10px;
+  width: var(--sidebar-collapsed-width, 60px);
 }
 
 .sidebar-header {
@@ -75,7 +70,6 @@
   border-left: 3px solid var(--color-atlas-blue, #2D4B94);
 }
 
-/* Estilo actualizado para cambiar color del icono y texto cuando está activo */
 .sidebar-item.active .sidebar-item-icon,
 .sidebar-item.active .sidebar-item-icon .material-icons,
 .sidebar-item.active .sidebar-item-label {
@@ -93,7 +87,6 @@
   transition: color 0.2s;
 }
 
-/* Estilo específico para los iconos de Material Icons */
 .sidebar-item-icon .material-icons {
   font-size: 20px;
   color: var(--color-sidebar-text, #ffffff);
@@ -119,11 +112,16 @@
   opacity: 0.7;
 }
 
+.version-info {
+  font-size: 0.7rem;
+  margin: -10px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
     position: absolute;
-    z-index: 100;
+    z-index: var(--z-index-sidebar, 100);
     height: 100%;
   }
   
