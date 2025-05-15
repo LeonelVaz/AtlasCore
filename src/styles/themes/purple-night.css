@@ -1,4 +1,6 @@
 /* src/styles/themes/purple-night.css - OPTIMIZADO */
+@import './theme-base.css';
+
 :root.theme-purple-night {
   /* Colores base */
   --primary-color: #7E57C2;
@@ -68,7 +70,6 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   
   /* Slots de tiempo */
-  --time-slot-standard-bg: transparent;
   --time-slot-large-bg: rgba(255, 255, 255, 0.02);
   --time-slot-medium-bg: rgba(255, 255, 255, 0.03);
   --time-slot-short-bg: rgba(255, 255, 255, 0.06);
@@ -81,56 +82,14 @@
   --color-dialog-close: var(--gray-400);
   --color-dialog-close-hover: var(--gray-200);
   --color-dialog-footer: rgba(46, 46, 74, 0.7);
+  --color-dialog-header: var(--header-bg);
+  --color-dialog-body: var(--card-bg);
   --color-dialog-input-shadow: rgba(126, 87, 194, 0.3);
   --color-dialog-error-bg: rgba(239, 83, 80, 0.2);
   --danger-color-rgb: 239, 83, 80;
 
-  /* Compatibilidad */
-  --color-atlas-blue: #7E57C2;
-  --color-modular-green: #26A69A;
-  --color-structure-gray: #78909C;
-  --color-insight-yellow: #FFB300;
+  /* Específicos no derivados */
   --color-custom-purple: #9575CD;
-  --color-alarm-red: #EF5350;
-  
-  --color-background: #1A1A2E;
-  --color-text: #E0E0E0;
-  --color-text-secondary: #B0B0B0;
-  --color-border: #2E2E4A;
-  --color-shadow: rgba(0, 0, 0, 0.3);
-  
-  --color-sidebar-bg: #16213E;
-  --color-sidebar-text: #E0E0E0;
-  --color-sidebar-border: rgba(255, 255, 255, 0.1);
-  --color-sidebar-hover: rgba(255, 255, 255, 0.1);
-  --color-sidebar-active: rgba(126, 87, 194, 0.3);
-  
-  --color-calendar-background: #1A1A2E;
-  --color-calendar-header: #16213E;
-  --color-calendar-grid: #1C1C35;
-  --color-calendar-grid-border: #2E2E4A;
-  --color-calendar-time-label: #B0B0B0;
-  --color-calendar-day-header: #E0E0E0;
-  --color-calendar-today: #2D2A5A;
-  --color-calendar-slot-hover: #2D2A5A;
-  
-  --color-event-default: #7E57C2;
-  --color-event-text: #FFFFFF;
-  
-  --color-input-bg: #232340;
-  --color-input-border: #2E2E4A;
-  --color-input-focus: #7E57C2;
-  
-  --color-button-primary-bg: #7E57C2;
-  --color-button-primary-text: #FFFFFF;
-  --color-button-primary-hover: #6A48A4;
-  --color-button-primary-active: #5E3E94;
-  
-  --color-button-secondary-bg: #232340;
-  --color-button-secondary-text: #E0E0E0;
-  --color-button-secondary-hover: #2E2E50;
-  --color-button-secondary-active: #7E57C2;
-  
-  --color-button-danger-bg: #EF5350;
-  --color-button-danger-text: #FFFFFF;
+  --color-button-primary-active-hover: #5E3E94;
+  --color-button-secondary-active-hover: #7E57C2;
 }

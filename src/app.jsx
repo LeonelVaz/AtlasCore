@@ -6,13 +6,10 @@ import Sidebar from './components/ui/sidebar/Sidebar';
 import SidebarItem from './components/ui/sidebar/sidebar-item';
 import WindowControls from './components/ui/window-controls';
 import ThemeProvider from './contexts/theme-context';
-import TimeScaleProvider from './contexts/time-scale-context';  // Nuevo import
+import TimeScaleProvider from './contexts/time-scale-context';
 import { isElectronEnv } from './utils/electron-detector';
-import './styles/themes/light.css';
-import './styles/themes/dark.css';
-import './styles/themes/atlas-dark-blue.css';
-import './styles/themes/purple-night.css';
-import './styles/themes/deep-ocean.css';
+import './styles/themes/index.css'; // Importación optimizada de temas
+
 
 // Iconos para los elementos del sidebar usando Material Icons
 const APP_SECTIONS = {

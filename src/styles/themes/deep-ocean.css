@@ -1,4 +1,6 @@
 /* src/styles/themes/deep-ocean.css - OPTIMIZADO */
+@import './theme-base.css';
+
 :root.theme-deep-ocean {
   /* Colores base */
   --primary-color: #3b82f6;
@@ -69,7 +71,6 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   
   /* Slots de tiempo */
-  --time-slot-standard-bg: transparent;
   --time-slot-large-bg: rgba(255, 255, 255, 0.02);
   --time-slot-medium-bg: rgba(255, 255, 255, 0.03);
   --time-slot-short-bg: rgba(255, 255, 255, 0.06);
@@ -82,53 +83,14 @@
   --color-dialog-close: var(--gray-400);
   --color-dialog-close-hover: var(--gray-200);
   --color-dialog-footer: var(--gray-900);
+  --color-dialog-header: var(--gray-900);
+  --color-dialog-body: var(--gray-800);
   --color-dialog-input-shadow: rgba(59, 130, 246, 0.3);
   --color-dialog-error-bg: rgba(239, 68, 68, 0.2);
   --danger-color-rgb: 239, 68, 68;
-  --color-dialog-header: var(--gray-900);
-  --color-dialog-body: var(--gray-800);
 
-  /* Compatibilidad */
-  --color-atlas-blue: var(--primary-color);
-  --color-modular-green: var(--success-color);
-  --color-structure-gray: var(--secondary-color);
-  --color-insight-yellow: var(--warning-color);
+  /* Específicos no derivados */
   --color-custom-purple: #a78bfa;
-  --color-alarm-red: var(--danger-color);
-  
-  --color-background: var(--bg-color);
-  --color-text: var(--text-color);
-  --color-text-secondary: var(--text-color-secondary);
-  --color-border: var(--border-color);
-  --color-shadow: rgba(0, 0, 0, 0.4);
-  
-  --color-sidebar-bg: var(--sidebar-bg);
-  --color-sidebar-text: var(--text-color);
-  --color-sidebar-border: var(--border-color);
-  --color-sidebar-hover: var(--hover-color);
-  --color-sidebar-active: var(--nav-active-bg);
-  
-  --color-calendar-background: var(--bg-color);
-  --color-calendar-header: var(--header-bg);
-  --color-calendar-grid: var(--bg-color-secondary);
-  --color-calendar-grid-border: var(--border-color);
-  --color-calendar-time-label: var(--text-color-secondary);
-  --color-calendar-day-header: var(--text-color);
-  --color-calendar-today: var(--day-header-today);
-  --color-calendar-slot-hover: var(--time-slot-hover);
-  
-  --color-event-default: var(--primary-color);
-  --color-event-text: white;
-  
-  --color-button-primary-bg: var(--primary-color);
-  --color-button-primary-text: white;
-  --color-button-primary-hover: var(--primary-hover);
-  
-  --color-button-secondary-bg: var(--secondary-btn-bg);
-  --color-button-secondary-text: var(--secondary-btn-text);
-  --color-button-secondary-hover: var(--secondary-btn-hover);
-  
-  --color-input-bg: var(--input-bg);
-  --color-input-border: var(--border-color);
-  --color-input-focus: var(--primary-color);
+  --color-button-primary-active-hover: #1d4ed8;
+  --color-button-secondary-active-hover: #4b5563;
 }

@@ -1,4 +1,6 @@
 /* src/styles/themes/light.css - OPTIMIZADO */
+@import './theme-base.css';
+
 :root.theme-light {
   /* Colores base */
   --primary-color: #2D4B94;
@@ -69,83 +71,27 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   
-  /* Firma */
-  --signature-color: rgba(51, 51, 51, 0.3);
-  
   /* Slots de tiempo */
-  --time-slot-standard-bg: transparent;
   --time-slot-large-bg: rgba(0, 0, 0, 0.03);
   --time-slot-medium-bg: rgba(0, 0, 0, 0.04);
   --time-slot-short-bg: rgba(0, 0, 0, 0.06);
-  --time-slot-standard-hover: var(--time-slot-hover);
-  --time-slot-large-hover: var(--time-slot-hover);
-  --time-slot-medium-hover: var(--time-slot-hover);
-  --time-slot-short-hover: var(--time-slot-hover);
   --primary-color-rgb: 45, 75, 148;
   
-  /* Variables para diálogos */
+  /* Diálogos */
   --color-dialog-overlay: rgba(0, 0, 0, 0.5);
   --color-dialog-bg: var(--bg-color);
-  --color-dialog-title: var(--color-atlas-blue);
+  --color-dialog-title: var(--primary-color);
   --color-dialog-close: var(--gray-600);
   --color-dialog-close-hover: var(--gray-800);
   --color-dialog-footer: var(--gray-50);
-  --color-dialog-label: var(--text-color);
+  --color-dialog-header: var(--header-bg);
+  --color-dialog-body: var(--bg-color);
   --color-dialog-input-shadow: rgba(45, 75, 148, 0.2);
   --color-dialog-error-bg: rgba(229, 57, 53, 0.1);
   --danger-color-rgb: 229, 57, 53;
-
-  /* Compatibilidad con variables originales */
-  --color-atlas-blue: #2D4B94;
-  --color-modular-green: #26A69A;
-  --color-structure-gray: #546E7A;
-  --color-insight-yellow: #FFB300;
+  
+  /* Específicos no derivados */
   --color-custom-purple: #7E57C2;
-  --color-alarm-red: #E53935;
-  
-  --color-background: #FFFFFF;
-  --color-text: #333333;
-  --color-text-secondary: #666666;
-  --color-border: #E0E0E0;
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  
-  --color-sidebar-bg: #F5F5F5;
-  --color-sidebar-text: #333333;
-  --color-sidebar-border: rgba(0, 0, 0, 0.1);
-  --color-sidebar-hover: rgba(0, 0, 0, 0.05);
-  --color-sidebar-active: rgba(45, 75, 148, 0.1);
-  
-  --color-calendar-background: #FFFFFF;
-  --color-calendar-header: #F5F5F5;
-  --color-calendar-grid: #FFFFFF;
-  --color-calendar-grid-border: #E0E0E0;
-  --color-calendar-time-label: #666666;
-  --color-calendar-day-header: #333333;
-  --color-calendar-today: #E3F2FD;
-  --color-calendar-slot-hover: #F0F7FF;
-  
-  --color-event-default: #2D4B94;
-  --color-event-text: #FFFFFF;
-  
-  --color-input-bg: #FFFFFF;
-  --color-input-border: #E0E0E0;
-  --color-input-focus: #2D4B94;
-  
-  --color-button-primary-bg: #2D4B94;
-  --color-button-primary-text: #FFFFFF;
-  --color-button-primary-hover: #1A3A7D;
-  --color-button-primary-active: #2D4B94;
   --color-button-primary-active-hover: #3A5CA5;
-
-  --color-button-secondary-bg: #F0F0F0;
-  --color-button-secondary-text: #333333;
-  --color-button-secondary-hover: #E0E0E0;
-  --color-button-secondary-active: #2D4B94;
   --color-button-secondary-active-hover: #3A5CA5;
-  
-  --color-button-active-text: #FFFFFF;
-  
-  --color-button-danger-bg: #E53935;
-  --color-button-danger-text: #FFFFFF;
-  --color-button-danger-hover: #C62828;
 }

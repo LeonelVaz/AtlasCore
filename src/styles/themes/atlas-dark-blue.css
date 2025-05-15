@@ -1,4 +1,6 @@
 /* src/styles/themes/atlas-dark-blue.css - OPTIMIZADO */
+@import './theme-base.css';
+
 :root.theme-atlas-dark-blue {
   /* Colores base */
   --primary-color: #3F51B5;
@@ -68,7 +70,6 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
   
   /* Slots de tiempo */
-  --time-slot-standard-bg: transparent;
   --time-slot-large-bg: rgba(255, 255, 255, 0.02);
   --time-slot-medium-bg: rgba(255, 255, 255, 0.04);
   --time-slot-short-bg: rgba(255, 255, 255, 0.08);
@@ -81,56 +82,14 @@
   --color-dialog-close: var(--gray-400);
   --color-dialog-close-hover: var(--gray-200);
   --color-dialog-footer: rgba(26, 34, 51, 0.8);
+  --color-dialog-header: #16213E;
+  --color-dialog-body: #1E2A45;
   --color-dialog-input-shadow: rgba(63, 81, 181, 0.3);
   --color-dialog-error-bg: rgba(239, 83, 80, 0.2);
   --danger-color-rgb: 239, 83, 80;
   
-  /* Compatibilidad */
-  --color-atlas-blue: #3F51B5;
-  --color-modular-green: #26A69A;
-  --color-structure-gray: #78909C;
-  --color-insight-yellow: #FFB300;
+  /* Específicos no derivados */
   --color-custom-purple: #9575CD;
-  --color-alarm-red: #EF5350;
-  
-  --color-background: #121212;
-  --color-text: #EEEEEE;
-  --color-text-secondary: #AAAAAA;
-  --color-border: #333333;
-  --color-shadow: rgba(0, 0, 0, 0.3);
-  
-  --color-sidebar-bg: #1A2233;
-  --color-sidebar-text: #FFFFFF;
-  --color-sidebar-border: rgba(255, 255, 255, 0.1);
-  --color-sidebar-hover: rgba(255, 255, 255, 0.1);
-  --color-sidebar-active: rgba(63, 81, 181, 0.3);
-  
-  --color-calendar-background: #1A2233;
-  --color-calendar-header: #16213E;
-  --color-calendar-grid: #1E2A45;
-  --color-calendar-grid-border: #2C3A57;
-  --color-calendar-time-label: #AAAAAA;
-  --color-calendar-day-header: #EEEEEE;
-  --color-calendar-today: #242F4B;
-  --color-calendar-slot-hover: #273658;
-  
-  --color-event-default: #3F51B5;
-  --color-event-text: #FFFFFF;
-  
-  --color-input-bg: #2A2A2A;
-  --color-input-border: #444444;
-  --color-input-focus: #3F51B5;
-  
-  --color-button-primary-bg: #3F51B5;
-  --color-button-primary-text: #FFFFFF;
-  --color-button-primary-hover: #344397;
-  --color-button-primary-active: #2C387E;
-  
-  --color-button-secondary-bg: #2A2A2A;
-  --color-button-secondary-text: #EEEEEE;
-  --color-button-secondary-hover: #3D3D3D;
-  --color-button-secondary-active: #3F51B5;
-  
-  --color-button-danger-bg: #EF5350;
-  --color-button-danger-text: #FFFFFF;
+  --color-button-primary-active-hover: #2C387E;
+  --color-button-secondary-active-hover: #3A4989;
 }
