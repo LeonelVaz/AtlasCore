@@ -1,4 +1,3 @@
-// use-calendar-events.jsx
 import { useState, useEffect } from 'react';
 import eventBus, { EventCategories } from '../core/bus/event-bus';
 import storageService from '../services/storage-service';
@@ -20,9 +19,7 @@ function useCalendarEvents() {
       loadEvents
     );
     
-    return () => { 
-      unsubscribe && unsubscribe(); 
-    };
+    return () => unsubscribe && unsubscribe();
   }, []);
 
   // Cargar eventos desde almacenamiento
@@ -31,7 +28,7 @@ function useCalendarEvents() {
       const storedEvents = await storageService.get(STORAGE_KEYS.EVENTS, []);
       
       if (!Array.isArray(storedEvents)) {
-        console.error('Error: Los datos cargados no son un array válido de eventos');
+        console.error('Los datos cargados no son un array válido');
         setEvents([]);
         return;
       }
@@ -39,18 +36,13 @@ function useCalendarEvents() {
       // Filtrar eventos válidos
       const validEvents = storedEvents.filter(event => {
         try {
-          if (!event || typeof event !== 'object') return false;
-          if (!event.id || !event.title) return false;
-          if (!event.start || !event.end) return false;
+          if (!event?.id || !event?.title || !event?.start || !event?.end) return false;
           
           const startDate = new Date(event.start);
           const endDate = new Date(event.end);
           
-          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
-          
-          return true;
+          return !isNaN(startDate.getTime()) && !isNaN(endDate.getTime());
         } catch (error) {
-          console.error('Error al procesar fechas del evento:', error, event);
           return false;
         }
       });
@@ -62,16 +54,11 @@ function useCalendarEvents() {
     }
   };
 
-  // Guardar eventos en almacenamiento
+  // Guardar eventos
   const saveEvents = async (updatedEvents) => {
     try {
-      if (!Array.isArray(updatedEvents)) {
-        console.error('Error: Intentando guardar eventos que no son un array');
-        return false;
-      }
-      
-      const result = await storageService.set(STORAGE_KEYS.EVENTS, updatedEvents);
-      return result;
+      if (!Array.isArray(updatedEvents)) return false;
+      return await storageService.set(STORAGE_KEYS.EVENTS, updatedEvents);
     } catch (error) {
       console.error('Error al guardar eventos:', error);
       return false;
@@ -83,7 +70,7 @@ function useCalendarEvents() {
     try {
       const newEventWithId = {
         ...eventData,
-        id: Date.now().toString() // ID único basado en timestamp
+        id: Date.now().toString()
       };
       
       const updatedEvents = [...events, newEventWithId];
@@ -142,12 +129,9 @@ function useCalendarEvents() {
     }
   };
 
-  // Obtener eventos actuales
-  const getEvents = () => events;
-
   return {
     events,
-    getEvents,
+    getEvents: () => events,
     loadEvents,
     saveEvents,
     createEvent,

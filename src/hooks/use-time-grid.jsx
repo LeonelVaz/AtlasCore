@@ -1,4 +1,3 @@
-// use-time-grid.jsx (optimizado)
 import { useState, useEffect, useCallback } from 'react';
 import { formatHour } from '../utils/date-utils';
 import { DEFAULT_HOUR_CELL_HEIGHT, STORAGE_KEYS } from '../core/config/constants';
@@ -7,7 +6,6 @@ import eventBus from '../core/bus/event-bus';
 
 function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL_HEIGHT) {
   const [customSlots, setCustomSlots] = useState({});
-  const [gridHeight, setGridHeight] = useState(cellHeight);
   const [isLoading, setIsLoading] = useState(true);
   
   // Cargar franjas personalizadas
@@ -53,7 +51,7 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   }, [customSlots, isLoading]);
 
   // Funciones de utilidad
-  const recalculateSlotDurations = (hour, slots) => {
+  const recalculateSlotDurations = useCallback((hour, slots) => {
     const sortedSlots = [...slots].sort((a, b) => a.minutes - b.minutes);
     
     return sortedSlots.map((slot, index) => {
@@ -62,12 +60,11 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
         : 60 - slot.minutes;
       return { ...slot, duration };
     });
-  };
+  }, []);
 
   const validateSubdivisionOrder = useCallback((hour, minutes) => {
     const hourSlots = customSlots[hour] || [];
     if (minutes === 45 && !hourSlots.some(slot => slot.minutes === 30)) {
-      console.warn(`No se puede crear franja a las ${hour}:45 sin crear primero franja a las ${hour}:30`);
       return false;
     }
     return true;
@@ -76,24 +73,15 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   // Agregar franja horaria
   const addCustomTimeSlot = useCallback((hour, minutes) => {
     try {
-      if (hour < 0 || hour >= 24 || minutes < 0 || minutes >= 60) {
-        console.error('Parámetros de franja horaria inválidos:', hour, minutes);
-        return false;
-      }
+      if (hour < 0 || hour >= 24 || minutes < 0 || minutes >= 60) return false;
       
       // Ajustar a múltiplo de 15
       const validMinutes = Math.round(minutes / 15) * 15;
-      if (validMinutes !== minutes) {
-        console.warn(`Minutos ajustados de ${minutes} a ${validMinutes}`);
-        minutes = validMinutes;
-      }
+      minutes = validMinutes;
       
       // Verificar si ya existe
       const hourSlots = customSlots[hour] || [];
-      if (hourSlots.some(slot => slot.minutes === minutes)) {
-        console.warn(`La franja ${hour}:${minutes} ya existe`);
-        return false;
-      }
+      if (hourSlots.some(slot => slot.minutes === minutes)) return false;
       
       if (!validateSubdivisionOrder(hour, minutes)) return false;
       
@@ -109,21 +97,15 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
       console.error('Error al agregar franja horaria:', error);
       return false;
     }
-  }, [customSlots, validateSubdivisionOrder]);
+  }, [customSlots, validateSubdivisionOrder, recalculateSlotDurations]);
 
   // Eliminar franja horaria
   const removeCustomTimeSlot = useCallback((hour, minutes) => {
     try {
-      if (hour < 0 || hour >= 24 || minutes <= 0 || minutes >= 60) {
-        console.error('Parámetros de franja horaria inválidos:', hour, minutes);
-        return false;
-      }
+      if (hour < 0 || hour >= 24 || minutes <= 0 || minutes >= 60) return false;
       
       const hourSlots = customSlots[hour] || [];
-      if (!hourSlots.some(slot => slot.minutes === minutes)) {
-        console.warn(`La franja ${hour}:${minutes} no existe`);
-        return false;
-      }
+      if (!hourSlots.some(slot => slot.minutes === minutes)) return false;
       
       setCustomSlots(prev => {
         const updatedSlots = { ...prev };
@@ -143,19 +125,14 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
       console.error('Error al eliminar franja horaria:', error);
       return false;
     }
-  }, [customSlots]);
+  }, [customSlots, recalculateSlotDurations]);
 
   // Verificadores
   const canAddIntermediateSlot = useCallback((hour, minutes) => {
     const hourSlots = customSlots[hour] || [];
     
-    if (minutes === 0) {
-      return !hourSlots.some(slot => slot.minutes === 30);
-    }
-    
-    if (minutes === 30) {
-      return !hourSlots.some(slot => slot.minutes === 45);
-    }
+    if (minutes === 0) return !hourSlots.some(slot => slot.minutes === 30);
+    if (minutes === 30) return !hourSlots.some(slot => slot.minutes === 45);
     
     return false;
   }, [customSlots]);
@@ -166,7 +143,50 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
            !hourSlots.some(slot => slot.minutes === 15);
   }, [customSlots]);
 
-  // Verificar solapamientos
+  // Verificar eventos
+  const shouldShowEventStart = useCallback((event, day, hour, minutes = 0, duration = 60) => {
+    try {
+      if (!event?.start) return false;
+      
+      const eventStart = new Date(event.start);
+      if (isNaN(eventStart.getTime())) return false;
+      
+      const sameDay = (
+        eventStart.getDate() === day.getDate() &&
+        eventStart.getMonth() === day.getMonth() &&
+        eventStart.getFullYear() === day.getFullYear()
+      );
+      
+      if (!sameDay) return false;
+      
+      const cellStartMinutes = hour * 60 + minutes;
+      const cellEndMinutes = cellStartMinutes + duration;
+      const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+      
+      return eventStartMinutes >= cellStartMinutes && eventStartMinutes < cellEndMinutes;
+    } catch (error) {
+      return false;
+    }
+  }, []);
+
+  const isEventActiveAtStartOfDay = useCallback((event, day) => {
+    try {
+      if (!event?.start || !event?.end) return false;
+      
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
+      
+      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
+      
+      const dayStart = new Date(day);
+      dayStart.setHours(0, 0, 0, 0);
+      
+      return eventStart < dayStart && eventEnd > dayStart;
+    } catch (error) {
+      return false;
+    }
+  }, []);
+  
   const eventsOverlapInTimeSlot = useCallback((event1, event2, day = null) => {
     try {
       if (!event1?.start || !event1?.end || !event2?.start || !event2?.end) return false;
@@ -199,59 +219,11 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
       
       return start1 < end2 && start2 < end1;
     } catch (error) {
-      console.error('Error al verificar solapamiento:', error);
       return false;
     }
   }, []);
 
-  // Verificar inicio de evento
-  const shouldShowEventStart = useCallback((event, day, hour, minutes = 0, duration = 60) => {
-    try {
-      if (!event?.start) return false;
-      
-      const eventStart = new Date(event.start);
-      if (isNaN(eventStart.getTime())) return false;
-      
-      const sameDay = (
-        eventStart.getDate() === day.getDate() &&
-        eventStart.getMonth() === day.getMonth() &&
-        eventStart.getFullYear() === day.getFullYear()
-      );
-      
-      if (!sameDay) return false;
-      
-      const cellStartMinutes = hour * 60 + minutes;
-      const cellEndMinutes = cellStartMinutes + duration;
-      const eventStartMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
-      
-      return eventStartMinutes >= cellStartMinutes && eventStartMinutes < cellEndMinutes;
-    } catch (error) {
-      console.error('Error al verificar inicio de evento:', error);
-      return false;
-    }
-  }, []);
-
-  // Verificar evento activo al inicio del día
-  const isEventActiveAtStartOfDay = useCallback((event, day) => {
-    try {
-      if (!event?.start || !event?.end) return false;
-      
-      const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
-      
-      if (isNaN(eventStart.getTime()) || isNaN(eventEnd.getTime())) return false;
-      
-      const dayStart = new Date(day);
-      dayStart.setHours(0, 0, 0, 0);
-      
-      return eventStart < dayStart && eventEnd > dayStart;
-    } catch (error) {
-      console.error('Error al verificar evento activo al inicio del día:', error);
-      return false;
-    }
-  }, []);
-
-  // Calcular posición relativa del evento
+  // Calcular posición
   const getEventPositionInSlot = useCallback((event, hour, minutes = 0, duration = 60, cellHeight = 60) => {
     try {
       if (!event?.start) return { offsetPercent: 0, offsetPixels: 0 };
@@ -269,7 +241,6 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
       
       return { offsetPercent, offsetPixels };
     } catch (error) {
-      console.error('Error al calcular posición del evento:', error);
       return { offsetPercent: 0, offsetPixels: 0 };
     }
   }, []);
@@ -281,27 +252,16 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
       : `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   }, []);
 
-  // Ajustar altura
-  const setHourCellHeight = useCallback((newHeight) => {
-    if (newHeight > 0) setGridHeight(newHeight);
-  }, []);
-
   // Generar horas 
   const hours = [];
   for (let i = startHour; i < endHour; i++) {
     hours.push(i);
   }
 
-  // Actualizar gridHeight si es necesario
-  if (gridHeight !== cellHeight) {
-    setGridHeight(cellHeight);
-  }
-
   return {
     hours,
     customSlots,
-    gridHeight,
-    setHourCellHeight,
+    gridHeight: cellHeight,
     shouldShowEventStart,
     isEventActiveAtStartOfDay,
     formatTimeSlot,
@@ -309,7 +269,6 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
     removeCustomTimeSlot,
     canAddIntermediateSlot,
     canAddIntermediateSlotAt15,
-    validateSubdivisionOrder,
     isLoading,
     getEventPositionInSlot,
     eventsOverlapInTimeSlot

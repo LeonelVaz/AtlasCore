@@ -1,4 +1,3 @@
-// src/components/calendar/calendar-main.jsx con suscripción a eventos
 import React, { useState, useEffect } from 'react';
 import { registerModule, unregisterModule } from '../../core/module/module-registry';
 import WeekView from './week-view';
@@ -14,96 +13,62 @@ import { CALENDAR_VIEWS, SNAP_VALUES, STORAGE_KEYS } from '../../core/config/con
 import storageService from '../../services/storage-service';
 import eventBus from '../../core/bus/event-bus';
 
-/**
- * Componente principal del calendario con vista semanal y diaria
- */
 function CalendarMain() {
-  // Usar el hook personalizado para gestión de eventos
+  // Hooks para gestión de eventos
   const { 
-    events, 
-    getEvents, 
-    createEvent, 
-    updateEvent, 
-    deleteEvent, 
-    saveEvents 
+    events, getEvents, createEvent, updateEvent, deleteEvent, saveEvents 
   } = useCalendarEvents();
 
-  // Estado de la vista y snap
+  // Estados
   const [view, setView] = useState(CALENDAR_VIEWS.WEEK);
-  // Inicializar snap como desactivado (NONE = 0)
   const [snapValue, setSnapValue] = useState(SNAP_VALUES.NONE);
-  
-  // NUEVO: Estado para el número máximo de eventos simultáneos
   const [maxSimultaneousEvents, setMaxSimultaneousEvents] = useState(3);
   
-  // Usar hook de navegación
+  // Hook de navegación
   const {
-    currentDate,
-    selectedDay,
-    setSelectedDay,
-    goToPreviousWeek,
-    goToNextWeek,
-    goToCurrentWeek,
-    goToPreviousDay,
-    goToNextDay,
-    goToToday
+    currentDate, selectedDay, setSelectedDay, 
+    goToPreviousWeek, goToNextWeek, goToCurrentWeek,
+    goToPreviousDay, goToNextDay, goToToday
   } = useCalendarNavigation();
   
-  // Usar hook de formulario de eventos
+  // Hook de formulario de eventos
   const {
-    selectedEvent,
-    showEventForm,
-    formError,
-    newEvent,
-    handleEventClick,
-    handleCellClick,
-    handleEventFormChange,
-    handleCloseForm,
-    handleSaveEvent,
-    handleDeleteEvent
+    selectedEvent, showEventForm, formError, newEvent,
+    handleEventClick, handleCellClick, handleEventFormChange,
+    handleCloseForm, handleSaveEvent, handleDeleteEvent
   } = useEventForm(createEvent, updateEvent, deleteEvent, events, maxSimultaneousEvents);
 
-  // NUEVO: Cargar configuración de eventos simultáneos y suscribirse a cambios
+  // Cargar configuración de eventos simultáneos
   useEffect(() => {
     const loadMaxSimultaneousEvents = async () => {
       try {
-        // Cargar desde almacenamiento o usar valor por defecto (3)
         const savedValue = await storageService.get(STORAGE_KEYS.MAX_SIMULTANEOUS_EVENTS, 3);
-        
-        // Asegurar que el valor esté en el rango válido (1-10)
         const validValue = Math.min(10, Math.max(1, parseInt(savedValue) || 3));
         setMaxSimultaneousEvents(validValue);
       } catch (error) {
         console.error('Error al cargar configuración de eventos simultáneos:', error);
-        // Mantener el valor por defecto
       }
     };
     
     loadMaxSimultaneousEvents();
     
-    // Suscribirse a cambios en la configuración
+    // Suscribirse a cambios
     const unsubscribe = eventBus.subscribe(
       'calendar.maxSimultaneousEventsChanged', 
-      (data) => {
-        console.log('Actualización de eventos simultáneos:', data.value);
-        setMaxSimultaneousEvents(data.value);
-      }
+      (data) => setMaxSimultaneousEvents(data.value)
     );
     
-    return () => {
-      unsubscribe && unsubscribe();
-    };
+    return () => unsubscribe && unsubscribe();
   }, []);
 
-  // Registrar módulo al iniciar
+  // Registrar módulo
   useEffect(() => {
-    // Registrar API del calendario
+    // API del calendario
     const moduleAPI = {
       getEvents,
       createEvent,
       updateEvent,
       deleteEvent,
-      // NUEVO: Exponer configuración de eventos simultáneos
       getMaxSimultaneousEvents: () => maxSimultaneousEvents,
       setMaxSimultaneousEvents: (value) => {
         const validValue = Math.min(10, Math.max(1, value));
@@ -111,35 +76,30 @@ function CalendarMain() {
         return validValue;
       }
     };
-    registerModule('calendar', moduleAPI);
     
-    return () => { 
-      unregisterModule('calendar'); 
-    };
-  }, [maxSimultaneousEvents]);
+    registerModule('calendar', moduleAPI);
+    return () => unregisterModule('calendar');
+  }, [maxSimultaneousEvents, getEvents, createEvent, updateEvent, deleteEvent]);
 
-  // Configurar herramientas de depuración
+  // Debug tools
   useEffect(() => {
-    const cleanup = setupDebugTools(events, createEvent, updateEvent, saveEvents);
-    return cleanup;
-  }, [events]);
+    return setupDebugTools(events, createEvent, updateEvent, saveEvents);
+  }, [events, createEvent, updateEvent, saveEvents]);
 
   // Cambiar entre vistas
   const toggleView = (newView, date = null) => {
     setView(newView);
-    if (date) {
-      setSelectedDay(new Date(date));
-    }
+    if (date) setSelectedDay(new Date(date));
   };
 
-  // Obtener el mes y año actual para mostrar en el título
+  // Obtener mes y año para el título
   const getFormattedMonthYear = () => {
     const month = new Date(currentDate).toLocaleDateString('es-ES', { month: 'long' });
     const year = new Date(currentDate).getFullYear();
     return `${month.charAt(0).toUpperCase() + month.slice(1)} de ${year}`;
   };
 
-  // Renderizar botones de navegación según la vista actual
+  // Botones de navegación según la vista
   const renderNavigationButtons = () => {
     if (view === CALENDAR_VIEWS.WEEK) {
       return (
@@ -168,6 +128,17 @@ function CalendarMain() {
     }
   };
 
+  // Título según la vista
+  const getTitle = () => {
+    if (view === CALENDAR_VIEWS.WEEK) {
+      return getFormattedMonthYear();
+    } else {
+      return new Date(selectedDay).toLocaleDateString('es-ES', { 
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+    }
+  };
+
   return (
     <div className="calendar-container">
       <div className="calendar-header">
@@ -176,12 +147,7 @@ function CalendarMain() {
         </div>
         
         <div className="calendar-title">
-          <h2>{view === CALENDAR_VIEWS.WEEK ? getFormattedMonthYear() : 
-               new Date(selectedDay).toLocaleDateString('es-ES', { 
-                 month: 'long', 
-                 year: 'numeric',
-                 day: 'numeric'
-               })}</h2>
+          <h2>{getTitle()}</h2>
         </div>
         
         <div className="calendar-view-toggle">

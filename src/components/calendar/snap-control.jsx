@@ -1,16 +1,13 @@
-// src/components/calendar/snap-control.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { SNAP_VALUES } from '../../core/config/constants';
 
-/**
- * Componente de control de imán (snap) para alineación automática de eventos
- */
 function SnapControl({ snapValue, onSnapChange }) {
   const [showMenu, setShowMenu] = useState(false);
+  const [customValue, setCustomValue] = useState(5);
   const menuRef = useRef(null);
   const containerRef = useRef(null);
   
-  // Opciones predefinidas de snap usando constantes
+  // Opciones predefinidas
   const snapOptions = [
     { label: 'Desactivado', value: SNAP_VALUES.NONE },
     { label: 'Básico (1h)', value: SNAP_VALUES.BASIC },
@@ -19,17 +16,14 @@ function SnapControl({ snapValue, onSnapChange }) {
     { label: 'Personalizado', value: 'custom' }
   ];
   
-  // Estado para valor personalizado
-  const [customValue, setCustomValue] = useState(5);
-  
   // Cerrar menú cuando se hace clic fuera
-  const handleClickOutside = (event) => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
-      setShowMenu(false);
-    }
-  };
-  
   useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    }
+    
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
@@ -41,30 +35,36 @@ function SnapControl({ snapValue, onSnapChange }) {
     };
   }, [showMenu]);
   
-  // Obtener etiqueta para mostrar
+  // Medir contenedor para ajustar menú
+  useEffect(() => {
+    if (containerRef.current && menuRef.current && showMenu) {
+      const containerWidth = containerRef.current.offsetWidth;
+      menuRef.current.style.minWidth = `${Math.max(containerWidth, 200)}px`;
+    }
+  }, [showMenu]);
+  
+  // Obtener etiqueta
   const getSnapLabel = () => {
-    if (snapValue === SNAP_VALUES.NONE) return 'Off';
-    if (snapValue === SNAP_VALUES.BASIC) return '1h';
-    if (snapValue === SNAP_VALUES.MEDIUM) return '30m';
-    if (snapValue === SNAP_VALUES.PRECISE) return '15m';
-    return `${snapValue}m`;
+    switch (snapValue) {
+      case SNAP_VALUES.NONE: return 'Off';
+      case SNAP_VALUES.BASIC: return '1h';
+      case SNAP_VALUES.MEDIUM: return '30m';
+      case SNAP_VALUES.PRECISE: return '15m';
+      default: return `${snapValue}m`;
+    }
   };
   
   // Manejar selección de opción
   const handleOptionSelect = (value) => {
-    if (value === 'custom') {
-      // Si es personalizado, no cerrar el menú
-      // y mostrar el input para valor personalizado
-    } else {
-      onSnapChange(value);
-      setShowMenu(false);
-    }
+    if (value === 'custom') return;
+    onSnapChange(value);
+    setShowMenu(false);
   };
   
   // Manejar cambio en valor personalizado
   const handleCustomValueChange = (e) => {
     const value = parseInt(e.target.value) || 1;
-    setCustomValue(Math.max(1, Math.min(60, value))); // Limitar entre 1 y 60 minutos
+    setCustomValue(Math.max(1, Math.min(60, value)));
   };
   
   // Aplicar valor personalizado
@@ -72,21 +72,12 @@ function SnapControl({ snapValue, onSnapChange }) {
     onSnapChange(customValue);
     setShowMenu(false);
   };
-
-  // Medimos el ancho del contenedor para ajustar el menú
-  useEffect(() => {
-    if (containerRef.current && menuRef.current && showMenu) {
-      const containerWidth = containerRef.current.offsetWidth;
-      // Asegurar que el menú sea al menos tan ancho como el contenedor
-      menuRef.current.style.minWidth = `${Math.max(containerWidth, 200)}px`;
-    }
-  }, [showMenu]);
   
   return (
     <div className="snap-control-container" ref={containerRef}>
       <button 
         className={`snap-control-toggle ${snapValue > 0 ? 'active' : ''}`}
-        onClick={() => onSnapChange(snapValue > 0 ? SNAP_VALUES.NONE : SNAP_VALUES.PRECISE)} // Modificado para usar PRECISE (15m) en lugar de BASIC
+        onClick={() => onSnapChange(snapValue > 0 ? SNAP_VALUES.NONE : SNAP_VALUES.PRECISE)}
         title="Activar/Desactivar imán"
       >
         <span className="snap-icon">⌁</span>
@@ -112,7 +103,6 @@ function SnapControl({ snapValue, onSnapChange }) {
             </div>
           ))}
           
-          {/* Sección para valor personalizado */}
           <div className="snap-custom-section">
             <div className="snap-custom-input">
               <input 

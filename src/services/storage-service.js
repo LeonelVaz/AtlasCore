@@ -17,7 +17,6 @@ class StorageService {
   initStorage() {
     try {
       isElectron() ? this.initElectronStore() : this.initLocalStorage();
-      console.log('Servicio de almacenamiento inicializado');
     } catch (error) {
       console.error('Error al inicializar almacenamiento:', error);
       this.initLocalStorage(); // Fallback a localStorage
@@ -31,7 +30,6 @@ class StorageService {
           const value = localStorage.getItem(key);
           return value !== null ? JSON.parse(value) : defaultValue;
         } catch (error) {
-          console.error(`Error al obtener ${key}:`, error);
           return defaultValue;
         }
       },
@@ -41,7 +39,6 @@ class StorageService {
           localStorage.setItem(key, JSON.stringify(value));
           return true;
         } catch (error) {
-          console.error(`Error al guardar ${key}:`, error);
           return false;
         }
       },
@@ -51,7 +48,6 @@ class StorageService {
           localStorage.removeItem(key);
           return true;
         } catch (error) {
-          console.error(`Error al eliminar ${key}:`, error);
           return false;
         }
       },
@@ -61,7 +57,6 @@ class StorageService {
           localStorage.clear();
           return true;
         } catch (error) {
-          console.error('Error al limpiar localStorage:', error);
           return false;
         }
       }
@@ -76,7 +71,6 @@ class StorageService {
             const value = await window.electron.store.get(key);
             return value !== undefined ? value : defaultValue;
           } catch (error) {
-            console.error(`Error al obtener ${key}:`, error);
             return defaultValue;
           }
         },
@@ -86,7 +80,6 @@ class StorageService {
             await window.electron.store.set(key, value);
             return true;
           } catch (error) {
-            console.error(`Error al guardar ${key}:`, error);
             return false;
           }
         },
@@ -96,7 +89,6 @@ class StorageService {
             await window.electron.store.delete(key);
             return true;
           } catch (error) {
-            console.error(`Error al eliminar ${key}:`, error);
             return false;
           }
         },
@@ -106,36 +98,27 @@ class StorageService {
             await window.electron.store.clear();
             return true;
           } catch (error) {
-            console.error('Error al limpiar ElectronStore:', error);
             return false;
           }
         }
       };
     } else {
-      console.warn('ElectronStore no disponible, usando localStorage');
       this.initLocalStorage();
     }
   }
 
   async get(key, defaultValue = null) {
-    if (!this.storageAdapter) {
-      console.error('Storage no inicializado');
-      return defaultValue;
-    }
+    if (!this.storageAdapter) return defaultValue;
 
     try {
       return await this.storageAdapter.get(key, defaultValue);
     } catch (error) {
-      console.error(`Error en get(${key}):`, error);
       return defaultValue;
     }
   }
 
   async set(key, value) {
-    if (!this.storageAdapter) {
-      console.error('Storage no inicializado');
-      return false;
-    }
+    if (!this.storageAdapter) return false;
 
     try {
       const result = await this.storageAdapter.set(key, value);
@@ -150,16 +133,12 @@ class StorageService {
       
       return result;
     } catch (error) {
-      console.error(`Error en set(${key}):`, error);
       return false;
     }
   }
 
   async remove(key) {
-    if (!this.storageAdapter) {
-      console.error('Storage no inicializado');
-      return false;
-    }
+    if (!this.storageAdapter) return false;
 
     try {
       const result = await this.storageAdapter.remove(key);
@@ -170,16 +149,12 @@ class StorageService {
       
       return result;
     } catch (error) {
-      console.error(`Error en remove(${key}):`, error);
       return false;
     }
   }
 
   async clear() {
-    if (!this.storageAdapter) {
-      console.error('Storage no inicializado');
-      return false;
-    }
+    if (!this.storageAdapter) return false;
 
     try {
       const result = await this.storageAdapter.clear();
@@ -190,7 +165,6 @@ class StorageService {
       
       return result;
     } catch (error) {
-      console.error('Error en clear():', error);
       return false;
     }
   }

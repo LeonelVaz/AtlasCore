@@ -1,4 +1,3 @@
-// use-event-drag.jsx (optimizado)
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
 
@@ -8,17 +7,10 @@ export function useEventDrag({
 }) {
   const [dragging, setDragging] = useState(false);
   const dragInfo = useRef({
-    dragging: false,
-    startX: 0, startY: 0, deltaX: 0, deltaY: 0, virtualDeltaY: undefined,
+    dragging: false, startX: 0, startY: 0, deltaX: 0, deltaY: 0, virtualDeltaY: undefined,
     startTime: 0, endTime: 0, moved: false, wasActuallyDragged: false,
     originalDuration: null, originalStartMinutes: null, originalEvent: null,
-    grid: {
-      containerElement: null, gridRect: null, dayWidth: 0, hourHeight: gridSize,
-      days: [], dayElements: [], inWeekView: false, startDay: null,
-      startHour: 0, startMinute: 0, timeSlots: [], startSlot: null,
-      targetSlot: null, targetHour: 0, targetMinutes: 0, targetEventsCount: 0
-    },
-    highlightedCell: null, wouldExceedLimit: false
+    grid: null, highlightedCell: null, wouldExceedLimit: false
   });
 
   // Limpieza
@@ -26,88 +18,21 @@ export function useEventDrag({
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      removeAllHighlights();
-      removeAllLimitIndicators();
+      removeHighlights();
       document.body.classList.remove('dragging-active', 'snap-active');
     };
   }, []);
 
   // Funciones auxiliares
-  const removeAllLimitIndicators = () => {
-    document.querySelectorAll('.exceed-limit').forEach(cell => {
-      cell.classList.remove('exceed-limit');
-    });
-  };
-
-  const highlightTargetSlot = (targetSlot) => {
-    removeAllHighlights();
-    if (targetSlot) {
-      targetSlot.classList.add(dragInfo.current.wouldExceedLimit ? 'exceed-limit-slot' : 'drag-target-active');
-      dragInfo.current.highlightedCell = targetSlot;
-    }
-  };
-
-  const removeAllHighlights = () => {
+  const removeHighlights = () => {
     if (dragInfo.current.highlightedCell) {
       dragInfo.current.highlightedCell.classList.remove('drag-target-active', 'exceed-limit-slot');
       dragInfo.current.highlightedCell = null;
     }
-    document.querySelectorAll('.drag-target-active, .exceed-limit-slot').forEach(cell => {
-      cell.classList.remove('drag-target-active', 'exceed-limit-slot');
+    document.querySelectorAll('.drag-target-active, .exceed-limit-slot, .exceed-limit').forEach(cell => {
+      cell.classList.remove('drag-target-active', 'exceed-limit-slot', 'exceed-limit');
     });
   };
-
-  function findBestGuessSlot(clientX, clientY, dragInfo) {
-    if (!dragInfo.grid?.timeSlots?.length) return null;
-    
-    let nearestSlot = null;
-    let minDistance = Infinity;
-    
-    for (const slot of dragInfo.grid.timeSlots) {
-      if (!slot.classList.contains('calendar-time-slot') && 
-          !slot.classList.contains('day-view-hour-slot')) continue;
-      
-      const rect = slot.getBoundingClientRect();
-      if (clientX >= rect.left && clientX <= rect.right) {
-        const distance = Math.min(
-          Math.abs(clientY - rect.top),
-          Math.abs(clientY - rect.bottom)
-        );
-        
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestSlot = slot;
-        }
-      }
-    }
-    
-    if (nearestSlot && dragInfo.grid.startSlot) {
-      const targetRect = nearestSlot.getBoundingClientRect();
-      const originalRect = dragInfo.grid.startSlot.getBoundingClientRect();
-      dragInfo.virtualDeltaY = targetRect.top - originalRect.top;
-      dragInfo.grid.targetSlot = nearestSlot;
-      
-      const hour = parseInt(nearestSlot.getAttribute('data-hour') || '0', 10);
-      const minutes = parseInt(nearestSlot.getAttribute('data-minutes') || '0', 10);
-      dragInfo.grid.targetHour = hour;
-      dragInfo.grid.targetMinutes = minutes;
-      
-      const currentEventId = event.id;
-      let eventsCount = 0;
-      
-      nearestSlot.querySelectorAll('.event-wrapper').forEach(wrapper => {
-        const eventEl = wrapper.querySelector('.calendar-event');
-        if (eventEl && eventEl.getAttribute('data-event-id') !== currentEventId) {
-          eventsCount++;
-        }
-      });
-      
-      dragInfo.grid.targetEventsCount = eventsCount;
-      dragInfo.wouldExceedLimit = eventsCount >= maxSimultaneousEvents;
-    }
-    
-    return nearestSlot;
-  }
 
   // Manejadores de eventos
   const handleDragStart = (e) => {
@@ -116,37 +41,26 @@ export function useEventDrag({
     e.preventDefault();
     e.stopPropagation();
     
-    if (!event?.start || !event?.end) {
-      console.error('Error: Evento sin propiedades start/end', event);
-      return;
-    }
+    if (!event?.start || !event?.end) return;
     
     try {
-      removeAllLimitIndicators();
+      removeHighlights();
       const gridInfo = initializeGridInfo(eventRef, gridSize, event);
       
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        console.error('Error: Fechas inválidas en el evento', event);
-        return;
-      }
-      
-      const durationMinutes = (endDate - startDate) / (1000 * 60);
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return;
       
       dragInfo.current = {
         dragging: true,
-        startX: e.clientX,
-        startY: e.clientY,
+        startX: e.clientX, startY: e.clientY,
         deltaX: 0, deltaY: 0, virtualDeltaY: undefined,
         startTime: Date.now(), endTime: 0, moved: false, wasActuallyDragged: false,
-        originalDuration: durationMinutes,
+        originalDuration: (endDate - startDate) / (1000 * 60),
         originalStartMinutes: startDate.getMinutes(),
         originalEvent: { ...event },
-        grid: gridInfo,
-        highlightedCell: null,
-        wouldExceedLimit: false
+        grid: gridInfo, highlightedCell: null, wouldExceedLimit: false
       };
       
       document.addEventListener('mousemove', handleMouseMove);
@@ -190,21 +104,8 @@ export function useEventDrag({
       if (targetSlot) {
         if (targetSlot.classList.contains('calendar-time-slot') || 
             targetSlot.classList.contains('day-view-hour-slot')) {
-            
-          const hour = parseInt(targetSlot.getAttribute('data-hour') || '0', 10);
-          const minutes = parseInt(targetSlot.getAttribute('data-minutes') || '0', 10);
-          const currentEventId = event.id;
-          let eventsCount = 0;
           
-          targetSlot.querySelectorAll('.event-wrapper').forEach(wrapper => {
-            const eventEl = wrapper.querySelector('.calendar-event');
-            if (eventEl && eventEl.getAttribute('data-event-id') !== currentEventId) {
-              eventsCount++;
-            }
-          });
-          
-          dragInfo.current.grid.targetHour = hour;
-          dragInfo.current.grid.targetMinutes = minutes;
+          const eventsCount = parseInt(targetSlot.getAttribute('data-events-count') || '0');
           dragInfo.current.grid.targetEventsCount = eventsCount;
           dragInfo.current.wouldExceedLimit = eventsCount >= maxSimultaneousEvents;
           
@@ -214,11 +115,11 @@ export function useEventDrag({
             eventRef.current?.classList.remove('cannot-place');
           }
           
-          highlightTargetSlot(targetSlot);
+          // Resaltar celda objetivo
+          removeHighlights();
+          targetSlot.classList.add(dragInfo.current.wouldExceedLimit ? 'exceed-limit-slot' : 'drag-target-active');
+          dragInfo.current.highlightedCell = targetSlot;
         }
-      } else if (dragInfo.current.grid?.timeSlots.length > 0) {
-        const bestGuessSlot = findBestGuessSlot(e.clientX, e.clientY, dragInfo.current);
-        if (bestGuessSlot) highlightTargetSlot(bestGuessSlot);
       }
     }
   };
@@ -231,15 +132,14 @@ export function useEventDrag({
     
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
-    removeAllHighlights();
-    removeAllLimitIndicators();
+    removeHighlights();
     document.body.classList.remove('dragging-active', 'snap-active');
     
     dragInfo.current.endTime = Date.now();
     const wasActuallyDragged = dragInfo.current.moved;
     const wasRealDrag = dragInfo.current.wasActuallyDragged;
     
-    if (!wasActuallyDragged) {
+    if (!wasActuallyDragged || dragInfo.current.wouldExceedLimit) {
       if (eventRef.current) {
         eventRef.current.classList.remove('dragging', 'cannot-place');
         eventRef.current.style.transform = '';
@@ -247,20 +147,7 @@ export function useEventDrag({
       }
       
       setDragging(false);
-      dragInfo.current = { dragging: false };
-      setBlockClicks(false);
-      return;
-    }
-    
-    if (dragInfo.current.wouldExceedLimit) {
-      if (eventRef.current) {
-        eventRef.current.style.transform = '';
-        eventRef.current.style.opacity = '1';
-        eventRef.current.classList.remove('dragging', 'cannot-place');
-      }
-      
-      setDragging(false);
-      setBlockClicks(true);
+      setBlockClicks(dragInfo.current.wouldExceedLimit);
       setTimeout(() => setBlockClicks(false), 500);
       
       dragInfo.current = { 
@@ -274,10 +161,7 @@ export function useEventDrag({
     
     if (wasActuallyDragged) {
       try {
-        if (!event?.start || !event?.end) {
-          console.error('Error: Evento sin propiedades start/end', event);
-          return;
-        }
+        if (!event?.start || !event?.end) return;
   
         const startDate = new Date(event.start);
         const endDate = new Date(event.end);
@@ -296,11 +180,9 @@ export function useEventDrag({
         if (snapValue === 0) {
           const hourDelta = deltaY / gridSize;
           const currentHour = startDate.getHours();
-          const currentMinutes = startDate.getMinutes();
           
           let newHour = currentHour + Math.floor(hourDelta);
-          let remainingMinutesFraction = hourDelta - Math.floor(hourDelta);
-          let newMinutes = currentMinutes + Math.round(remainingMinutesFraction * 60);
+          let newMinutes = startDate.getMinutes() + Math.round((hourDelta - Math.floor(hourDelta)) * 60);
           
           if (newMinutes >= 60) {
             newHour += 1;
@@ -373,14 +255,13 @@ export function useEventDrag({
         }
       }
       
-      // Manejar clics después del arrastre
-      document.addEventListener('click', function handleDocumentClick(evt) {
+      // Bloquear clics posteriores al arrastre
+      document.addEventListener('click', function blockClickAfterDrag(evt) {
         if (Date.now() - dragInfo.current.endTime < 300) {
           evt.stopPropagation();
           evt.preventDefault();
         }
-        document.removeEventListener('click', handleDocumentClick, true);
-        return false;
+        document.removeEventListener('click', blockClickAfterDrag, true);
       }, true);
       
       setBlockClicks(true);
@@ -391,18 +272,6 @@ export function useEventDrag({
         endTime: dragInfo.current.endTime,
         wasActuallyDragged: wasRealDrag
       };
-    } else {
-      if (eventRef.current) {
-        eventRef.current.classList.remove('dragging', 'cannot-place');
-        eventRef.current.style.transform = '';
-        eventRef.current.style.opacity = '1';
-      }
-      
-      setDragging(false);
-      setBlockClicks(true);
-      setTimeout(() => setBlockClicks(false), 500);
-      
-      dragInfo.current = { dragging: false };
     }
   };
 

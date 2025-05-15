@@ -1,10 +1,8 @@
-// src/core/config/constants.js (actualizado para incluir MAX_SIMULTANEOUS_EVENTS)
-
 /**
  * Constantes globales para la aplicación Atlas
  */
 
-// Constantes para temas de la aplicación
+// Temas
 export const THEMES = {
   LIGHT: 'light',
   DARK: 'dark',
@@ -13,14 +11,14 @@ export const THEMES = {
   DEEP_OCEAN: 'deep-ocean'
 };
 
-// Constantes para estilos de encabezado de días
+// Estilos de encabezado
 export const DAY_HEADER_STYLES = {
   DEFAULT: 'default',
   MINIMAL: 'minimal',
   DASHBOARD: 'dashboard'
 };
 
-// Constantes para visualización de horas
+// Visualización de horas
 export const TIME_DISPLAY_STYLES = {
   HIDDEN: 'hidden',
   START_ONLY: 'start-only',
@@ -28,14 +26,14 @@ export const TIME_DISPLAY_STYLES = {
   COMPACT: 'compact'
 };
 
-// Constantes para vistas del calendario
+// Vistas de calendario
 export const CALENDAR_VIEWS = {
   DAY: 'day',
   WEEK: 'week',
   MONTH: 'month'
 };
 
-// Constantes para valores de snap (imán)
+// Valores de snap
 export const SNAP_VALUES = {
   NONE: 0,
   PRECISE: 15,
@@ -43,7 +41,7 @@ export const SNAP_VALUES = {
   BASIC: 60
 };
 
-// Colores predefinidos para eventos
+// Colores predefinidos
 export const EVENT_COLORS = {
   ATLAS_BLUE: '#2D4B94',
   MODULAR_GREEN: '#26A69A',
@@ -53,14 +51,14 @@ export const EVENT_COLORS = {
   ALARM_RED: '#E53935'
 };
 
-// Constantes para operaciones de eventos
+// Operaciones de eventos
 export const EVENT_OPERATIONS = {
   CREATE: 'create',
   UPDATE: 'update',
   DELETE: 'delete'
 };
 
-// Constantes para almacenamiento
+// Almacenamiento
 export const STORAGE_KEYS = {
   EVENTS: 'atlas_events',
   SETTINGS: 'atlas_settings',
@@ -68,31 +66,29 @@ export const STORAGE_KEYS = {
   SNAP_VALUE: 'atlas_snap_value',
   TIME_SCALE: 'atlas_time_scale',
   CUSTOM_TIME_SLOTS: 'atlas_custom_time_slots',
-  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events' // Nueva clave para eventos simultáneos
+  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events'
 };
 
-// Constantes para tipos de franjas horarias
+// Tipos de franja horaria
 export const TIME_SLOT_TYPES = {
-  STANDARD: 'standard', // Franja de hora completa (60 minutos)
-  LARGE: 'large',       // Franja de duración grande (45 minutos)
-  MEDIUM: 'medium',     // Franja de duración media (30 minutos)
-  SHORT: 'short'        // Franja corta (15 minutos)
+  STANDARD: 'standard',
+  LARGE: 'large',
+  MEDIUM: 'medium',
+  SHORT: 'short'
 };
 
-// Constantes para el sistema de módulos
+// Tipos de módulos
 export const MODULE_TYPES = {
   CORE: 'core',
   PLUGIN: 'plugin',
   SERVICE: 'service'
 };
 
-// Duración predeterminada para nuevos eventos (en minutos)
+// Valores por defecto
 export const DEFAULT_EVENT_DURATION = 60;
-
-// Altura de celda de hora por defecto (en píxeles)
 export const DEFAULT_HOUR_CELL_HEIGHT = 60;
 
-// Nuevas constantes para escalas de tiempo
+// Escalas de tiempo
 export const TIME_SCALES = {
   COMPACT: {
     id: 'compact',
@@ -104,7 +100,7 @@ export const TIME_SCALES = {
     id: 'standard',
     name: 'Estándar',
     height: 60,
-    pixelsPerMinute: 60 / 60
+    pixelsPerMinute: 1
   },
   COMFORTABLE: {
     id: 'comfortable',

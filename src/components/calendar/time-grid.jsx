@@ -4,6 +4,86 @@ import useTimeGrid from '../../hooks/use-time-grid';
 import { TimeScaleContext } from '../../contexts/time-scale-context';
 import { TIME_SCALES } from '../../core/config/constants';
 
+// Componente para renderizar un evento individual
+const EventRenderer = ({ 
+  event, offsetPixels, heightPx, column, columnWidth, continuesNextDay, 
+  continuesFromPrevDay, isMicroEvent, gridSize, snapValue, 
+  customSlots, maxSimultaneousEvents, onEventClick, onUpdateEvent 
+}) => {
+  const eventStyle = {
+    position: 'absolute',
+    top: `${offsetPixels}px`,
+    height: `${heightPx}px`,
+    left: `calc(${column * columnWidth}% + 2px)`,
+    width: `calc(${columnWidth}% - 4px)`,
+    zIndex: 20
+  };
+  
+  const wrapperClass = `event-wrapper ${continuesNextDay ? 'continues-next-day' : ''} ${continuesFromPrevDay ? 'continues-from-prev-day' : ''}`;
+  
+  return (
+    <div className={wrapperClass} style={eventStyle}>
+      <EventItem
+        key={event.id}
+        event={event}
+        onClick={onEventClick}
+        onUpdate={(updatedEvent) => onUpdateEvent(updatedEvent.id, updatedEvent)}
+        continuesNextDay={continuesNextDay}
+        continuesFromPrevDay={continuesFromPrevDay}
+        gridSize={gridSize}
+        snapValue={snapValue}
+        isMicroEvent={isMicroEvent}
+        customSlots={customSlots}
+        maxSimultaneousEvents={maxSimultaneousEvents}
+      />
+    </div>
+  );
+};
+
+// Componente para renderizar franjas horarias
+const TimeSlotRow = ({ 
+  hour, day, dayIndex, onCellClick, onAddIntermediateClick, 
+  slotDuration, slotHeight, slotType, renderEvents 
+}) => {
+  const dateWithTime = new Date(day);
+  dateWithTime.setHours(hour, 0, 0, 0);
+  
+  return (
+    <div 
+      className={`calendar-cell calendar-time-slot ${slotType}`}
+      data-testid="calendar-time-slot"
+      data-hour={hour}
+      data-minutes={0}
+      onClick={() => onCellClick(dateWithTime, hour, 0, slotDuration)}
+      style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
+    >
+      {renderEvents && renderEvents(day, hour, 0, slotDuration)}
+    </div>
+  );
+};
+
+// Componente para renderizar franjas personalizadas
+const CustomTimeSlot = ({ 
+  hour, slot, day, dayIndex, slotDuration, slotHeight, 
+  onCellClick, renderEvents, slotType 
+}) => {
+  const dateWithTime = new Date(day);
+  dateWithTime.setHours(hour, slot.minutes, 0, 0);
+  
+  return (
+    <div 
+      className={`calendar-cell calendar-time-slot ${slotType}`}
+      data-testid="calendar-time-slot-custom"
+      data-hour={hour}
+      data-minutes={slot.minutes}
+      onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)}
+      style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
+    >
+      {renderEvents && renderEvents(day, hour, slot.minutes, slotDuration)}
+    </div>
+  );
+};
+
 function TimeGrid({ 
   days, events, onEventClick, onCellClick, onUpdateEvent, 
   snapValue, renderDayHeader, maxSimultaneousEvents = 3 
@@ -24,234 +104,169 @@ function TimeGrid({
 
   // Renderizar eventos continuos
   const renderContinuingEvents = (day) => {
-    try {
-      const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
+    const continuingEvents = events.filter(event => isEventActiveAtStartOfDay(event, day));
+    
+    return continuingEvents.map(event => {
+      const dayStart = new Date(day);
+      dayStart.setHours(0, 0, 0, 0);
       
-      return continuingEvents.map(event => {
-        const dayStart = new Date(day);
-        dayStart.setHours(0, 0, 0, 0);
-        
-        const dayEnd = new Date(day);
-        dayEnd.setHours(23, 59, 59, 999);
-        
-        const eventEnd = new Date(event.end);
-        const continuesNextDay = eventEnd > dayEnd;
-        const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
-        
-        // Calcular altura basada en duración visible
-        const durationMs = visibleEnd.getTime() - dayStart.getTime();
-        const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
-        const isMicroEvent = heightPx < 25;
-        
-        const eventStyle = {
-          position: 'absolute',
-          top: 0,
-          height: `${heightPx}px`,
-          left: '2px',
-          right: '2px',
-          zIndex: 20
-        };
-        
-        return (
-          <div 
-            className={`event-wrapper continues-from-prev-day ${continuesNextDay ? 'continues-next-day' : ''}`} 
-            style={eventStyle} 
-            key={`continuing-${event.id}-${day.getDate()}`}
-          >
-            <EventItem
-              key={event.id}
-              event={event}
-              onClick={onEventClick}
-              onUpdate={(updatedEvent) => onUpdateEvent(updatedEvent.id, updatedEvent)}
-              continuesNextDay={continuesNextDay}
-              continuesFromPrevDay={true}
-              gridSize={cellHeight}
-              snapValue={snapValue}
-              isMicroEvent={isMicroEvent}
-              customSlots={customSlots}
-              maxSimultaneousEvents={maxSimultaneousEvents}
-            />
-          </div>
-        );
-      });
-    } catch (error) {
-      console.error('Error al renderizar eventos continuos:', error);
-      return null;
-    }
+      const dayEnd = new Date(day);
+      dayEnd.setHours(23, 59, 59, 999);
+      
+      const eventEnd = new Date(event.end);
+      const continuesNextDay = eventEnd > dayEnd;
+      const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
+      
+      // Calcular altura
+      const durationMs = visibleEnd.getTime() - dayStart.getTime();
+      const durationHours = durationMs / (1000 * 60 * 60);
+      const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
+      const isMicroEvent = heightPx < 25;
+      
+      const eventStyle = {
+        position: 'absolute',
+        top: 0,
+        height: `${heightPx}px`,
+        left: '2px',
+        right: '2px',
+        zIndex: 20
+      };
+      
+      return (
+        <div 
+          className={`event-wrapper continues-from-prev-day ${continuesNextDay ? 'continues-next-day' : ''}`} 
+          style={eventStyle} 
+          key={`continuing-${event.id}-${day.getDate()}`}
+        >
+          <EventItem
+            key={event.id}
+            event={event}
+            onClick={onEventClick}
+            onUpdate={(updatedEvent) => onUpdateEvent(updatedEvent.id, updatedEvent)}
+            continuesNextDay={continuesNextDay}
+            continuesFromPrevDay={true}
+            gridSize={cellHeight}
+            snapValue={snapValue}
+            isMicroEvent={isMicroEvent}
+            customSlots={customSlots}
+            maxSimultaneousEvents={maxSimultaneousEvents}
+          />
+        </div>
+      );
+    });
   };
 
   // Calcular posicionamiento de eventos simultáneos
   const calculateEventPositioning = (eventsInSlot, day) => {
-    try {
-      if (!eventsInSlot?.length) return [];
-      
-      // Un solo evento usa todo el ancho
-      if (eventsInSlot.length === 1) {
-        return [{
-          event: eventsInSlot[0],
-          column: 0,
-          columnCount: 1
-        }];
-      }
-      
-      // Analizar solapamientos y ubicar en columnas
-      const eventPositions = [];
-      let columns = [];
-      
-      // Ordenar por hora de inicio
-      const sortedEvents = [...eventsInSlot].sort((a, b) => {
-        return new Date(a.start).getTime() - new Date(b.start).getTime();
-      });
-      
-      // Contar eventos existentes
-      const existingEventsCount = sortedEvents.length;
-      
-      // Actualizar conteo en el DOM
-      const targetSlot = document.querySelector(
-        `.calendar-time-slot[data-hour="${day.hour}"][data-minutes="${day.minutes}"]`
-      );
-      
-      if (targetSlot) {
-        targetSlot.setAttribute('data-events-count', existingEventsCount.toString());
-        
-        if (existingEventsCount >= maxSimultaneousEvents) {
-          targetSlot.setAttribute('data-exceed-limit', 'true');
-        } else {
-          targetSlot.removeAttribute('data-exceed-limit');
-        }
-      }
-      
-      // Asignar columnas a cada evento
-      sortedEvents.forEach(event => {
-        let column = 0;
-        while (columns[column] && eventsOverlapInTimeSlot(event, columns[column], day.date)) {
-          column++;
-        }
-        
-        columns[column] = event;
-        
-        eventPositions.push({
-          event,
-          column,
-          columnCount: Math.max(column + 1, columns.filter(Boolean).length)
-        });
-      });
-      
-      // Actualizar el recuento de columnas para todos
-      const maxColumn = Math.max(...eventPositions.map(ep => ep.column)) + 1;
-      eventPositions.forEach(ep => {
-        ep.columnCount = maxColumn;
-      });
-      
-      return eventPositions;
-    } catch (error) {
-      console.error('Error al calcular posicionamiento:', error);
-      return [];
+    if (!eventsInSlot?.length) return [];
+    
+    // Un solo evento usa todo el ancho
+    if (eventsInSlot.length === 1) {
+      return [{
+        event: eventsInSlot[0],
+        column: 0,
+        columnCount: 1
+      }];
     }
+    
+    // Analizar solapamientos
+    const eventPositions = [];
+    let columns = [];
+    
+    // Ordenar por hora de inicio
+    const sortedEvents = [...eventsInSlot].sort((a, b) => 
+      new Date(a.start).getTime() - new Date(b.start).getTime());
+    
+    // Asignar columnas a cada evento
+    sortedEvents.forEach(event => {
+      let column = 0;
+      while (columns[column] && eventsOverlapInTimeSlot(event, columns[column], day.date)) {
+        column++;
+      }
+      
+      columns[column] = event;
+      
+      eventPositions.push({
+        event,
+        column,
+        columnCount: Math.max(column + 1, columns.filter(Boolean).length)
+      });
+    });
+    
+    // Actualizar el recuento de columnas para todos
+    const maxColumn = Math.max(...eventPositions.map(ep => ep.column)) + 1;
+    eventPositions.forEach(ep => {
+      ep.columnCount = maxColumn;
+    });
+    
+    return eventPositions;
   };
 
   // Renderizar eventos en la celda
   const renderEvents = (day, hour, minutes = 0, duration) => {
-    try {
-      // Eventos continuos al inicio del día
-      if (hour === 0 && minutes === 0) {
-        const continuingEvents = renderContinuingEvents(day);
-        if (continuingEvents?.length) return continuingEvents;
-      }
+    // Eventos continuos al inicio del día
+    if (hour === 0 && minutes === 0) {
+      const continuingEvents = renderContinuingEvents(day);
+      if (continuingEvents?.length) return continuingEvents;
+    }
+    
+    // Eventos que comienzan en esta celda
+    const eventsStartingInSlot = events.filter(event => 
+      shouldShowEventStart(event, day, hour, minutes, duration)
+    );
+    
+    if (!eventsStartingInSlot.length) return null;
+    
+    // Calcular posicionamiento para eventos simultáneos
+    const eventPositions = calculateEventPositioning(eventsStartingInSlot, {
+      date: day, hour, minutes
+    });
+    
+    // Renderizar eventos posicionados
+    return eventPositions.map(({ event, column, columnCount }) => {
+      const eventStart = new Date(event.start);
+      const eventEnd = new Date(event.end);
       
-      // Eventos que comienzan en esta celda
-      const eventsStartingInSlot = events.filter(event => 
-        shouldShowEventStart(event, day, hour, minutes, duration)
+      const dayStart = new Date(day);
+      dayStart.setHours(0, 0, 0, 0);
+      
+      const dayEnd = new Date(day);
+      dayEnd.setHours(23, 59, 59, 999);
+      
+      const continuesNextDay = eventEnd > dayEnd;
+      const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
+      
+      // Calcular duración visible
+      const durationMs = visibleEnd.getTime() - eventStart.getTime();
+      const durationHours = durationMs / (1000 * 60 * 60);
+      const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
+      
+      // Calcular posición relativa
+      const { offsetPixels } = getEventPositionInSlot(event, hour, minutes, duration, cellHeight);
+      
+      const isMicroEvent = heightPx < 25;
+      const columnWidth = 100 / columnCount;
+      
+      return (
+        <EventRenderer
+          key={`event-${event.id}-${day.getDate()}-${hour}-${minutes}`}
+          event={event}
+          offsetPixels={offsetPixels}
+          heightPx={heightPx}
+          column={column}
+          columnWidth={columnWidth}
+          continuesNextDay={continuesNextDay}
+          continuesFromPrevDay={false}
+          isMicroEvent={isMicroEvent}
+          gridSize={cellHeight}
+          snapValue={snapValue}
+          customSlots={customSlots}
+          maxSimultaneousEvents={maxSimultaneousEvents}
+          onEventClick={onEventClick}
+          onUpdateEvent={onUpdateEvent}
+        />
       );
-      
-      if (!eventsStartingInSlot.length) return null;
-      
-      // Calcular posicionamiento para eventos simultáneos
-      const eventPositions = calculateEventPositioning(eventsStartingInSlot, {
-        date: day, hour, minutes
-      });
-      
-      // Renderizar eventos posicionados
-      return eventPositions.map(({ event, column, columnCount }) => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
-        
-        const dayStart = new Date(day);
-        dayStart.setHours(0, 0, 0, 0);
-        
-        const dayEnd = new Date(day);
-        dayEnd.setHours(23, 59, 59, 999);
-        
-        const continuesNextDay = eventEnd > dayEnd;
-        const visibleEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
-        
-        // Calcular duración visible
-        const durationMs = visibleEnd.getTime() - eventStart.getTime();
-        const durationHours = durationMs / (1000 * 60 * 60);
-        const heightPx = Math.max(20, Math.round(durationHours * cellHeight));
-        
-        // Calcular posición relativa dentro de la celda
-        const { offsetPixels } = getEventPositionInSlot(event, hour, minutes, duration, cellHeight);
-        
-        const isMicroEvent = heightPx < 25;
-        const columnWidth = 100 / columnCount;
-        
-        const eventStyle = {
-          position: 'absolute',
-          top: `${offsetPixels}px`,
-          height: `${heightPx}px`,
-          left: `calc(${column * columnWidth}% + 2px)`,
-          width: `calc(${columnWidth}% - 4px)`,
-          zIndex: 20
-        };
-        
-        return (
-          <div 
-            className={`event-wrapper ${continuesNextDay ? 'continues-next-day' : ''}`} 
-            style={eventStyle} 
-            key={`event-${event.id}-${day.getDate()}-${hour}-${minutes}`}
-          >
-            <EventItem
-              key={event.id}
-              event={event}
-              onClick={onEventClick}
-              onUpdate={(updatedEvent) => onUpdateEvent(updatedEvent.id, updatedEvent)}
-              continuesNextDay={continuesNextDay}
-              continuesFromPrevDay={false}
-              gridSize={cellHeight}
-              snapValue={snapValue}
-              isMicroEvent={isMicroEvent}
-              customSlots={customSlots}
-              maxSimultaneousEvents={maxSimultaneousEvents}
-            />
-          </div>
-        );
-      });
-    } catch (error) {
-      console.error('Error al renderizar eventos:', error);
-      return null;
-    }
-  };
-
-  // Handlers para botones de franja
-  const handleAddIntermediateClick = (hour, minutes = 0) => {
-    if (hour < 23) {
-      if (minutes === 0) {
-        addCustomTimeSlot(hour, 30);
-      } else if (minutes === 30) {
-        addCustomTimeSlot(hour, 45);
-      }
-    }
-  };
-  
-  const handleAddIntermediateSlotAt15 = (hour) => {
-    if (hour < 23) addCustomTimeSlot(hour, 15);
-  };
-  
-  const handleRemoveCustomSlot = (e, hour, minutes) => {
-    e.stopPropagation();
-    removeCustomTimeSlot(hour, minutes);
+    });
   };
 
   return (
@@ -282,6 +297,10 @@ function TimeGrid({
         }
         
         const standardSlotHeight = (standardSlotDuration / 60) * cellHeight;
+        const standardSlotType = standardSlotDuration === 15 ? 'time-slot-short' : 
+                               standardSlotDuration === 30 ? 'time-slot-medium' : 
+                               standardSlotDuration === 45 ? 'time-slot-large' : 
+                               'time-slot-standard';
         
         return (
           <React.Fragment key={hour}>
@@ -289,40 +308,24 @@ function TimeGrid({
             <div className="calendar-row">
               <div 
                 className="calendar-cell calendar-time" 
-                style={{ 
-                  height: `${standardSlotHeight}px`,
-                  minHeight: `${standardSlotHeight}px`
-                }}
+                style={{ height: `${standardSlotHeight}px`, minHeight: `${standardSlotHeight}px` }}
               >
                 {formatTimeSlot(hour)}
               </div>
               
-              {days.map((day, dayIndex) => {
-                const dateWithTime = new Date(day);
-                dateWithTime.setHours(hour, 0, 0, 0);
-                
-                return (
-                  <div 
-                    key={dayIndex} 
-                    className={`calendar-cell calendar-time-slot ${
-                      standardSlotDuration === 15 ? 'time-slot-short' : 
-                      standardSlotDuration === 30 ? 'time-slot-medium' : 
-                      standardSlotDuration === 45 ? 'time-slot-large' : 
-                      'time-slot-standard'
-                    }`}
-                    data-testid="calendar-time-slot"
-                    data-hour={hour}
-                    data-minutes={0}
-                    onClick={() => onCellClick(dateWithTime, hour, 0, standardSlotDuration)}
-                    style={{ 
-                      height: `${standardSlotHeight}px`, 
-                      minHeight: `${standardSlotHeight}px` 
-                    }}
-                  >
-                    {renderEvents(day, hour, 0, standardSlotDuration)}
-                  </div>
-                );
-              })}
+              {days.map((day, dayIndex) => (
+                <TimeSlotRow
+                  key={dayIndex}
+                  hour={hour}
+                  day={day}
+                  dayIndex={dayIndex}
+                  slotDuration={standardSlotDuration}
+                  slotHeight={standardSlotHeight}
+                  slotType={standardSlotType}
+                  onCellClick={onCellClick}
+                  renderEvents={() => renderEvents(day, hour, 0, standardSlotDuration)}
+                />
+              ))}
             </div>
             
             {/* Botones de agregar franjas */}
@@ -331,7 +334,7 @@ function TimeGrid({
                 <div className="time-separator-cell">
                   <button 
                     className="add-time-slot-button"
-                    onClick={() => handleAddIntermediateClick(hour, 0)}
+                    onClick={() => addCustomTimeSlot(hour, 30)}
                     title={`Añadir franja ${hour}:30`}
                   >
                     <span className="material-icons">add</span>
@@ -346,7 +349,7 @@ function TimeGrid({
                 <div className="time-separator-cell">
                   <button 
                     className="add-time-slot-button"
-                    onClick={() => handleAddIntermediateSlotAt15(hour)}
+                    onClick={() => addCustomTimeSlot(hour, 15)}
                     title={`Añadir franja ${hour}:15`}
                   >
                     <span className="material-icons">add</span>
@@ -370,21 +373,24 @@ function TimeGrid({
               }
               
               const slotHeight = (slotDuration / 60) * cellHeight;
-              const canAddAfterThisSlot = canAddIntermediateSlot(hour, slot.minutes);
+              const slotType = slotDuration === 15 ? 'time-slot-short' : 
+                             slotDuration === 30 ? 'time-slot-medium' : 
+                             slotDuration === 45 ? 'time-slot-large' : 
+                             'time-slot-standard';
               
               return (
                 <React.Fragment key={`custom-fragment-${hour}-${slot.minutes}`}>
                   <div className="calendar-row time-row-with-delete">
                     <div 
                       className="calendar-cell calendar-time calendar-time-custom" 
-                      style={{ 
-                        height: `${slotHeight}px`,
-                        minHeight: `${slotHeight}px` 
-                      }}
+                      style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
                     >
                       <button 
                         className="remove-time-slot-button"
-                        onClick={(e) => handleRemoveCustomSlot(e, hour, slot.minutes)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeCustomTimeSlot(hour, slot.minutes);
+                        }}
                         title={`Eliminar franja ${hour}:${slot.minutes.toString().padStart(2, '0')}`}
                         aria-label="Eliminar franja horaria"
                       >
@@ -394,41 +400,29 @@ function TimeGrid({
                       {formatTimeSlot(hour, slot.minutes)}
                     </div>
                     
-                    {days.map((day, dayIndex) => {
-                      const dateWithTime = new Date(day);
-                      dateWithTime.setHours(hour, slot.minutes, 0, 0);
-                      
-                      return (
-                        <div 
-                          key={dayIndex} 
-                          className={`calendar-cell calendar-time-slot ${
-                            slotDuration === 15 ? 'time-slot-short' : 
-                            slotDuration === 30 ? 'time-slot-medium' : 
-                            slotDuration === 45 ? 'time-slot-large' : 
-                            'time-slot-standard'
-                          }`}
-                          data-testid="calendar-time-slot-custom"
-                          data-hour={hour}
-                          data-minutes={slot.minutes}
-                          onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)}
-                          style={{ 
-                            height: `${slotHeight}px`, 
-                            minHeight: `${slotHeight}px` 
-                          }}
-                        >
-                          {renderEvents(day, hour, slot.minutes, slotDuration)}
-                        </div>
-                      );
-                    })}
+                    {days.map((day, dayIndex) => (
+                      <CustomTimeSlot
+                        key={dayIndex}
+                        hour={hour}
+                        slot={slot}
+                        day={day}
+                        dayIndex={dayIndex}
+                        slotDuration={slotDuration}
+                        slotHeight={slotHeight}
+                        slotType={slotType}
+                        onCellClick={onCellClick}
+                        renderEvents={() => renderEvents(day, hour, slot.minutes, slotDuration)}
+                      />
+                    ))}
                   </div>
                   
-                  {canAddAfterThisSlot && (
+                  {slot.minutes < 45 && (
                     <div className="time-separator-row">
                       <div className="time-separator-cell">
                         <button 
                           className="add-time-slot-button"
-                          onClick={() => handleAddIntermediateClick(hour, slot.minutes)}
-                          title={`Añadir franja ${hour}:${slot.minutes === 30 ? '45' : '30'}`}
+                          onClick={() => addCustomTimeSlot(hour, slot.minutes + 15)}
+                          title={`Añadir franja ${hour}:${(slot.minutes + 15).toString().padStart(2, '0')}`}
                         >
                           <span className="material-icons">add</span>
                         </button>

@@ -4,26 +4,18 @@
 
 /**
  * Formatea el tiempo de un evento para mostrar
- * @param {Object} event - Evento con propiedades start y end
- * @returns {string} Hora formateada
  */
 export function formatEventTime(event) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end) {
-      throw new Error('Evento sin propiedades start/end');
-    }
+    if (!event?.start || !event?.end) return '';
     
     const start = new Date(event.start);
     const end = new Date(event.end);
     
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
     
-    return `${start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - 
-            ${end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    const options = { hour: '2-digit', minute: '2-digit' };
+    return `${start.toLocaleTimeString('es-ES', options)} - ${end.toLocaleTimeString('es-ES', options)}`;
   } catch (error) {
     console.error('Error al formatear hora del evento:', error);
     return '';
@@ -32,50 +24,34 @@ export function formatEventTime(event) {
 
 /**
  * Calcula la duración de un evento en minutos
- * @param {Object} event - Evento con propiedades start y end
- * @returns {number} Duración en minutos
  */
 export function calculateEventDuration(event) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end) {
-      throw new Error('Evento sin propiedades start/end');
-    }
+    if (!event?.start || !event?.end) return 60;
     
     const start = new Date(event.start);
     const end = new Date(event.end);
     
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 60;
     
-    return (end - start) / (1000 * 60); // Duración en minutos
+    return (end - start) / (1000 * 60);
   } catch (error) {
     console.error('Error al calcular duración del evento:', error);
-    return 60; // Valor por defecto: 1 hora
+    return 60;
   }
 }
 
 /**
  * Verifica si un evento continúa hasta el siguiente día
- * @param {Object} event - Evento con propiedades start y end
- * @returns {boolean} Verdadero si continúa al siguiente día
  */
 export function eventContinuesToNextDay(event) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end) {
-      throw new Error('Evento sin propiedades start/end');
-    }
+    if (!event?.start || !event?.end) return false;
     
     const start = new Date(event.start);
     const end = new Date(event.end);
     
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
     
     return start.getDate() !== end.getDate() || 
            start.getMonth() !== end.getMonth() || 
@@ -88,23 +64,13 @@ export function eventContinuesToNextDay(event) {
 
 /**
  * Verifica si un evento continúa desde el día anterior
- * @param {Object} event - Evento con propiedades start y end
- * @param {Date} currentDate - Fecha actual del calendario
- * @returns {boolean} Verdadero si continúa desde el día anterior
  */
 export function eventContinuesFromPrevDay(event, currentDate) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end || !currentDate) {
-      throw new Error('Evento sin propiedades necesarias o fecha actual no válida');
-    }
+    if (!event?.start || !event?.end || !currentDate) return false;
     
     const start = new Date(event.start);
-    
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(currentDate.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
+    if (isNaN(start.getTime()) || isNaN(currentDate.getTime())) return false;
     
     // Resetear hora a medianoche para comparar solo fechas
     const currentDay = new Date(currentDate);
@@ -122,78 +88,27 @@ export function eventContinuesFromPrevDay(event, currentDate) {
 
 /**
  * Ajusta un tiempo al valor de snap más cercano
- * @param {Date} time - Tiempo a ajustar
- * @param {number} snapMinutes - Minutos de snap (15, 30, etc.)
- * @returns {Date} Tiempo ajustado
  */
 export function snapTimeToInterval(time, snapMinutes) {
-  // Si no hay snap, devolver el tiempo original
-  if (!snapMinutes || snapMinutes <= 0) {
-    return time;
-  }
+  if (!snapMinutes || snapMinutes <= 0) return time;
   
   try {
-    // Verificar que time es válido
-    if (!time || isNaN(time.getTime())) {
-      throw new Error('Tiempo inválido');
-    }
+    if (!time || isNaN(time.getTime())) return time;
     
-    // Usar directamente el objeto time para mantener cualquier modificación
-    // que se le haya hecho (importante para los tests)
-    const result = time;
-    
-    // Detectar si estamos en una situación de test: verificar si setMinutes ha sido modificada
-    // Esta es una técnica específica para pasar el test que está fallando
-    let isTestEnvironment = false;
-    try {
-      const original = Date.prototype.setMinutes;
-      isTestEnvironment = result.setMinutes !== original;
-    } catch (e) {
-      // Ignorar cualquier error aquí
-    }
-    
-    // Si parece que estamos en un entorno de prueba con setMinutes modificado,
-    // forzamos un error para que sea capturado
-    if (isTestEnvironment) {
-      try {
-        // Intentar llamar a setMinutes para provocar el error que espera el test
-        result.setMinutes(result.getMinutes());
-      } catch (err) {
-        throw new Error(`Error al modificar el tiempo: ${err.message}`);
-      }
-      return result;
-    }
-    
-    // Lógica normal para producción
+    const result = new Date(time);
     const minutes = result.getMinutes();
     const remainder = minutes % snapMinutes;
     
     if (remainder === 0) {
-      // Incluso si no necesitamos ajustar, intentamos resetear los segundos/ms
-      // para capturar cualquier posible error
-      try {
-        result.setSeconds(0);
-        result.setMilliseconds(0);
-      } catch (err) {
-        throw new Error(`Error al ajustar segundos o milisegundos: ${err.message}`);
-      }
+      result.setSeconds(0, 0);
       return result;
     }
     
-    // Calcular el nuevo valor de minutos
     const roundedMinutes = remainder < snapMinutes / 2 
       ? minutes - remainder 
       : minutes + (snapMinutes - remainder);
     
-    try {
-      // Aplicar los cambios
-      result.setMinutes(roundedMinutes);
-      result.setSeconds(0);
-      result.setMilliseconds(0);
-    } catch (err) {
-      throw new Error(`Error al ajustar el tiempo: ${err.message}`);
-    }
-    
+    result.setMinutes(roundedMinutes, 0, 0);
     return result;
   } catch (error) {
     console.error('Error al hacer snap del tiempo:', error);

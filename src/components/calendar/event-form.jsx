@@ -1,4 +1,3 @@
-// event-form.jsx (refactorizado)
 import React from 'react';
 import Dialog from '../ui/dialog';
 import Button from '../ui/button';
@@ -12,17 +11,13 @@ function EventForm({
   onDelete,
   onClose
 }) {
-  const handleConfirm = () => {
-    onSave();
-  };
-  
   return (
     <Dialog
       isOpen={true}
       onClose={onClose}
       title={isEditing ? 'Editar evento' : 'Nuevo evento'}
       confirmText="Guardar"
-      onConfirm={handleConfirm}
+      onConfirm={onSave}
     >
       {error && (
         <div className="form-error" style={{ color: 'red', marginBottom: '10px' }}>

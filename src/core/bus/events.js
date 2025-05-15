@@ -2,7 +2,7 @@
  * Definición de eventos y categorías para el sistema de bus de eventos
  */
 
-// Categorías principales de eventos
+// Categorías principales
 export const EventCategories = {
   CALENDAR: 'calendar',
   APP: 'app',
@@ -12,7 +12,7 @@ export const EventCategories = {
   UI: 'ui'
 };
 
-// Eventos específicos del calendario
+// Eventos del calendario
 export const CalendarEvents = {
   EVENT_CREATED: `${EventCategories.CALENDAR}.eventCreated`,
   EVENT_UPDATED: `${EventCategories.CALENDAR}.eventUpdated`,
@@ -22,7 +22,7 @@ export const CalendarEvents = {
   EVENTS_LOADED: `${EventCategories.CALENDAR}.eventsLoaded`
 };
 
-// Eventos específicos de la aplicación
+// Eventos de la aplicación
 export const AppEvents = {
   INITIALIZED: `${EventCategories.APP}.initialized`,
   ERROR: `${EventCategories.APP}.error`,
@@ -32,7 +32,7 @@ export const AppEvents = {
   SETTINGS_CHANGED: `${EventCategories.APP}.settingsChanged`
 };
 
-// Eventos específicos del almacenamiento
+// Eventos de almacenamiento
 export const StorageEvents = {
   DATA_CHANGED: `${EventCategories.STORAGE}.dataChanged`,
   DATA_REMOVED: `${EventCategories.STORAGE}.dataRemoved`,
@@ -43,7 +43,7 @@ export const StorageEvents = {
   ERROR: `${EventCategories.STORAGE}.error`
 };
 
-// Eventos específicos de la interfaz de usuario
+// Eventos de interfaz de usuario
 export const UIEvents = {
   DIALOG_OPENED: `${EventCategories.UI}.dialogOpened`,
   DIALOG_CLOSED: `${EventCategories.UI}.dialogClosed`,

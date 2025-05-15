@@ -1,4 +1,3 @@
-// use-event-resize.jsx (optimizado)
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo } from '../utils/event-utils';
 
@@ -15,11 +14,7 @@ export function useEventResize({
     wasActuallyResized: false,
     originalDuration: null,
     originalEndDate: null,
-    grid: {
-      containerElement: null,
-      gridRect: null,
-      hourHeight: gridSize
-    }
+    grid: null
   });
 
   // Limpiar listeners al desmontar
@@ -218,15 +213,6 @@ export function useEventResize({
       
       setResizing(false);
     }
-    
-    // Manejar clics después del redimensionamiento
-    document.addEventListener('click', function handleDocumentClick(evt) {
-      if (Date.now() - (resizeInfo.current.endTime || 0) < 300) {
-        evt.stopPropagation();
-        evt.preventDefault();
-      }
-      document.removeEventListener('click', handleDocumentClick, true);
-    }, true);
     
     // Desactivar bloqueo después de un tiempo
     setTimeout(() => setBlockClicks(false), 500);

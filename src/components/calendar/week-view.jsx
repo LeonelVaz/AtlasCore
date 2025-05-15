@@ -9,11 +9,11 @@ function WeekView({
   onCellClick, 
   onUpdateEvent, 
   snapValue,
-  maxSimultaneousEvents = 3 // Nuevo parámetro para eventos simultáneos
+  maxSimultaneousEvents = 3
 }) {
   const weekDays = generateWeekDays(currentDate);
 
-  // Función para renderizar el encabezado de día según el nuevo formato solicitado
+  // Función para renderizar el encabezado de día
   const renderDayHeader = (day) => {
     const dayName = day.toLocaleDateString('es-ES', { weekday: 'long' });
     const dayNumber = day.getDate();
@@ -27,7 +27,7 @@ function WeekView({
   };
 
   return (
-    <div className="week-view" style={{ height: '100%', overflow: 'auto' }}>
+    <div className="week-view">
       <TimeGrid 
         days={weekDays}
         events={events}
@@ -36,7 +36,7 @@ function WeekView({
         onUpdateEvent={onUpdateEvent}
         snapValue={snapValue}
         renderDayHeader={renderDayHeader}
-        maxSimultaneousEvents={maxSimultaneousEvents} // Pasar la propiedad al TimeGrid
+        maxSimultaneousEvents={maxSimultaneousEvents}
       />
     </div>
   );

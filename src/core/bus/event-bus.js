@@ -1,11 +1,10 @@
 /**
  * EventBus - Sistema centralizado de comunicación entre módulos
  * 
- * Implementa el patrón publicador/suscriptor para permitir la comunicación
- * desacoplada entre diferentes partes de la aplicación.
+ * Implementa el patrón publicador/suscriptor para comunicación desacoplada
  */
 
-// Categorías de eventos para organizar la comunicación
+// Categorías de eventos
 export const EventCategories = {
   CALENDAR: 'calendar',
   APP: 'app',
@@ -19,10 +18,7 @@ class EventBus {
   }
 
   /**
-   * Suscribe una función a un tipo de evento específico
-   * @param {string} eventType - Tipo de evento al que suscribirse
-   * @param {Function} callback - Función a ejecutar cuando ocurra el evento
-   * @returns {Function} - Función para cancelar la suscripción
+   * Suscribe una función a un tipo de evento
    */
   subscribe(eventType, callback) {
     const id = this.getNextId();
@@ -33,11 +29,10 @@ class EventBus {
     
     this.subscribers[eventType][id] = callback;
     
-    // Devolver función para cancelar la suscripción
+    // Devolver función para cancelar suscripción
     return () => {
       delete this.subscribers[eventType][id];
       
-      // Limpiar el objeto si no quedan suscriptores
       if (Object.keys(this.subscribers[eventType]).length === 0) {
         delete this.subscribers[eventType];
       }
@@ -46,13 +41,9 @@ class EventBus {
 
   /**
    * Publica un evento para todos los suscriptores
-   * @param {string} eventType - Tipo de evento a publicar
-   * @param {any} data - Datos asociados al evento
    */
   publish(eventType, data) {
-    if (!this.subscribers[eventType]) {
-      return;
-    }
+    if (!this.subscribers[eventType]) return;
     
     Object.values(this.subscribers[eventType]).forEach(callback => {
       try {
@@ -65,7 +56,6 @@ class EventBus {
 
   /**
    * Genera un ID único para cada suscripción
-   * @returns {number} - ID único
    * @private
    */
   getNextId() {
@@ -73,6 +63,6 @@ class EventBus {
   }
 }
 
-// Exportar una única instancia para toda la aplicación
+// Exportar instancia única
 const eventBus = new EventBus();
 export default eventBus;

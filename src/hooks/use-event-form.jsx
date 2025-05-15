@@ -1,15 +1,6 @@
 import { useState } from 'react';
 import { formatDateForInput } from '../utils/date-utils';
 
-/**
- * Hook personalizado para gestionar el formulario de eventos
- * @param {Function} createEvent - Función para crear eventos
- * @param {Function} updateEvent - Función para actualizar eventos
- * @param {Function} deleteEvent - Función para eliminar eventos
- * @param {Array} allEvents - Todos los eventos actuales
- * @param {Number} maxSimultaneousEvents - Límite máximo de eventos simultáneos
- * @returns {Object} - Funciones y estados para el formulario
- */
 function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], maxSimultaneousEvents = 3) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showEventForm, setShowEventForm] = useState(false);
@@ -19,22 +10,20 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
     title: '',
     start: '',
     end: '',
-    color: '#2d4b94' // Color predeterminado (Azul Atlas)
+    color: '#2d4b94'
   });
   
-  // Verificar si el evento se solaparía con demasiados eventos existentes
+  // Verificar límite de eventos simultáneos
   const wouldExceedLimit = (eventToCheck) => {
-    if (!eventToCheck || !eventToCheck.start || !eventToCheck.end) return false;
+    if (!eventToCheck?.start || !eventToCheck?.end) return false;
     
     const start = new Date(eventToCheck.start);
     const end = new Date(eventToCheck.end);
     
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
     
-    // Contar eventos que se solapan con el evento a verificar
-    // Excluir el evento actual si es una edición
+    // Filtrar eventos solapados excluyendo el evento actual
     const overlappingEvents = allEvents.filter(existing => {
-      // Si estamos editando este evento, excluirlo del conteo
       if (selectedEvent && existing.id === selectedEvent.id) return false;
       
       const existingStart = new Date(existing.start);
@@ -42,7 +31,6 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
       
       if (isNaN(existingStart.getTime()) || isNaN(existingEnd.getTime())) return false;
       
-      // Verificar solapamiento
       return start < existingEnd && existingStart < end;
     });
     
@@ -54,22 +42,16 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
     try {
       let startDate;
       
-      // Verificar si day es ya un objeto Date completo (con horas y minutos configurados)
-      if (day instanceof Date && !isNaN(day.getTime()) && 
-          (day.getHours() !== 0 || day.getMinutes() !== 0)) {
-        // Usar la fecha tal como está, ya tiene la hora y minutos configurados
+      if (day instanceof Date && (day.getHours() !== 0 || day.getMinutes() !== 0)) {
         startDate = new Date(day);
       } else {
-        // Configurar fecha con hora y minutos proporcionados
         startDate = new Date(day);
         startDate.setHours(hour, minutes, 0, 0);
       }
       
-      // Calcular la fecha de fin según la duración de la celda
+      // Calcular fecha de fin
       const endDate = new Date(startDate);
-      
-      // Calcular la hora y minutos de fin según la duración proporcionada
-      const durationInMinutes = slotDuration || 60; // Valor predeterminado: 60 minutos (1 hora)
+      const durationInMinutes = slotDuration || 60;
       const startMinutes = startDate.getMinutes();
       const endMinutes = (startMinutes + durationInMinutes) % 60;
       const hoursToAdd = Math.floor((startMinutes + durationInMinutes) / 60);
@@ -101,10 +83,7 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
       const startDate = new Date(event.start);
       const endDate = new Date(event.end);
       
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        console.error('Fechas de evento inválidas:', event);
-        return;
-      }
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return;
       
       setSelectedEvent({...event});
       setFormError('');
@@ -121,7 +100,7 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
       
       setShowEventForm(true);
     } catch (error) {
-      console.error('Error al manejar clic en evento:', error, event);
+      console.error('Error al manejar clic en evento:', error);
     }
   };
 
@@ -133,10 +112,7 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
       if (name === 'start' || name === 'end') {
         const date = new Date(value);
         
-        if (isNaN(date.getTime())) {
-          console.error('Fecha inválida:', value);
-          return;
-        }
+        if (isNaN(date.getTime())) return;
         
         setNewEvent(prev => ({ 
           ...prev, 
@@ -195,8 +171,7 @@ function useEventForm(createEvent, updateEvent, deleteEvent, allEvents = [], max
         color: newEvent.color || '#2d4b94'
       };
       
-      // Verificar si excedería el límite (sólo para nuevos eventos o cambios de horario)
-      // Para los eventos existentes que solo cambian título o color, no verificamos
+      // Verificar límite de eventos simultáneos
       if (wouldExceedLimit(eventToSave)) {
         setFormError(`No se puede crear el evento: excedería el límite de ${maxSimultaneousEvents} eventos simultáneos`);
         return;
