@@ -108,9 +108,17 @@ function TimeGrid({
     }
   };
 
-  // Función calculateEventPositioning en src/components/calendar/time-grid.jsx
-  // FUNCIÓN: Calcular posicionamiento de eventos simultáneos
-  const calculateEventPositioning = (eventsInSlot, day, hour, minutes, duration) => {
+  /**
+   * Calcula el posicionamiento de eventos simultáneos en una casilla
+   * @param {Array} eventsInSlot - Eventos en la casilla
+   * @param {Date} day - Día actual
+   * @param {number} hour - Hora
+   * @param {number} minutes - Minutos
+   * @param {number} duration - Duración
+   * @param {number} maxSimultaneousEvents - Máximo de eventos simultáneos permitidos
+   * @returns {Array} - Posiciones de eventos
+   */
+  const calculateEventPositioning = (eventsInSlot, day, hour, minutes, duration, maxSimultaneousEvents) => {
     try {
       if (!eventsInSlot || eventsInSlot.length === 0) return [];
       
@@ -137,21 +145,27 @@ function TimeGrid({
       // Contar cuántos eventos ya existen en este slot
       const existingEventsCount = sortedEvents.length;
       
-      // Para marcar casillas con atributos de conteo, usamos un enfoque diferente
-      const targetSlot = document.querySelector(`.calendar-cell[data-hour="${hour}"][data-minutes="${minutes}"]`);
+      // MEJORADO: Buscar la casilla específica utilizando el selector correcto
+      // Utilizamos el selector más específico posible para evitar seleccionar elementos incorrectos
+      const targetSlot = document.querySelector(
+        `.calendar-time-slot[data-hour="${hour}"][data-minutes="${minutes}"]`
+      );
+      
       if (targetSlot) {
+        // Actualizar el atributo con el conteo correcto
         targetSlot.setAttribute('data-events-count', existingEventsCount.toString());
         
-        // Si ya estamos en el límite, marcar casilla
+        // Marcar visualmente si estamos en el límite
         if (existingEventsCount >= maxSimultaneousEvents) {
-          targetSlot.classList.add('exceed-limit');
+          // No aplicamos la clase exceed-limit aquí, ya que puede causar problemas
+          // Solo marcamos el atributo para que la lógica de arrastre pueda detectarlo
+          targetSlot.setAttribute('data-exceed-limit', 'true');
         } else {
-          targetSlot.classList.remove('exceed-limit');
+          targetSlot.removeAttribute('data-exceed-limit');
         }
       }
       
-      // Asignar columnas a cada evento (COMPORTAMIENTO NO RETROACTIVO)
-      // Siempre mostrar todos los eventos existentes aunque excedan el límite
+      // Asignar columnas a cada evento
       sortedEvents.forEach(event => {
         // Buscar la primera columna disponible
         let column = 0;
@@ -184,6 +198,7 @@ function TimeGrid({
       return [];
     }
   };
+
 
   // Renderizar eventos en la celda (actualizado para manejar eventos simultáneos)
   const renderEvents = (day, hour, minutes = 0, duration) => {

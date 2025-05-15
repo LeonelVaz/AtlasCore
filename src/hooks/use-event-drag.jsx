@@ -1,4 +1,4 @@
-// src/hooks/use-event-drag.jsx - Modificado para simplemente bloquear eventos sin rebote
+// src/hooks/use-event-drag.jsx - Corregido para evitar el bloqueo aleatorio
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
 
@@ -44,22 +44,34 @@ export function useEventDrag({
       startMinute: 0,
       timeSlots: [],
       startSlot: null,
-      targetSlot: null
+      targetSlot: null,
+      targetHour: 0,
+      targetMinutes: 0,
+      targetEventsCount: 0
     },
     highlightedCell: null,
-    wouldExceedLimit: false // Renombrado de willBounce a wouldExceedLimit para mayor claridad
+    wouldExceedLimit: false
   });
 
-  // Limpiar listeners al desmontar
+  // Limpiar listeners y clases al desmontar
   useEffect(() => {
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       removeAllHighlights();
+      removeAllLimitIndicators(); // NUEVO: Eliminar indicadores de límite
       document.body.classList.remove('dragging-active');
       document.body.classList.remove('snap-active');
     };
   }, []);
+
+  // NUEVO: Función para eliminar todos los indicadores de límite
+  const removeAllLimitIndicators = () => {
+    // Eliminar clase exceed-limit de todas las celdas
+    document.querySelectorAll('.exceed-limit').forEach(cell => {
+      cell.classList.remove('exceed-limit');
+    });
+  };
 
   // Resaltar celda destino
   const highlightTargetSlot = (targetSlot) => {
@@ -107,6 +119,9 @@ export function useEventDrag({
     }
     
     try {
+      // NUEVO: Limpiar todos los indicadores de límite al iniciar un arrastre
+      removeAllLimitIndicators();
+      
       const gridInfo = initializeGridInfo(eventRef, gridSize, event);
       
       // Guardar duración original y minutos de inicio para cálculos posteriores
@@ -192,26 +207,54 @@ export function useEventDrag({
       const targetSlot = findTargetSlot(e.clientX, e.clientY, dragInfo.current);
       
       if (targetSlot) {
-        // Verificar cuántos eventos ya hay en este slot
-        const eventsCount = parseInt(targetSlot.getAttribute('data-events-count') || '0', 10);
-        
-        // Determinar si excedería el límite
-        dragInfo.current.wouldExceedLimit = eventsCount >= maxSimultaneousEvents;
-        
-        // Aplicar estilo visual correspondiente
-        if (dragInfo.current.wouldExceedLimit) {
-          if (eventRef.current) {
-            // Agregar clase para indicar que no se puede colocar aquí
-            eventRef.current.classList.add('cannot-place');
+        // MEJORADO: Asegurar que estamos trabajando con la casilla correcta
+        // Verificar que targetSlot sea una casilla de tiempo válida antes de procesarla
+        if (targetSlot.classList.contains('calendar-time-slot') || 
+            targetSlot.classList.contains('day-view-hour-slot')) {
+            
+          // Obtener datos precisos de la casilla objetivo
+          const hour = parseInt(targetSlot.getAttribute('data-hour') || '0', 10);
+          const minutes = parseInt(targetSlot.getAttribute('data-minutes') || '0', 10);
+          
+          // IMPORTANTE: Contar eventos excluyendo el que estamos arrastrando
+          const currentEventId = event.id;
+          let eventsCount = 0;
+          
+          // Contar eventos dentro de esta casilla específica 
+          const eventWrappers = targetSlot.querySelectorAll('.event-wrapper');
+          eventWrappers.forEach(wrapper => {
+            const eventEl = wrapper.querySelector('.calendar-event');
+            if (eventEl && eventEl.getAttribute('data-event-id') !== currentEventId) {
+              // Solo contar si no es el evento actual
+              eventsCount++;
+            }
+          });
+          
+          console.log(`Casilla en (${hour}:${minutes}): ${eventsCount} eventos. Límite: ${maxSimultaneousEvents}`);
+          
+          // Actualizar información en dragInfo
+          dragInfo.current.grid.targetHour = hour;
+          dragInfo.current.grid.targetMinutes = minutes;
+          dragInfo.current.grid.targetEventsCount = eventsCount;
+          
+          // Determinar si excedería el límite
+          dragInfo.current.wouldExceedLimit = eventsCount >= maxSimultaneousEvents;
+          
+          // Aplicar estilo visual correspondiente
+          if (dragInfo.current.wouldExceedLimit) {
+            if (eventRef.current) {
+              // Agregar clase para indicar que no se puede colocar aquí
+              eventRef.current.classList.add('cannot-place');
+            }
+          } else {
+            if (eventRef.current) {
+              // Quitar clase si ya no excede el límite
+              eventRef.current.classList.remove('cannot-place');
+            }
           }
-        } else {
-          if (eventRef.current) {
-            // Quitar clase si ya no excede el límite
-            eventRef.current.classList.remove('cannot-place');
-          }
+          
+          highlightTargetSlot(targetSlot);
         }
-        
-        highlightTargetSlot(targetSlot);
       } else if (dragInfo.current.grid && dragInfo.current.grid.timeSlots.length > 0) {
         // Fallback: si no encontramos slot, buscar uno cercano a la posición actual
         const bestGuessSlot = findBestGuessSlot(e.clientX, e.clientY, dragInfo.current);
@@ -230,11 +273,17 @@ export function useEventDrag({
     
     const slots = dragInfo.grid.timeSlots;
     
-    // 1. Intentar una búsqueda por proximidad espacial
+    // Intentar una búsqueda por proximidad espacial
     let nearestSlot = null;
     let minDistance = Infinity;
     
     for (const slot of slots) {
+      // MEJORADO: Verificar que sea una casilla de tiempo válida
+      if (!slot.classList.contains('calendar-time-slot') && 
+          !slot.classList.contains('day-view-hour-slot')) {
+        continue;
+      }
+      
       const rect = slot.getBoundingClientRect();
       
       // Verificar si el cursor está dentro de los límites horizontales de la celda
@@ -257,6 +306,29 @@ export function useEventDrag({
       const originalRect = dragInfo.grid.startSlot.getBoundingClientRect();
       dragInfo.virtualDeltaY = targetRect.top - originalRect.top;
       dragInfo.grid.targetSlot = nearestSlot;
+      
+      // Obtener información de hora y minutos
+      const hour = parseInt(nearestSlot.getAttribute('data-hour') || '0', 10);
+      const minutes = parseInt(nearestSlot.getAttribute('data-minutes') || '0', 10);
+      dragInfo.grid.targetHour = hour;
+      dragInfo.grid.targetMinutes = minutes;
+      
+      // Verificar conteo de eventos (igual que en handleMouseMove)
+      const currentEventId = event.id;
+      let eventsCount = 0;
+      
+      const eventWrappers = nearestSlot.querySelectorAll('.event-wrapper');
+      eventWrappers.forEach(wrapper => {
+        const eventEl = wrapper.querySelector('.calendar-event');
+        if (eventEl && eventEl.getAttribute('data-event-id') !== currentEventId) {
+          eventsCount++;
+        }
+      });
+      
+      dragInfo.grid.targetEventsCount = eventsCount;
+      
+      // Determinar si excedería el límite
+      dragInfo.wouldExceedLimit = eventsCount >= maxSimultaneousEvents;
     }
     
     return nearestSlot;
@@ -272,6 +344,7 @@ export function useEventDrag({
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
     removeAllHighlights();
+    removeAllLimitIndicators(); // NUEVO: Limpiar indicadores de límite
     document.body.classList.remove('dragging-active');
     document.body.classList.remove('snap-active');
     
@@ -294,8 +367,13 @@ export function useEventDrag({
       return;
     }
     
+    // PUNTO CLAVE: Verificar si excedería el límite antes de aplicar cambios
+    const wouldExceedLimit = dragInfo.current.wouldExceedLimit;
+    
     // Si hubo movimiento real pero excedería el límite, bloquear la acción
-    if (dragInfo.current.wouldExceedLimit) {
+    if (wouldExceedLimit) {
+      console.log('Acción bloqueada: excedería el límite de eventos simultáneos:', maxSimultaneousEvents);
+      
       if (eventRef.current) {
         // Simplemente restaurar a su posición original
         eventRef.current.style.transform = '';
@@ -303,8 +381,6 @@ export function useEventDrag({
         eventRef.current.classList.remove('dragging');
         eventRef.current.classList.remove('cannot-place');
       }
-      
-      console.warn(`Acción bloqueada: excedería el límite de eventos simultáneos (${maxSimultaneousEvents})`);
       
       // Finalizar arrastre sin actualizaciones
       setDragging(false);
@@ -439,6 +515,14 @@ export function useEventDrag({
         onUpdate(updatedEvent);
       } catch (error) {
         console.error('Error al finalizar arrastre:', error);
+        
+        // Restaurar posición en caso de error
+        if (eventRef.current) {
+          eventRef.current.classList.remove('dragging');
+          eventRef.current.classList.remove('cannot-place');
+          eventRef.current.style.transform = '';
+          eventRef.current.style.opacity = '1';
+        }
       }
       
       // Manejar clics inmediatos después de soltar el arrastre

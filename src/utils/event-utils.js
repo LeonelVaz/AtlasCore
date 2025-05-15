@@ -242,15 +242,30 @@ export function findTargetSlot(clientX, clientY, dragInfo) {
     // Actualizar el grid con información de la celda objetivo
     dragInfo.grid.targetSlot = targetSlot;
     
-    // NUEVO: Extraer información de hora y minutos de la celda
-    // Esta información es útil para verificar eventos simultáneos
+    // Extraer información de hora y minutos de la celda
     const hour = parseInt(targetSlot.getAttribute('data-hour') || '0', 10);
     const minutes = parseInt(targetSlot.getAttribute('data-minutes') || '0', 10);
     dragInfo.grid.targetHour = hour;
     dragInfo.grid.targetMinutes = minutes;
     
-    // NUEVO: Extraer el conteo de eventos si ya está en el atributo
-    const eventsCount = parseInt(targetSlot.getAttribute('data-events-count') || '0', 10);
+    // MEJORADO: Obtener conteo de eventos de forma más confiable
+    let eventsCount = parseInt(targetSlot.getAttribute('data-events-count') || '0', 10);
+    
+    // Contar eventos visualmente si están disponibles los selectores DOM
+    if (targetSlot.querySelectorAll) {
+      const visibleEvents = targetSlot.querySelectorAll('.calendar-event:not(.dragging)');
+      const domCount = visibleEvents.length;
+      
+      // Usar el valor más alto entre el atributo y el conteo visual
+      if (domCount > eventsCount) {
+        eventsCount = domCount;
+      }
+      
+      // Actualizar el atributo para mantener la coherencia
+      targetSlot.setAttribute('data-events-count', eventsCount.toString());
+    }
+    
+    // Actualizar el conteo en la información de arrastre
     dragInfo.grid.targetEventsCount = eventsCount;
     
     // Obtener el rectángulo de la celda objetivo
