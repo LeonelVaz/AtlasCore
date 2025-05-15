@@ -11,7 +11,8 @@ function TimeGrid({
   onCellClick, 
   onUpdateEvent, 
   snapValue,
-  renderDayHeader 
+  renderDayHeader,
+  maxSimultaneousEvents = 3 // Número máximo de eventos simultáneos (por defecto 3)
 }) {
   // Obtener la escala de tiempo del contexto
   const timeScaleContext = useContext(TimeScaleContext);
@@ -34,7 +35,8 @@ function TimeGrid({
     removeCustomTimeSlot,
     canAddIntermediateSlot,
     canAddIntermediateSlotAt15,
-    getEventPositionInSlot
+    getEventPositionInSlot,
+    eventsOverlapInTimeSlot
   } = useTimeGrid(0, 24, cellHeight);
 
   // Renderizar eventos que continúan desde el día anterior
@@ -94,7 +96,8 @@ function TimeGrid({
               gridSize={cellHeight}
               snapValue={snapValue}
               isMicroEvent={isMicroEvent}
-              customSlots={customSlots} // Pasar información de franjas personalizadas
+              customSlots={customSlots}
+              maxSimultaneousEvents={maxSimultaneousEvents}
             />
           </div>
         );
@@ -105,7 +108,90 @@ function TimeGrid({
     }
   };
 
-  // Renderizar eventos en la celda
+  // FUNCIÓN: Calcular posicionamiento de eventos simultáneos
+  const calculateEventPositioning = (eventsInSlot, day, hour, minutes, duration) => {
+    try {
+      if (!eventsInSlot || eventsInSlot.length === 0) return [];
+      
+      // Si hay un solo evento, use todo el ancho disponible
+      if (eventsInSlot.length === 1) {
+        return [{
+          event: eventsInSlot[0],
+          column: 0,
+          columnCount: 1
+        }];
+      }
+      
+      // Analizar solapamientos y ubicar en columnas
+      // Esta es una implementación básica que puede mejorarse con algoritmos más sofisticados
+      const eventPositions = [];
+      let columns = [];
+      
+      // Ordenar eventos por hora de inicio
+      const sortedEvents = [...eventsInSlot].sort((a, b) => {
+        const startA = new Date(a.start).getTime();
+        const startB = new Date(b.start).getTime();
+        return startA - startB;
+      });
+      
+      // Contar cuántos eventos ya existen en este slot
+      const existingEventsCount = sortedEvents.length;
+      
+      // Para marcar casillas con atributos de conteo, usamos un enfoque diferente
+      // ya que no tenemos dragInfo disponible en este contexto
+      const targetSlot = document.querySelector(`.calendar-cell[data-hour="${hour}"][data-minutes="${minutes}"]`);
+      if (targetSlot) {
+        targetSlot.setAttribute('data-events-count', existingEventsCount.toString());
+        
+        // Si ya estamos en el límite máximo, marcar para rebote
+        if (existingEventsCount >= maxSimultaneousEvents) {
+          targetSlot.classList.add('will-bounce');
+        } else {
+          targetSlot.classList.remove('will-bounce');
+        }
+      }
+      
+      // Asignar columnas a cada evento
+      sortedEvents.forEach(event => {
+        // Buscar la primera columna disponible
+        let column = 0;
+        while (columns[column] && eventsOverlapInTimeSlot(event, columns[column], day)) {
+          column++;
+          
+          // Si superamos el máximo de eventos simultáneos permitidos, rebotamos
+          if (column >= maxSimultaneousEvents) {
+            console.warn(`Evento ${event.id} rebotado: máximo de eventos simultáneos alcanzado (${maxSimultaneousEvents})`);
+            return; // Omitir este evento
+          }
+        }
+        
+        // Asignar el evento a esta columna
+        columns[column] = event;
+        
+        // Guardar la posición del evento
+        eventPositions.push({
+          event,
+          column,
+          columnCount: Math.max(column + 1, columns.filter(Boolean).length)
+        });
+      });
+      
+      // Actualizar el recuento de columnas para todos los eventos
+      const maxColumn = Math.max(...eventPositions.map(ep => ep.column)) + 1;
+      eventPositions.forEach(ep => {
+        ep.columnCount = maxColumn;
+      });
+      
+      return eventPositions;
+    } catch (error) {
+      console.error('Error al calcular posicionamiento de eventos:', error, {
+        day, hour, minutes, duration
+      });
+      return [];
+    }
+  };
+
+  // Renderizar eventos en la celda (actualizado para manejar eventos simultáneos)
   const renderEvents = (day, hour, minutes = 0, duration) => {
     try {
       // Si es la primera hora del día, mostrar eventos que continúan del día anterior
@@ -121,7 +207,14 @@ function TimeGrid({
         shouldShowEventStart(event, day, hour, minutes, duration)
       );
       
-      return eventsStartingInSlot.map(event => {
+      // Si no hay eventos, retornar null
+      if (eventsStartingInSlot.length === 0) return null;
+      
+      // Calcular posicionamiento para eventos simultáneos
+      const eventPositions = calculateEventPositioning(eventsStartingInSlot, day, hour, minutes, duration);
+      
+      // Renderizar los eventos con su posicionamiento
+      return eventPositions.map(({ event, column, columnCount }) => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end);
         
@@ -148,12 +241,16 @@ function TimeGrid({
         // Determinar si es un evento pequeño (menos de 30 minutos)
         const isMicroEvent = heightPx < 25;
         
+        // Calcular ancho en función del número de columnas y la posición
+        const columnWidth = 100 / columnCount;
+        
+        // Estilo actualizado para manejar eventos simultáneos
         const eventStyle = {
           position: 'absolute',
           top: `${offsetPixels}px`,
           height: `${heightPx}px`,
-          left: '2px',
-          right: '2px',
+          left: `calc(${column * columnWidth}% + 2px)`,
+          width: `calc(${columnWidth}% - 4px)`, // Reducir 4px para dejar margen
           zIndex: 20
         };
         
@@ -175,7 +272,8 @@ function TimeGrid({
               gridSize={cellHeight}
               snapValue={snapValue}
               isMicroEvent={isMicroEvent}
-              customSlots={customSlots} // Pasar información de franjas personalizadas
+              customSlots={customSlots}
+              maxSimultaneousEvents={maxSimultaneousEvents}
             />
           </div>
         );
@@ -276,7 +374,9 @@ function TimeGrid({
                       'time-slot-standard'
                     }`}
                     data-testid="calendar-time-slot"
-                    onClick={() => onCellClick(dateWithTime, hour, 0, standardSlotDuration)} // Pasar duración de la celda
+                    data-hour={hour}
+                    data-minutes={0}
+                    onClick={() => onCellClick(dateWithTime, hour, 0, standardSlotDuration)}
                     style={{ 
                       height: `${standardSlotHeight}px`, 
                       minHeight: `${standardSlotHeight}px` 
@@ -388,7 +488,9 @@ function TimeGrid({
                             'time-slot-standard'
                           }`}
                           data-testid="calendar-time-slot-custom"
-                          onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)} // Pasar duración de la celda
+                          data-hour={hour}
+                          data-minutes={slot.minutes}
+                          onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)}
                           style={{ 
                             height: `${slotHeight}px`, 
                             minHeight: `${slotHeight}px` 

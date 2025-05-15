@@ -1,8 +1,9 @@
-// src/components/settings/settings-panel.jsx (actualizado)
+// src/components/settings/settings-panel.jsx
 import React, { useState } from 'react';
 import ThemeConfig from './theme-config';
 import TimeScaleConfig from './time-scale-config';
 import TimeSlotEditor from './time-slot-editor';
+import CalendarConfig from './calendar-config'; // Importamos el nuevo componente
 import SidebarItem from '../ui/sidebar/sidebar-item';
 
 // Iconos para las secciones de configuración (usando Material Icons)
@@ -46,8 +47,9 @@ const SettingsPanel = () => {
         return <TimeScaleConfig />;
       case 'time_slots':
         return <TimeSlotEditor />;
-      case 'general':
       case 'calendar':
+        return <CalendarConfig />; // Renderizamos nuestro nuevo componente
+      case 'general':
       case 'backup':
         return (
           <div className="settings-placeholder">

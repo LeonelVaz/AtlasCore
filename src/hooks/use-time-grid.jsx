@@ -1,4 +1,4 @@
-// src/hooks/use-time-grid.jsx (versión completa corregida)
+// src/hooks/use-time-grid.jsx
 import { useState, useEffect, useCallback } from 'react';
 import { formatHour } from '../utils/date-utils';
 import { DEFAULT_HOUR_CELL_HEIGHT, STORAGE_KEYS } from '../core/config/constants';
@@ -287,6 +287,62 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
   }, [customSlots]);
 
   /**
+   * NUEVA FUNCIÓN: Verifica si dos eventos se solapan en una franja horaria
+   * @param {Object} event1 - Primer evento
+   * @param {Object} event2 - Segundo evento
+   * @param {Date} day - Día a verificar (opcional)
+   * @returns {boolean} - true si los eventos se solapan
+   */
+  const eventsOverlapInTimeSlot = useCallback((event1, event2, day = null) => {
+    try {
+      if (!event1?.start || !event1?.end || !event2?.start || !event2?.end) {
+        return false;
+      }
+      
+      const start1 = new Date(event1.start);
+      const end1 = new Date(event1.end);
+      const start2 = new Date(event2.start);
+      const end2 = new Date(event2.end);
+      
+      if (isNaN(start1.getTime()) || isNaN(end1.getTime()) || 
+          isNaN(start2.getTime()) || isNaN(end2.getTime())) {
+        return false;
+      }
+      
+      // Si se proporciona un día específico, ajustar para ese día
+      if (day) {
+        // Verificar si ambos eventos tienen lugar en ese día
+        const dayStart = new Date(day);
+        dayStart.setHours(0, 0, 0, 0);
+        
+        const dayEnd = new Date(day);
+        dayEnd.setHours(23, 59, 59, 999);
+        
+        // Si alguno de los eventos no ocurre en este día, no hay solapamiento
+        if ((end1 <= dayStart || start1 >= dayEnd) || 
+            (end2 <= dayStart || start2 >= dayEnd)) {
+          return false;
+        }
+        
+        // Ajustar horas de inicio y fin a los límites del día
+        const visibleStart1 = start1 < dayStart ? dayStart : start1;
+        const visibleEnd1 = end1 > dayEnd ? dayEnd : end1;
+        const visibleStart2 = start2 < dayStart ? dayStart : start2;
+        const visibleEnd2 = end2 > dayEnd ? dayEnd : end2;
+        
+        // Verificar solapamiento en la parte visible
+        return visibleStart1 < visibleEnd2 && visibleStart2 < visibleEnd1;
+      }
+      
+      // Sin día específico, comprobar solapamiento general
+      return start1 < end2 && start2 < end1;
+    } catch (error) {
+      console.error('Error al verificar solapamiento de eventos:', error);
+      return false;
+    }
+  }, []);
+
+  /**
    * Verifica si un evento comienza dentro de esta celda
    * @param {Object} event - Evento a verificar
    * @param {Date} day - Día a verificar
@@ -452,7 +508,8 @@ function useTimeGrid(startHour = 0, endHour = 24, cellHeight = DEFAULT_HOUR_CELL
     canAddIntermediateSlotAt15,
     validateSubdivisionOrder,
     isLoading,
-    getEventPositionInSlot
+    getEventPositionInSlot,
+    eventsOverlapInTimeSlot  // Nueva función exportada
   };
 }
 

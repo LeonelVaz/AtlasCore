@@ -1,5 +1,4 @@
-// use-event-drag.jsx - VERSIÓN CORREGIDA COMPLETA
-
+// src/hooks/use-event-drag.jsx - Corregido para implementar rebote real
 import { useState, useRef, useEffect } from 'react';
 import { initializeGridInfo, findTargetSlot, calculatePreciseTimeChange } from '../utils/event-utils';
 
@@ -13,7 +12,8 @@ export function useEventDrag({
   gridSize = 60,
   snapValue = 0,
   setBlockClicks,
-  customSlots = {} // Recibe información de franjas personalizadas
+  customSlots = {},
+  maxSimultaneousEvents = 3 // Agregar como parámetro directo para acceder al valor actual
 }) {
   const [dragging, setDragging] = useState(false);
   const dragInfo = useRef({
@@ -22,7 +22,7 @@ export function useEventDrag({
     startY: 0,
     deltaX: 0,
     deltaY: 0,
-    virtualDeltaY: undefined, // Nuevo campo para coordinar con el previsualizador
+    virtualDeltaY: undefined,
     listeners: false,
     startTime: 0,
     endTime: 0,
@@ -30,6 +30,7 @@ export function useEventDrag({
     wasActuallyDragged: false,
     originalStartMinutes: null,
     originalDuration: null,
+    originalEvent: null, // Guardar el evento original completo para rebote
     grid: {
       containerElement: null,
       gridRect: null,
@@ -45,7 +46,8 @@ export function useEventDrag({
       startSlot: null,
       targetSlot: null
     },
-    highlightedCell: null
+    highlightedCell: null,
+    willBounce: false // Nueva propiedad para rastrear si el evento rebotará
   });
 
   // Limpiar listeners al desmontar
@@ -119,7 +121,7 @@ export function useEventDrag({
         startY: e.clientY,
         deltaX: 0,
         deltaY: 0,
-        virtualDeltaY: undefined, // Inicializado como undefined
+        virtualDeltaY: undefined,
         listeners: true,
         startTime: Date.now(),
         endTime: 0,
@@ -127,8 +129,10 @@ export function useEventDrag({
         wasActuallyDragged: false,
         originalDuration: durationMinutes,
         originalStartMinutes: startMinutes,
+        originalEvent: { ...event }, // Guardar una copia del evento original
         grid: gridInfo,
-        highlightedCell: null
+        highlightedCell: null,
+        willBounce: false
       };
       
       document.addEventListener('mousemove', handleMouseMove);
@@ -177,12 +181,34 @@ export function useEventDrag({
         eventRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
       }
       
-      // Usar la función mejorada de findTargetSlot que actualiza virtualDeltaY
+      // MODIFICADO: Verificar si el evento rebotará en su nueva posición
       const targetSlot = findTargetSlot(e.clientX, e.clientY, dragInfo.current);
       
       // Esto es clave: asegurarnos de que siempre resaltamos algún slot
       // incluso cuando el cursor está sobre el propio evento
       if (targetSlot) {
+        // NUEVO: Verificar si hay demasiados eventos en esta casilla
+        const targetDate = new Date(dragInfo.current.grid.days[0]); // Fecha base de la cuadrícula
+        const targetHour = parseInt(targetSlot.getAttribute('data-hour') || '0');
+        const targetMinutes = parseInt(targetSlot.getAttribute('data-minutes') || '0');
+        
+        // Mostrar un estilo visual diferente cuando el evento rebotará
+        // Clase especial para los slots que causarían rebote
+        dragInfo.current.willBounce = targetSlot.classList.contains('will-bounce') || 
+                                    targetSlot.getAttribute('data-events-count') >= maxSimultaneousEvents;
+        
+        if (dragInfo.current.willBounce) {
+          targetSlot.classList.add('drag-target-bounce');
+          if (eventRef.current) {
+            eventRef.current.classList.add('will-bounce');
+          }
+        } else {
+          targetSlot.classList.remove('drag-target-bounce');
+          if (eventRef.current) {
+            eventRef.current.classList.remove('will-bounce');
+          }
+        }
+        
         highlightTargetSlot(targetSlot);
       } else if (dragInfo.current.grid && dragInfo.current.grid.timeSlots.length > 0) {
         // Fallback: si no encontramos slot, buscar uno cercano a la posición actual
@@ -252,6 +278,7 @@ export function useEventDrag({
     
     const wasActuallyDragged = dragInfo.current.moved;
     const wasRealDrag = dragInfo.current.wasActuallyDragged;
+    const willBounce = dragInfo.current.willBounce; // NUEVO: Capturar si debe rebotar
     
     // Si no hubo movimiento real, permitir que se maneje como clic
     if (!wasActuallyDragged) {
@@ -267,6 +294,41 @@ export function useEventDrag({
     
     // Si hubo movimiento real, calcular cambios
     if (wasActuallyDragged) {
+      // NUEVO: Si el evento debe rebotar, restaurar a su posición original
+      if (willBounce) {
+        if (eventRef.current) {
+          // Efecto visual de rebote
+          eventRef.current.classList.add('event-bounce-animation');
+          eventRef.current.style.transform = '';
+          
+          // Quitar clase después de la animación
+          setTimeout(() => {
+            if (eventRef.current) {
+              eventRef.current.classList.remove('event-bounce-animation');
+              eventRef.current.classList.remove('will-bounce');
+              eventRef.current.classList.remove('dragging');
+            }
+          }, 300);
+        }
+        
+        console.warn(`Evento ${event.id} rebotado: máximo de eventos simultáneos alcanzado (${maxSimultaneousEvents})`);
+        
+        // Finalizar arrastre sin actualizaciones
+        setDragging(false);
+        setTimeout(() => {
+          setBlockClicks(false);
+        }, 500);
+        
+        dragInfo.current = { 
+          dragging: false,
+          endTime: dragInfo.current.endTime,
+          wasActuallyDragged: wasRealDrag
+        };
+        
+        return;
+      }
+      
+      // Continuar con el proceso normal si no hay rebote
       let minutesDelta = 0;
       let daysDelta = 0;
       

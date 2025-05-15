@@ -1,4 +1,4 @@
-// src/core/config/constants.js (actualizado para incluir escalas de tiempo)
+// src/core/config/constants.js (actualizado para incluir MAX_SIMULTANEOUS_EVENTS)
 
 /**
  * Constantes globales para la aplicación Atlas
@@ -67,7 +67,8 @@ export const STORAGE_KEYS = {
   THEME: 'atlas_theme',
   SNAP_VALUE: 'atlas_snap_value',
   TIME_SCALE: 'atlas_time_scale',
-  CUSTOM_TIME_SLOTS: 'atlas_custom_time_slots'  // Nueva clave para franjas personalizadas
+  CUSTOM_TIME_SLOTS: 'atlas_custom_time_slots',
+  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events' // Nueva clave para eventos simultáneos
 };
 
 // Constantes para tipos de franjas horarias

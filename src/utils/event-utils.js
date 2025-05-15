@@ -242,6 +242,17 @@ export function findTargetSlot(clientX, clientY, dragInfo) {
     // Actualizar el grid con información de la celda objetivo
     dragInfo.grid.targetSlot = targetSlot;
     
+    // NUEVO: Extraer información de hora y minutos de la celda
+    // Esta información es útil para verificar eventos simultáneos
+    const hour = parseInt(targetSlot.getAttribute('data-hour') || '0', 10);
+    const minutes = parseInt(targetSlot.getAttribute('data-minutes') || '0', 10);
+    dragInfo.grid.targetHour = hour;
+    dragInfo.grid.targetMinutes = minutes;
+    
+    // NUEVO: Extraer el conteo de eventos si ya está en el atributo
+    const eventsCount = parseInt(targetSlot.getAttribute('data-events-count') || '0', 10);
+    dragInfo.grid.targetEventsCount = eventsCount;
+    
     // Obtener el rectángulo de la celda objetivo
     const targetRect = targetSlot.getBoundingClientRect();
     

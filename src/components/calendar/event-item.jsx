@@ -1,4 +1,4 @@
-// event-item.jsx - VERSIÓN MEJORADA PARA EVENTOS GRANDES
+// event-item.jsx - Actualizado para soporte de animación de rebote
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -16,7 +16,8 @@ function EventItem({
   gridSize = 60, // Altura de una celda (1 hora)
   snapValue = 0, // Valor de snap en minutos (0 = desactivado)
   isMicroEvent = false, // Indicador de evento pequeño
-  customSlots = {} // Info de franjas personalizadas
+  customSlots = {}, // Info de franjas personalizadas
+  maxSimultaneousEvents = 3 // Máximo de eventos simultáneos
 }) {
   // Referencias y estado
   const eventRef = useRef(null);
@@ -31,7 +32,8 @@ function EventItem({
     gridSize,
     snapValue,
     setBlockClicks,
-    customSlots
+    customSlots,
+    maxSimultaneousEvents // Pasar el parámetro
   });
   
   const { resizing, handleResizeStart } = useEventResize({
@@ -129,7 +131,7 @@ function EventItem({
       onClick={handleClick}
       data-event-id={event.id}
       data-recently-resized="false"
-      data-being-dragged="false" // Añadido para identificar el evento durante el arrastre
+      data-being-dragged="false"
     >
       <div className="event-title">{event.title}</div>
       <div className="event-time">{formatEventTime(event)}</div>

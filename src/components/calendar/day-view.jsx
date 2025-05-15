@@ -1,4 +1,4 @@
-// src/components/calendar/day-view.jsx (solución final)
+// src/components/calendar/day-view.jsx
 import React from 'react';
 import TimeGrid from './time-grid';
 import { formatDate } from '../../utils/date-utils';
@@ -13,7 +13,8 @@ function DayView({
   onEventClick, 
   onTimeSlotClick,
   onUpdate,
-  snapValue = 0
+  snapValue = 0,
+  maxSimultaneousEvents = 3 // Nuevo parámetro para eventos simultáneos
 }) {
   // Generar un array con un solo día para usar con TimeGrid
   const singleDay = [new Date(date)];
@@ -51,6 +52,7 @@ function DayView({
         onUpdateEvent={onUpdate}
         snapValue={snapValue}
         renderDayHeader={renderDayHeader}
+        maxSimultaneousEvents={maxSimultaneousEvents} // Pasar la propiedad al TimeGrid
       />
     </div>
   );
