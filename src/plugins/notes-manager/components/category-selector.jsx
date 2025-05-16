@@ -1,3 +1,4 @@
+// src/plugins/notes-manager/components/category-selector.jsx
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { NotesContext } from '../contexts/notes-context';
 
@@ -46,7 +47,10 @@ const CategorySelector = ({ value, onChange, canCreate = true, inline = false })
   
   // Manejar creación de nueva categoría
   const handleCreateCategory = async (e) => {
-    e.preventDefault();
+    // Evitamos que se envíe el formulario
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
     
     if (!newCategoryName.trim()) return;
     
@@ -106,7 +110,8 @@ const CategorySelector = ({ value, onChange, canCreate = true, inline = false })
           <div className="category-create-form-modal">
             <div className="category-create-form-content">
               <h3>{t('categories.createNew')}</h3>
-              <form onSubmit={handleCreateCategory}>
+              {/* Aquí cambiamos form por div */}
+              <div className="category-create-div">
                 <div className="category-form-field">
                   <label htmlFor="category-name">{t('categories.nameLabel')}</label>
                   <input
@@ -136,13 +141,14 @@ const CategorySelector = ({ value, onChange, canCreate = true, inline = false })
                     {t('common.cancel')}
                   </button>
                   <button 
-                    type="submit"
+                    type="button"
+                    onClick={handleCreateCategory}
                     className="category-form-submit"
                   >
                     {t('common.create')}
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
@@ -207,7 +213,8 @@ const CategorySelector = ({ value, onChange, canCreate = true, inline = false })
           )}
           
           {showCreateForm && (
-            <form className="category-create-form" onSubmit={handleCreateCategory}>
+            // Aquí cambiamos form por div
+            <div className="category-create-div">
               <input
                 type="text"
                 value={newCategoryName}
@@ -234,13 +241,14 @@ const CategorySelector = ({ value, onChange, canCreate = true, inline = false })
                   {t('common.cancel')}
                 </button>
                 <button 
-                  type="submit" 
+                  type="button" 
                   className="category-save-button"
+                  onClick={handleCreateCategory}
                 >
                   {t('common.create')}
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       )}
