@@ -59,13 +59,24 @@ const DynamicSidebarItems = () => {
     <>
       {pluginItems.map((registration, index) => {
         const Component = registration.component;
-        return (
-          <Component 
-            key={`${registration.pluginId}-${index}`}
-            pluginId={registration.pluginId}
-            options={registration.options}
-          />
-        );
+        
+        // Envolver en un componente seguro que capture errores
+        const SafeComponent = () => {
+          try {
+            // Proporcionar React explícitamente
+            return <Component 
+              key={`${registration.pluginId}-${index}`}
+              pluginId={registration.pluginId}
+              options={registration.options}
+              React={React}
+            />;
+          } catch (error) {
+            console.error(`Error al renderizar componente de plugin ${registration.pluginId}:`, error);
+            return null;
+          }
+        };
+        
+        return <SafeComponent key={`sidebar-plugin-${registration.pluginId}-${index}`} />;
       })}
     </>
   );
@@ -84,6 +95,9 @@ function App() {
   useEffect(() => {
     // Establecer la versión de la aplicación en una variable global
     window.APP_VERSION = '0.3.0';
+    
+    // Asegurarse de que React esté disponible globalmente para los plugins
+    window.React = React;
     
     const initializeApp = async () => {
       try {
@@ -120,6 +134,10 @@ function App() {
         
         setPluginSections(sections);
         setPluginsInitialized(true);
+        
+        // Publicar evento de inicialización para que los plugins puedan reaccionar
+        eventBus.publish('app.initialized', { timestamp: Date.now() });
+        
         console.log('Sistema de plugins inicializado correctamente');
       } catch (error) {
         console.error('Error al inicializar el sistema de plugins:', error);
@@ -127,6 +145,12 @@ function App() {
     };
     
     initializeApp();
+    
+    // Limpieza al desmontar el componente
+    return () => {
+      // Limpiar recursos globales
+      delete window.__appCore;
+    };
   }, []);
   
   // Secciones fijas de la barra lateral

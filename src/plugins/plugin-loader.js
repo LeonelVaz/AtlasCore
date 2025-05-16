@@ -23,7 +23,6 @@ export const PLUGIN_EVENTS = {
 const PLUGIN_MODULES = {
   // Plugins integrados
   // Se pueden añadir plugins integrados aquí
-  // NO AÑADIR NINGUN PLUGIN INTEGRADO NI EXTERNO EN ESTE ARCHIVO
 };
 
 class PluginLoader {
@@ -92,6 +91,34 @@ class PluginLoader {
         } catch (err) {
           console.warn('Error al cargar plugins desde Electron:', err);
         }
+      }
+      
+      // Cargar plugins desde src/plugins/ directamente
+      // Para una versión de desarrollo, buscar plugins locales en src/plugins/
+      try {
+        if (typeof require !== 'undefined') {
+          const context = require.context('../plugins/', true, /index\.js$/);
+          
+          context.keys().forEach(key => {
+            // Ignorar el propio archivo index.js del directorio plugins
+            if (key === './index.js') return;
+            
+            try {
+              const pluginModule = context(key);
+              const plugin = pluginModule.default;
+              
+              if (plugin && this.validatePluginStructure(plugin)) {
+                this.registerPlugin(plugin);
+                console.log(`Plugin local cargado: ${plugin.name} (${plugin.id})`);
+              }
+            } catch (err) {
+              console.warn(`Error al cargar plugin local desde ${key}:`, err);
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Error al buscar plugins locales:', err);
+        // Si falla require.context, probablemente estamos en producción o un entorno que no lo soporta
       }
       
       // Cargar plugins integrados (definidos en PLUGIN_MODULES)
@@ -189,14 +216,22 @@ class PluginLoader {
               // Marcar como inicializando
               this.pluginLoadingStatus[pluginId] = 'initializing';
               
-              // Llamar al método init del plugin
-              const success = plugin.init(this.core);
+              // Llamar al método init del plugin (manejar tanto promesas como valores sincrónicos)
+              const initResult = plugin.init(this.core);
               
-              // Limpiar el timeout ya que terminó correctamente
-              clearTimeout(this.pluginTimeouts[pluginId]);
-              delete this.pluginTimeouts[pluginId];
-              
-              resolve(success);
+              // Manejar resultado (podría ser una promesa o un valor booleano)
+              Promise.resolve(initResult)
+                .then(success => {
+                  // Limpiar el timeout ya que terminó correctamente
+                  clearTimeout(this.pluginTimeouts[pluginId]);
+                  delete this.pluginTimeouts[pluginId];
+                  resolve(success);
+                })
+                .catch(err => {
+                  clearTimeout(this.pluginTimeouts[pluginId]);
+                  delete this.pluginTimeouts[pluginId];
+                  reject(err);
+                });
             } catch (err) {
               clearTimeout(this.pluginTimeouts[pluginId]);
               delete this.pluginTimeouts[pluginId];
@@ -270,14 +305,22 @@ class PluginLoader {
           // Marcar como inicializando
           this.pluginLoadingStatus[pluginId] = 'initializing';
           
-          // Llamar al método init del plugin
-          const success = plugin.init(this.core);
+          // Llamar al método init del plugin (manejar tanto promesas como valores sincrónicos)
+          const initResult = plugin.init(this.core);
           
-          // Limpiar el timeout ya que terminó correctamente
-          clearTimeout(this.pluginTimeouts[pluginId]);
-          delete this.pluginTimeouts[pluginId];
-          
-          resolve(success);
+          // Manejar resultado (podría ser una promesa o un valor booleano)
+          Promise.resolve(initResult)
+            .then(success => {
+              // Limpiar el timeout ya que terminó correctamente
+              clearTimeout(this.pluginTimeouts[pluginId]);
+              delete this.pluginTimeouts[pluginId];
+              resolve(success);
+            })
+            .catch(err => {
+              clearTimeout(this.pluginTimeouts[pluginId]);
+              delete this.pluginTimeouts[pluginId];
+              reject(err);
+            });
         } catch (err) {
           clearTimeout(this.pluginTimeouts[pluginId]);
           delete this.pluginTimeouts[pluginId];
@@ -341,14 +384,22 @@ class PluginLoader {
           // Marcar como deshabilitando
           this.pluginLoadingStatus[pluginId] = 'disabling';
           
-          // Llamar al método cleanup del plugin
-          const success = plugin.cleanup(this.core);
+          // Llamar al método cleanup del plugin (manejar tanto promesas como valores sincrónicos)
+          const cleanupResult = plugin.cleanup(this.core);
           
-          // Limpiar el timeout ya que terminó correctamente
-          clearTimeout(this.pluginTimeouts[pluginId]);
-          delete this.pluginTimeouts[pluginId];
-          
-          resolve(success);
+          // Manejar resultado (podría ser una promesa o un valor booleano)
+          Promise.resolve(cleanupResult)
+            .then(success => {
+              // Limpiar el timeout ya que terminó correctamente
+              clearTimeout(this.pluginTimeouts[pluginId]);
+              delete this.pluginTimeouts[pluginId];
+              resolve(success);
+            })
+            .catch(err => {
+              clearTimeout(this.pluginTimeouts[pluginId]);
+              delete this.pluginTimeouts[pluginId];
+              reject(err);
+            });
         } catch (err) {
           clearTimeout(this.pluginTimeouts[pluginId]);
           delete this.pluginTimeouts[pluginId];

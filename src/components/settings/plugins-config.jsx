@@ -166,8 +166,12 @@ const PluginsConfig = () => {
   
   // Cargar lista de plugins
   useEffect(() => {
-    const loadPlugins = () => {
+    const loadPlugins = async () => {
       try {
+        setLoading(true);
+        // Forzar la detección de plugins
+        await pluginRegistry.refreshPlugins();
+        
         const allPlugins = pluginRegistry.getAllPlugins();
         setPlugins(allPlugins);
         setLoading(false);

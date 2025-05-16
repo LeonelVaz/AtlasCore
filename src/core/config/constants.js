@@ -122,3 +122,13 @@ export const TIME_SCALES = {
     name: 'Personalizada'
   }
 };
+
+// Permisos para plugins
+export const PLUGIN_PERMISSIONS = {
+  READ_CALENDAR: 'read_calendar',
+  WRITE_CALENDAR: 'write_calendar',
+  READ_STORAGE: 'read_storage',
+  WRITE_STORAGE: 'write_storage',
+  REGISTER_UI: 'register_ui'
+};
+

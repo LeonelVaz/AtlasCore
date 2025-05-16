@@ -35,6 +35,7 @@ const EventDecorators = ({ event }) => {
                 event={event} 
                 pluginId={registration.pluginId}
                 options={registration.options}
+                React={React} // Pasar React explícitamente
               />
             );
           } catch (error) {

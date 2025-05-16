@@ -98,9 +98,12 @@ export function createPluginCore(apis = {}) {
           window.__pluginExtensions[pointId] = [];
         }
         
+        // Asegurarse de que React esté disponible para el componente
+        const wrappedComponent = component;
+        
         window.__pluginExtensions[pointId].push({
           pluginId,
-          component,
+          component: wrappedComponent,
           options
         });
         

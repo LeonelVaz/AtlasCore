@@ -54,13 +54,27 @@ const PluginExtensionPoint = ({ pointId, extraProps = {} }) => {
     <div className={`plugin-extension-point plugin-point-${pointId}`}>
       {extensions.map((extension, index) => {
         const Component = extension.component;
+        
+        // Envolver en un componente seguro que capture errores
+        const SafeComponent = () => {
+          try {
+            return (
+              <Component 
+                {...extraProps} 
+                pluginId={extension.pluginId}
+                options={extension.options}
+                React={React} // Pasar React explícitamente
+              />
+            );
+          } catch (error) {
+            console.error(`Error al renderizar componente de plugin ${extension.pluginId}:`, error);
+            return null;
+          }
+        };
+        
         return (
           <div key={`${extension.pluginId}-${index}`} className="plugin-extension-container">
-            <Component 
-              {...extraProps} 
-              pluginId={extension.pluginId}
-              options={extension.options}
-            />
+            <SafeComponent />
           </div>
         );
       })}

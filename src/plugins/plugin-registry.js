@@ -112,10 +112,30 @@ class PluginRegistry {
 
   /**
    * Obtiene la lista completa de plugins
+   * @param {Object} options - Opciones para filtrar plugins
+   * @param {boolean} options.includeIntegrated - Incluir plugins integrados
+   * @param {boolean} options.includeExternal - Incluir plugins externos
    * @returns {Array} - Lista de plugins con su estado
    */
-  getAllPlugins() {
-    return pluginLoader.getAllPlugins();
+  getAllPlugins(options = { includeIntegrated: true, includeExternal: true }) {
+    const allPlugins = pluginLoader.getAllPlugins();
+    
+    // Si se incluyen ambos tipos, devolver todos
+    if (options.includeIntegrated && options.includeExternal) {
+      return allPlugins;
+    }
+    
+    // Filtrar según las opciones
+    return allPlugins.filter(plugin => {
+      // Determinar si es un plugin integrado (simplificado para esta versión)
+      // En versiones futuras podría mejorarse este criterio
+      const isIntegrated = plugin.id.startsWith('atlas-');
+      
+      if (options.includeIntegrated && isIntegrated) return true;
+      if (options.includeExternal && !isIntegrated) return true;
+      
+      return false;
+    });
   }
 
   /**
