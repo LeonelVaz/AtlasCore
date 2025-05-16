@@ -28,6 +28,19 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
     return translations[key] || key;
   };
   
+  // Función auxiliar para comparar arrays
+  const arraysAreEqual = (array1, array2) => {
+    if (array1 === array2) return true;
+    if (!array1 || !array2) return false;
+    if (array1.length !== array2.length) return false;
+    
+    // Ordenar para comparar independientemente del orden
+    const sorted1 = [...array1].sort();
+    const sorted2 = [...array2].sort();
+    
+    return sorted1.every((item, index) => item === sorted2[index]);
+  };
+  
   // Sincronizar con el valor externo
   useEffect(() => {
     if (Array.isArray(value)) {
@@ -40,16 +53,22 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
   // Obtener sugerencias de etiquetas existentes
   useEffect(() => {
     // Si no hay sugerencias explícitas, usar las etiquetas globales
+    let newSuggestions;
+    
     if (!suggestions || suggestions.length === 0) {
       // Solo obtener etiquetas globales si el contexto está disponible
       if (context?.getAllTags) {
-        const globalTags = context.getAllTags();
-        setFilteredSuggestions(globalTags);
+        newSuggestions = context.getAllTags();
       } else {
-        setFilteredSuggestions([]);
+        newSuggestions = [];
       }
     } else {
-      setFilteredSuggestions(suggestions);
+      newSuggestions = suggestions;
+    }
+    
+    // Verificar si realmente hay cambios antes de actualizar el estado
+    if (!arraysAreEqual(filteredSuggestions, newSuggestions)) {
+      setFilteredSuggestions(newSuggestions);
     }
   }, [suggestions, context]);
   
@@ -71,18 +90,26 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
   // Filtrar sugerencias según el input
   useEffect(() => {
     if (input.trim() === '') {
-      // Mostrar todas las sugerencias o las más recientes
+      // Evitar actualizaciones innecesarias para sugerencias
       const allSuggestions = suggestions || (context?.getAllTags ? context.getAllTags() : []);
-      setFilteredSuggestions(allSuggestions);
+      
+      // Solo actualizar si hay cambios
+      if (!arraysAreEqual(filteredSuggestions, allSuggestions)) {
+        setFilteredSuggestions(allSuggestions);
+      }
     } else {
       // Filtrar sugerencias que contienen el texto de entrada
       const allSuggestions = suggestions || (context?.getAllTags ? context.getAllTags() : []);
       const filtered = allSuggestions.filter(
         tag => tag.toLowerCase().includes(input.toLowerCase())
       );
-      setFilteredSuggestions(filtered);
+      
+      // Solo actualizar si hay cambios
+      if (!arraysAreEqual(filteredSuggestions, filtered)) {
+        setFilteredSuggestions(filtered);
+      }
     }
-  }, [input, suggestions, context]);
+  }, [input]);
   
   // Añadir una etiqueta
   const addTag = (tag) => {
