@@ -1,6 +1,4 @@
-// src/components/calendar/event-form.jsx
-
-import React, { useState } from 'react';
+import React from 'react';
 import Dialog from '../ui/dialog';
 import Button from '../ui/button';
 
@@ -11,15 +9,8 @@ function EventForm({
   onSave,
   onChange,
   onDelete,
-  onClose,
-  children // Añadimos soporte para children para los puntos de extensión
+  onClose
 }) {
-  // Estado para manejar la pestaña activa (para plugins)
-  const [activeTab, setActiveTab] = useState('main');
-  
-  // Verificar si hay componentes de extensión
-  const hasExtensions = React.Children.count(children) > 0;
-  
   return (
     <Dialog
       isOpen={true}
@@ -34,26 +25,7 @@ function EventForm({
         </div>
       )}
       
-      {/* Pestañas si hay extensiones */}
-      {hasExtensions && (
-        <div className="event-form-tabs">
-          <button 
-            className={`event-form-tab ${activeTab === 'main' ? 'active' : ''}`}
-            onClick={() => setActiveTab('main')}
-          >
-            Principal
-          </button>
-          <button 
-            className={`event-form-tab ${activeTab === 'extensions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('extensions')}
-          >
-            Adicional
-          </button>
-        </div>
-      )}
-      
-      {/* Contenido principal del formulario */}
-      <div className={`event-form-content ${activeTab === 'main' ? 'active' : ''}`}>
+      <div className="event-form-content active">
         <div className="form-group">
           <label htmlFor="event-title">Título:</label>
           <input 
@@ -98,15 +70,6 @@ function EventForm({
           />
         </div>
       </div>
-      
-      {/* Contenido de extensiones */}
-      {hasExtensions && (
-        <div className={`event-form-content ${activeTab === 'extensions' ? 'active' : ''}`}>
-          <div className="event-form-extensions">
-            {children}
-          </div>
-        </div>
-      )}
       
       {isEditing && (
         <div className="form-actions">

@@ -1,58 +1,7 @@
-// src/components/calendar/event-item.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
 import { formatEventTime } from '../../utils/time-utils';
-
-// Componente que renderiza decoradores de eventos (extensiones de plugins)
-const EventDecorators = ({ event }) => {
-  const [decorators, setDecorators] = useState([]);
-  
-  // Obtener decoradores registrados
-  useEffect(() => {
-    if (!window.__pluginExtensions || !window.__pluginExtensions['calendar.eventDecorator']) {
-      return;
-    }
-    
-    // Obtenemos todos los decoradores registrados
-    const registrations = window.__pluginExtensions['calendar.eventDecorator'];
-    setDecorators(registrations);
-  }, []);
-  
-  // No renderizar nada si no hay decoradores
-  if (!decorators.length) return null;
-  
-  return (
-    <div className="event-decorators">
-      {decorators.map((registration, index) => {
-        const Component = registration.component;
-        
-        // Usamos un envoltorio para capturar errores
-        const SafeComponent = () => {
-          try {
-            return (
-              <Component 
-                event={event} 
-                pluginId={registration.pluginId}
-                options={registration.options}
-                React={React} // Pasar React explícitamente
-              />
-            );
-          } catch (error) {
-            console.error(`Error en decorador de plugin ${registration.pluginId}:`, error);
-            return null; // No renderizar nada si hay error
-          }
-        };
-        
-        return (
-          <div key={`${registration.pluginId}-${index}`} className="event-decorator">
-            <SafeComponent />
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 function EventItem({ 
   event, 
@@ -155,9 +104,6 @@ function EventItem({
     >
       <div className="event-title">{event.title}</div>
       <div className="event-time">{formatEventTime(event)}</div>
-      
-      {/* Decoradores de eventos añadidos por plugins */}
-      <EventDecorators event={event} />
       
       {!continuesNextDay && ( 
         <div 

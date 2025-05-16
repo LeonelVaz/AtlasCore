@@ -66,10 +66,7 @@ export const STORAGE_KEYS = {
   SNAP_VALUE: 'atlas_snap_value',
   TIME_SCALE: 'atlas_time_scale',
   CUSTOM_TIME_SLOTS: 'atlas_custom_time_slots',
-  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events',
-  // Nuevas claves para el sistema de plugins
-  PLUGINS_STATE: 'atlas_plugins_state',
-  PLUGIN_CONFIG: 'atlas_plugin_config'
+  MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events'
 };
 
 // Tipos de franja horaria
@@ -83,7 +80,6 @@ export const TIME_SLOT_TYPES = {
 // Tipos de módulos
 export const MODULE_TYPES = {
   CORE: 'core',
-  PLUGIN: 'plugin',
   SERVICE: 'service'
 };
 
@@ -122,13 +118,3 @@ export const TIME_SCALES = {
     name: 'Personalizada'
   }
 };
-
-// Permisos para plugins
-export const PLUGIN_PERMISSIONS = {
-  READ_CALENDAR: 'read_calendar',
-  WRITE_CALENDAR: 'write_calendar',
-  READ_STORAGE: 'read_storage',
-  WRITE_STORAGE: 'write_storage',
-  REGISTER_UI: 'register_ui'
-};
-

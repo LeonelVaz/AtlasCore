@@ -1,10 +1,8 @@
-// src/components/settings/settings-panel.jsx (Corregido)
 import React, { useState } from 'react';
 import ThemeConfig from './theme-config';
 import TimeScaleConfig from './time-scale-config';
 import TimeSlotEditor from './time-slot-editor';
 import CalendarConfig from './calendar-config';
-import PluginsConfig from './plugins-config'; // Asegúrate de que este componente existe
 import SidebarItem from '../ui/sidebar/sidebar-item';
 
 // Iconos para las secciones de configuración (usando Material Icons)
@@ -14,8 +12,7 @@ const SECTION_ICONS = {
   CALENDAR: 'calendar_today',
   TIME_SCALE: 'schedule',
   TIME_SLOTS: 'horizontal_split',
-  BACKUP: 'backup',
-  PLUGINS: 'extension' // Icono para plugins
+  BACKUP: 'backup'
 };
 
 /**
@@ -32,7 +29,6 @@ const SettingsPanel = () => {
     { id: 'time_scale', label: 'Escala de Tiempo', icon: SECTION_ICONS.TIME_SCALE },
     { id: 'time_slots', label: 'Franjas Horarias', icon: SECTION_ICONS.TIME_SLOTS },
     { id: 'calendar', label: 'Calendario', icon: SECTION_ICONS.CALENDAR },
-    { id: 'plugins', label: 'Plugins', icon: SECTION_ICONS.PLUGINS }, // Sección de plugins
     { id: 'backup', label: 'Respaldo', icon: SECTION_ICONS.BACKUP }
   ];
   
@@ -52,8 +48,6 @@ const SettingsPanel = () => {
         return <TimeSlotEditor />;
       case 'calendar':
         return <CalendarConfig />;
-      case 'plugins':
-        return <PluginsConfig />; // Renderizar la configuración de plugins
       case 'general':
       case 'backup':
         return (
