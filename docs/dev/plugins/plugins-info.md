@@ -330,3 +330,61 @@ La primera fase de implementación se ha completado, estableciendo la infraestru
    - Opción para recargar plugins disponibles
 
 Esta implementación proporciona la base fundamental sobre la que se construirán el resto de las funcionalidades en las fases siguientes, permitiendo ya la detección, validación, activación y desactivación básica de plugins.
+
+## Fase 2: API Core Fundamental
+
+La segunda fase ha sido completada, desarrollando un sistema robusto de comunicación y almacenamiento persistente para plugins.
+
+### Archivos nuevos y modificados:
+
+**Funcionalidades principales:**
+- `src/core/plugins/plugin-events.js`: Sistema de eventos para comunicación entre plugins
+- `src/core/plugins/plugin-storage.js`: Sistema de almacenamiento persistente para plugins
+- `src/core/plugins/plugin-error-handler.js`: Gestión centralizada de errores de plugins
+- `src/core/plugins/core-api.js`: (Mejorado) Implementación completa de API core
+- `src/core/config/constants.js`: (Actualizado) Añadidas constantes para el sistema de plugins
+
+**Ejemplos y pruebas:**
+- `src/plugins/example-plugin/index.js`: Plugin de ejemplo funcional
+- `src/plugins/README.md`: Documentación para desarrolladores de plugins
+
+**Interfaz de usuario:**
+- `src/components/settings/plugins-panel.jsx`: (Mejorado) Panel avanzado con manejo de errores
+- `src/styles/settings/plugins-panel.css`: Estilos para la interfaz de plugins
+
+### Funcionalidades implementadas:
+
+1. **Sistema de eventos para plugins**
+   - Mecanismo de publicación/suscripción entre plugins (`core.events`)
+   - Namespacing para evitar colisiones entre plugins
+   - Gestión de eventos por plugin para limpieza automática
+   - Propagación de eventos de la aplicación a los plugins
+
+2. **Sistema de almacenamiento persistente**
+   - API para guardar/obtener/eliminar datos por plugin (`core.storage`)
+   - Aislamiento de datos entre plugins
+   - Persistencia entre sesiones y reinicios
+   - Limpieza de datos al desinstalar plugins
+   - Control de límites de almacenamiento
+
+3. **Manejo avanzado de errores**
+   - Captura y registro centralizado de errores de plugins
+   - Notificación de errores en la interfaz de usuario
+   - Prevención de errores en cascada
+   - Sistema de recuperación para plugins con fallos
+
+4. **Gestión mejorada de estado**
+   - Almacenamiento persistente del estado de activación
+   - Restauración automática de plugins activos al iniciar
+   - Registro de historial de activación/desactivación
+   - Monitoreo de rendimiento de plugins
+
+5. **API Core completamente funcional**
+   - Implementación robusta del objeto `core` proporcionado a los plugins
+   - Sistema completo de comunicación entre plugins
+   - Gestión avanzada de recursos de plugins
+   - Manejo defensivo para prevenir errores
+
+Esta implementación proporciona todas las funcionalidades esenciales para que los plugins puedan comunicarse entre sí, almacenar datos de forma persistente y manejar errores adecuadamente. El sistema está diseñado para ser robusto y resistente a fallos, garantizando que un plugin defectuoso no afecte al funcionamiento general de la aplicación. La API es intuitiva y fácil de usar para los desarrolladores de plugins, siguiendo patrones familiares y bien documentados.
+
+El plugin de ejemplo demuestra el uso correcto de estas funcionalidades, sirviendo tanto como prueba de concepto como referencia para futuros desarrolladores de plugins.
