@@ -1,0 +1,100 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "loading": "Cargando...",
+    "search": "Buscar",
+    "yes": "Sí",
+    "no": "No",
+    "close": "Cerrar",
+    "apply": "Aplicar"
+  },
+  "panel": {
+    "title": "Notas",
+    "back": "Volver"
+  },
+  "notes": {
+    "new": "Nueva nota",
+    "edit": "Editar nota",
+    "delete": "Eliminar nota",
+    "confirmDelete": "¿Eliminar?",
+    "createPlaceholder": "Añadir una nota para este evento...",
+    "editPlaceholder": "Añadir o editar nota para este evento...",
+    "titlePlaceholder": "Título de la nota",
+    "contentPlaceholder": "Escribe aquí el contenido de tu nota...",
+    "sectionTitle": "Notas",
+    "willBeCreatedMessage": "Se creará una nota al guardar el evento",
+    "multipleNotesMessage": "Este evento tiene múltiples notas",
+    "viewAll": "Ver todas",
+    "color": "Color",
+    "noteFound": "nota encontrada",
+    "notesFound": "notas encontradas",
+    "noNotes": "No hay notas",
+    "linkedEvent": "Vinculada a un evento",
+    "linkedDate": "Vinculada a una fecha"
+  },
+  "search": {
+    "placeholder": "Buscar notas...",
+    "clear": "Limpiar búsqueda",
+    "noResults": "No se encontraron notas que coincidan con tu búsqueda",
+    "tryOtherFilters": "Prueba con otros filtros o crea una nueva nota"
+  },
+  "sort": {
+    "newest": "Más recientes",
+    "oldest": "Más antiguas",
+    "byTitle": "Por título",
+    "byCategory": "Por categoría"
+  },
+  "categories": {
+    "category": "Categoría",
+    "none": "Sin categoría",
+    "create": "Crear categoría",
+    "createNew": "Nueva categoría",
+    "edit": "Editar categoría",
+    "nameLabel": "Nombre",
+    "namePlaceholder": "Nombre de la categoría",
+    "colorLabel": "Color",
+    "allCategories": "Todas las categorías",
+    "uncategorized": "Sin categoría"
+  },
+  "tags": {
+    "tags": "Etiquetas",
+    "placeholder": "Añadir etiquetas...",
+    "remove": "Eliminar etiqueta",
+    "add": "Añadir etiqueta",
+    "allTags": "Todas las etiquetas"
+  },
+  "filters": {
+    "clearAll": "Limpiar todos los filtros"
+  },
+  "dates": {
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mes",
+    "earlier": "Anteriores"
+  },
+  "editor": {
+    "formatBold": "Negrita",
+    "formatItalic": "Cursiva",
+    "formatUnderline": "Subrayado",
+    "formatStrikethrough": "Tachado",
+    "formatOrderedList": "Lista numerada",
+    "formatUnorderedList": "Lista con viñetas",
+    "formatLink": "Insertar enlace",
+    "formatUnlink": "Quitar enlace",
+    "formatClear": "Limpiar formato",
+    "enterLink": "Introduce la URL del enlace:"
+  },
+  "errors": {
+    "titleRequired": "El título de la nota es obligatorio",
+    "noteNotFound": "Nota no encontrada",
+    "categoryNameRequired": "El nombre de la categoría es obligatorio",
+    "categoryNotFound": "Categoría no encontrada",
+    "missingIds": "Se requieren ID de nota y evento para vincular",
+    "missingIdDate": "Se requieren ID de nota y fecha para vincular"
+  }
+}

@@ -1,8 +1,8 @@
 /**
- * Plugin de Notas para Atlas
+ * Notes Manager para Atlas
  * 
- * Proporciona funcionalidad para crear, editar y gestionar notas
- * vinculadas a eventos del calendario o fechas específicas.
+ * Plugin que permite gestionar notas asociadas a eventos o fechas,
+ * con soporte para categorías, etiquetas y texto enriquecido.
  */
 import NotesPanel from './components/notes-panel';
 import NotesContext, { NotesProvider } from './contexts/notes-context';
@@ -18,13 +18,17 @@ import {
 import { loadTranslations, getTranslation } from './utils/i18n';
 import './styles/notes.css';
 
+// Clave para almacenamiento
 const STORAGE_KEY_PREFIX = 'plugin.notes-manager';
 
+/**
+ * Plugin Notes Manager para Atlas
+ */
 export default {
   // Metadatos del plugin
   id: 'notes-manager',
   name: 'Gestor de Notas',
-  version: '0.5.0',
+  version: '1.0.0',
   description: 'Gestiona notas vinculadas a eventos del calendario o fechas específicas',
   author: 'Atlas Team',
   
@@ -32,10 +36,10 @@ export default {
   minAppVersion: '0.3.0',
   maxAppVersion: '1.0.0',
   
-  // Referencia a la API del core
+  // API del core
   core: null,
   
-  // Estado interno del plugin
+  // Estado del plugin
   _initializedComponents: false,
   _translations: null,
   
@@ -56,7 +60,7 @@ export default {
     this.core = core;
     
     try {
-      // Cargar traducciones
+      // Cargar traducciones según el idioma del navegador
       this._translations = loadTranslations(
         navigator.language || navigator.userLanguage || 'es'
       );
@@ -66,6 +70,13 @@ export default {
       
       // Registrar el módulo como proveedor de notas
       this._registerModule();
+      
+      // Publicar evento de inicialización
+      if (core.events) {
+        core.events.publish('plugin.notes-manager.initialized', {
+          version: this.version
+        });
+      }
       
       console.log('Plugin de Notas inicializado correctamente');
       return true;
@@ -93,7 +104,7 @@ export default {
     // Registrar un elemento en la barra lateral principal
     ui.registerComponent(pluginId, 'app.sidebar', NotesButton, {
       position: 'middle',
-      label: getTranslation(this._translations, 'sidebar.notes'),
+      label: getTranslation(this._translations, 'panel.title'),
       icon: 'note'
     });
     
@@ -104,8 +115,6 @@ export default {
     
     // Registrar campos en el formulario de eventos
     ui.registerComponent(pluginId, 'form.eventCreate', NoteCreateField);
-    
-    // Registrar el componente similar para edición de eventos
     ui.registerComponent(pluginId, 'form.eventEdit', NoteEditField);
     
     this._initializedComponents = true;
@@ -121,9 +130,9 @@ export default {
       return false;
     }
     
-    // Crear una API pública que tenga acceso al core
+    // API pública del plugin con acceso al core
     const publicAPI = {
-      // Añadir una referencia directa al core
+      // Referencia al core
       core: this.core,
       
       // Identificador del plugin
@@ -156,17 +165,17 @@ export default {
         const targetDate = new Date(date);
         const notes = await this.getAllNotes();
         
-        // Filtrar notas por referencia a fecha o por fecha en general
+        // Filtrar notas por fecha
         return notes.filter(note => {
-          // Si tiene referencia explícita a fecha
+          // Si tiene referencia específica a fecha
           if (note.references && note.references.type === 'date') {
             const refDate = new Date(note.references.id);
-            return refDate.toDateString() === targetDate.toDateString();
+            return isSameDay(refDate, targetDate);
           }
           
           // Comprobar fecha de la nota
           const noteDate = new Date(note.date || note.createdAt);
-          return noteDate.toDateString() === targetDate.toDateString();
+          return isSameDay(noteDate, targetDate);
         });
       },
       
@@ -225,7 +234,6 @@ export default {
             updatedAt: new Date().toISOString(),
             color: noteData.color || '#2D4B94',
             categoryId: noteData.categoryId || null,
-            // Mantener compatibilidad con eventId y migrar al nuevo formato
             references: noteData.references || (noteData.eventId ? {
               type: 'event',
               id: noteData.eventId
@@ -239,7 +247,7 @@ export default {
           // Guardar en almacenamiento
           await this.core.storage.setItem(this.id, 'notes', updatedNotes);
           
-          // Notificar creación
+          // Publicar evento de creación
           if (this.core.events) {
             this.core.events.publish('plugin.notes-manager.note_created', { note: newNote });
           }
@@ -295,7 +303,7 @@ export default {
           // Guardar en almacenamiento
           await this.core.storage.setItem(this.id, 'notes', updatedNotes);
           
-          // Notificar actualización
+          // Publicar evento de actualización
           if (this.core.events) {
             this.core.events.publish('plugin.notes-manager.note_updated', {
               note: updatedNote,
@@ -339,7 +347,7 @@ export default {
           // Guardar en almacenamiento
           await this.core.storage.setItem(this.id, 'notes', updatedNotes);
           
-          // Notificar eliminación
+          // Publicar evento de eliminación
           if (this.core.events) {
             this.core.events.publish('plugin.notes-manager.note_deleted', { id: noteId });
           }
@@ -391,7 +399,7 @@ export default {
           // Guardar en almacenamiento
           await this.core.storage.setItem(this.id, 'categories', updatedCategories);
           
-          // Notificar creación
+          // Publicar evento de creación
           if (this.core.events) {
             this.core.events.publish('plugin.notes-manager.category_created', {
               category: newCategory
@@ -438,7 +446,7 @@ export default {
           // Guardar en almacenamiento
           await this.core.storage.setItem(this.id, 'categories', updatedCategories);
           
-          // Notificar actualización
+          // Publicar evento de actualización
           if (this.core.events) {
             this.core.events.publish('plugin.notes-manager.category_updated', {
               category: updatedCategory
@@ -494,7 +502,7 @@ export default {
           // Guardar notas actualizadas
           await this.core.storage.setItem(this.id, 'notes', updatedNotes);
           
-          // Notificar eliminación
+          // Publicar evento de eliminación
           if (this.core.events) {
             this.core.events.publish('plugin.notes-manager.category_deleted', { id: categoryId });
           }
@@ -696,7 +704,7 @@ export default {
         }
       },
       
-      // Métodos para React
+      // Obtener componentes React
       getNotesProvider: function() {
         return NotesProvider;
       },
@@ -707,10 +715,15 @@ export default {
       
       getNotesPanel: function() {
         return NotesPanel;
+      },
+      
+      // Obtener traducciones
+      getTranslations: function() {
+        return this._translations;
       }
     };
     
-    // Registrar el módulo con la nueva API pública
+    // Registrar el módulo con la API pública
     return this.core.registerModule('notes-manager', publicAPI);
   },
   
@@ -732,6 +745,11 @@ export default {
         this.core.ui.unregisterComponents(this.id);
       }
       
+      // Publicar evento de limpieza
+      if (this.core && this.core.events) {
+        this.core.events.publish('plugin.notes-manager.cleanup');
+      }
+      
       // Limpiar referencia al core
       this.core = null;
       this._initializedComponents = false;
@@ -744,3 +762,22 @@ export default {
     }
   }
 };
+
+/**
+ * Comprueba si dos fechas son el mismo día
+ * @param {Date} date1 - Primera fecha
+ * @param {Date} date2 - Segunda fecha
+ * @returns {boolean} - true si son el mismo día
+ */
+function isSameDay(date1, date2) {
+  if (!date1 || !date2) return false;
+  
+  const d1 = date1 instanceof Date ? date1 : new Date(date1);
+  const d2 = date2 instanceof Date ? date2 : new Date(date2);
+  
+  if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
+  
+  return d1.getDate() === d2.getDate() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getFullYear() === d2.getFullYear();
+}

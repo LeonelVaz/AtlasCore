@@ -3,10 +3,31 @@ import NotesList from './notes-list';
 import NoteEditor from './note-editor';
 import { NotesContext } from '../contexts/notes-context';
 
+/**
+ * Panel principal para gestión de notas
+ * Permite visualizar, crear, editar y eliminar notas
+ */
 const NotesPanel = () => {
   const [view, setView] = useState('list'); // 'list' o 'editor'
   const [selectedNote, setSelectedNote] = useState(null);
-  const { notes, createNote, updateNote, deleteNote, loading } = useContext(NotesContext);
+  const { notes, createNote, updateNote, deleteNote, loading, t, cleanOrphanedReferences } = useContext(NotesContext);
+  
+  // Verificar referencias huérfanas al cargar el panel
+  useEffect(() => {
+    const checkOrphanedReferences = async () => {
+      try {
+        // Limpiar referencias a eventos que ya no existen
+        const orphanedCount = await cleanOrphanedReferences();
+        if (orphanedCount > 0) {
+          console.log(`Se limpiaron ${orphanedCount} referencias huérfanas`);
+        }
+      } catch (error) {
+        console.error('Error al verificar referencias huérfanas:', error);
+      }
+    };
+    
+    checkOrphanedReferences();
+  }, [cleanOrphanedReferences]);
   
   // Para crear una nueva nota
   const handleNewNote = () => {
@@ -64,31 +85,31 @@ const NotesPanel = () => {
   return (
     <div className="notes-panel">
       <div className="notes-panel-header">
-        <h2 className="notes-panel-title">Notas</h2>
+        <h2 className="notes-panel-title">{t('panel.title')}</h2>
         {view === 'list' && (
           <button 
             className="notes-new-button"
             onClick={handleNewNote}
-            title="Nueva nota"
+            title={t('notes.new')}
           >
             <span className="material-icons">add</span>
-            Nueva nota
+            {t('notes.new')}
           </button>
         )}
         {view === 'editor' && (
           <button 
             className="notes-back-button"
             onClick={handleCancelEdit}
-            title="Volver a la lista"
+            title={t('panel.back')}
           >
             <span className="material-icons">arrow_back</span>
-            Volver
+            {t('panel.back')}
           </button>
         )}
       </div>
       
       {loading ? (
-        <div className="notes-loading">Cargando notas...</div>
+        <div className="notes-loading">{t('common.loading')}</div>
       ) : (
         <div className="notes-panel-content">
           {view === 'list' ? (

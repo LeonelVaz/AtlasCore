@@ -1,0 +1,100 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "loading": "Loading...",
+    "search": "Search",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "apply": "Apply"
+  },
+  "panel": {
+    "title": "Notes",
+    "back": "Back"
+  },
+  "notes": {
+    "new": "New note",
+    "edit": "Edit note",
+    "delete": "Delete note",
+    "confirmDelete": "Delete?",
+    "createPlaceholder": "Add a note for this event...",
+    "editPlaceholder": "Add or edit note for this event...",
+    "titlePlaceholder": "Note title",
+    "contentPlaceholder": "Write your note content here...",
+    "sectionTitle": "Notes",
+    "willBeCreatedMessage": "A note will be created when saving the event",
+    "multipleNotesMessage": "This event has multiple notes",
+    "viewAll": "View all",
+    "color": "Color",
+    "noteFound": "note found",
+    "notesFound": "notes found",
+    "noNotes": "No notes",
+    "linkedEvent": "Linked to an event",
+    "linkedDate": "Linked to a date"
+  },
+  "search": {
+    "placeholder": "Search notes...",
+    "clear": "Clear search",
+    "noResults": "No notes found matching your search",
+    "tryOtherFilters": "Try other filters or create a new note"
+  },
+  "sort": {
+    "newest": "Most recent",
+    "oldest": "Oldest",
+    "byTitle": "By title",
+    "byCategory": "By category"
+  },
+  "categories": {
+    "category": "Category",
+    "none": "No category",
+    "create": "Create category",
+    "createNew": "New category",
+    "edit": "Edit category",
+    "nameLabel": "Name",
+    "namePlaceholder": "Category name",
+    "colorLabel": "Color",
+    "allCategories": "All categories",
+    "uncategorized": "Uncategorized"
+  },
+  "tags": {
+    "tags": "Tags",
+    "placeholder": "Add tags...",
+    "remove": "Remove tag",
+    "add": "Add tag",
+    "allTags": "All tags"
+  },
+  "filters": {
+    "clearAll": "Clear all filters"
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "earlier": "Earlier"
+  },
+  "editor": {
+    "formatBold": "Bold",
+    "formatItalic": "Italic",
+    "formatUnderline": "Underline",
+    "formatStrikethrough": "Strikethrough",
+    "formatOrderedList": "Numbered list",
+    "formatUnorderedList": "Bulleted list",
+    "formatLink": "Insert link",
+    "formatUnlink": "Remove link",
+    "formatClear": "Clear formatting",
+    "enterLink": "Enter the link URL:"
+  },
+  "errors": {
+    "titleRequired": "Note title is required",
+    "noteNotFound": "Note not found",
+    "categoryNameRequired": "Category name is required",
+    "categoryNotFound": "Category not found",
+    "missingIds": "Note ID and event ID are required for linking",
+    "missingIdDate": "Note ID and date are required for linking"
+  }
+}

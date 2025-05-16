@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { NotesContext } from '../contexts/notes-context';
 
-// Componente que muestra un indicador visual para eventos con notas
-const NoteBadge = ({ event }) => {
+/**
+ * Componente que muestra un indicador visual para eventos con notas
+ * Se integra en la decoración de eventos del calendario
+ */
+const NoteBadge = ({ event, pluginId }) => {
   const [hasNotes, setHasNotes] = useState(false);
   
   useEffect(() => {
@@ -11,7 +13,7 @@ const NoteBadge = ({ event }) => {
       if (!event || !event.id) return;
       
       try {
-        // Intentar acceder al módulo de notas directamente
+        // Intentar acceder al módulo de notas a través del registro global
         const notesModule = window.__appModules?.['notes-manager'];
         
         if (notesModule && typeof notesModule.getNotesByEvent === 'function') {
@@ -19,9 +21,13 @@ const NoteBadge = ({ event }) => {
           const eventNotes = await notesModule.getNotesByEvent(event.id);
           setHasNotes(eventNotes && eventNotes.length > 0);
         } else {
-          // Intentar usar localStorage como fallback
+          // Fallback: comprobar mediante referencias directas
           const fallbackCheck = () => {
             try {
+              // Si el evento tiene una propiedad que indica que tiene notas
+              if (event.hasNotes) return true;
+              
+              // Intentar buscar en almacenamiento como segunda opción
               const storageKey = `plugin.notes-manager.notes`;
               const notesJson = localStorage.getItem(storageKey);
               if (!notesJson) return false;
@@ -29,8 +35,11 @@ const NoteBadge = ({ event }) => {
               const notes = JSON.parse(notesJson);
               if (!Array.isArray(notes)) return false;
               
-              const eventNotes = notes.filter(note => note.eventId === event.id);
-              return eventNotes && eventNotes.length > 0;
+              // Buscar notas que referencien este evento
+              return notes.some(note => 
+                (note.references && note.references.type === 'event' && note.references.id === event.id) ||
+                note.eventId === event.id // Compatibilidad con versiones antiguas
+              );
             } catch (err) {
               console.error('Error al verificar notas en localStorage:', err);
               return false;
