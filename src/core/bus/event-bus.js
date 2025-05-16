@@ -9,7 +9,6 @@ export const EventCategories = {
   CALENDAR: 'calendar',
   APP: 'app',
   STORAGE: 'storage',
-  PLUGIN: 'plugin'
 };
 
 class EventBus {
