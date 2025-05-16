@@ -15,7 +15,7 @@ import {
   sanitizeHtml 
 } from './utils/notes-utils';
 import { loadTranslations, getTranslation } from './utils/i18n';
-import './styles/notes.css';
+import './styles/index.css';
 
 // Clave para almacenamiento
 const STORAGE_KEY_PREFIX = 'plugin.notes-manager';

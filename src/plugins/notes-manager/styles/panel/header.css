@@ -1,0 +1,51 @@
+/**
+ * Estilos para el encabezado del panel de notas
+ */
+
+ .notes-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-calendar-header);
+}
+
+.notes-panel-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-atlas-blue);
+}
+
+.notes-new-button,
+.notes-back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.notes-new-button {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.notes-new-button:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.notes-back-button {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+}
+
+.notes-back-button:hover {
+  background-color: var(--color-button-secondary-hover);
+}

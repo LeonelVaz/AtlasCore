@@ -1,0 +1,108 @@
+/**
+ * Estilos para indicadores visuales y badges
+ */
+
+/* Indicador de nota en eventos */
+.note-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.note-badge .material-icons {
+  font-size: 12px;
+  color: white;
+}
+
+/* Insignia de referencia */
+.note-reference-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.note-reference-badge .material-icons {
+  font-size: 16px;
+}
+
+/* Información de referencias */
+.note-references-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: var(--color-info-bg);
+}
+
+/* Formulario de creación en eventos */
+.event-extension-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.event-extension-section-title {
+  font-size: 1rem;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notes-count {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-weight: normal;
+}
+
+.event-extension-field {
+  margin-bottom: 12px;
+}
+
+.note-textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.4;
+}
+
+.note-create-info {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.notes-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.notes-view-all-button {
+  background: none;
+  border: none;
+  color: var(--color-atlas-blue);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
