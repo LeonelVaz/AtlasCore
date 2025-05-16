@@ -1,0 +1,486 @@
+/**
+ * Estilos para el plugin de notas
+ */
+
+/* Panel principal de notas */
+.notes-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 600px;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.notes-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-calendar-header);
+}
+
+.notes-panel-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-atlas-blue);
+}
+
+.notes-new-button,
+.notes-back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.notes-new-button {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.notes-new-button:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.notes-back-button {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+}
+
+.notes-back-button:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+
+.notes-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.notes-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--color-text-secondary);
+}
+
+/* Lista de notas */
+.notes-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-list-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 10px;
+}
+
+.notes-search {
+  flex: 1;
+  position: relative;
+}
+
+.notes-search-input {
+  width: 100%;
+  padding: 8px 10px;
+  padding-right: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.notes-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notes-sort {
+  width: 140px;
+}
+
+.notes-sort-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.notes-group {
+  margin-bottom: 24px;
+}
+
+.notes-group-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 4px;
+}
+
+.notes-group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notes-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+/* Elemento de nota */
+.note-item {
+  background-color: var(--color-card-bg);
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 4px solid var(--color-atlas-blue);
+  box-shadow: 0 1px 3px var(--color-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.note-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px var(--color-shadow);
+}
+
+.note-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.note-item-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.note-item-date {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.note-item-content {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.note-item-event {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.note-item-event .material-icons {
+  font-size: 14px;
+}
+
+.note-item-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: none;
+}
+
+.note-item:hover .note-item-actions {
+  display: flex;
+}
+
+.note-item-delete {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.note-item-delete:hover {
+  background-color: var(--color-alarm-red);
+  color: white;
+}
+
+.note-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--color-card-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px var(--color-shadow);
+}
+
+.note-delete-confirm span {
+  font-size: 0.8rem;
+  color: var(--color-text);
+}
+
+.note-delete-yes,
+.note-delete-no {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.note-delete-yes {
+  color: var(--color-modular-green);
+}
+
+.note-delete-yes:hover {
+  background-color: var(--color-modular-green);
+  color: white;
+}
+
+.note-delete-no {
+  color: var(--color-alarm-red);
+}
+
+.note-delete-no:hover {
+  background-color: var(--color-alarm-red);
+  color: white;
+}
+
+/* Editor de notas */
+.note-editor {
+  height: 100%;
+}
+
+.note-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.note-form-error {
+  background-color: rgba(229, 57, 53, 0.1);
+  color: var(--color-alarm-red);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-alarm-red);
+}
+
+.note-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.note-form-color {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-form-color label {
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.note-color-picker {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.note-delete-button {
+  background: none;
+  border: none;
+  color: var(--color-alarm-red);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.note-delete-button:hover {
+  background-color: rgba(229, 57, 53, 0.1);
+}
+
+.note-form-field {
+  margin-bottom: 16px;
+}
+
+.note-title-input,
+.note-content-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  font-size: 1rem;
+  resize: none;
+}
+
+.note-title-input {
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.note-content-input {
+  flex: 1;
+  min-height: 200px;
+  line-height: 1.5;
+}
+
+.note-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.note-cancel-button,
+.note-save-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.note-cancel-button {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+}
+
+.note-cancel-button:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+
+.note-save-button {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.note-save-button:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+/* Diálogo de notas */
+.notes-dialog {
+  width: 600px !important;
+  max-width: 90vw !important;
+}
+
+/* Indicador de nota en eventos */
+.note-badge {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.note-badge .material-icons {
+  font-size: 14px;
+  color: white;
+}
+
+/* Campo para notas en formulario de eventos */
+.note-textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .notes-list-controls {
+    flex-direction: column;
+  }
+  
+  .notes-sort {
+    width: 100%;
+  }
+  
+  .note-item-header {
+    flex-direction: column;
+  }
+  
+  .note-item-date {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  
+  .notes-dialog {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+}
