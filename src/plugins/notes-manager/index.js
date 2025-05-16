@@ -1,8 +1,7 @@
 /**
  * Notes Manager para Atlas
  * 
- * Plugin que permite gestionar notas asociadas a eventos o fechas,
- * con soporte para categorías, etiquetas y texto enriquecido.
+ * Plugin que permite gestionar notas asociadas a eventos y fechas del calendario en Atlas Core.
  */
 import NotesPanel from './components/notes-panel';
 import NotesContext, { NotesProvider } from './contexts/notes-context';
@@ -20,6 +19,9 @@ import './styles/notes.css';
 
 // Clave para almacenamiento
 const STORAGE_KEY_PREFIX = 'plugin.notes-manager';
+
+// Variable para controlar si el panel de notas está abierto
+let isNotesPanelOpen = false;
 
 /**
  * Plugin Notes Manager para Atlas
@@ -71,6 +73,9 @@ export default {
       // Registrar el módulo como proveedor de notas
       this._registerModule();
       
+      // Crear un procesador para el formulario de eventos
+      this._registerEventProcessor();
+      
       // Publicar evento de inicialización
       if (core.events) {
         core.events.publish('plugin.notes-manager.initialized', {
@@ -105,7 +110,8 @@ export default {
     ui.registerComponent(pluginId, 'app.sidebar', NotesButton, {
       position: 'middle',
       label: getTranslation(this._translations, 'panel.title'),
-      icon: 'note'
+      icon: 'note',
+      attributes: { 'data-note-button': 'true' }
     });
     
     // Registrar un decorador para los eventos con notas asociadas
@@ -121,6 +127,86 @@ export default {
   },
   
   /**
+   * Registra un procesador para el formulario de eventos
+   * @private
+   */
+  _registerEventProcessor: function() {
+    const self = this;
+    
+    // Suscribirse a eventos de creación y actualización de eventos
+    if (this.core.events) {
+      // Evento de creación de eventos
+      this.core.events.subscribe('calendar.eventCreated', async function(event) {
+        if (event && event.noteContent) {
+          try {
+            // Crear nota asociada al evento
+            const moduleAPI = window.__appModules['notes-manager'];
+            if (moduleAPI && typeof moduleAPI.createNote === 'function') {
+              const noteData = {
+                title: event.noteTitle || `Notas: ${event.title}`,
+                content: event.noteContent,
+                references: {
+                  type: 'event',
+                  id: event.id
+                },
+                color: event.color || '#2D4B94'
+              };
+              
+              await moduleAPI.createNote(noteData);
+              console.log('Nota creada para evento:', event.id);
+            }
+          } catch (error) {
+            console.error('Error al crear nota para evento:', error);
+          }
+        }
+      });
+      
+      // Evento de actualización de eventos
+      this.core.events.subscribe('calendar.eventUpdated', async function(event) {
+        if (event && event.noteContent) {
+          try {
+            // Buscar notas existentes para el evento
+            const moduleAPI = window.__appModules['notes-manager'];
+            if (moduleAPI && typeof moduleAPI.getNotesByEvent === 'function') {
+              const notes = await moduleAPI.getNotesByEvent(event.id);
+              
+              if (notes && notes.length > 0) {
+                // Actualizar la primera nota (podría mejorarse para actualizar la más relevante)
+                const note = notes[0];
+                const updatedNote = {
+                  ...note,
+                  title: event.noteTitle || note.title || `Notas: ${event.title}`,
+                  content: event.noteContent,
+                  color: note.color || event.color || '#2D4B94'
+                };
+                
+                await moduleAPI.updateNote(note.id, updatedNote);
+                console.log('Nota actualizada para evento:', event.id);
+              } else {
+                // Si no existe una nota, crear una nueva
+                const noteData = {
+                  title: event.noteTitle || `Notas: ${event.title}`,
+                  content: event.noteContent,
+                  references: {
+                    type: 'event',
+                    id: event.id
+                  },
+                  color: event.color || '#2D4B94'
+                };
+                
+                await moduleAPI.createNote(noteData);
+                console.log('Nota creada para evento actualizado:', event.id);
+              }
+            }
+          } catch (error) {
+            console.error('Error al actualizar nota para evento:', error);
+          }
+        }
+      });
+    }
+  },
+  
+  /**
    * Registra el módulo en el sistema
    * @private
    */
@@ -130,6 +216,8 @@ export default {
       return false;
     }
     
+    const self = this;
+    
     // API pública del plugin con acceso al core
     const publicAPI = {
       // Referencia al core
@@ -137,6 +225,32 @@ export default {
       
       // Identificador del plugin
       id: this.id,
+      
+      // Método para mostrar el panel de notas
+      showNotesPanel: function() {
+        try {
+          const notesButton = document.querySelector('[data-note-button="true"]');
+          if (notesButton) {
+            notesButton.click();
+            isNotesPanelOpen = true;
+            return true;
+          }
+          return false;
+        } catch (error) {
+          console.error('Error al abrir panel de notas:', error);
+          return false;
+        }
+      },
+      
+      // Método para verificar si el panel está abierto
+      isNotesPanelOpen: function() {
+        return isNotesPanelOpen;
+      },
+      
+      // Método para cerrar el panel de notas
+      closeNotesPanel: function() {
+        isNotesPanelOpen = false;
+      },
       
       // Obtener todas las notas
       getAllNotes: async function() {
@@ -719,7 +833,7 @@ export default {
       
       // Obtener traducciones
       getTranslations: function() {
-        return this._translations;
+        return self._translations;
       }
     };
     
@@ -754,6 +868,9 @@ export default {
       this.core = null;
       this._initializedComponents = false;
       this._translations = null;
+      
+      // Resetear estado del panel
+      isNotesPanelOpen = false;
       
       return true;
     } catch (error) {

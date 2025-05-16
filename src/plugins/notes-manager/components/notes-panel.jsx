@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import NotesList from './notes-list';
 import NoteEditor from './note-editor';
 import { NotesContext } from '../contexts/notes-context';
+import Dialog from '../../../components/ui/dialog';
 
 /**
  * Panel principal para gestión de notas
@@ -10,14 +11,21 @@ import { NotesContext } from '../contexts/notes-context';
 const NotesPanel = () => {
   const [view, setView] = useState('list'); // 'list' o 'editor'
   const [selectedNote, setSelectedNote] = useState(null);
-  const { notes, createNote, updateNote, deleteNote, loading, t, refreshNotes } = useContext(NotesContext);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState(null);
+  const { notes, createNote, updateNote, deleteNote, loading, t, refreshNotes, cleanOrphanedReferences } = React.useContext(NotesContext);
   
   // Verificar referencias huérfanas al cargar el panel
   useEffect(() => {
-    // Simplemente recargamos las notas al cargar el panel
-    // La limpieza de referencias huérfanas se puede implementar más adelante
-    refreshNotes();
-  }, [refreshNotes]);
+    const initializePanel = async () => {
+      await refreshNotes();
+      
+      // Limpiar referencias huérfanas (eventos eliminados)
+      await cleanOrphanedReferences();
+    };
+    
+    initializePanel();
+  }, [refreshNotes, cleanOrphanedReferences]);
   
   // Para crear una nueva nota
   const handleNewNote = () => {
@@ -50,26 +58,44 @@ const NotesPanel = () => {
     }
   };
   
-  // Para cancelar la edición
+  // Para cancelar la edición y volver a la lista
   const handleCancelEdit = () => {
     setSelectedNote(null);
     setView('list');
   };
   
+  // Para mostrar el diálogo de confirmación
+  const handleDeleteRequest = useCallback((noteId) => {
+    const note = notes.find(n => n.id === noteId);
+    setNoteToDelete(note);
+    setShowConfirmDelete(true);
+  }, [notes]);
+  
   // Para eliminar una nota
-  const handleDeleteNote = async (noteId) => {
+  const handleConfirmDelete = async () => {
     try {
-      await deleteNote(noteId);
-      
-      // Si estábamos editando la nota eliminada, volver a la lista
-      if (selectedNote && selectedNote.id === noteId) {
-        setSelectedNote(null);
-        setView('list');
+      if (noteToDelete) {
+        await deleteNote(noteToDelete.id);
+        
+        // Si estábamos editando la nota eliminada, volver a la lista
+        if (selectedNote && selectedNote.id === noteToDelete.id) {
+          setSelectedNote(null);
+          setView('list');
+        }
+        
+        // Cerrar diálogo de confirmación
+        setShowConfirmDelete(false);
+        setNoteToDelete(null);
       }
     } catch (error) {
       console.error('Error al eliminar nota:', error);
-      // Aquí se podría mostrar un mensaje de error al usuario
     }
+  };
+  
+  // Para cancelar la eliminación
+  const handleCancelDelete = () => {
+    setShowConfirmDelete(false);
+    setNoteToDelete(null);
   };
   
   return (
@@ -99,24 +125,44 @@ const NotesPanel = () => {
       </div>
       
       {loading ? (
-        <div className="notes-loading">{t('common.loading')}</div>
+        <div className="notes-loading">
+          <div className="loading-spinner"></div>
+          <span>{t('common.loading')}</span>
+        </div>
       ) : (
         <div className="notes-panel-content">
           {view === 'list' ? (
             <NotesList 
               notes={notes}
               onSelectNote={handleEditNote}
-              onDeleteNote={handleDeleteNote}
+              onDeleteNote={handleDeleteRequest}
             />
           ) : (
             <NoteEditor 
               note={selectedNote}
               onSave={handleSaveNote}
               onCancel={handleCancelEdit}
-              onDelete={selectedNote ? () => handleDeleteNote(selectedNote.id) : null}
+              onDelete={() => handleDeleteRequest(selectedNote.id)}
             />
           )}
         </div>
+      )}
+      
+      {/* Diálogo de confirmación para eliminar */}
+      {showConfirmDelete && noteToDelete && (
+        <Dialog
+          isOpen={showConfirmDelete}
+          onClose={handleCancelDelete}
+          title={t('notes.delete')}
+          onConfirm={handleConfirmDelete}
+          confirmText={t('common.delete')}
+          cancelText={t('common.cancel')}
+        >
+          <div className="delete-confirmation">
+            <p>{t('notes.confirmDeleteMessage')} <strong>{noteToDelete.title}</strong>?</p>
+            <p className="delete-warning">{t('notes.deleteWarning')}</p>
+          </div>
+        </Dialog>
       )}
     </div>
   );

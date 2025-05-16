@@ -25,7 +25,14 @@ const RichTextEditor = ({
   
   // Inicializar el editor con el valor proporcionado
   useEffect(() => {
-    setHtml(value);
+    if (value !== html) {
+      setHtml(value);
+      
+      // Actualizar directamente el contenido del editor si ya está montado
+      if (editorRef.current) {
+        editorRef.current.innerHTML = value;
+      }
+    }
   }, [value]);
 
   // Manejar cambios en el editor
@@ -34,21 +41,35 @@ const RichTextEditor = ({
       const newContent = editorRef.current.innerHTML;
       // Sanitizar el contenido para prevenir ataques XSS
       const sanitized = sanitizeHtml(newContent);
-      setHtml(sanitized);
       
-      // Notificar cambios al componente padre
-      if (onChange) {
-        onChange(sanitized);
+      // Solo actualizar si hay cambios reales
+      if (sanitized !== html) {
+        setHtml(sanitized);
+        
+        // Notificar cambios al componente padre
+        if (onChange) {
+          onChange(sanitized);
+        }
       }
     }
   };
 
   // Ejecutar comandos de edición
   const executeCommand = (command, value = null) => {
+    // Asegurarse de que el editor tiene el foco antes de ejecutar comandos
+    if (editorRef.current && document.activeElement !== editorRef.current) {
+      editorRef.current.focus();
+    }
+    
     document.execCommand(command, false, value);
-    handleChange();
-    // Mantener el foco en el editor
-    editorRef.current.focus();
+    // Pequeño retraso para asegurar que el comando se ha ejecutado
+    setTimeout(() => {
+      handleChange();
+      // Mantener el foco en el editor
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
+    }, 10);
   };
 
   // Comandos para los botones de la barra de herramientas
@@ -72,6 +93,7 @@ const RichTextEditor = ({
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
+    handleChange();
   };
 
   // Manejar teclas especiales
@@ -80,7 +102,14 @@ const RichTextEditor = ({
     if (e.key === 'Tab') {
       e.preventDefault();
       document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
+      handleChange();
     }
+  };
+
+  // Capturar eventos de input para asegurar que se registran todos los cambios
+  const handleInput = () => {
+    // Usar setTimeout para asegurar que el evento se procesa después de que el DOM se actualiza
+    setTimeout(handleChange, 0);
   };
 
   return (
@@ -167,7 +196,7 @@ const RichTextEditor = ({
         className={`rich-text-content ${className}`}
         contentEditable="true"
         dangerouslySetInnerHTML={{ __html: html }}
-        onInput={handleChange}
+        onInput={handleInput}
         onBlur={handleChange}
         onPaste={handlePaste}
         onKeyDown={handleKeyDown}

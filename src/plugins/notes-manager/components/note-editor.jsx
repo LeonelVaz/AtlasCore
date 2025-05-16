@@ -1,11 +1,21 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { NotesContext } from '../contexts/notes-context';
 import RichTextEditor from './rich-text-editor';
 import CategorySelector from './category-selector';
 import TagsInput from './tags-input';
+import DatePicker from './date-picker';
+import EventSelector from './event-selector';
 
+/**
+ * Editor de notas mejorado
+ * @param {Object} props - Propiedades del componente
+ * @param {Object} props.note - Nota a editar (o null para nueva nota)
+ * @param {Function} props.onSave - Función al guardar
+ * @param {Function} props.onCancel - Función al cancelar
+ * @param {Function} props.onDelete - Función al eliminar
+ */
 const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
-  const { t } = useContext(NotesContext);
+  const { t, getNotesByEvent } = useContext(NotesContext);
   
   // Estado para los campos del formulario
   const [formData, setFormData] = useState({
@@ -13,22 +23,43 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
     content: '',
     color: '#2D4B94',
     categoryId: null,
-    tags: []
+    tags: [],
+    references: null
   });
   
+  const [refType, setRefType] = useState('none'); // 'none', 'event', 'date'
   const [error, setError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   
   // Cargar datos si estamos editando una nota existente
   useEffect(() => {
     if (note) {
-      setFormData({
+      const initialData = {
         title: note.title || '',
         content: note.content || '',
         color: note.color || '#2D4B94',
         categoryId: note.categoryId || null,
         tags: note.tags || [],
         references: note.references || null
-      });
+      };
+      
+      setFormData(initialData);
+      
+      // Determinar el tipo de referencia
+      if (note.references) {
+        setRefType(note.references.type || 'none');
+      } else if (note.eventId) { // Para compatibilidad con versiones antiguas
+        setRefType('event');
+        setFormData(prev => ({
+          ...prev,
+          references: {
+            type: 'event',
+            id: note.eventId
+          }
+        }));
+      } else {
+        setRefType('none');
+      }
     } else {
       // Valores por defecto para nueva nota
       setFormData({
@@ -36,8 +67,10 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
         content: '',
         color: '#2D4B94',
         categoryId: null,
-        tags: []
+        tags: [],
+        references: null
       });
+      setRefType('none');
     }
   }, [note]);
   
@@ -74,8 +107,44 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
     }));
   };
   
+  // Manejar cambio en tipo de referencia
+  const handleRefTypeChange = (e) => {
+    const newRefType = e.target.value;
+    setRefType(newRefType);
+    
+    // Limpiar referencia anterior
+    setFormData(prev => ({
+      ...prev,
+      references: newRefType === 'none' ? null : { type: newRefType }
+    }));
+  };
+  
+  // Manejar cambio en la referencia a evento
+  const handleEventChange = (eventId) => {
+    setFormData(prev => ({
+      ...prev,
+      references: {
+        type: 'event',
+        id: eventId
+      }
+    }));
+  };
+  
+  // Manejar cambio en la referencia a fecha
+  const handleDateChange = (date) => {
+    if (date) {
+      setFormData(prev => ({
+        ...prev,
+        references: {
+          type: 'date',
+          id: date.toISOString()
+        }
+      }));
+    }
+  };
+  
   // Manejar envío del formulario
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validación básica
@@ -84,18 +153,23 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
       return;
     }
     
-    // Limpiar error si todo está correcto
-    setError('');
-    
-    // Preservar referencias si existen
-    const noteToSave = {
-      ...formData,
-      // Si estamos editando una nota existente, mantener la referencia
-      references: note?.references || formData.references
-    };
-    
-    // Llamar al callback de guardado
-    onSave(noteToSave);
+    try {
+      // Indicar que estamos guardando
+      setIsSaving(true);
+      
+      // Limpiar error si todo está correcto
+      setError('');
+      
+      // Llamar al callback de guardado
+      await onSave(formData);
+      
+      // Resetear formulario
+      setIsSaving(false);
+    } catch (error) {
+      console.error('Error al guardar nota:', error);
+      setError(error.message || t('errors.saveFailed'));
+      setIsSaving(false);
+    }
   };
   
   return (
@@ -126,6 +200,7 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
               onClick={onDelete}
               className="note-delete-button"
               title={t('notes.delete')}
+              disabled={isSaving}
             >
               <span className="material-icons">delete</span>
             </button>
@@ -140,6 +215,8 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
             onChange={handleChange}
             placeholder={t('notes.titlePlaceholder')}
             className="note-title-input"
+            disabled={isSaving}
+            autoFocus
           />
         </div>
         
@@ -148,6 +225,7 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
           <CategorySelector 
             value={formData.categoryId}
             onChange={handleCategoryChange}
+            disabled={isSaving}
           />
         </div>
         
@@ -156,7 +234,45 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
           <TagsInput 
             value={formData.tags}
             onChange={handleTagsChange}
+            disabled={isSaving}
           />
+        </div>
+        
+        {/* Referencias a eventos o fechas */}
+        <div className="note-form-field note-references-field">
+          <label className="note-form-label">{t('notes.referenceType')}:</label>
+          <div className="reference-type-selector">
+            <select 
+              value={refType} 
+              onChange={handleRefTypeChange}
+              className="reference-type-select"
+              disabled={isSaving}
+            >
+              <option value="none">{t('notes.noReference')}</option>
+              <option value="event">{t('notes.eventReference')}</option>
+              <option value="date">{t('notes.dateReference')}</option>
+            </select>
+          </div>
+          
+          {refType === 'event' && (
+            <div className="reference-selector">
+              <EventSelector 
+                value={formData.references?.id}
+                onChange={handleEventChange}
+                disabled={isSaving}
+              />
+            </div>
+          )}
+          
+          {refType === 'date' && (
+            <div className="reference-selector">
+              <DatePicker 
+                value={formData.references?.id ? new Date(formData.references.id) : null}
+                onChange={handleDateChange}
+                disabled={isSaving}
+              />
+            </div>
+          )}
         </div>
         
         <div className="note-form-field note-content-field">
@@ -166,36 +282,32 @@ const NoteEditor = ({ note, onSave, onCancel, onDelete }) => {
             placeholder={t('notes.contentPlaceholder')}
             className="note-content-input"
             height="250px"
+            disabled={isSaving}
           />
         </div>
-        
-        {/* Mostrar información de referencia si existe */}
-        {note && note.references && (
-          <div className="note-references-info">
-            <div className="note-reference-badge">
-              <span className="material-icons">
-                {note.references.type === 'event' ? 'event' : 'calendar_today'}
-              </span>
-              <span className="note-reference-text">
-                {note.references.type === 'event' ? t('notes.linkedEvent') : t('notes.linkedDate')}
-              </span>
-            </div>
-          </div>
-        )}
         
         <div className="note-form-actions">
           <button
             type="button"
             onClick={onCancel}
             className="note-cancel-button"
+            disabled={isSaving}
           >
             {t('common.cancel')}
           </button>
           <button
             type="submit"
             className="note-save-button"
+            disabled={isSaving}
           >
-            {t('common.save')}
+            {isSaving ? (
+              <>
+                <span className="loading-spinner small"></span>
+                {t('common.saving')}
+              </>
+            ) : (
+              t('common.save')
+            )}
           </button>
         </div>
       </form>
