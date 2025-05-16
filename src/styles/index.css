@@ -6,6 +6,7 @@
 @import './app.css';
 @import './header-controls.css';
 @import './variables.css';
+@import 'themes/index.css';
 
 * {
   box-sizing: border-box;

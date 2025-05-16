@@ -3,6 +3,7 @@ import ThemeConfig from './theme-config';
 import TimeScaleConfig from './time-scale-config';
 import TimeSlotEditor from './time-slot-editor';
 import CalendarConfig from './calendar-config';
+import PluginsPanel from './plugins-panel';
 import SidebarItem from '../ui/sidebar/sidebar-item';
 
 // Iconos para las secciones de configuración (usando Material Icons)
@@ -12,7 +13,8 @@ const SECTION_ICONS = {
   CALENDAR: 'calendar_today',
   TIME_SCALE: 'schedule',
   TIME_SLOTS: 'horizontal_split',
-  BACKUP: 'backup'
+  BACKUP: 'backup',
+  PLUGINS: 'extension'
 };
 
 /**
@@ -29,6 +31,7 @@ const SettingsPanel = () => {
     { id: 'time_scale', label: 'Escala de Tiempo', icon: SECTION_ICONS.TIME_SCALE },
     { id: 'time_slots', label: 'Franjas Horarias', icon: SECTION_ICONS.TIME_SLOTS },
     { id: 'calendar', label: 'Calendario', icon: SECTION_ICONS.CALENDAR },
+    { id: 'plugins', label: 'Plugins', icon: SECTION_ICONS.PLUGINS },
     { id: 'backup', label: 'Respaldo', icon: SECTION_ICONS.BACKUP }
   ];
   
@@ -48,6 +51,8 @@ const SettingsPanel = () => {
         return <TimeSlotEditor />;
       case 'calendar':
         return <CalendarConfig />;
+      case 'plugins':
+        return <PluginsPanel />;
       case 'general':
       case 'backup':
         return (
@@ -62,7 +67,7 @@ const SettingsPanel = () => {
   };
   
   return (
-    <div className="settings-panel">
+    <div className="settings-panel" key="settings-panel-main">
       <div className="settings-sidebar">
         <h2 className="settings-title">Configuración</h2>
         <div className="settings-sections">

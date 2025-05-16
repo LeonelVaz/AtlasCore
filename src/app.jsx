@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CalendarMain from './components/calendar/calendar-main';
 import SettingsPanel from './components/settings/settings-panel';
 import Sidebar from './components/ui/sidebar/Sidebar';
@@ -6,7 +6,7 @@ import SidebarItem from './components/ui/sidebar/sidebar-item';
 import WindowControls from './components/ui/window-controls';
 import ConfigProvider from './contexts/config-provider';
 import { isElectronEnv } from './utils/electron-detector';
-import './styles/themes/index.css';
+import pluginManager from './core/plugins/plugin-manager';
 
 // Iconos para los elementos del sidebar
 const APP_SECTIONS = {
@@ -20,6 +20,25 @@ const APP_SECTIONS = {
 function App() {
   const isElectron = isElectronEnv();
   const [activeSection, setActiveSection] = useState(APP_SECTIONS.CALENDAR.id);
+  
+  // Inicializar sistema de plugins
+  useEffect(() => {
+    const initPluginSystem = async () => {
+      try {
+        // Inicializar con servicios que se proporcionarán a los plugins
+        const services = {
+          // Aquí se pasarán servicios internos en fase 2+
+        };
+        
+        await pluginManager.initialize(services);
+        console.log('Sistema de plugins inicializado');
+      } catch (error) {
+        console.error('Error al inicializar sistema de plugins:', error);
+      }
+    };
+    
+    initPluginSystem();
+  }, []);
   
   // Secciones fijas de la barra lateral
   const sidebarSections = [
