@@ -5,6 +5,9 @@
  * para que interactúen con la aplicación principal
  */
 
+import eventBus from '../bus/event-bus';
+import storageService from '../../services/storage-service';
+
 /**
  * Clase que implementa la API core para plugins
  */
@@ -15,6 +18,12 @@ class CoreAPI {
     
     // Referencias a servicios internos
     this._services = {};
+    
+    // Registro de recursos de plugins para limpieza
+    this._pluginResources = {};
+    
+    // Error handlers personalizados
+    this._errorHandlers = [];
   }
 
   /**
@@ -29,8 +38,9 @@ class CoreAPI {
     this._initEvents();
     this._initStorage();
     this._initUI();
+    this._initErrorHandling();
     
-    console.log('API Core inicializada');
+    console.log('API Core inicializada (v' + this.version + ')');
   }
 
   /**
@@ -42,38 +52,94 @@ class CoreAPI {
     this.events = {
       /**
        * Suscribirse a un evento
+       * @param {string} pluginId - ID del plugin que se suscribe
        * @param {string} eventName - Nombre del evento
        * @param {Function} callback - Función a llamar cuando ocurra el evento
        * @returns {Function} - Función para cancelar suscripción
        */
-      subscribe: (eventName, callback) => {
-        if (!eventName || typeof callback !== 'function') {
+      subscribe: (pluginId, eventName, callback) => {
+        if (!pluginId || !eventName || typeof callback !== 'function') {
           console.error('Argumentos inválidos para subscribe');
           return () => {};
         }
         
-        // En implementación real: integrar con el eventBus
-        console.log(`[CoreAPI] Subscribe a evento: ${eventName}`);
+        // Registrar recurso del plugin para limpieza automática
+        if (!this._pluginResources[pluginId]) {
+          this._pluginResources[pluginId] = {};
+        }
         
-        // Devolver función para cancelar suscripción (dummy en fase 1)
-        return () => {
-          console.log(`[CoreAPI] Unsubscribe de evento: ${eventName}`);
-        };
+        if (!this._pluginResources[pluginId].eventSubscriptions) {
+          this._pluginResources[pluginId].eventSubscriptions = [];
+        }
+        
+        // Crear canal namespaced para eventos de plugins
+        const pluginEventName = `plugin.${eventName}`;
+        
+        // Suscribirse al evento usando el eventBus central
+        const unsubscribe = eventBus.subscribe(pluginEventName, callback);
+        
+        // Almacenar referencia para limpieza
+        this._pluginResources[pluginId].eventSubscriptions.push({
+          eventName: pluginEventName,
+          callback,
+          unsubscribe
+        });
+        
+        return unsubscribe;
       },
       
       /**
        * Publicar un evento
+       * @param {string} pluginId - ID del plugin que publica
        * @param {string} eventName - Nombre del evento
        * @param {*} data - Datos a pasar a los suscriptores
        */
-      publish: (eventName, data) => {
-        if (!eventName) {
-          console.error('Nombre de evento inválido');
+      publish: (pluginId, eventName, data) => {
+        if (!pluginId || !eventName) {
+          console.error('Argumentos inválidos para publish');
           return;
         }
         
-        // En implementación real: integrar con el eventBus
-        console.log(`[CoreAPI] Publish evento: ${eventName}`, data);
+        // Crear canal namespaced para eventos de plugins
+        const pluginEventName = `plugin.${eventName}`;
+        
+        // Añadir origen del evento a los datos
+        const eventData = {
+          sourcePlugin: pluginId,
+          data
+        };
+        
+        // Publicar mediante el eventBus central
+        eventBus.publish(pluginEventName, eventData);
+      },
+      
+      /**
+       * Cancelar todas las suscripciones de un plugin
+       * @param {string} pluginId - ID del plugin
+       * @returns {boolean} - true si se cancelaron correctamente
+       */
+      unsubscribeAll: (pluginId) => {
+        if (!pluginId || !this._pluginResources[pluginId]) {
+          return false;
+        }
+        
+        const resources = this._pluginResources[pluginId];
+        
+        if (resources.eventSubscriptions && resources.eventSubscriptions.length > 0) {
+          resources.eventSubscriptions.forEach(subscription => {
+            try {
+              if (subscription && typeof subscription.unsubscribe === 'function') {
+                subscription.unsubscribe();
+              }
+            } catch (error) {
+              console.error(`Error al cancelar suscripción en plugin ${pluginId}:`, error);
+            }
+          });
+          
+          resources.eventSubscriptions = [];
+        }
+        
+        return true;
       }
     };
   }
@@ -90,19 +156,39 @@ class CoreAPI {
        * @param {string} pluginId - ID del plugin
        * @param {string} key - Clave
        * @param {*} value - Valor a guardar
-       * @returns {boolean} - true si se guardó correctamente
+       * @returns {Promise<boolean>} - true si se guardó correctamente
        */
-      setItem: (pluginId, key, value) => {
+      setItem: async (pluginId, key, value) => {
         if (!pluginId || !key) {
           console.error('Argumentos inválidos para setItem');
           return false;
         }
         
-        // En implementación real: integrar con storageService
-        const storageKey = `plugin_${pluginId}_${key}`;
-        console.log(`[CoreAPI] Guardando en storage: ${storageKey}`, value);
-        
-        return true;
+        try {
+          // Crear clave namespaced para el plugin
+          const storageKey = `plugin_${pluginId}_${key}`;
+          
+          // Usar el servicio de almacenamiento
+          const result = await storageService.set(storageKey, value);
+          
+          // Registrar clave de almacenamiento para limpieza
+          if (!this._pluginResources[pluginId]) {
+            this._pluginResources[pluginId] = {};
+          } 
+          
+          if (!this._pluginResources[pluginId].storageKeys) {
+            this._pluginResources[pluginId].storageKeys = [];
+          }
+          
+          if (!this._pluginResources[pluginId].storageKeys.includes(key)) {
+            this._pluginResources[pluginId].storageKeys.push(key);
+          }
+          
+          return result;
+        } catch (error) {
+          this._handleError(pluginId, 'storage', error);
+          return false;
+        }
       },
       
       /**
@@ -110,38 +196,89 @@ class CoreAPI {
        * @param {string} pluginId - ID del plugin
        * @param {string} key - Clave
        * @param {*} defaultValue - Valor por defecto si no existe
-       * @returns {*} - Valor recuperado o defaultValue
+       * @returns {Promise<*>} - Valor recuperado o defaultValue
        */
-      getItem: (pluginId, key, defaultValue = null) => {
+      getItem: async (pluginId, key, defaultValue = null) => {
         if (!pluginId || !key) {
           console.error('Argumentos inválidos para getItem');
           return defaultValue;
         }
         
-        // En implementación real: integrar con storageService
-        const storageKey = `plugin_${pluginId}_${key}`;
-        console.log(`[CoreAPI] Recuperando de storage: ${storageKey}`);
-        
-        return defaultValue;
+        try {
+          // Crear clave namespaced para el plugin
+          const storageKey = `plugin_${pluginId}_${key}`;
+          
+          // Usar el servicio de almacenamiento
+          return await storageService.get(storageKey, defaultValue);
+        } catch (error) {
+          this._handleError(pluginId, 'storage', error);
+          return defaultValue;
+        }
       },
       
       /**
        * Elimina un valor del almacenamiento
        * @param {string} pluginId - ID del plugin
        * @param {string} key - Clave
-       * @returns {boolean} - true si se eliminó correctamente
+       * @returns {Promise<boolean>} - true si se eliminó correctamente
        */
-      removeItem: (pluginId, key) => {
+      removeItem: async (pluginId, key) => {
         if (!pluginId || !key) {
           console.error('Argumentos inválidos para removeItem');
           return false;
         }
         
-        // En implementación real: integrar con storageService
-        const storageKey = `plugin_${pluginId}_${key}`;
-        console.log(`[CoreAPI] Eliminando de storage: ${storageKey}`);
+        try {
+          // Crear clave namespaced para el plugin
+          const storageKey = `plugin_${pluginId}_${key}`;
+          
+          // Usar el servicio de almacenamiento
+          const result = await storageService.remove(storageKey);
+          
+          // Actualizar registro de claves
+          if (this._pluginResources[pluginId] && this._pluginResources[pluginId].storageKeys) {
+            const index = this._pluginResources[pluginId].storageKeys.indexOf(key);
+            if (index !== -1) {
+              this._pluginResources[pluginId].storageKeys.splice(index, 1);
+            }
+          }
+          
+          return result;
+        } catch (error) {
+          this._handleError(pluginId, 'storage', error);
+          return false;
+        }
+      },
+      
+      /**
+       * Elimina todos los datos de almacenamiento de un plugin
+       * @param {string} pluginId - ID del plugin
+       * @returns {Promise<boolean>} - true si se eliminaron correctamente
+       */
+      clearPluginData: async (pluginId) => {
+        if (!pluginId || !this._pluginResources[pluginId]) {
+          return false;
+        }
         
-        return true;
+        try {
+          const resources = this._pluginResources[pluginId];
+          
+          if (resources.storageKeys && resources.storageKeys.length > 0) {
+            const keys = [...resources.storageKeys];
+            
+            // Eliminar cada clave una por una
+            for (const key of keys) {
+              await this.storage.removeItem(pluginId, key);
+            }
+            
+            resources.storageKeys = [];
+          }
+          
+          return true;
+        } catch (error) {
+          this._handleError(pluginId, 'storage', error);
+          return false;
+        }
       }
     };
   }
@@ -155,38 +292,154 @@ class CoreAPI {
     this.ui = {
       /**
        * Registra un componente en una zona de la interfaz
+       * @param {string} pluginId - ID del plugin
        * @param {string} zoneId - ID de la zona donde registrar
        * @param {Function} Component - Componente React a registrar
        * @returns {string|null} - ID de registro o null si falla
        */
-      registerComponent: (zoneId, Component) => {
-        if (!zoneId || !Component) {
+      registerComponent: (pluginId, zoneId, Component) => {
+        if (!pluginId || !zoneId || !Component) {
           console.error('Argumentos inválidos para registerComponent');
           return null;
         }
         
-        // En implementación real: integrar con sistema de UI
-        console.log(`[CoreAPI] Registrando componente en zona: ${zoneId}`);
-        
-        // Devolver ID único para este registro (dummy en fase 1)
-        return `reg_${Date.now()}`;
+        try {
+          // Crear ID único para este registro
+          const registrationId = `${pluginId}_${zoneId}_${Date.now()}`;
+          
+          // Registrar componente (placeholder en esta fase)
+          console.log(`[CoreAPI] Registrando componente de plugin ${pluginId} en zona: ${zoneId}`);
+          
+          // Registrar para limpieza automática
+          if (!this._pluginResources[pluginId]) {
+            this._pluginResources[pluginId] = {};
+          }
+          
+          if (!this._pluginResources[pluginId].uiComponents) {
+            this._pluginResources[pluginId].uiComponents = [];
+          }
+          
+          this._pluginResources[pluginId].uiComponents.push({
+            registrationId,
+            zoneId,
+            Component
+          });
+          
+          return registrationId;
+        } catch (error) {
+          this._handleError(pluginId, 'ui', error);
+          return null;
+        }
       },
       
       /**
        * Elimina un componente registrado
+       * @param {string} pluginId - ID del plugin
        * @param {string} registrationId - ID de registro obtenido al registrar
        * @returns {boolean} - true si se eliminó correctamente
        */
-      unregisterComponent: (registrationId) => {
-        if (!registrationId) {
+      unregisterComponent: (pluginId, registrationId) => {
+        if (!pluginId || !registrationId) {
           console.error('ID de registro inválido');
           return false;
         }
         
-        // En implementación real: integrar con sistema de UI
-        console.log(`[CoreAPI] Eliminando componente con ID: ${registrationId}`);
+        try {
+          // Verificar si el plugin tiene componentes registrados
+          if (!this._pluginResources[pluginId] || !this._pluginResources[pluginId].uiComponents) {
+            return false;
+          }
+          
+          // Encontrar el componente por su ID
+          const components = this._pluginResources[pluginId].uiComponents;
+          const index = components.findIndex(comp => comp.registrationId === registrationId);
+          
+          if (index === -1) {
+            return false;
+          }
+          
+          // Eliminar registro del componente
+          components.splice(index, 1);
+          
+          console.log(`[CoreAPI] Eliminando componente con ID: ${registrationId}`);
+          
+          return true;
+        } catch (error) {
+          this._handleError(pluginId, 'ui', error);
+          return false;
+        }
+      },
+      
+      /**
+       * Elimina todos los componentes UI de un plugin
+       * @param {string} pluginId - ID del plugin
+       * @returns {boolean} - true si se eliminaron correctamente
+       */
+      unregisterAllComponents: (pluginId) => {
+        if (!pluginId || !this._pluginResources[pluginId]) {
+          return false;
+        }
         
-        return true;
+        try {
+          const resources = this._pluginResources[pluginId];
+          
+          if (resources.uiComponents && resources.uiComponents.length > 0) {
+            resources.uiComponents = [];
+          }
+          
+          return true;
+        } catch (error) {
+          this._handleError(pluginId, 'ui', error);
+          return false;
+        }
+      }
+    };
+  }
+
+  /**
+   * Inicializa el sistema de manejo de errores
+   * @private
+   */
+  _initErrorHandling() {
+    // Registrar handler de errores por defecto
+    this._errorHandlers.push((pluginId, context, error) => {
+      console.error(`Error en plugin [${pluginId}] (${context}):`, error);
+    });
+  }
+
+  /**
+   * Maneja un error de plugin
+   * @param {string} pluginId - ID del plugin que generó el error
+   * @param {string} context - Contexto del error (storage, events, ui, etc.)
+   * @param {Error} error - Objeto de error
+   * @private
+   */
+  _handleError(pluginId, context, error) {
+    // Llamar a todos los handlers registrados
+    for (const handler of this._errorHandlers) {
+      try {
+        handler(pluginId, context, error);
+      } catch (e) {
+        console.error('Error en handler de errores:', e);
+      }
+    }
+  }
+
+  /**
+   * Registra un handler personalizado para errores de plugins
+   * @param {Function} handler - Función que maneja errores
+   * @returns {Function} - Función para cancelar el registro
+   */
+  registerErrorHandler(handler) {
+    if (typeof handler !== 'function') return () => {};
+    
+    this._errorHandlers.push(handler);
+    
+    // Devolver función para cancelar registro
+    return () => {
+      const index = this._errorHandlers.indexOf(handler);
+      if (index !== -1) {
+        this._errorHandlers.splice(index, 1);
       }
     };
   }
@@ -202,14 +455,53 @@ class CoreAPI {
       return null;
     }
     
-    // En implementación real: integrar con getModule del registry
-    console.log(`[CoreAPI] Solicitando módulo: ${moduleId}`);
+    // Intentar obtener el módulo del registro global
+    if (typeof window !== 'undefined' && window.__appModules && window.__appModules[moduleId]) {
+      return window.__appModules[moduleId];
+    }
     
-    // Devolver un objeto dummy en fase 1
-    return {
-      id: moduleId,
-      name: `Módulo ${moduleId}`
-    };
+    // Verificar si el módulo está en los servicios proporcionados
+    if (this._services && this._services[moduleId]) {
+      return this._services[moduleId];
+    }
+    
+    console.warn(`Módulo no encontrado: ${moduleId}`);
+    return null;
+  }
+
+  /**
+   * Limpia todos los recursos asociados a un plugin
+   * @param {string} pluginId - ID del plugin
+   * @returns {Promise<boolean>} - true si se limpiaron correctamente
+   */
+  async cleanupPluginResources(pluginId) {
+    if (!pluginId) {
+      return true;
+    }
+    
+    // Asegurarse de que existe la estructura de recursos para este plugin
+    if (!this._pluginResources[pluginId]) {
+      return true;
+    }
+    
+    try {
+      // Cancelar suscripciones a eventos
+      this.events.unsubscribeAll(pluginId);
+      
+      // Eliminar componentes UI
+      this.ui.unregisterAllComponents(pluginId);
+      
+      // No limpiamos los datos de almacenamiento automáticamente
+      // para preservar configuración entre sesiones
+      
+      // Eliminar registro de recursos
+      delete this._pluginResources[pluginId];
+      
+      return true;
+    } catch (error) {
+      this._handleError(pluginId, 'cleanup', error);
+      return false;
+    }
   }
 }
 

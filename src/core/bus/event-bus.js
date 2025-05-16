@@ -34,10 +34,12 @@ class EventBus {
     
     // Devolver función para cancelar suscripción
     return () => {
-      delete this.subscribers[eventType][id];
-      
-      if (Object.keys(this.subscribers[eventType]).length === 0) {
-        delete this.subscribers[eventType];
+      if (this.subscribers[eventType] && this.subscribers[eventType][id]) {
+        delete this.subscribers[eventType][id];
+        
+        if (Object.keys(this.subscribers[eventType]).length === 0) {
+          delete this.subscribers[eventType];
+        }
       }
     };
   }
@@ -48,10 +50,10 @@ class EventBus {
    * @param {Function} callback - Función de callback a eliminar
    */
   unsubscribe(eventType, callback) {
-    if (!this.subscribers[eventType]) return;
+    if (!eventType || !callback || !this.subscribers[eventType]) return;
     
     // Buscar el id del callback
-    const entries = Object.entries(this.subscribers[eventType]);
+    const entries = Object.entries(this.subscribers[eventType] || {});
     for (const [id, registeredCallback] of entries) {
       if (registeredCallback === callback) {
         delete this.subscribers[eventType][id];
@@ -60,7 +62,7 @@ class EventBus {
     }
     
     // Limpiar categoría si está vacía
-    if (Object.keys(this.subscribers[eventType]).length === 0) {
+    if (this.subscribers[eventType] && Object.keys(this.subscribers[eventType]).length === 0) {
       delete this.subscribers[eventType];
     }
   }
@@ -71,13 +73,15 @@ class EventBus {
    * @param {*} data - Datos a pasar a los suscriptores
    */
   publish(eventType, data) {
-    if (!this.subscribers[eventType]) return;
+    if (!eventType || !this.subscribers[eventType]) return;
     
-    Object.values(this.subscribers[eventType]).forEach(callback => {
-      try {
-        callback(data);
-      } catch (error) {
-        console.error(`Error en suscriptor de evento ${eventType}:`, error);
+    Object.values(this.subscribers[eventType] || {}).forEach(callback => {
+      if (typeof callback === 'function') {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error(`Error en suscriptor de evento ${eventType}:`, error);
+        }
       }
     });
   }
@@ -97,7 +101,7 @@ class EventBus {
    */
   hasSubscribers(eventType) {
     return !!this.subscribers[eventType] && 
-           Object.keys(this.subscribers[eventType]).length > 0;
+           Object.keys(this.subscribers[eventType] || {}).length > 0;
   }
   
   /**
@@ -106,8 +110,8 @@ class EventBus {
    * @returns {number} - Cantidad de suscriptores
    */
   getSubscriberCount(eventType) {
-    if (!this.subscribers[eventType]) return 0;
-    return Object.keys(this.subscribers[eventType]).length;
+    if (!eventType || !this.subscribers[eventType]) return 0;
+    return Object.keys(this.subscribers[eventType] || {}).length;
   }
   
   /**

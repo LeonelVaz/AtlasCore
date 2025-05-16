@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Button from '../ui/button';
 import Dialog from '../ui/dialog';
 import pluginManager from '../../core/plugins/plugin-manager';
+import pluginErrorHandler from '../../core/plugins/plugin-error-handler';
+import pluginStorage from '../../core/plugins/plugin-storage';
 
 /**
  * Componente para la administración de plugins
@@ -17,6 +19,12 @@ const PluginsPanel = () => {
   const [loading, setLoading] = useState(true);
   // Estado para refrescar la lista
   const [refreshKey, setRefreshKey] = useState(0);
+  // Estado de la aplicación (activo, error, etc)
+  const [systemStatus, setSystemStatus] = useState({});
+  // Errores de plugins
+  const [pluginErrors, setPluginErrors] = useState({});
+  // Vista de errores
+  const [showErrors, setShowErrors] = useState(false);
 
   // Cargar plugins al iniciar
   useEffect(() => {
@@ -32,6 +40,24 @@ const PluginsPanel = () => {
         // Obtener lista de plugins
         const allPlugins = pluginManager.getAllPlugins();
         setPlugins(allPlugins);
+        
+        // Obtener estado del sistema
+        const status = pluginManager.getStatus();
+        setSystemStatus(status);
+        
+        // Obtener errores
+        const errors = pluginErrorHandler.getErrorLog();
+        
+        // Agrupar errores por plugin
+        const errorsByPlugin = errors.reduce((acc, error) => {
+          if (!acc[error.pluginId]) {
+            acc[error.pluginId] = [];
+          }
+          acc[error.pluginId].push(error);
+          return acc;
+        }, {});
+        
+        setPluginErrors(errorsByPlugin);
       } catch (error) {
         console.error('Error al cargar plugins:', error);
       } finally {
@@ -40,6 +66,14 @@ const PluginsPanel = () => {
     }
     
     loadPluginSystem();
+    
+    // Suscribirse a eventos del sistema de plugins
+    const unsubscribe = pluginManager.subscribe('error', (error) => {
+      console.error('Error en sistema de plugins:', error);
+      setRefreshKey(prev => prev + 1);
+    });
+    
+    return () => unsubscribe && unsubscribe();
   }, [refreshKey]);
 
   // Función para activar/desactivar un plugin
@@ -88,9 +122,82 @@ const PluginsPanel = () => {
     setSelectedPlugin(null);
   };
 
+  // Función para limpiar todos los errores
+  const clearAllErrors = () => {
+    pluginErrorHandler.clearErrorLog();
+    setPluginErrors({});
+  };
+
+  // Función para limpiar datos de almacenamiento de un plugin
+  const clearPluginStorage = async (pluginId) => {
+    if (!pluginId) return;
+    
+    try {
+      setLoading(true);
+      await pluginStorage.clearPluginData(pluginId);
+      alert(`Datos de almacenamiento del plugin ${pluginId} eliminados correctamente.`);
+    } catch (error) {
+      console.error(`Error al limpiar almacenamiento del plugin ${pluginId}:`, error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Renderizar el panel principal
   return (
     <div className="plugins-panel">
       <h2 className="plugins-panel-title">Plugins</h2>
+      
+      <div className="plugins-system-status">
+        <div className="status-indicator">
+          <span className={`status-dot ${systemStatus.initialized ? 'active' : 'inactive'}`}></span>
+          <span className="status-text">
+            Sistema de plugins {systemStatus.initialized ? 'inicializado' : 'no inicializado'}
+          </span>
+        </div>
+        
+        {Object.keys(pluginErrors).length > 0 && (
+          <div className="plugins-error-indicator">
+            <span className="error-count">{Object.keys(pluginErrors).length} plugins con errores</span>
+            <Button 
+              variant="text" 
+              size="small"
+              onClick={() => setShowErrors(!showErrors)}
+            >
+              {showErrors ? 'Ocultar errores' : 'Ver errores'}
+            </Button>
+          </div>
+        )}
+      </div>
+      
+      {showErrors && Object.keys(pluginErrors).length > 0 && (
+        <div className="plugins-error-summary">
+          <div className="error-summary-header">
+            <h3>Errores detectados</h3>
+            <Button 
+              variant="text" 
+              size="small"
+              onClick={clearAllErrors}
+            >
+              Limpiar todos
+            </Button>
+          </div>
+          
+          <div className="error-list">
+            {Object.entries(pluginErrors).map(([pluginId, errors]) => (
+              <div key={pluginId} className="plugin-error-item">
+                <div className="plugin-error-header">
+                  <strong>{pluginId}</strong>
+                  <span className="error-count">{errors.length} errores</span>
+                </div>
+                <div className="plugin-error-message">
+                  {errors[0].message}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="plugins-control">
         <Button 
@@ -118,11 +225,12 @@ const PluginsPanel = () => {
           ) : (
             plugins.map(plugin => {
               const isActive = pluginManager.isPluginActive(plugin.id);
+              const hasErrors = !!pluginErrors[plugin.id];
               
               return (
                 <div 
                   key={plugin.id} 
-                  className={`plugin-item ${isActive ? 'active' : 'inactive'}`}
+                  className={`plugin-item ${isActive ? 'active' : 'inactive'} ${hasErrors ? 'has-errors' : ''}`}
                 >
                   <div className="plugin-info">
                     <h3 className="plugin-name">{plugin.name}</h3>
@@ -130,6 +238,9 @@ const PluginsPanel = () => {
                     <div className="plugin-meta">
                       <span className="plugin-version">v{plugin.version}</span>
                       <span className="plugin-author">por {plugin.author}</span>
+                      {hasErrors && (
+                        <span className="plugin-error-badge">Error</span>
+                      )}
                     </div>
                   </div>
                   
@@ -146,6 +257,7 @@ const PluginsPanel = () => {
                       onClick={() => togglePluginState(plugin.id, isActive)}
                       variant={isActive ? 'danger' : 'primary'}
                       size="small"
+                      disabled={loading}
                     >
                       {isActive ? 'Desactivar' : 'Activar'}
                     </Button>
@@ -184,6 +296,32 @@ const PluginsPanel = () => {
             </div>
             <div className="plugin-detail-item">
               <strong>Estado:</strong> {pluginManager.isPluginActive(selectedPlugin.id) ? 'Activo' : 'Inactivo'}
+            </div>
+            
+            {pluginErrors[selectedPlugin.id] && (
+              <div className="plugin-detail-errors">
+                <h4>Errores del plugin</h4>
+                <ul className="error-list">
+                  {pluginErrors[selectedPlugin.id].map((error, index) => (
+                    <li key={index} className="error-item">
+                      <div className="error-operation">{error.operation}</div>
+                      <div className="error-message">{error.message}</div>
+                      <div className="error-timestamp">
+                        {new Date(error.timestamp).toLocaleString()}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            <div className="plugin-detail-actions">
+              <Button 
+                variant="secondary" 
+                onClick={() => clearPluginStorage(selectedPlugin.id)}
+              >
+                Limpiar almacenamiento
+              </Button>
             </div>
           </div>
         </Dialog>

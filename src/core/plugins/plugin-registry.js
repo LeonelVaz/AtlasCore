@@ -18,6 +18,12 @@ class PluginRegistry {
     
     // Almacenar instancias inicializadas
     this.instances = {};
+    
+    // Estados adicionales de los plugins (metadata)
+    this.pluginStates = {};
+    
+    // Plugins con error
+    this.pluginErrors = {};
   }
 
   /**
@@ -43,9 +49,27 @@ class PluginRegistry {
         this.activePlugins[plugin.id] = false;
       }
       
+      // Inicializar estado si no existe
+      if (!this.pluginStates[plugin.id]) {
+        this.pluginStates[plugin.id] = {
+          registered: Date.now(),
+          active: false
+        };
+      }
+      
+      // Limpiar errores previos
+      delete this.pluginErrors[plugin.id];
+      
       return true;
     } catch (error) {
       console.error(`Error al registrar plugin [${plugin?.id}]:`, error);
+      if (plugin?.id) {
+        this.pluginErrors[plugin.id] = {
+          operation: 'register',
+          message: error.message || 'Error al registrar plugin',
+          timestamp: Date.now()
+        };
+      }
       return false;
     }
   }
@@ -72,9 +96,22 @@ class PluginRegistry {
       delete this.activePlugins[pluginId];
       delete this.instances[pluginId];
       
+      // Mantener el estado para referencia histórica
+      if (this.pluginStates[pluginId]) {
+        this.pluginStates[pluginId].unregistered = Date.now();
+      }
+      
+      // Limpiar errores
+      delete this.pluginErrors[pluginId];
+      
       return true;
     } catch (error) {
       console.error(`Error al desregistrar plugin [${pluginId}]:`, error);
+      this.pluginErrors[pluginId] = {
+        operation: 'unregister',
+        message: error.message || 'Error al desregistrar plugin',
+        timestamp: Date.now()
+      };
       return false;
     }
   }
@@ -102,27 +139,65 @@ class PluginRegistry {
       // Inicializar plugin
       console.log(`Inicializando plugin: ${pluginId}`);
       
-      // Llamar al método init del plugin
-      const success = plugin.init(core);
-      
-      if (!success) {
-        console.error(`Error al inicializar plugin: ${pluginId}`);
-        return false;
+      // Asegurar que el estado existe
+      if (!this.pluginStates[pluginId]) {
+        this.pluginStates[pluginId] = {
+          registered: Date.now(),
+          active: false
+        };
       }
       
-      // Marcar como activo
-      this.activePlugins[pluginId] = true;
+      // Limpiar errores previos
+      delete this.pluginErrors[pluginId];
       
-      // Guardar instancia
-      this.instances[pluginId] = {
-        plugin,
-        initialized: true
-      };
-      
-      console.log(`Plugin activado: ${pluginId}`);
-      return true;
+      try {
+        // Llamar al método init del plugin
+        const success = plugin.init(core);
+        
+        if (!success) {
+          throw new Error(`Inicialización falló para plugin: ${pluginId}`);
+        }
+        
+        // Marcar como activo
+        this.activePlugins[pluginId] = true;
+        
+        // Guardar instancia
+        this.instances[pluginId] = {
+          plugin,
+          initialized: true,
+          activatedAt: Date.now()
+        };
+        
+        // Actualizar estado
+        this.pluginStates[pluginId].active = true;
+        this.pluginStates[pluginId].lastActivated = Date.now();
+        
+        console.log(`Plugin activado: ${pluginId}`);
+        return true;
+      } catch (initError) {
+        console.error(`Error al inicializar plugin [${pluginId}]:`, initError);
+        this.pluginErrors[pluginId] = {
+          operation: 'activate',
+          message: initError.message || 'Error al inicializar plugin',
+          timestamp: Date.now()
+        };
+        
+        // Actualizar estado
+        this.pluginStates[pluginId].lastError = {
+          type: 'activation',
+          message: initError.message || 'Error al inicializar plugin',
+          timestamp: Date.now()
+        };
+        
+        return false;
+      }
     } catch (error) {
       console.error(`Error al activar plugin [${pluginId}]:`, error);
+      this.pluginErrors[pluginId] = {
+        operation: 'activate',
+        message: error.message || 'Error al activar plugin',
+        timestamp: Date.now()
+      };
       return false;
     }
   }
@@ -146,27 +221,69 @@ class PluginRegistry {
       
       const plugin = this.plugins[pluginId];
       
-      // Llamar al método cleanup del plugin
-      console.log(`Limpiando plugin: ${pluginId}`);
-      const success = plugin.cleanup();
+      // Limpiar errores previos
+      delete this.pluginErrors[pluginId];
       
-      if (!success) {
-        console.error(`Error al limpiar plugin: ${pluginId}`);
-        // Continuamos con la desactivación a pesar del error
+      try {
+        // Llamar al método cleanup del plugin
+        console.log(`Limpiando plugin: ${pluginId}`);
+        const success = plugin.cleanup();
+        
+        if (!success) {
+          console.error(`Limpieza falló para plugin: ${pluginId}`);
+          // Continuamos con la desactivación a pesar del error
+        }
+        
+        // Marcar como inactivo
+        this.activePlugins[pluginId] = false;
+        
+        // Limpiar instancia
+        if (this.instances[pluginId]) {
+          this.instances[pluginId].initialized = false;
+          this.instances[pluginId].deactivatedAt = Date.now();
+        }
+        
+        // Actualizar estado
+        if (this.pluginStates[pluginId]) {
+          this.pluginStates[pluginId].active = false;
+          this.pluginStates[pluginId].lastDeactivated = Date.now();
+        }
+        
+        console.log(`Plugin desactivado: ${pluginId}`);
+        return true;
+      } catch (cleanupError) {
+        console.error(`Error al limpiar plugin [${pluginId}]:`, cleanupError);
+        
+        // Aún así lo desactivamos
+        this.activePlugins[pluginId] = false;
+        
+        // Registrar error
+        this.pluginErrors[pluginId] = {
+          operation: 'deactivate',
+          message: cleanupError.message || 'Error al limpiar plugin',
+          timestamp: Date.now()
+        };
+        
+        // Actualizar estado
+        if (this.pluginStates[pluginId]) {
+          this.pluginStates[pluginId].active = false;
+          this.pluginStates[pluginId].lastDeactivated = Date.now();
+          this.pluginStates[pluginId].lastError = {
+            type: 'deactivation',
+            message: cleanupError.message || 'Error al limpiar plugin',
+            timestamp: Date.now()
+          };
+        }
+        
+        return true; // Devolvemos true porque el plugin queda desactivado aunque falle la limpieza
       }
-      
-      // Marcar como inactivo
-      this.activePlugins[pluginId] = false;
-      
-      // Limpiar instancia
-      if (this.instances[pluginId]) {
-        this.instances[pluginId].initialized = false;
-      }
-      
-      console.log(`Plugin desactivado: ${pluginId}`);
-      return true;
     } catch (error) {
       console.error(`Error al desactivar plugin [${pluginId}]:`, error);
+      this.pluginErrors[pluginId] = {
+        operation: 'deactivate',
+        message: error.message || 'Error al desactivar plugin',
+        timestamp: Date.now()
+      };
       return false;
     }
   }
@@ -206,7 +323,93 @@ class PluginRegistry {
       .filter(([, active]) => active)
       .map(([id]) => id);
     
-    return activePluginIds.map(id => this.plugins[id]);
+    return activePluginIds.map(id => this.plugins[id]).filter(Boolean);
+  }
+
+  /**
+   * Obtiene el estado de un plugin específico
+   * @param {string} pluginId - ID del plugin
+   * @returns {Object} - Estado del plugin
+   */
+  getPluginState(pluginId) {
+    return this.pluginStates[pluginId] || {};
+  }
+
+  /**
+   * Obtiene los estados de todos los plugins
+   * @returns {Object} - Estados de plugins
+   */
+  getPluginStates() {
+    return { ...this.pluginStates };
+  }
+
+  /**
+   * Establece el estado de un plugin
+   * @param {string} pluginId - ID del plugin
+   * @param {Object} state - Estado a establecer (se fusiona con el existente)
+   */
+  setPluginState(pluginId, state) {
+    if (!pluginId) return;
+    
+    // Asegurar que el objeto de estado existe
+    if (!this.pluginStates[pluginId]) {
+      this.pluginStates[pluginId] = {};
+    }
+    
+    // Fusionar con el estado existente
+    this.pluginStates[pluginId] = {
+      ...this.pluginStates[pluginId],
+      ...state,
+      lastUpdated: Date.now()
+    };
+  }
+
+  /**
+   * Establece los estados de todos los plugins
+   * @param {Object} states - Estados a establecer
+   */
+  setPluginStates(states) {
+    if (!states || typeof states !== 'object') return;
+    
+    // Reemplazar todos los estados
+    this.pluginStates = { ...states };
+  }
+
+  /**
+   * Obtiene los errores de los plugins
+   * @returns {Object} - Errores por ID de plugin
+   */
+  getPluginErrors() {
+    return { ...this.pluginErrors };
+  }
+
+  /**
+   * Obtiene los errores de un plugin específico
+   * @param {string} pluginId - ID del plugin
+   * @returns {Object|null} - Error del plugin o null
+   */
+  getPluginError(pluginId) {
+    return this.pluginErrors[pluginId] || null;
+  }
+
+  /**
+   * Limpia todos los registros y estados
+   */
+  clear() {
+    // Desactivar todos los plugins activos primero
+    Object.keys(this.activePlugins).forEach(pluginId => {
+      if (this.activePlugins[pluginId]) {
+        this.deactivatePlugin(pluginId);
+      }
+    });
+    
+    // Limpiar registros
+    this.plugins = {};
+    this.activePlugins = {};
+    this.instances = {};
+    this.pluginErrors = {};
+    
+    // No limpiamos pluginStates para mantener historial
   }
 }
 

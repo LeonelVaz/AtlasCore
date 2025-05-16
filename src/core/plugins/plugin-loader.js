@@ -6,6 +6,7 @@
  */
 
 import { validatePlugin } from './plugin-validator';
+import { PLUGIN_CONSTANTS } from '../config/constants';
 
 /**
  * Carga todos los plugins disponibles en la carpeta designada
@@ -13,8 +14,7 @@ import { validatePlugin } from './plugin-validator';
  */
 export async function loadPlugins() {
   try {
-    // En un entorno real, esto buscaría físicamente en el sistema de archivos
-    // Para esta implementación, simularemos una función que obtiene plugins
+    // Descubrir plugins en la carpeta correspondiente
     const plugins = await discoverPlugins();
     
     // Filtrar y validar los plugins
@@ -32,25 +32,31 @@ export async function loadPlugins() {
 
 /**
  * Descubre plugins disponibles en la carpeta designada
- * (En una implementación real, esta función buscaría en el sistema de archivos)
  * @private
  * @returns {Promise<Array>} - Lista de plugins descubiertos
  */
 async function discoverPlugins() {
   try {
-    // Simulación de descubrimiento de plugins
-    // En la implementación real, esto haría:
-    // 1. Buscar en la carpeta /src/plugins/
-    // 2. Encontrar subcarpetas que contengan un index.js
-    // 3. Importar dinámicamente esos index.js
-    // 4. Añadir información de ruta y otros metadatos
+    const plugins = [];
+    
+    // En esta implementación, buscamos directamente el plugin de ejemplo
+    // En una implementación real, esto buscaría todos los plugins en la carpeta
+    
+    try {
+      // Importar el plugin de ejemplo
+      const examplePlugin = await import('../../plugins/example-plugin/index.js');
+      
+      if (examplePlugin && examplePlugin.default) {
+        plugins.push(examplePlugin.default);
+      }
+    } catch (importError) {
+      console.warn('No se pudo cargar el plugin de ejemplo:', importError.message);
+    }
+    
+    // Aquí podrían agregarse más plugins conocidos o buscar dinámicamente
+    // usando context.require o similar en una implementación real
 
-    // Esta es una implementación de placeholder
-    // En una aplicación real, se usarían imports dinámicos
-    
-    // Simulamos que no hay plugins instalados aún
-    return [];
-    
+    return plugins;
   } catch (error) {
     console.error('Error al descubrir plugins:', error);
     return [];
@@ -65,20 +71,20 @@ async function discoverPlugins() {
 export async function loadPluginById(pluginId) {
   try {
     // Simulación de carga de un plugin específico
-    const plugins = await discoverPlugins();
-    const plugin = plugins.find(p => p.id === pluginId);
-    
-    if (!plugin) {
-      console.warn(`Plugin no encontrado: ${pluginId}`);
-      return null;
+    if (pluginId === 'example-plugin') {
+      try {
+        const examplePlugin = await import('../../plugins/example-plugin/index.js');
+        
+        if (examplePlugin && examplePlugin.default) {
+          return examplePlugin.default;
+        }
+      } catch (importError) {
+        console.warn('No se pudo cargar el plugin de ejemplo:', importError.message);
+      }
     }
     
-    if (!validatePlugin(plugin)) {
-      console.error(`Plugin inválido: ${pluginId}`);
-      return null;
-    }
-    
-    return plugin;
+    console.warn(`Plugin no encontrado: ${pluginId}`);
+    return null;
   } catch (error) {
     console.error(`Error al cargar plugin ${pluginId}:`, error);
     return null;
