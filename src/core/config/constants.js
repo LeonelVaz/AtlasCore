@@ -144,13 +144,15 @@ export const PLUGIN_CONSTANTS = {
     STORAGE_CHANGED: 'storageChanged',
     STORAGE_CLEARED: 'storageCleared',
     STORAGE_LIMIT_EXCEEDED: 'storageLimitExceeded',
-    EVENT_HANDLER_ERROR: 'eventHandlerError'
+    EVENT_HANDLER_ERROR: 'eventHandlerError',
+    EXTENSION_POINT_CHANGED: 'extensionPointChanged'
   },
   // Zonas de extensión UI disponibles
   UI_EXTENSION_ZONES: {
     CALENDAR_SIDEBAR: 'calendar-sidebar',
     SETTINGS_PANEL: 'settings-panel',
-    DASHBOARD_WIDGETS: 'dashboard-widgets'
+    // Se añadirán más en versiones futuras
+    // DASHBOARD_WIDGETS: 'dashboard-widgets' (v0.5.0+)
   },
   // Límites del sistema
   LIMITS: {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import SidebarExtensions from '../../plugin-extension/sidebar-extensions';
 
 /**
  * Componente del panel lateral de navegación
@@ -27,6 +28,9 @@ const Sidebar = ({ children }) => {
       </div>
       <div className="sidebar-content">
         {children}
+        
+        {/* Punto de extensión para plugins en sidebar */}
+        <SidebarExtensions />
       </div>
       <div className="sidebar-footer">
         <span className="version-info">v0.3.0</span>

@@ -5,6 +5,7 @@ import TimeSlotEditor from './time-slot-editor';
 import CalendarConfig from './calendar-config';
 import PluginsPanel from './plugins-panel';
 import SidebarItem from '../ui/sidebar/sidebar-item';
+import SettingsExtensions from '../plugin-extension/settings-extensions';
 
 // Iconos para las secciones de configuración (usando Material Icons)
 const SECTION_ICONS = {
@@ -14,7 +15,8 @@ const SECTION_ICONS = {
   TIME_SCALE: 'schedule',
   TIME_SLOTS: 'horizontal_split',
   BACKUP: 'backup',
-  PLUGINS: 'extension'
+  PLUGINS: 'extension',
+  EXTENSIONS: 'extension_plus' // Icono para sección de extensiones
 };
 
 /**
@@ -32,6 +34,7 @@ const SettingsPanel = () => {
     { id: 'time_slots', label: 'Franjas Horarias', icon: SECTION_ICONS.TIME_SLOTS },
     { id: 'calendar', label: 'Calendario', icon: SECTION_ICONS.CALENDAR },
     { id: 'plugins', label: 'Plugins', icon: SECTION_ICONS.PLUGINS },
+    { id: 'extensions', label: 'Extensiones', icon: SECTION_ICONS.EXTENSIONS },
     { id: 'backup', label: 'Respaldo', icon: SECTION_ICONS.BACKUP }
   ];
   
@@ -53,6 +56,8 @@ const SettingsPanel = () => {
         return <CalendarConfig />;
       case 'plugins':
         return <PluginsPanel />;
+      case 'extensions':
+        return <SettingsExtensions />;
       case 'general':
       case 'backup':
         return (

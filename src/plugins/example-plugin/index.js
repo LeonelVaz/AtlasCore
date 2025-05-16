@@ -2,8 +2,134 @@
  * Plugin de Ejemplo para Atlas
  * 
  * Este plugin sirve como demostración de la nueva API de plugins
- * y su integración con el sistema de eventos y almacenamiento.
+ * y su integración con el sistema de eventos, almacenamiento y extensiones UI.
  */
+
+// Importación separada de React para evitar problemas con JSX en archivos .js
+// Los componentes React se definen en archivos separados con extensión .jsx
+
+/**
+ * Funciones para crear componentes sin usar JSX directamente
+ */
+function createSidebarExtension() {
+  // Creamos la función que construirá el componente
+  return function SidebarExtensionComponent(props) {
+    const React = require('react');
+    const { pluginId, extensionId } = props;
+    
+    // Crear el elemento con React.createElement en lugar de JSX
+    return React.createElement(
+      'div', 
+      { className: "example-sidebar-extension" },
+      [
+        React.createElement(
+          'div', 
+          { className: "example-sidebar-header", key: "header" }, 
+          "Demo Extension"
+        ),
+        React.createElement(
+          'div', 
+          { className: "example-sidebar-content", key: "content" },
+          React.createElement(
+            'button',
+            { 
+              className: "example-sidebar-button",
+              onClick: () => alert(`Hola desde el plugin de ejemplo (ID: ${extensionId})`),
+              key: "button"
+            },
+            "Click Me"
+          )
+        )
+      ]
+    );
+  };
+}
+
+function createSettingsExtension() {
+  // Creamos la función que construirá el componente
+  return function SettingsExtensionComponent(props) {
+    const React = require('react');
+    const { useState } = React;
+    const { pluginId, extensionId } = props;
+    
+    // Usar hooks sin JSX
+    const countState = useState(0);
+    const count = countState[0];
+    const setCount = countState[1];
+    
+    // Estilo en línea en lugar de JSX style
+    const styles = {
+      container: {
+        padding: '12px',
+        backgroundColor: 'var(--bg-color-secondary)',
+        borderRadius: '6px',
+        border: '1px solid var(--color-border)'
+      },
+      title: {
+        marginTop: 0,
+        marginBottom: '10px',
+        color: 'var(--color-atlas-blue)'
+      },
+      content: {
+        marginBottom: '12px'
+      },
+      counter: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        marginTop: '10px'
+      },
+      button: {
+        width: '30px',
+        height: '30px',
+        borderRadius: '50%',
+        border: 'none',
+        backgroundColor: 'var(--color-atlas-blue)',
+        color: 'white',
+        fontWeight: 'bold',
+        cursor: 'pointer'
+      },
+      count: {
+        fontSize: '18px',
+        fontWeight: 'bold'
+      }
+    };
+    
+    // Crear el elemento con createElement
+    return React.createElement(
+      'div',
+      { style: styles.container, className: "example-settings-extension" },
+      [
+        React.createElement('h4', { style: styles.title, key: "title" }, "Configuración de Demo Plugin"),
+        React.createElement(
+          'div', 
+          { style: styles.content, className: "example-settings-content", key: "content" },
+          React.createElement('p', { key: "desc" }, "Esta es una demostración de una extensión de configuración.")
+        ),
+        React.createElement(
+          'div',
+          { style: styles.counter, className: "example-settings-counter", key: "counter" },
+          [
+            React.createElement('button', { 
+              style: styles.button, 
+              onClick: () => setCount(count - 1),
+              key: "minus"
+            }, "-"),
+            React.createElement('span', { 
+              style: styles.count,
+              key: "value"
+            }, count),
+            React.createElement('button', { 
+              style: styles.button, 
+              onClick: () => setCount(count + 1),
+              key: "plus"
+            }, "+")
+          ]
+        )
+      ]
+    );
+  };
+}
 
 /**
  * Definición del plugin
@@ -22,6 +148,7 @@ export default {
   
   // Estado interno
   _subscriptions: [],
+  _extensions: [],
   _data: {},
   
   /**
@@ -41,6 +168,9 @@ export default {
       
       // Suscribirse a eventos del sistema
       this._setupEventListeners();
+      
+      // Registrar extensiones UI
+      this._registerUIExtensions();
       
       console.log('[Example Plugin] Inicializado correctamente');
       return true;
@@ -63,6 +193,9 @@ export default {
       
       // Limpiar suscripciones a eventos
       this._cleanupEventListeners();
+      
+      // Limpiar extensiones UI
+      this._cleanupUIExtensions();
       
       console.log('[Example Plugin] Limpieza completada');
       return true;
@@ -171,6 +304,93 @@ export default {
     this._subscriptions = [];
     
     console.log('[Example Plugin] Listeners de eventos limpiados');
+  },
+
+  /**
+   * Registra extensiones UI
+   * @private
+   */
+  _registerUIExtensions: function() {
+    try {
+      const pluginId = this.id;
+      const core = this._core;
+      
+      // Obtener las zonas de extensión disponibles
+      const zones = core.ui.getExtensionZones();
+      
+      // Crear los componentes usando las funciones factory
+      const SidebarExtensionComponent = createSidebarExtension();
+      const SettingsExtensionComponent = createSettingsExtension();
+      
+      // Registrar componente en la barra lateral
+      if (zones.CALENDAR_SIDEBAR) {
+        const sidebarExtId = core.ui.registerExtension(
+          pluginId,
+          zones.CALENDAR_SIDEBAR,
+          SidebarExtensionComponent,
+          {
+            order: 100,
+            props: {
+              title: 'Demo Extension'
+            }
+          }
+        );
+        
+        // Guardar referencia para limpieza
+        if (sidebarExtId) {
+          this._extensions.push(sidebarExtId);
+        }
+      }
+      
+      // Registrar componente en configuración
+      if (zones.SETTINGS_PANEL) {
+        const settingsExtId = core.ui.registerExtension(
+          pluginId,
+          zones.SETTINGS_PANEL,
+          SettingsExtensionComponent,
+          {
+            order: 50, // Prioridad más alta (aparecerá primero)
+            props: {
+              title: 'Demo Settings'
+            }
+          }
+        );
+        
+        // Guardar referencia para limpieza
+        if (settingsExtId) {
+          this._extensions.push(settingsExtId);
+        }
+      }
+      
+      console.log(`[Example Plugin] Extensiones UI registradas: ${this._extensions.length}`);
+    } catch (error) {
+      console.error('[Example Plugin] Error al registrar extensiones UI:', error);
+    }
+  },
+  
+  /**
+   * Limpia las extensiones UI
+   * @private
+   */
+  _cleanupUIExtensions: function() {
+    try {
+      // El sistema eliminará automáticamente las extensiones al desactivar el plugin
+      // gracias a la integración con el gestor de plugins, pero podríamos hacer limpieza
+      // manual si fuera necesario:
+      
+      /*
+      this._extensions.forEach(extensionId => {
+        this._core.ui.removeExtension(this.id, extensionId);
+      });
+      */
+      
+      // Limpiar lista
+      this._extensions = [];
+      
+      console.log('[Example Plugin] Extensiones UI limpiadas');
+    } catch (error) {
+      console.error('[Example Plugin] Error al limpiar extensiones UI:', error);
+    }
   },
   
   /**

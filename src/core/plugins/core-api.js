@@ -7,6 +7,9 @@
 
 import eventBus from '../bus/event-bus';
 import storageService from '../../services/storage-service';
+import pluginEvents from './plugin-events';
+import pluginStorage from './plugin-storage';
+import uiExtensionManager from './ui-extension-manager';
 
 /**
  * Clase que implementa la API core para plugins
@@ -48,7 +51,7 @@ class CoreAPI {
    * @private
    */
   _initEvents() {
-    // Sistema de eventos para comunicación entre plugins
+    // Usar el módulo especializado para eventos de plugins
     this.events = {
       /**
        * Suscribirse a un evento
@@ -58,34 +61,7 @@ class CoreAPI {
        * @returns {Function} - Función para cancelar suscripción
        */
       subscribe: (pluginId, eventName, callback) => {
-        if (!pluginId || !eventName || typeof callback !== 'function') {
-          console.error('Argumentos inválidos para subscribe');
-          return () => {};
-        }
-        
-        // Registrar recurso del plugin para limpieza automática
-        if (!this._pluginResources[pluginId]) {
-          this._pluginResources[pluginId] = {};
-        }
-        
-        if (!this._pluginResources[pluginId].eventSubscriptions) {
-          this._pluginResources[pluginId].eventSubscriptions = [];
-        }
-        
-        // Crear canal namespaced para eventos de plugins
-        const pluginEventName = `plugin.${eventName}`;
-        
-        // Suscribirse al evento usando el eventBus central
-        const unsubscribe = eventBus.subscribe(pluginEventName, callback);
-        
-        // Almacenar referencia para limpieza
-        this._pluginResources[pluginId].eventSubscriptions.push({
-          eventName: pluginEventName,
-          callback,
-          unsubscribe
-        });
-        
-        return unsubscribe;
+        return pluginEvents.subscribe(pluginId, eventName, callback);
       },
       
       /**
@@ -95,22 +71,7 @@ class CoreAPI {
        * @param {*} data - Datos a pasar a los suscriptores
        */
       publish: (pluginId, eventName, data) => {
-        if (!pluginId || !eventName) {
-          console.error('Argumentos inválidos para publish');
-          return;
-        }
-        
-        // Crear canal namespaced para eventos de plugins
-        const pluginEventName = `plugin.${eventName}`;
-        
-        // Añadir origen del evento a los datos
-        const eventData = {
-          sourcePlugin: pluginId,
-          data
-        };
-        
-        // Publicar mediante el eventBus central
-        eventBus.publish(pluginEventName, eventData);
+        return pluginEvents.publish(pluginId, eventName, data);
       },
       
       /**
@@ -119,27 +80,7 @@ class CoreAPI {
        * @returns {boolean} - true si se cancelaron correctamente
        */
       unsubscribeAll: (pluginId) => {
-        if (!pluginId || !this._pluginResources[pluginId]) {
-          return false;
-        }
-        
-        const resources = this._pluginResources[pluginId];
-        
-        if (resources.eventSubscriptions && resources.eventSubscriptions.length > 0) {
-          resources.eventSubscriptions.forEach(subscription => {
-            try {
-              if (subscription && typeof subscription.unsubscribe === 'function') {
-                subscription.unsubscribe();
-              }
-            } catch (error) {
-              console.error(`Error al cancelar suscripción en plugin ${pluginId}:`, error);
-            }
-          });
-          
-          resources.eventSubscriptions = [];
-        }
-        
-        return true;
+        return pluginEvents.unsubscribeAll(pluginId);
       }
     };
   }
@@ -149,7 +90,7 @@ class CoreAPI {
    * @private
    */
   _initStorage() {
-    // Sistema de almacenamiento para plugins
+    // Usar el módulo especializado para almacenamiento de plugins
     this.storage = {
       /**
        * Guarda un valor en el almacenamiento
@@ -159,36 +100,7 @@ class CoreAPI {
        * @returns {Promise<boolean>} - true si se guardó correctamente
        */
       setItem: async (pluginId, key, value) => {
-        if (!pluginId || !key) {
-          console.error('Argumentos inválidos para setItem');
-          return false;
-        }
-        
-        try {
-          // Crear clave namespaced para el plugin
-          const storageKey = `plugin_${pluginId}_${key}`;
-          
-          // Usar el servicio de almacenamiento
-          const result = await storageService.set(storageKey, value);
-          
-          // Registrar clave de almacenamiento para limpieza
-          if (!this._pluginResources[pluginId]) {
-            this._pluginResources[pluginId] = {};
-          } 
-          
-          if (!this._pluginResources[pluginId].storageKeys) {
-            this._pluginResources[pluginId].storageKeys = [];
-          }
-          
-          if (!this._pluginResources[pluginId].storageKeys.includes(key)) {
-            this._pluginResources[pluginId].storageKeys.push(key);
-          }
-          
-          return result;
-        } catch (error) {
-          this._handleError(pluginId, 'storage', error);
-          return false;
-        }
+        return pluginStorage.setItem(pluginId, key, value);
       },
       
       /**
@@ -199,21 +111,7 @@ class CoreAPI {
        * @returns {Promise<*>} - Valor recuperado o defaultValue
        */
       getItem: async (pluginId, key, defaultValue = null) => {
-        if (!pluginId || !key) {
-          console.error('Argumentos inválidos para getItem');
-          return defaultValue;
-        }
-        
-        try {
-          // Crear clave namespaced para el plugin
-          const storageKey = `plugin_${pluginId}_${key}`;
-          
-          // Usar el servicio de almacenamiento
-          return await storageService.get(storageKey, defaultValue);
-        } catch (error) {
-          this._handleError(pluginId, 'storage', error);
-          return defaultValue;
-        }
+        return pluginStorage.getItem(pluginId, key, defaultValue);
       },
       
       /**
@@ -223,31 +121,7 @@ class CoreAPI {
        * @returns {Promise<boolean>} - true si se eliminó correctamente
        */
       removeItem: async (pluginId, key) => {
-        if (!pluginId || !key) {
-          console.error('Argumentos inválidos para removeItem');
-          return false;
-        }
-        
-        try {
-          // Crear clave namespaced para el plugin
-          const storageKey = `plugin_${pluginId}_${key}`;
-          
-          // Usar el servicio de almacenamiento
-          const result = await storageService.remove(storageKey);
-          
-          // Actualizar registro de claves
-          if (this._pluginResources[pluginId] && this._pluginResources[pluginId].storageKeys) {
-            const index = this._pluginResources[pluginId].storageKeys.indexOf(key);
-            if (index !== -1) {
-              this._pluginResources[pluginId].storageKeys.splice(index, 1);
-            }
-          }
-          
-          return result;
-        } catch (error) {
-          this._handleError(pluginId, 'storage', error);
-          return false;
-        }
+        return pluginStorage.removeItem(pluginId, key);
       },
       
       /**
@@ -256,29 +130,7 @@ class CoreAPI {
        * @returns {Promise<boolean>} - true si se eliminaron correctamente
        */
       clearPluginData: async (pluginId) => {
-        if (!pluginId || !this._pluginResources[pluginId]) {
-          return false;
-        }
-        
-        try {
-          const resources = this._pluginResources[pluginId];
-          
-          if (resources.storageKeys && resources.storageKeys.length > 0) {
-            const keys = [...resources.storageKeys];
-            
-            // Eliminar cada clave una por una
-            for (const key of keys) {
-              await this.storage.removeItem(pluginId, key);
-            }
-            
-            resources.storageKeys = [];
-          }
-          
-          return true;
-        } catch (error) {
-          this._handleError(pluginId, 'storage', error);
-          return false;
-        }
+        return pluginStorage.clearPluginData(pluginId);
       }
     };
   }
@@ -288,44 +140,56 @@ class CoreAPI {
    * @private
    */
   _initUI() {
-    // Sistema de integración UI para plugins
+    // Sistema de integración UI para plugins - Mejorado con Extensiones
     this.ui = {
       /**
-       * Registra un componente en una zona de la interfaz
+       * Registra un componente en un punto de extensión
        * @param {string} pluginId - ID del plugin
        * @param {string} zoneId - ID de la zona donde registrar
-       * @param {Function} Component - Componente React a registrar
+       * @param {Object|Function} component - Componente React a registrar
+       * @param {Object} [options] - Opciones adicionales
+       * @param {Object} [options.props] - Props adicionales para el componente
+       * @param {number} [options.order] - Orden de renderizado (menor = primero)
        * @returns {string|null} - ID de registro o null si falla
        */
-      registerComponent: (pluginId, zoneId, Component) => {
-        if (!pluginId || !zoneId || !Component) {
-          console.error('Argumentos inválidos para registerComponent');
+      registerExtension: (pluginId, zoneId, component, options = {}) => {
+        if (!pluginId || !zoneId || !component) {
+          console.error('Argumentos inválidos para registerExtension');
           return null;
         }
         
         try {
-          // Crear ID único para este registro
-          const registrationId = `${pluginId}_${zoneId}_${Date.now()}`;
+          // Crear objeto de información del componente
+          const componentInfo = {
+            component,
+            props: options.props || {},
+            order: options.order || 100
+          };
           
-          // Registrar componente (placeholder en esta fase)
-          console.log(`[CoreAPI] Registrando componente de plugin ${pluginId} en zona: ${zoneId}`);
+          // Registrar en el gestor de extensiones
+          const extensionId = uiExtensionManager.registerExtension(
+            pluginId, 
+            zoneId, 
+            componentInfo
+          );
           
           // Registrar para limpieza automática
-          if (!this._pluginResources[pluginId]) {
-            this._pluginResources[pluginId] = {};
+          if (extensionId) {
+            if (!this._pluginResources[pluginId]) {
+              this._pluginResources[pluginId] = {};
+            }
+            
+            if (!this._pluginResources[pluginId].extensions) {
+              this._pluginResources[pluginId].extensions = [];
+            }
+            
+            this._pluginResources[pluginId].extensions.push({
+              extensionId,
+              zoneId
+            });
           }
           
-          if (!this._pluginResources[pluginId].uiComponents) {
-            this._pluginResources[pluginId].uiComponents = [];
-          }
-          
-          this._pluginResources[pluginId].uiComponents.push({
-            registrationId,
-            zoneId,
-            Component
-          });
-          
-          return registrationId;
+          return extensionId;
         } catch (error) {
           this._handleError(pluginId, 'ui', error);
           return null;
@@ -333,37 +197,30 @@ class CoreAPI {
       },
       
       /**
-       * Elimina un componente registrado
+       * Elimina una extensión registrada
        * @param {string} pluginId - ID del plugin
-       * @param {string} registrationId - ID de registro obtenido al registrar
+       * @param {string} extensionId - ID de la extensión
        * @returns {boolean} - true si se eliminó correctamente
        */
-      unregisterComponent: (pluginId, registrationId) => {
-        if (!pluginId || !registrationId) {
-          console.error('ID de registro inválido');
+      removeExtension: (pluginId, extensionId) => {
+        if (!pluginId || !extensionId) {
+          console.error('Argumentos inválidos para removeExtension');
           return false;
         }
         
         try {
-          // Verificar si el plugin tiene componentes registrados
-          if (!this._pluginResources[pluginId] || !this._pluginResources[pluginId].uiComponents) {
-            return false;
+          // Eliminar del gestor de extensiones
+          const success = uiExtensionManager.removeExtension(extensionId);
+          
+          // Actualizar registro de recursos si se eliminó
+          if (success && this._pluginResources[pluginId]?.extensions) {
+            this._pluginResources[pluginId].extensions = 
+              this._pluginResources[pluginId].extensions.filter(
+                ext => ext.extensionId !== extensionId
+              );
           }
           
-          // Encontrar el componente por su ID
-          const components = this._pluginResources[pluginId].uiComponents;
-          const index = components.findIndex(comp => comp.registrationId === registrationId);
-          
-          if (index === -1) {
-            return false;
-          }
-          
-          // Eliminar registro del componente
-          components.splice(index, 1);
-          
-          console.log(`[CoreAPI] Eliminando componente con ID: ${registrationId}`);
-          
-          return true;
+          return success;
         } catch (error) {
           this._handleError(pluginId, 'ui', error);
           return false;
@@ -371,23 +228,30 @@ class CoreAPI {
       },
       
       /**
-       * Elimina todos los componentes UI de un plugin
+       * Obtiene información sobre las zonas de extensión disponibles
+       * @returns {Object} - Mapa de zonas de extensión
+       */
+      getExtensionZones: () => {
+        try {
+          return { ...PLUGIN_CONSTANTS.UI_EXTENSION_ZONES };
+        } catch (error) {
+          console.error('Error al obtener zonas de extensión:', error);
+          return {};
+        }
+      },
+      
+      /**
+       * Elimina todas las extensiones de un plugin
        * @param {string} pluginId - ID del plugin
        * @returns {boolean} - true si se eliminaron correctamente
        */
-      unregisterAllComponents: (pluginId) => {
-        if (!pluginId || !this._pluginResources[pluginId]) {
+      removeAllExtensions: (pluginId) => {
+        if (!pluginId) {
           return false;
         }
         
         try {
-          const resources = this._pluginResources[pluginId];
-          
-          if (resources.uiComponents && resources.uiComponents.length > 0) {
-            resources.uiComponents = [];
-          }
-          
-          return true;
+          return uiExtensionManager.removeAllPluginExtensions(pluginId);
         } catch (error) {
           this._handleError(pluginId, 'ui', error);
           return false;
@@ -488,8 +352,8 @@ class CoreAPI {
       // Cancelar suscripciones a eventos
       this.events.unsubscribeAll(pluginId);
       
-      // Eliminar componentes UI
-      this.ui.unregisterAllComponents(pluginId);
+      // Eliminar extensiones UI
+      this.ui.removeAllExtensions(pluginId);
       
       // No limpiamos los datos de almacenamiento automáticamente
       // para preservar configuración entre sesiones
