@@ -3,7 +3,14 @@ import { sanitizeHtml } from '../utils/notes-utils';
 
 /**
  * Editor de texto enriquecido basado en contenteditable
- * Un editor simple pero funcional para el plugin de notas
+ * Proporciona una interfaz para crear contenido con formato para las notas
+ * 
+ * @param {Object} props - Propiedades del componente
+ * @param {string} props.value - Contenido HTML inicial
+ * @param {Function} props.onChange - Función para manejar cambios
+ * @param {string} props.placeholder - Texto de placeholder cuando está vacío
+ * @param {string} props.className - Clases adicionales
+ * @param {string} props.height - Altura del editor
  */
 const RichTextEditor = ({ 
   value = '', 
@@ -16,7 +23,7 @@ const RichTextEditor = ({
   const editorRef = useRef(null);
   const toolbarRef = useRef(null);
   
-  // Inicializar valor
+  // Inicializar el editor con el valor proporcionado
   useEffect(() => {
     setHtml(value);
   }, [value]);
@@ -25,25 +32,26 @@ const RichTextEditor = ({
   const handleChange = () => {
     if (editorRef.current) {
       const newContent = editorRef.current.innerHTML;
-      // Sanitizar contenido para prevenir XSS
+      // Sanitizar el contenido para prevenir ataques XSS
       const sanitized = sanitizeHtml(newContent);
       setHtml(sanitized);
       
+      // Notificar cambios al componente padre
       if (onChange) {
         onChange(sanitized);
       }
     }
   };
 
-  // Aplicar comandos de edición
+  // Ejecutar comandos de edición
   const executeCommand = (command, value = null) => {
     document.execCommand(command, false, value);
     handleChange();
-    // Enfocar el editor después de ejecutar un comando
+    // Mantener el foco en el editor
     editorRef.current.focus();
   };
 
-  // Comandos para las acciones de formato
+  // Comandos para los botones de la barra de herramientas
   const formatBold = () => executeCommand('bold');
   const formatItalic = () => executeCommand('italic');
   const formatUnderline = () => executeCommand('underline');
@@ -59,13 +67,20 @@ const RichTextEditor = ({
   const formatUnlink = () => executeCommand('unlink');
   const formatClear = () => executeCommand('removeFormat');
 
-  // Manejar pegar texto sin formato
+  // Manejar pegado de texto para preservar solo texto plano
   const handlePaste = (e) => {
     e.preventDefault();
-    // Obtener texto sin formato del portapapeles
     const text = e.clipboardData.getData('text/plain');
-    // Insertar como texto plano
     document.execCommand('insertText', false, text);
+  };
+
+  // Manejar teclas especiales
+  const handleKeyDown = (e) => {
+    // Implementar comportamiento especial para algunas teclas
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
+    }
   };
 
   return (
@@ -155,6 +170,7 @@ const RichTextEditor = ({
         onInput={handleChange}
         onBlur={handleChange}
         onPaste={handlePaste}
+        onKeyDown={handleKeyDown}
         style={{ minHeight: height }}
         placeholder={placeholder}
         suppressContentEditableWarning={true}

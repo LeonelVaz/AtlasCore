@@ -1,92 +1,84 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { sanitizeHtml } from '../utils/notes-utils';
-import { getTranslation } from '../utils/i18n';
+import { sanitizeHtml, isSameDay, groupNotesByDate } from '../utils/notes-utils';
+import { getTranslation, loadTranslations } from '../utils/i18n';
 
 // Crear contexto
 export const NotesContext = createContext();
 
-// Proveedor del contexto
+/**
+ * Proveedor del contexto para gestionar notas
+ * Maneja el estado global y las operaciones CRUD para notas
+ */
 export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
+  // Estados
   const [notes, setNotes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [translations, setTranslations] = useState(null);
   
+  // Cargar traducciones al inicio
+  useEffect(() => {
+    const userLang = navigator.language || navigator.userLanguage || 'es';
+    const trans = loadTranslations(userLang);
+    setTranslations(trans);
+  }, []);
+  
   // Función para obtener el servicio de almacenamiento
   const getStorageService = useCallback(() => {
     try {
-      if (!window.__appModules || !window.__appModules['notes-manager']) {
-        console.error('Módulo de notas no registrado');
-        return null;
+      // Intentar obtener el storage desde el módulo Notes Manager
+      if (window.__appModules && window.__appModules['notes-manager']) {
+        const notesModule = window.__appModules['notes-manager'];
+        if (notesModule.core?.storage) {
+          return notesModule.core.storage;
+        }
       }
       
-      const notesModule = window.__appModules['notes-manager'];
-      
-      // Intentar obtener storage directamente desde el módulo
-      if (notesModule.core?.storage) {
-        return notesModule.core.storage;
-      }
-      
-      // Si no está ahí, intentar obtenerlo a través del core global
+      // Intentar obtener el storage desde el core global
       if (window.__appCore?.storage) {
         return window.__appCore.storage;
       }
       
-      // Si todo falla, usar localStorage como fallback
-      if (window.localStorage) {
-        // Crear un adaptador simple para localStorage
-        return {
-          getItem: async (pluginId, key, defaultValue) => {
-            const storageKey = `plugin.${pluginId}.${key}`;
-            const value = localStorage.getItem(storageKey);
-            if (value === null) return defaultValue;
-            try {
-              return JSON.parse(value);
-            } catch (e) {
-              return defaultValue;
-            }
-          },
-          setItem: async (pluginId, key, value) => {
-            const storageKey = `plugin.${pluginId}.${key}`;
-            localStorage.setItem(storageKey, JSON.stringify(value));
-            return true;
+      // Fallback a localStorage
+      return {
+        getItem: async (pluginId, key, defaultValue) => {
+          const storageKey = `plugin.${pluginId}.${key}`;
+          const value = localStorage.getItem(storageKey);
+          if (value === null) return defaultValue;
+          try {
+            return JSON.parse(value);
+          } catch (e) {
+            return defaultValue;
           }
-        };
-      }
-      
-      console.error('API de almacenamiento no disponible');
-      return null;
+        },
+        setItem: async (pluginId, key, value) => {
+          const storageKey = `plugin.${pluginId}.${key}`;
+          localStorage.setItem(storageKey, JSON.stringify(value));
+          return true;
+        }
+      };
     } catch (err) {
       console.error('Error al obtener servicio de almacenamiento:', err);
       return null;
     }
   }, []);
   
-  // Obtener el bus de eventos
+  // Función para obtener el bus de eventos
   const getEventBus = useCallback(() => {
-    return window.__appModules?.['notes-manager']?.core?.events || null;
-  }, []);
-  
-  // Cargar traducciones
-  useEffect(() => {
-    // Si el módulo de notas está cargado, usar sus traducciones
-    const notesModule = window.__appModules?.['notes-manager'];
-    if (notesModule && notesModule._translations) {
-      setTranslations(notesModule._translations);
-    } else {
-      // De lo contrario, intentar cargar directamente
-      import('../utils/i18n').then(i18n => {
-        const userLang = navigator.language || navigator.userLanguage || 'es';
-        const trans = i18n.loadTranslations(userLang);
-        setTranslations(trans);
-      }).catch(err => {
-        console.error('Error al cargar traducciones:', err);
-      });
+    // Intentar obtener el bus de eventos desde el módulo o el core
+    if (window.__appModules?.['notes-manager']?.core?.events) {
+      return window.__appModules['notes-manager'].core.events;
     }
+    
+    if (window.__appCore?.events) {
+      return window.__appCore.events;
+    }
+    
+    return null;
   }, []);
   
-  // Cargar todas las notas
+  // Cargar todas las notas desde el almacenamiento
   const loadNotes = useCallback(async () => {
     try {
       setLoading(true);
@@ -99,6 +91,9 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
       
       const storedNotes = await storageService.getItem(pluginId, 'notes', []);
       setNotes(Array.isArray(storedNotes) ? storedNotes : []);
+      
+      // Limpiar referencias huérfanas automáticamente
+      await cleanOrphanedReferences(storedNotes);
     } catch (error) {
       console.error('Error al cargar notas:', error);
       setError(error.message);
@@ -108,7 +103,7 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     }
   }, [pluginId, getStorageService]);
   
-  // Cargar categorías
+  // Cargar categorías desde el almacenamiento
   const loadCategories = useCallback(async () => {
     try {
       const storageService = getStorageService();
@@ -134,7 +129,6 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     
     // Suscribirse a eventos de cambios
     const eventBus = getEventBus();
-    
     if (eventBus) {
       const handlers = [
         { event: 'plugin.notes-manager.note_created', handler: loadNotes },
@@ -157,6 +151,73 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     }
   }, [loadNotes, loadCategories, getEventBus]);
   
+  // Limpiar referencias huérfanas (eventos que ya no existen)
+  const cleanOrphanedReferences = useCallback(async (notesToClean = null) => {
+    try {
+      const storageService = getStorageService();
+      if (!storageService) return 0;
+      
+      // Usar las notas proporcionadas o cargarlas
+      const notesArray = notesToClean || await storageService.getItem(pluginId, 'notes', []);
+      
+      // Obtener todos los eventos del calendario
+      let eventIds = new Set();
+      
+      // Intentar obtener el módulo de calendario
+      if (window.__appModules && window.__appModules['calendar']) {
+        const calendarModule = window.__appModules['calendar'];
+        if (typeof calendarModule.getEvents === 'function') {
+          const events = calendarModule.getEvents();
+          eventIds = new Set(events.map(event => event.id));
+        }
+      }
+      
+      // Si no hay eventos, no hay nada que limpiar
+      if (eventIds.size === 0) return 0;
+      
+      let updatedCount = 0;
+      
+      // Buscar y actualizar notas con referencias a eventos inexistentes
+      const updatedNotes = notesArray.map(note => {
+        // Comprobar referencias de tipo 'event'
+        if (note.references && note.references.type === 'event') {
+          if (!eventIds.has(note.references.id)) {
+            updatedCount++;
+            return {
+              ...note,
+              references: null,
+              updatedAt: new Date().toISOString()
+            };
+          }
+        }
+        
+        // Comprobar campo eventId para compatibilidad con versiones antiguas
+        if (note.eventId && !eventIds.has(note.eventId)) {
+          updatedCount++;
+          return {
+            ...note,
+            eventId: null,
+            updatedAt: new Date().toISOString()
+          };
+        }
+        
+        return note;
+      });
+      
+      // Guardar si hubo cambios
+      if (updatedCount > 0) {
+        await storageService.setItem(pluginId, 'notes', updatedNotes);
+        setNotes(updatedNotes);
+        console.log(`Limpiadas ${updatedCount} referencias huérfanas`);
+      }
+      
+      return updatedCount;
+    } catch (error) {
+      console.error('Error al limpiar referencias huérfanas:', error);
+      return 0;
+    }
+  }, [pluginId, getStorageService]);
+  
   // Método para crear una nota
   const createNote = useCallback(async (noteData) => {
     try {
@@ -165,8 +226,8 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         throw new Error('Servicio de almacenamiento no disponible');
       }
       
-      // Validar datos mínimos
-      if (!noteData || !noteData.title) {
+      // Validar título
+      if (!noteData || !noteData.title.trim()) {
         throw new Error(getTranslation(translations, 'errors.titleRequired'));
       }
       
@@ -175,7 +236,7 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
       
       // Crear nueva nota
       const newNote = {
-        id: `note_${Date.now()}`, // ID único
+        id: `note_${Date.now()}`,
         title: noteData.title.trim(),
         content: sanitizedContent,
         date: noteData.date || new Date().toISOString(),
@@ -187,16 +248,12 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         tags: noteData.tags || []
       };
       
-      // Añadir a la colección
+      // Guardar la nota
       const updatedNotes = [...notes, newNote];
-      
-      // Guardar en almacenamiento
       await storageService.setItem(pluginId, 'notes', updatedNotes);
-      
-      // Actualizar estado local
       setNotes(updatedNotes);
       
-      // Publicar evento de creación
+      // Publicar evento
       const eventBus = getEventBus();
       if (eventBus) {
         eventBus.publish('plugin.notes-manager.note_created', { note: newNote });
@@ -218,22 +275,22 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         throw new Error('Servicio de almacenamiento no disponible');
       }
       
-      // Encontrar nota existente
+      // Encontrar la nota
       const noteIndex = notes.findIndex(note => note.id === noteId);
       if (noteIndex === -1) {
         throw new Error(getTranslation(translations, 'errors.noteNotFound'));
       }
       
-      // Sanitizar contenido HTML si se proporciona
+      // Guardar datos originales para evento
+      const previousData = { ...notes[noteIndex] };
+      
+      // Sanitizar contenido si se actualizó
       let sanitizedContent = noteData.content;
       if (sanitizedContent !== undefined) {
         sanitizedContent = sanitizeHtml(sanitizedContent);
       }
       
-      // Guardar datos anteriores para el evento
-      const previousData = { ...notes[noteIndex] };
-      
-      // Crear versión actualizada
+      // Crear nota actualizada
       const updatedNote = {
         ...notes[noteIndex],
         ...noteData,
@@ -241,17 +298,13 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         updatedAt: new Date().toISOString()
       };
       
-      // Actualizar en la colección
+      // Guardar cambios
       const updatedNotes = [...notes];
       updatedNotes[noteIndex] = updatedNote;
-      
-      // Guardar en almacenamiento
       await storageService.setItem(pluginId, 'notes', updatedNotes);
-      
-      // Actualizar estado local
       setNotes(updatedNotes);
       
-      // Publicar evento de actualización
+      // Publicar evento
       const eventBus = getEventBus();
       if (eventBus) {
         eventBus.publish('plugin.notes-manager.note_updated', {
@@ -279,18 +332,16 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
       // Filtrar la nota a eliminar
       const updatedNotes = notes.filter(note => note.id !== noteId);
       
-      // Verificar si la nota existe
+      // Verificar que la nota existía
       if (updatedNotes.length === notes.length) {
         throw new Error(getTranslation(translations, 'errors.noteNotFound'));
       }
       
-      // Guardar en almacenamiento
+      // Guardar cambios
       await storageService.setItem(pluginId, 'notes', updatedNotes);
-      
-      // Actualizar estado local
       setNotes(updatedNotes);
       
-      // Publicar evento de eliminación
+      // Publicar evento
       const eventBus = getEventBus();
       if (eventBus) {
         eventBus.publish('plugin.notes-manager.note_deleted', { id: noteId });
@@ -312,8 +363,8 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         throw new Error('Servicio de almacenamiento no disponible');
       }
       
-      // Validar datos mínimos
-      if (!categoryData || !categoryData.name) {
+      // Validar nombre
+      if (!categoryData || !categoryData.name.trim()) {
         throw new Error(getTranslation(translations, 'errors.categoryNameRequired'));
       }
       
@@ -325,16 +376,12 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         icon: categoryData.icon || 'folder'
       };
       
-      // Añadir a la colección
+      // Guardar categoría
       const updatedCategories = [...categories, newCategory];
-      
-      // Guardar en almacenamiento
       await storageService.setItem(pluginId, 'categories', updatedCategories);
-      
-      // Actualizar estado local
       setCategories(updatedCategories);
       
-      // Publicar evento de creación
+      // Publicar evento
       const eventBus = getEventBus();
       if (eventBus) {
         eventBus.publish('plugin.notes-manager.category_created', { category: newCategory });
@@ -356,34 +403,28 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         throw new Error('Servicio de almacenamiento no disponible');
       }
       
-      // Encontrar categoría existente
+      // Encontrar la categoría
       const categoryIndex = categories.findIndex(category => category.id === categoryId);
       if (categoryIndex === -1) {
         throw new Error(getTranslation(translations, 'errors.categoryNotFound'));
       }
       
-      // Crear versión actualizada
+      // Crear categoría actualizada
       const updatedCategory = {
         ...categories[categoryIndex],
         ...categoryData
       };
       
-      // Actualizar en la colección
+      // Guardar cambios
       const updatedCategories = [...categories];
       updatedCategories[categoryIndex] = updatedCategory;
-      
-      // Guardar en almacenamiento
       await storageService.setItem(pluginId, 'categories', updatedCategories);
-      
-      // Actualizar estado local
       setCategories(updatedCategories);
       
-      // Publicar evento de actualización
+      // Publicar evento
       const eventBus = getEventBus();
       if (eventBus) {
-        eventBus.publish('plugin.notes-manager.category_updated', {
-          category: updatedCategory
-        });
+        eventBus.publish('plugin.notes-manager.category_updated', { category: updatedCategory });
       }
       
       return updatedCategory;
@@ -402,18 +443,15 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         throw new Error('Servicio de almacenamiento no disponible');
       }
       
-      // Filtrar la categoría a eliminar
-      const updatedCategories = categories.filter(category => category.id !== categoryId);
-      
-      // Verificar si la categoría existe
-      if (updatedCategories.length === categories.length) {
+      // Verificar que la categoría existe
+      const categoryIndex = categories.findIndex(category => category.id === categoryId);
+      if (categoryIndex === -1) {
         throw new Error(getTranslation(translations, 'errors.categoryNotFound'));
       }
       
-      // Guardar en almacenamiento
+      // Eliminar la categoría
+      const updatedCategories = categories.filter(category => category.id !== categoryId);
       await storageService.setItem(pluginId, 'categories', updatedCategories);
-      
-      // Actualizar estado local
       setCategories(updatedCategories);
       
       // Actualizar notas que usaban esta categoría
@@ -428,13 +466,11 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
         return note;
       });
       
-      // Si hay notas afectadas, guardarlas también
-      if (JSON.stringify(notes) !== JSON.stringify(updatedNotes)) {
-        await storageService.setItem(pluginId, 'notes', updatedNotes);
-        setNotes(updatedNotes);
-      }
+      // Guardar notas actualizadas
+      await storageService.setItem(pluginId, 'notes', updatedNotes);
+      setNotes(updatedNotes);
       
-      // Publicar evento de eliminación
+      // Publicar evento
       const eventBus = getEventBus();
       if (eventBus) {
         eventBus.publish('plugin.notes-manager.category_deleted', { id: categoryId });
@@ -468,17 +504,16 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     
     const targetDate = new Date(date);
     
-    // Comparar solo fecha (sin hora)
     return notes.filter(note => {
       // Si tiene referencia específica a fecha
       if (note.references && note.references.type === 'date') {
         const refDate = new Date(note.references.id);
-        return refDate.toDateString() === targetDate.toDateString();
+        return isSameDay(refDate, targetDate);
       }
       
-      // Comprobar fecha general de la nota
+      // Comprobar fecha de la nota
       const noteDate = new Date(note.date || note.createdAt);
-      return noteDate.toDateString() === targetDate.toDateString();
+      return isSameDay(noteDate, targetDate);
     });
   }, [notes]);
   
@@ -545,7 +580,7 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     });
   }, [updateNote, translations]);
   
-  // Obtener etiquetas únicas de todas las notas
+  // Obtener etiquetas únicas
   const getAllTags = useCallback(() => {
     const tagsSet = new Set();
     
@@ -558,13 +593,18 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     return Array.from(tagsSet).sort();
   }, [notes]);
   
+  // Traducción simplificada
+  const t = useCallback((key) => {
+    return getTranslation(translations, key);
+  }, [translations]);
+  
   // Valor del contexto
   const contextValue = {
     notes,
     categories,
     loading,
     error,
-    t: (key) => getTranslation(translations, key),
+    t,
     createNote,
     updateNote,
     deleteNote,
@@ -580,7 +620,8 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
     linkNoteToEvent,
     linkNoteToDate,
     unlinkNote,
-    getAllTags
+    getAllTags,
+    cleanOrphanedReferences
   };
   
   return (

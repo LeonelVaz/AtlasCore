@@ -10,24 +10,14 @@ import { NotesContext } from '../contexts/notes-context';
 const NotesPanel = () => {
   const [view, setView] = useState('list'); // 'list' o 'editor'
   const [selectedNote, setSelectedNote] = useState(null);
-  const { notes, createNote, updateNote, deleteNote, loading, t, cleanOrphanedReferences } = useContext(NotesContext);
+  const { notes, createNote, updateNote, deleteNote, loading, t, refreshNotes } = useContext(NotesContext);
   
   // Verificar referencias huérfanas al cargar el panel
   useEffect(() => {
-    const checkOrphanedReferences = async () => {
-      try {
-        // Limpiar referencias a eventos que ya no existen
-        const orphanedCount = await cleanOrphanedReferences();
-        if (orphanedCount > 0) {
-          console.log(`Se limpiaron ${orphanedCount} referencias huérfanas`);
-        }
-      } catch (error) {
-        console.error('Error al verificar referencias huérfanas:', error);
-      }
-    };
-    
-    checkOrphanedReferences();
-  }, [cleanOrphanedReferences]);
+    // Simplemente recargamos las notas al cargar el panel
+    // La limpieza de referencias huérfanas se puede implementar más adelante
+    refreshNotes();
+  }, [refreshNotes]);
   
   // Para crear una nueva nota
   const handleNewNote = () => {
