@@ -1,41 +1,29 @@
-// electron/preload.js
+// preload.js
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Exponer APIs seguras al proceso de renderizado
+// Imprimir para depuración
+console.log('Preload script ejecutándose');
+
+// Exponer una API simplificada
 contextBridge.exposeInMainWorld('electronAPI', {
-  // APIs de control de ventana
-  minimize: () => ipcRenderer.invoke('window:minimize'),
-  maximize: () => ipcRenderer.invoke('window:maximize'),
-  close: () => ipcRenderer.invoke('window:close'),
-  isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
-  isFocused: () => ipcRenderer.invoke('window:isFocused'),
+  minimize: () => ipcRenderer.send('window-control', 'minimize'),
+  maximize: () => ipcRenderer.send('window-control', 'maximize'),
+  close: () => ipcRenderer.send('window-control', 'close'),
   
-  // Eventos de ventana
+  // Métodos para la maximización
+  isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
   onMaximizeChange: (callback) => {
-    const subscription = (_, maximized) => callback(maximized);
-    ipcRenderer.on('window:maximized-change', subscription);
-    return () => {
-      ipcRenderer.removeListener('window:maximized-change', subscription);
-    };
+    ipcRenderer.on('maximize-change', (_, isMaximized) => callback(isMaximized));
+    return () => ipcRenderer.removeListener('maximize-change', callback);
   },
   
+  // Métodos nuevos para el enfoque de la ventana
+  isFocused: () => ipcRenderer.invoke('window-is-focused'),
   onFocusChange: (callback) => {
-    const subscription = (_, focused) => callback(focused);
-    ipcRenderer.on('window:focus-change', subscription);
-    return () => {
-      ipcRenderer.removeListener('window:focus-change', subscription);
-    };
-  },
-  
-  // APIs de plugins
-  plugins: {
-    // Obtener todos los plugins
-    getPlugins: () => ipcRenderer.invoke('plugins:getAll'),
-    
-    // Seleccionar un plugin para instalarlo
-    selectPlugin: () => ipcRenderer.invoke('plugins:selectFromFileSystem')
+    ipcRenderer.on('focus-change', (_, isFocused) => callback(isFocused));
+    return () => ipcRenderer.removeListener('focus-change', callback);
   }
 });
 
-// Código de inicialización adicional
-console.log('Preload script executed');
+// Imprimir para confirmar que se expuso la API
+console.log('API expuesta: electronAPI');
