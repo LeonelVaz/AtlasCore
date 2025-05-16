@@ -1,38 +1,41 @@
-// preload.js
+// electron/preload.js
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Imprimir para depuración
-console.log('Preload script ejecutándose');
-
-// Exponer una API simplificada
+// Exponer APIs seguras al proceso de renderizado
 contextBridge.exposeInMainWorld('electronAPI', {
-  minimize: () => ipcRenderer.send('window-control', 'minimize'),
-  maximize: () => ipcRenderer.send('window-control', 'maximize'),
-  close: () => ipcRenderer.send('window-control', 'close'),
+  // APIs de control de ventana
+  minimize: () => ipcRenderer.invoke('window:minimize'),
+  maximize: () => ipcRenderer.invoke('window:maximize'),
+  close: () => ipcRenderer.invoke('window:close'),
+  isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
+  isFocused: () => ipcRenderer.invoke('window:isFocused'),
   
-  // Métodos para la maximización
-  isMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  // Eventos de ventana
   onMaximizeChange: (callback) => {
-    ipcRenderer.on('maximize-change', (_, isMaximized) => callback(isMaximized));
-    return () => ipcRenderer.removeListener('maximize-change', callback);
+    const subscription = (_, maximized) => callback(maximized);
+    ipcRenderer.on('window:maximized-change', subscription);
+    return () => {
+      ipcRenderer.removeListener('window:maximized-change', subscription);
+    };
   },
   
-  // Métodos nuevos para el enfoque de la ventana
-  isFocused: () => ipcRenderer.invoke('window-is-focused'),
   onFocusChange: (callback) => {
-    ipcRenderer.on('focus-change', (_, isFocused) => callback(isFocused));
-    return () => ipcRenderer.removeListener('focus-change', callback);
+    const subscription = (_, focused) => callback(focused);
+    ipcRenderer.on('window:focus-change', subscription);
+    return () => {
+      ipcRenderer.removeListener('window:focus-change', subscription);
+    };
   },
   
-  // API para plugins
+  // APIs de plugins
   plugins: {
-    // Cargar todos los plugins disponibles
-    loadPlugins: () => ipcRenderer.invoke('plugins:load'),
+    // Obtener todos los plugins
+    getPlugins: () => ipcRenderer.invoke('plugins:getAll'),
     
-    // Seleccionar un plugin para instalar
-    selectPlugin: () => ipcRenderer.invoke('plugins:select')
+    // Seleccionar un plugin para instalarlo
+    selectPlugin: () => ipcRenderer.invoke('plugins:selectFromFileSystem')
   }
 });
 
-// Imprimir para confirmar que se expuso la API
-console.log('API expuesta: electronAPI');
+// Código de inicialización adicional
+console.log('Preload script executed');

@@ -1,7 +1,7 @@
 /**
  * Plugin de prueba para Atlas
  */
-export default {
+module.exports = {
   // Metadatos del plugin
   id: 'test-plugin',
   name: 'Plugin de Prueba',
@@ -25,34 +25,55 @@ export default {
     this.core = core;
     
     // Subscribirse a eventos
-    this.unsubscribe = core.events.subscribe('app.initialized', () => {
-      console.log('Plugin de prueba recibió evento app.initialized');
-    });
+    this.unsubscribe = core.events && core.events.subscribe ? 
+      core.events.subscribe('app.initialized', () => {
+        console.log('Plugin de prueba recibió evento app.initialized');
+      }) : null;
     
     // Registrar componente UI simple (si hay permisos)
-    if (core.permissions.hasPermission(this.id, 'ui.registerComponents')) {
-      core.ui.registerComponent(this.id, 'app.sidebar', function SidebarItemPlugin(props) {
-        return {
-          render: function() {
-            const React = window.React || props.React;
-            return React.createElement('div', { 
-              className: 'sidebar-item',
-              onClick: function() { 
-                alert('¡Plugin de prueba funcionando!');
+    if (core.permissions && core.permissions.hasPermission && 
+        core.ui && core.ui.registerComponent && 
+        core.permissions.hasPermission(this.id, 'ui.registerComponents')) {
+      
+      try {
+        core.ui.registerComponent(this.id, 'app.sidebar', function SidebarItemPlugin(props) {
+          return {
+            render: function() {
+              const React = window.React || props.React;
+              if (!React) {
+                console.error('React no disponible para el componente del plugin');
+                return null;
               }
-            }, [
-              React.createElement('span', { 
-                className: 'sidebar-item-icon',
-                key: 'icon'
-              }, '🧪'),
-              React.createElement('span', {
-                className: 'sidebar-item-label',
-                key: 'label'
-              }, 'Plugin de Prueba')
-            ]);
-          }
-        };
-      });
+              
+              return React.createElement('div', { 
+                className: 'sidebar-item',
+                onClick: function() { 
+                  alert('¡Plugin de prueba funcionando!');
+                }
+              }, [
+                React.createElement('span', { 
+                  className: 'sidebar-item-icon',
+                  key: 'icon'
+                }, '🧪'),
+                React.createElement('span', {
+                  className: 'sidebar-item-label',
+                  key: 'label'
+                }, 'Plugin de Prueba')
+              ]);
+            }
+          };
+        });
+        
+        console.log('Plugin de prueba: componente UI registrado correctamente');
+      } catch (error) {
+        console.error('Error al registrar componente UI:', error);
+      }
+    } else {
+      console.log('Plugin de prueba: no se pudo registrar componente UI - API no disponible o sin permisos');
+      console.log('APIs disponibles:', Object.keys(core).join(', '));
+      if (core.permissions) {
+        console.log('Permisos disponibles:', core.permissions);
+      }
     }
     
     return true;
