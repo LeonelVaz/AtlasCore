@@ -11,7 +11,22 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const inputRef = useRef(null);
   const suggestionsRef = useRef(null);
-  const { getAllTags, t } = useContext(NotesContext);
+  
+  // Intentar obtener contexto, pero manejar caso donde no está disponible
+  const context = useContext(NotesContext);
+  
+  // Fallback para cuando el contexto no está disponible
+  const getAllTags = () => {
+    return suggestions || [];
+  };
+  
+  const t = (key) => {
+    const translations = {
+      'tags.placeholder': 'Añadir etiquetas...',
+      'tags.remove': 'Eliminar etiqueta'
+    };
+    return translations[key] || key;
+  };
   
   // Sincronizar con el valor externo
   useEffect(() => {
@@ -26,12 +41,17 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
   useEffect(() => {
     // Si no hay sugerencias explícitas, usar las etiquetas globales
     if (!suggestions || suggestions.length === 0) {
-      const globalTags = getAllTags();
-      setFilteredSuggestions(globalTags);
+      // Solo obtener etiquetas globales si el contexto está disponible
+      if (context?.getAllTags) {
+        const globalTags = context.getAllTags();
+        setFilteredSuggestions(globalTags);
+      } else {
+        setFilteredSuggestions([]);
+      }
     } else {
       setFilteredSuggestions(suggestions);
     }
-  }, [suggestions, getAllTags]);
+  }, [suggestions, context]);
   
   // Cerrar sugerencias al hacer clic fuera
   useEffect(() => {
@@ -52,16 +72,17 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
   useEffect(() => {
     if (input.trim() === '') {
       // Mostrar todas las sugerencias o las más recientes
-      setFilteredSuggestions(suggestions || getAllTags());
+      const allSuggestions = suggestions || (context?.getAllTags ? context.getAllTags() : []);
+      setFilteredSuggestions(allSuggestions);
     } else {
       // Filtrar sugerencias que contienen el texto de entrada
-      const allSuggestions = suggestions || getAllTags();
+      const allSuggestions = suggestions || (context?.getAllTags ? context.getAllTags() : []);
       const filtered = allSuggestions.filter(
         tag => tag.toLowerCase().includes(input.toLowerCase())
       );
       setFilteredSuggestions(filtered);
     }
-  }, [input, suggestions, getAllTags]);
+  }, [input, suggestions, context]);
   
   // Añadir una etiqueta
   const addTag = (tag) => {
@@ -172,7 +193,7 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
               type="button" 
               className="tag-remove"
               onClick={() => removeTag(index)}
-              title={t('tags.remove')}
+              title={context?.t ? context.t('tags.remove') : t('tags.remove')}
             >
               &times;
             </button>
@@ -187,7 +208,7 @@ const TagsInput = ({ value = [], onChange, suggestions = [], maxTags = 10 }) => 
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setShowSuggestions(true)}
-          placeholder={tags.length === 0 ? t('tags.placeholder') : ''}
+          placeholder={tags.length === 0 ? (context?.t ? context.t('tags.placeholder') : t('tags.placeholder')) : ''}
           className="tags-input-field"
           disabled={tags.length >= maxTags}
         />

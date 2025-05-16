@@ -2,10 +2,22 @@ import React, { useState, useRef, useContext } from 'react';
 import { NotesContext } from '../contexts/notes-context';
 
 /**
- * Campo para añadir o editar notas en el formulario de creación de eventos
+ * Campo para añadir o editar notas en el formulario de edición de eventos
  */
-const NoteCreateField = (props) => {
-  const { t, createNote } = useContext(NotesContext);
+const NoteEditField = (props) => {
+  // Intentar obtener contexto, pero manejar caso donde no está disponible
+  const context = useContext(NotesContext);
+  
+  // Falback para cuando el contexto no está disponible
+  const t = (key) => {
+    const translations = {
+      'notes.sectionTitle': 'Notas',
+      'notes.editPlaceholder': 'Añadir o editar nota para este evento...',
+      'notes.willBeCreatedMessage': 'Se creará una nota al guardar el evento'
+    };
+    return translations[key] || key;
+  };
+  
   const [noteContent, setNoteContent] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const textareaRef = useRef(null);
@@ -45,11 +57,11 @@ const NoteCreateField = (props) => {
   
   return (
     <div className="event-extension-section">
-      <h3 className="event-extension-section-title">{t('notes.sectionTitle')}</h3>
+      <h3 className="event-extension-section-title">{context?.t ? context.t('notes.sectionTitle') : t('notes.sectionTitle')}</h3>
       <div className="event-extension-field">
         <textarea 
           ref={textareaRef}
-          placeholder={t('notes.createPlaceholder')}
+          placeholder={context?.t ? context.t('notes.editPlaceholder') : t('notes.editPlaceholder')}
           rows={isExpanded ? 4 : 3}
           className="note-textarea"
           value={noteContent}
@@ -60,7 +72,7 @@ const NoteCreateField = (props) => {
         {isExpanded && noteContent.trim() && (
           <div className="note-create-info">
             <span className="note-create-message">
-              {t('notes.willBeCreatedMessage')}
+              {context?.t ? context.t('notes.willBeCreatedMessage') : t('notes.willBeCreatedMessage')}
             </span>
           </div>
         )}
@@ -69,4 +81,4 @@ const NoteCreateField = (props) => {
   );
 };
 
-export default NoteCreateField;
+export default NoteEditField;

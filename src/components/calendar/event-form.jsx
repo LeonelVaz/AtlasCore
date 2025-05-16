@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Dialog from '../ui/dialog';
 import Button from '../ui/button';
+import NotesContextWrapper from '../../plugins/notes-manager/contexts/notes-context-wrapper';
 
 function EventForm({ 
   event,
@@ -17,6 +18,19 @@ function EventForm({
   
   // Verificar si hay componentes de extensión
   const hasExtensions = React.Children.count(children) > 0;
+  
+  // Envolver los componentes hijos en el wrapper de contexto de notas
+  const wrappedChildren = React.Children.map(children, child => {
+    // Si el componente está relacionado con notas, envolverlo en el contexto
+    if (child?.type?.name?.includes('Note') || child?.props?.children?.type?.name?.includes('Note')) {
+      return (
+        <NotesContextWrapper>
+          {child}
+        </NotesContextWrapper>
+      );
+    }
+    return child;
+  });
   
   return (
     <Dialog
@@ -101,7 +115,7 @@ function EventForm({
       {hasExtensions && (
         <div className={`event-form-content ${activeTab === 'extensions' ? 'active' : ''}`}>
           <div className="event-form-extensions">
-            {children}
+            {wrappedChildren}
           </div>
         </div>
       )}
