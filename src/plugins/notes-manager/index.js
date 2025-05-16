@@ -10,7 +10,12 @@ import NoteBadge from './components/note-badge';
 import NotesButton from './components/notes-button';
 import NoteCreateField from './components/note-create-field';
 import NoteEditField from './components/note-edit-field';
-import { convertCalendarEventToNote, convertNoteToCalendarEvent } from './utils/notes-utils';
+import { 
+  convertCalendarEventToNote, 
+  convertNoteToCalendarEvent, 
+  sanitizeHtml 
+} from './utils/notes-utils';
+import { loadTranslations, getTranslation } from './utils/i18n';
 import './styles/notes.css';
 
 const STORAGE_KEY_PREFIX = 'plugin.notes-manager';
@@ -19,7 +24,7 @@ export default {
   // Metadatos del plugin
   id: 'notes-manager',
   name: 'Gestor de Notas',
-  version: '0.3.0',
+  version: '0.5.0',
   description: 'Gestiona notas vinculadas a eventos del calendario o fechas específicas',
   author: 'Atlas Team',
   
@@ -32,6 +37,7 @@ export default {
   
   // Estado interno del plugin
   _initializedComponents: false,
+  _translations: null,
   
   /**
    * Inicializa el plugin
@@ -50,6 +56,11 @@ export default {
     this.core = core;
     
     try {
+      // Cargar traducciones
+      this._translations = loadTranslations(
+        navigator.language || navigator.userLanguage || 'es'
+      );
+      
       // Registrar componentes UI en puntos de extensión
       this._registerUIComponents();
       
@@ -82,7 +93,7 @@ export default {
     // Registrar un elemento en la barra lateral principal
     ui.registerComponent(pluginId, 'app.sidebar', NotesButton, {
       position: 'middle',
-      label: 'Notas',
+      label: getTranslation(this._translations, 'sidebar.notes'),
       icon: 'note'
     });
     
@@ -145,9 +156,16 @@ export default {
         const targetDate = new Date(date);
         const notes = await this.getAllNotes();
         
-        // Comparar solo la fecha (sin hora)
+        // Filtrar notas por referencia a fecha o por fecha en general
         return notes.filter(note => {
-          const noteDate = new Date(note.date);
+          // Si tiene referencia explícita a fecha
+          if (note.references && note.references.type === 'date') {
+            const refDate = new Date(note.references.id);
+            return refDate.toDateString() === targetDate.toDateString();
+          }
+          
+          // Comprobar fecha de la nota
+          const noteDate = new Date(note.date || note.createdAt);
           return noteDate.toDateString() === targetDate.toDateString();
         });
       },
@@ -157,7 +175,27 @@ export default {
         if (!eventId) return [];
         
         const notes = await this.getAllNotes();
-        return notes.filter(note => note.eventId === eventId);
+        return notes.filter(note => {
+          // Comprobar referencia directa al evento
+          if (note.references && note.references.type === 'event') {
+            return note.references.id === eventId;
+          }
+          
+          // Compatibilidad con campo eventId para versiones antiguas
+          return note.eventId === eventId;
+        });
+      },
+      
+      // Obtener notas por referencia
+      getNotesByReference: async function(refType, refId) {
+        if (!refType || !refId) return [];
+        
+        const notes = await this.getAllNotes();
+        return notes.filter(note => 
+          note.references && 
+          note.references.type === refType && 
+          note.references.id === refId
+        );
       },
       
       // Crear una nueva nota
@@ -174,16 +212,25 @@ export default {
           // Obtener notas existentes
           const notes = await this.core.storage.getItem(this.id, 'notes', []);
           
+          // Sanitizar contenido HTML
+          const sanitizedContent = sanitizeHtml(noteData.content || '');
+          
           // Crear nueva nota con ID único
           const newNote = {
-            id: Date.now().toString(),
-            title: noteData.title,
-            content: noteData.content || '',
+            id: 'note_' + Date.now().toString(),
+            title: noteData.title.trim(),
+            content: sanitizedContent,
             date: noteData.date || new Date().toISOString(),
-            eventId: noteData.eventId || null,
-            created: new Date().toISOString(),
-            modified: new Date().toISOString(),
-            color: noteData.color || '#2D4B94'
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            color: noteData.color || '#2D4B94',
+            categoryId: noteData.categoryId || null,
+            // Mantener compatibilidad con eventId y migrar al nuevo formato
+            references: noteData.references || (noteData.eventId ? {
+              type: 'event',
+              id: noteData.eventId
+            } : null),
+            tags: noteData.tags || []
           };
           
           // Añadir a la colección
@@ -194,7 +241,7 @@ export default {
           
           // Notificar creación
           if (this.core.events) {
-            this.core.events.publish('plugin.notes-manager.noteCreated', newNote);
+            this.core.events.publish('plugin.notes-manager.note_created', { note: newNote });
           }
           
           return newNote;
@@ -224,11 +271,21 @@ export default {
             throw new Error(`Nota con ID ${noteId} no encontrada`);
           }
           
+          // Guardar datos anteriores para el evento
+          const previousData = { ...notes[noteIndex] };
+          
+          // Sanitizar contenido HTML si se proporciona
+          let sanitizedContent = noteData.content;
+          if (sanitizedContent !== undefined) {
+            sanitizedContent = sanitizeHtml(sanitizedContent);
+          }
+          
           // Actualizar la nota
           const updatedNote = {
             ...notes[noteIndex],
             ...noteData,
-            modified: new Date().toISOString()
+            content: sanitizedContent !== undefined ? sanitizedContent : notes[noteIndex].content,
+            updatedAt: new Date().toISOString()
           };
           
           // Actualizar la colección
@@ -240,7 +297,10 @@ export default {
           
           // Notificar actualización
           if (this.core.events) {
-            this.core.events.publish('plugin.notes-manager.noteUpdated', updatedNote);
+            this.core.events.publish('plugin.notes-manager.note_updated', {
+              note: updatedNote,
+              previousData
+            });
           }
           
           return updatedNote;
@@ -281,7 +341,7 @@ export default {
           
           // Notificar eliminación
           if (this.core.events) {
-            this.core.events.publish('plugin.notes-manager.noteDeleted', { id: noteId });
+            this.core.events.publish('plugin.notes-manager.note_deleted', { id: noteId });
           }
           
           return true;
@@ -289,6 +349,169 @@ export default {
           console.error('Error al eliminar nota:', error);
           throw error;
         }
+      },
+      
+      // Obtener todas las categorías
+      getCategories: async function() {
+        if (!this.core?.storage) return [];
+        
+        try {
+          return await this.core.storage.getItem(this.id, 'categories', []);
+        } catch (error) {
+          console.error('Error al obtener categorías:', error);
+          return [];
+        }
+      },
+      
+      // Crear nueva categoría
+      createCategory: async function(categoryData) {
+        if (!categoryData || !categoryData.name) {
+          throw new Error('Se requiere al menos un nombre para la categoría');
+        }
+        
+        if (!this.core?.storage) {
+          throw new Error('Servicio de almacenamiento no disponible');
+        }
+        
+        try {
+          // Obtener categorías existentes
+          const categories = await this.core.storage.getItem(this.id, 'categories', []);
+          
+          // Crear nueva categoría con ID único
+          const newCategory = {
+            id: 'category_' + Date.now().toString(),
+            name: categoryData.name.trim(),
+            color: categoryData.color || '#2D4B94',
+            icon: categoryData.icon || 'folder'
+          };
+          
+          // Añadir a la colección
+          const updatedCategories = [...categories, newCategory];
+          
+          // Guardar en almacenamiento
+          await this.core.storage.setItem(this.id, 'categories', updatedCategories);
+          
+          // Notificar creación
+          if (this.core.events) {
+            this.core.events.publish('plugin.notes-manager.category_created', {
+              category: newCategory
+            });
+          }
+          
+          return newCategory;
+        } catch (error) {
+          console.error('Error al crear categoría:', error);
+          throw error;
+        }
+      },
+      
+      // Actualizar categoría existente
+      updateCategory: async function(categoryId, categoryData) {
+        if (!categoryId || !categoryData) {
+          throw new Error('Se requiere ID y datos para actualizar la categoría');
+        }
+        
+        if (!this.core?.storage) {
+          throw new Error('Servicio de almacenamiento no disponible');
+        }
+        
+        try {
+          // Obtener categorías existentes
+          const categories = await this.core.storage.getItem(this.id, 'categories', []);
+          
+          // Encontrar la categoría a actualizar
+          const categoryIndex = categories.findIndex(category => category.id === categoryId);
+          if (categoryIndex === -1) {
+            throw new Error(`Categoría con ID ${categoryId} no encontrada`);
+          }
+          
+          // Actualizar la categoría
+          const updatedCategory = {
+            ...categories[categoryIndex],
+            ...categoryData
+          };
+          
+          // Actualizar la colección
+          const updatedCategories = [...categories];
+          updatedCategories[categoryIndex] = updatedCategory;
+          
+          // Guardar en almacenamiento
+          await this.core.storage.setItem(this.id, 'categories', updatedCategories);
+          
+          // Notificar actualización
+          if (this.core.events) {
+            this.core.events.publish('plugin.notes-manager.category_updated', {
+              category: updatedCategory
+            });
+          }
+          
+          return updatedCategory;
+        } catch (error) {
+          console.error('Error al actualizar categoría:', error);
+          throw error;
+        }
+      },
+      
+      // Eliminar categoría
+      deleteCategory: async function(categoryId) {
+        if (!categoryId) {
+          throw new Error('Se requiere ID para eliminar la categoría');
+        }
+        
+        if (!this.core?.storage) {
+          throw new Error('Servicio de almacenamiento no disponible');
+        }
+        
+        try {
+          // Obtener categorías existentes
+          const categories = await this.core.storage.getItem(this.id, 'categories', []);
+          
+          // Encontrar la categoría a eliminar
+          const categoryIndex = categories.findIndex(category => category.id === categoryId);
+          if (categoryIndex === -1) {
+            throw new Error(`Categoría con ID ${categoryId} no encontrada`);
+          }
+          
+          // Filtrar la colección
+          const updatedCategories = categories.filter(category => category.id !== categoryId);
+          
+          // Guardar en almacenamiento
+          await this.core.storage.setItem(this.id, 'categories', updatedCategories);
+          
+          // Actualizar notas que usaban esta categoría
+          const notes = await this.core.storage.getItem(this.id, 'notes', []);
+          const updatedNotes = notes.map(note => {
+            if (note.categoryId === categoryId) {
+              return {
+                ...note,
+                categoryId: null,
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return note;
+          });
+          
+          // Guardar notas actualizadas
+          await this.core.storage.setItem(this.id, 'notes', updatedNotes);
+          
+          // Notificar eliminación
+          if (this.core.events) {
+            this.core.events.publish('plugin.notes-manager.category_deleted', { id: categoryId });
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error al eliminar categoría:', error);
+          throw error;
+        }
+      },
+      
+      // Obtener notas por categoría
+      getNotesByCategory: async function(categoryId) {
+        if (!categoryId) return [];
+        
+        const notes = await this.getAllNotes();
+        return notes.filter(note => note.categoryId === categoryId);
       },
       
       // Vincular nota con evento
@@ -304,16 +527,50 @@ export default {
             throw new Error(`Nota con ID ${noteId} no encontrada`);
           }
           
-          // Actualizar con el ID del evento
-          return await this.updateNote(noteId, { eventId });
+          // Actualizar con la referencia al evento
+          return await this.updateNote(noteId, {
+            references: {
+              type: 'event',
+              id: eventId
+            }
+          });
         } catch (error) {
           console.error('Error al vincular nota con evento:', error);
           throw error;
         }
       },
       
-      // Desvincular nota de evento
-      unlinkNoteFromEvent: async function(noteId) {
+      // Vincular nota con fecha
+      linkNoteToDate: async function(noteId, date) {
+        if (!noteId || !date) {
+          throw new Error('Se requieren ID de nota y fecha para vincular');
+        }
+        
+        try {
+          // Obtener nota existente
+          const note = await this.getNoteById(noteId);
+          if (!note) {
+            throw new Error(`Nota con ID ${noteId} no encontrada`);
+          }
+          
+          // Formato ISO para la fecha
+          const dateStr = date instanceof Date ? date.toISOString() : date;
+          
+          // Actualizar con la referencia a la fecha
+          return await this.updateNote(noteId, {
+            references: {
+              type: 'date',
+              id: dateStr
+            }
+          });
+        } catch (error) {
+          console.error('Error al vincular nota con fecha:', error);
+          throw error;
+        }
+      },
+      
+      // Desvincular nota de cualquier referencia
+      unlinkNote: async function(noteId) {
         if (!noteId) {
           throw new Error('Se requiere ID de nota para desvincular');
         }
@@ -325,11 +582,78 @@ export default {
             throw new Error(`Nota con ID ${noteId} no encontrada`);
           }
           
-          // Actualizar quitando el ID del evento
-          return await this.updateNote(noteId, { eventId: null });
+          // Actualizar quitando referencias
+          return await this.updateNote(noteId, {
+            references: null,
+            eventId: null // Para compatibilidad con versiones antiguas
+          });
         } catch (error) {
-          console.error('Error al desvincular nota de evento:', error);
+          console.error('Error al desvincular nota:', error);
           throw error;
+        }
+      },
+      
+      // Obtener notas por etiqueta
+      getNotesByTag: async function(tag) {
+        if (!tag) return [];
+        
+        const notes = await this.getAllNotes();
+        return notes.filter(note => 
+          note.tags && Array.isArray(note.tags) && note.tags.includes(tag)
+        );
+      },
+      
+      // Limpiar referencias huérfanas
+      cleanOrphanedReferences: async function() {
+        try {
+          const notes = await this.getAllNotes();
+          const calendarModule = this.core.getModule('calendar');
+          let updatedCount = 0;
+          
+          if (!calendarModule) {
+            console.warn('Módulo de calendario no disponible para limpiar referencias');
+            return 0;
+          }
+          
+          const allEvents = calendarModule.getEvents();
+          const eventIds = new Set(allEvents.map(event => event.id));
+          
+          // Encontrar notas con referencias a eventos que ya no existen
+          const updatedNotes = notes.map(note => {
+            if (note.references && note.references.type === 'event') {
+              if (!eventIds.has(note.references.id)) {
+                updatedCount++;
+                return {
+                  ...note,
+                  references: null,
+                  updatedAt: new Date().toISOString()
+                };
+              }
+            }
+            
+            // Compatibilidad con versiones antiguas
+            if (note.eventId && !eventIds.has(note.eventId)) {
+              updatedCount++;
+              return {
+                ...note,
+                eventId: null,
+                updatedAt: new Date().toISOString()
+              };
+            }
+            
+            return note;
+          });
+          
+          // Guardar si hubo cambios
+          if (updatedCount > 0) {
+            await this.core.storage.setItem(this.id, 'notes', updatedNotes);
+            console.log(`Limpiadas ${updatedCount} referencias huérfanas`);
+          }
+          
+          return updatedCount;
+        } catch (error) {
+          console.error('Error al limpiar referencias huérfanas:', error);
+          return 0;
         }
       },
       
@@ -356,11 +680,14 @@ export default {
           // Convertir a formato de nota
           const noteData = convertCalendarEventToNote(event);
           
-          // Crear la nota
-          const note = await this.createNote(noteData);
-          
-          // Vincular la nota con el evento
-          await this.linkNoteToEvent(note.id, eventId);
+          // Crear la nota con la referencia al evento
+          const note = await this.createNote({
+            ...noteData,
+            references: {
+              type: 'event',
+              id: eventId
+            }
+          });
           
           return note;
         } catch (error) {
@@ -408,6 +735,7 @@ export default {
       // Limpiar referencia al core
       this.core = null;
       this._initializedComponents = false;
+      this._translations = null;
       
       return true;
     } catch (error) {

@@ -1,3 +1,4 @@
+// src/plugins/plugin-loader.js
 /**
  * Plugin Loader para Atlas
  * 
@@ -35,6 +36,7 @@ class PluginLoader {
     this.pluginErrors = {}; // Almacena errores por plugin
     this.pluginLoadingStatus = {}; // Almacena estado de carga
     this.pluginTimeouts = {}; // Para gestionar timeouts de inicialización
+    this.registeredPaths = new Set(); // Para evitar cargar el mismo plugin dos veces
   }
 
   /**
@@ -56,6 +58,9 @@ class PluginLoader {
       
       // Inicializar plugins habilitados
       await this.initializeEnabledPlugins(storedPluginState);
+      
+      // Registrar eventos para el registry
+      this._setupEventListeners();
       
       this.isInitialized = true;
       return Object.values(this.enabledPlugins);
@@ -81,11 +86,51 @@ class PluginLoader {
       if (isElectronEnv() && window.electronAPI?.plugins?.loadPlugins) {
         try {
           console.log('Detectado entorno Electron, cargando plugins del sistema...');
-          const plugins = await window.electronAPI.plugins.loadPlugins();
+          const pluginsMetadata = await window.electronAPI.plugins.loadPlugins();
           
-          if (Array.isArray(plugins) && plugins.length > 0) {
-            console.log(`Se encontraron ${plugins.length} plugins en el sistema.`);
-            plugins.forEach(plugin => this.registerPlugin(plugin));
+          if (Array.isArray(pluginsMetadata) && pluginsMetadata.length > 0) {
+            console.log(`Se encontraron ${pluginsMetadata.length} plugins en el sistema.`);
+            
+            for (const metadata of pluginsMetadata) {
+              try {
+                // Verificar si este plugin ya está en PLUGIN_MODULES
+                // Si es así, usaremos esa versión integrada en lugar de la del sistema
+                if (PLUGIN_MODULES[metadata.id]) {
+                  console.log(`Plugin ${metadata.id} está definido en PLUGIN_MODULES, usando versión integrada.`);
+                  this.pluginLoadingStatus[metadata.id] = 'loading';
+                  
+                  try {
+                    const moduleExport = await PLUGIN_MODULES[metadata.id]();
+                    this.pluginLoadingStatus[metadata.id] = 'loaded';
+                    
+                    // Verificar que el módulo exporta un objeto por defecto
+                    const plugin = moduleExport.default;
+                    
+                    if (plugin && this.validatePluginStructure(plugin)) {
+                      // Guardar la ruta para evitar duplicados
+                      this.registeredPaths.add(metadata.path);
+                      
+                      this.registerPlugin(plugin);
+                    } else {
+                      console.error(`Plugin integrado ${metadata.id} tiene una estructura inválida.`);
+                      this.pluginErrors[metadata.id] = 'Estructura de plugin inválida';
+                      this.pluginLoadingStatus[metadata.id] = 'error';
+                    }
+                  } catch (err) {
+                    console.warn(`Error al cargar plugin integrado ${metadata.id}:`, err);
+                    this.pluginErrors[metadata.id] = err.message;
+                    this.pluginLoadingStatus[metadata.id] = 'error';
+                  }
+                } else {
+                  console.warn(`Plugin ${metadata.id} no está integrado, no se puede cargar completamente.`);
+                  // Este caso requeriría enviar el módulo completo desde Electron, lo cual es complejo
+                }
+              } catch (err) {
+                console.warn(`Error al procesar plugin ${metadata.id}:`, err);
+                this.pluginErrors[metadata.id] = err.message;
+                this.pluginLoadingStatus[metadata.id] = 'error';
+              }
+            }
           } else {
             console.log('No se encontraron plugins en el sistema de archivos.');
           }
@@ -94,8 +139,14 @@ class PluginLoader {
         }
       }
       
-      // Cargar plugins integrados (definidos en PLUGIN_MODULES)
+      // Cargar plugins integrados (definidos en PLUGIN_MODULES) que no se hayan cargado aún
       for (const [pluginId, importFunc] of Object.entries(PLUGIN_MODULES)) {
+        // Si ya se cargó este plugin desde el sistema de archivos, saltar
+        if (this.plugins[pluginId]) {
+          console.log(`Plugin ${pluginId} ya cargado, saltando carga integrada.`);
+          continue;
+        }
+        
         try {
           this.pluginLoadingStatus[pluginId] = 'loading';
           const moduleExport = await importFunc();
@@ -117,15 +168,29 @@ class PluginLoader {
           this.pluginLoadingStatus[pluginId] = 'error';
         }
       }
-      
     } catch (error) {
       console.error('Error al descubrir plugins:', error);
     }
   }
 
   /**
+   * Configura los listeners de eventos para el registro
+   * @private
+   */
+  _setupEventListeners() {
+    // Escuchar eventos de plugins
+    eventBus.subscribe(`${EventCategories.APP}.${PLUGIN_EVENTS.INITIALIZED}`, (data) => {
+      console.log(`Plugin Loader: Plugin inicializado: ${data.pluginName}`);
+    });
+    
+    eventBus.subscribe(`${EventCategories.APP}.${PLUGIN_EVENTS.ERROR}`, (data) => {
+      console.error(`Plugin Loader: Error en plugin ${data.pluginName}: ${data.message}`);
+    });
+  }
+
+  /**
    * Registra un plugin en el sistema
-   * @param {Object} plugin - Objeto del plugin con métodos init y cleanup
+   * @param {Object} plugin - Plugin a registrar
    * @returns {boolean} - Resultado del registro
    */
   registerPlugin(plugin) {
@@ -502,6 +567,7 @@ class PluginLoader {
     this.pluginLoadingStatus = {};
     this.pluginTimeouts = {};
     this.isInitialized = false;
+    this.registeredPaths = new Set();
   }
 }
 

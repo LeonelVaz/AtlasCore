@@ -35,29 +35,43 @@ function setupPluginsSystem(mainWindow) {
             // Verificar si existe un index.js
             if (fs.existsSync(indexPath)) {
               try {
-                // Leer el archivo index.js
-                const content = fs.readFileSync(indexPath, 'utf-8');
+                // En lugar de simplemente leer el contenido del archivo, intentamos cargar el plugin completo
+                // Esta es la parte crítica que debemos cambiar
                 
-                // Extraer metadatos básicos usando expresiones regulares
-                // Esto es un enfoque simplificado, en la realidad podríamos usar un parser de JS
-                const idMatch = content.match(/id:\s*['"]([^'"]+)['"]/);
-                const nameMatch = content.match(/name:\s*['"]([^'"]+)['"]/);
-                const versionMatch = content.match(/version:\s*['"]([^'"]+)['"]/);
-                const descriptionMatch = content.match(/description:\s*['"]([^'"]+)['"]/);
-                const authorMatch = content.match(/author:\s*['"]([^'"]+)['"]/);
+                // Eliminar la caché del módulo si ya se cargó previamente
+                delete require.cache[require.resolve(indexPath)];
                 
-                if (idMatch && nameMatch && versionMatch) {
-                  plugins.push({
-                    path: fullPath,
-                    id: idMatch[1],
-                    name: nameMatch[1],
-                    version: versionMatch[1],
-                    description: descriptionMatch ? descriptionMatch[1] : '',
-                    author: authorMatch ? authorMatch[1] : ''
-                  });
+                // Cargar el módulo completo (esto incluye las funciones init y cleanup)
+                const pluginModule = require(indexPath);
+                
+                // Asegurarnos de obtener un objeto válido
+                if (pluginModule && typeof pluginModule === 'object') {
+                  // Validar las propiedades mínimas necesarias aquí para evitar enviar plugins inválidos
+                  if (pluginModule.id && 
+                      pluginModule.name && 
+                      pluginModule.version && 
+                      typeof pluginModule.init === 'function' && 
+                      typeof pluginModule.cleanup === 'function') {
+                    
+                    // Crear un objeto que contiene tanto metadatos como el plugin completo
+                    plugins.push({
+                      path: fullPath,
+                      id: pluginModule.id,
+                      name: pluginModule.name,
+                      version: pluginModule.version,
+                      description: pluginModule.description || '',
+                      author: pluginModule.author || '',
+                      // Guardar el plugin completo incluyendo sus funciones
+                      // Esto no funcionará directamente por razones de serialización
+                      // pero lo abordamos más abajo
+                      _pluginModule: pluginModule
+                    });
+                  } else {
+                    console.warn(`Plugin ${entry} no contiene las propiedades requeridas`);
+                  }
                 }
               } catch (err) {
-                console.warn(`Error al leer plugin ${entry}:`, err);
+                console.warn(`Error al cargar plugin ${entry}:`, err);
               }
             }
           }
@@ -70,7 +84,14 @@ function setupPluginsSystem(mainWindow) {
         // Omitido por brevedad
       }
       
-      return plugins;
+      // NOTA: Como no podemos enviar funciones a través del IPC,
+      // debemos modificar el enfoque para solo enviar los metadatos
+      // y dejar que el frontend cargue los plugins
+      return plugins.map(plugin => {
+        // Eliminar el módulo completo ya que no se puede serializar
+        const { _pluginModule, ...metadata } = plugin;
+        return metadata;
+      });
     } catch (error) {
       console.error('Error al cargar plugins:', error);
       return [];

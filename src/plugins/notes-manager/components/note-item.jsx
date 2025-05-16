@@ -1,36 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { NotesContext } from '../contexts/notes-context';
+import { formatNoteDate, getNoteExcerpt } from '../utils/notes-utils';
 
 const NoteItem = ({ note, onSelect, onDelete }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { categories, t } = useContext(NotesContext);
   
-  // Formatear fecha para mostrar
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    
-    // Si es hoy, mostrar solo la hora
-    const isToday = new Date().toDateString() === date.toDateString();
-    
-    if (isToday) {
-      return date.toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-    
-    // Si no es hoy, mostrar fecha corta
-    return date.toLocaleDateString('es-ES', {
-      day: 'numeric',
-      month: 'short'
-    });
-  };
-  
-  // Obtener un extracto del contenido
-  const getContentExcerpt = (content, maxLength = 100) => {
-    if (!content) return '';
-    if (content.length <= maxLength) return content;
-    
-    return content.substring(0, maxLength) + '...';
-  };
+  // Obtener la categoría si existe
+  const category = note.categoryId 
+    ? categories.find(cat => cat.id === note.categoryId) 
+    : null;
   
   // Manejar clic en eliminar
   const handleDeleteClick = (e) => {
@@ -51,6 +30,28 @@ const NoteItem = ({ note, onSelect, onDelete }) => {
     setShowDeleteConfirm(false);
   };
   
+  // Determinar tipo de referencia
+  const getReferenceIcon = () => {
+    if (!note.references) return null;
+    
+    return note.references.type === 'event' 
+      ? 'event' 
+      : 'today';
+  };
+  
+  // Determinar texto de referencia
+  const getReferenceText = () => {
+    if (!note.references) return '';
+    
+    return note.references.type === 'event' 
+      ? t('notes.linkedEvent') 
+      : t('notes.linkedDate');
+  };
+  
+  // Para retrocompatibilidad con notas antiguas
+  const hasEventReference = note.references?.type === 'event' || !!note.eventId;
+  const hasDateReference = note.references?.type === 'date';
+  
   return (
     <div 
       className="note-item"
@@ -59,17 +60,41 @@ const NoteItem = ({ note, onSelect, onDelete }) => {
     >
       <div className="note-item-header">
         <h3 className="note-item-title">{note.title}</h3>
-        <div className="note-item-date">{formatDate(note.modified)}</div>
+        <div className="note-item-date">
+          {formatNoteDate(note.updatedAt || note.modified)}
+        </div>
       </div>
+      
+      {category && (
+        <div className="note-item-category">
+          <span 
+            className="category-indicator"
+            style={{ backgroundColor: category.color }}
+          ></span>
+          <span className="category-name">{category.name}</span>
+        </div>
+      )}
+      
+      {note.tags && note.tags.length > 0 && (
+        <div className="note-item-tags">
+          {note.tags.map((tag, index) => (
+            <span key={index} className="note-tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
       
       <div className="note-item-content">
-        {getContentExcerpt(note.content)}
+        {getNoteExcerpt(note.content, 150)}
       </div>
       
-      {note.eventId && (
-        <div className="note-item-event">
-          <span className="material-icons">event</span>
-          <span>Vinculada a evento</span>
+      {(hasEventReference || hasDateReference) && (
+        <div className="note-item-reference">
+          <span className="material-icons">
+            {getReferenceIcon() || 'link'}
+          </span>
+          <span>{getReferenceText()}</span>
         </div>
       )}
       
@@ -78,24 +103,24 @@ const NoteItem = ({ note, onSelect, onDelete }) => {
           <button 
             className="note-item-delete"
             onClick={handleDeleteClick}
-            title="Eliminar nota"
+            title={t('notes.delete')}
           >
             <span className="material-icons">delete</span>
           </button>
         ) : (
           <div className="note-delete-confirm">
-            <span>¿Eliminar?</span>
+            <span>{t('notes.confirmDelete')}</span>
             <button 
               className="note-delete-yes"
               onClick={handleConfirmDelete}
-              title="Confirmar eliminación"
+              title={t('common.yes')}
             >
               <span className="material-icons">check</span>
             </button>
             <button 
               className="note-delete-no"
               onClick={handleCancelDelete}
-              title="Cancelar eliminación"
+              title={t('common.no')}
             >
               <span className="material-icons">close</span>
             </button>
