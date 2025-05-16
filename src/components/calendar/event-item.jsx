@@ -1,3 +1,4 @@
+// src/components/calendar/event-item.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import { useEventDrag } from '../../hooks/use-event-drag';
 import { useEventResize } from '../../hooks/use-event-resize';
@@ -25,13 +26,26 @@ const EventDecorators = ({ event }) => {
     <div className="event-decorators">
       {decorators.map((registration, index) => {
         const Component = registration.component;
+        
+        // Usamos un envoltorio para capturar errores
+        const SafeComponent = () => {
+          try {
+            return (
+              <Component 
+                event={event} 
+                pluginId={registration.pluginId}
+                options={registration.options}
+              />
+            );
+          } catch (error) {
+            console.error(`Error en decorador de plugin ${registration.pluginId}:`, error);
+            return null; // No renderizar nada si hay error
+          }
+        };
+        
         return (
           <div key={`${registration.pluginId}-${index}`} className="event-decorator">
-            <Component 
-              event={event} 
-              pluginId={registration.pluginId}
-              options={registration.options}
-            />
+            <SafeComponent />
           </div>
         );
       })}

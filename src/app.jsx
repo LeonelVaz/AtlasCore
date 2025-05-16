@@ -97,6 +97,9 @@ function App() {
           registerModule
         });
         
+        // Exponer el core globalmente para solucionar problemas de acceso
+        window.__appCore = pluginCore;
+        
         // Inicializar el sistema de plugins
         const enabledPlugins = await initializePlugins(pluginCore);
         console.log(`${enabledPlugins.length} plugins inicializados:`, 

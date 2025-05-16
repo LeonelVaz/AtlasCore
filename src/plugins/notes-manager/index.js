@@ -110,8 +110,281 @@ export default {
       return false;
     }
     
-    // Registrar como proveedor de notas
-    return this.core.registerModule('notes-manager', this.publicAPI);
+    // Crear una API pública que tenga acceso al core
+    const publicAPI = {
+      // Añadir una referencia directa al core
+      core: this.core,
+      
+      // Identificador del plugin
+      id: this.id,
+      
+      // Obtener todas las notas
+      getAllNotes: async function() {
+        if (!this.core?.storage) return [];
+        
+        try {
+          return await this.core.storage.getItem(this.id, 'notes', []);
+        } catch (error) {
+          console.error('Error al obtener notas:', error);
+          return [];
+        }
+      },
+      
+      // Obtener una nota por ID
+      getNoteById: async function(noteId) {
+        if (!noteId) return null;
+        
+        const notes = await this.getAllNotes();
+        return notes.find(note => note.id === noteId) || null;
+      },
+      
+      // Obtener notas por fecha
+      getNotesByDate: async function(date) {
+        if (!date) return [];
+        
+        const targetDate = new Date(date);
+        const notes = await this.getAllNotes();
+        
+        // Comparar solo la fecha (sin hora)
+        return notes.filter(note => {
+          const noteDate = new Date(note.date);
+          return noteDate.toDateString() === targetDate.toDateString();
+        });
+      },
+      
+      // Obtener notas por evento
+      getNotesByEvent: async function(eventId) {
+        if (!eventId) return [];
+        
+        const notes = await this.getAllNotes();
+        return notes.filter(note => note.eventId === eventId);
+      },
+      
+      // Crear una nueva nota
+      createNote: async function(noteData) {
+        if (!noteData || !noteData.title) {
+          throw new Error('Se requiere al menos un título para la nota');
+        }
+        
+        if (!this.core?.storage) {
+          throw new Error('Servicio de almacenamiento no disponible');
+        }
+        
+        try {
+          // Obtener notas existentes
+          const notes = await this.core.storage.getItem(this.id, 'notes', []);
+          
+          // Crear nueva nota con ID único
+          const newNote = {
+            id: Date.now().toString(),
+            title: noteData.title,
+            content: noteData.content || '',
+            date: noteData.date || new Date().toISOString(),
+            eventId: noteData.eventId || null,
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
+            color: noteData.color || '#2D4B94'
+          };
+          
+          // Añadir a la colección
+          const updatedNotes = [...notes, newNote];
+          
+          // Guardar en almacenamiento
+          await this.core.storage.setItem(this.id, 'notes', updatedNotes);
+          
+          // Notificar creación
+          if (this.core.events) {
+            this.core.events.publish('plugin.notes-manager.noteCreated', newNote);
+          }
+          
+          return newNote;
+        } catch (error) {
+          console.error('Error al crear nota:', error);
+          throw error;
+        }
+      },
+      
+      // Actualizar una nota existente
+      updateNote: async function(noteId, noteData) {
+        if (!noteId || !noteData) {
+          throw new Error('Se requiere ID y datos para actualizar la nota');
+        }
+        
+        if (!this.core?.storage) {
+          throw new Error('Servicio de almacenamiento no disponible');
+        }
+        
+        try {
+          // Obtener notas existentes
+          const notes = await this.core.storage.getItem(this.id, 'notes', []);
+          
+          // Encontrar la nota a actualizar
+          const noteIndex = notes.findIndex(note => note.id === noteId);
+          if (noteIndex === -1) {
+            throw new Error(`Nota con ID ${noteId} no encontrada`);
+          }
+          
+          // Actualizar la nota
+          const updatedNote = {
+            ...notes[noteIndex],
+            ...noteData,
+            modified: new Date().toISOString()
+          };
+          
+          // Actualizar la colección
+          const updatedNotes = [...notes];
+          updatedNotes[noteIndex] = updatedNote;
+          
+          // Guardar en almacenamiento
+          await this.core.storage.setItem(this.id, 'notes', updatedNotes);
+          
+          // Notificar actualización
+          if (this.core.events) {
+            this.core.events.publish('plugin.notes-manager.noteUpdated', updatedNote);
+          }
+          
+          return updatedNote;
+        } catch (error) {
+          console.error('Error al actualizar nota:', error);
+          throw error;
+        }
+      },
+      
+      // Eliminar una nota
+      deleteNote: async function(noteId) {
+        if (!noteId) {
+          throw new Error('Se requiere ID para eliminar la nota');
+        }
+        
+        if (!this.core?.storage) {
+          throw new Error('Servicio de almacenamiento no disponible');
+        }
+        
+        try {
+          // Obtener notas existentes
+          const notes = await this.core.storage.getItem(this.id, 'notes', []);
+          
+          // Encontrar la nota a eliminar
+          const noteIndex = notes.findIndex(note => note.id === noteId);
+          if (noteIndex === -1) {
+            throw new Error(`Nota con ID ${noteId} no encontrada`);
+          }
+          
+          // Guardar referencia a la nota que se eliminará
+          const deletedNote = notes[noteIndex];
+          
+          // Filtrar la colección
+          const updatedNotes = notes.filter(note => note.id !== noteId);
+          
+          // Guardar en almacenamiento
+          await this.core.storage.setItem(this.id, 'notes', updatedNotes);
+          
+          // Notificar eliminación
+          if (this.core.events) {
+            this.core.events.publish('plugin.notes-manager.noteDeleted', { id: noteId });
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Error al eliminar nota:', error);
+          throw error;
+        }
+      },
+      
+      // Vincular nota con evento
+      linkNoteToEvent: async function(noteId, eventId) {
+        if (!noteId || !eventId) {
+          throw new Error('Se requieren IDs de nota y evento para vincular');
+        }
+        
+        try {
+          // Obtener nota existente
+          const note = await this.getNoteById(noteId);
+          if (!note) {
+            throw new Error(`Nota con ID ${noteId} no encontrada`);
+          }
+          
+          // Actualizar con el ID del evento
+          return await this.updateNote(noteId, { eventId });
+        } catch (error) {
+          console.error('Error al vincular nota con evento:', error);
+          throw error;
+        }
+      },
+      
+      // Desvincular nota de evento
+      unlinkNoteFromEvent: async function(noteId) {
+        if (!noteId) {
+          throw new Error('Se requiere ID de nota para desvincular');
+        }
+        
+        try {
+          // Obtener nota existente
+          const note = await this.getNoteById(noteId);
+          if (!note) {
+            throw new Error(`Nota con ID ${noteId} no encontrada`);
+          }
+          
+          // Actualizar quitando el ID del evento
+          return await this.updateNote(noteId, { eventId: null });
+        } catch (error) {
+          console.error('Error al desvincular nota de evento:', error);
+          throw error;
+        }
+      },
+      
+      // Convertir evento a nota
+      convertEventToNote: async function(eventId) {
+        if (!eventId) {
+          throw new Error('Se requiere ID de evento para convertir');
+        }
+        
+        try {
+          // Obtener evento del calendario
+          const calendarModule = this.core.getModule('calendar');
+          if (!calendarModule) {
+            throw new Error('Módulo de calendario no disponible');
+          }
+          
+          const events = calendarModule.getEvents();
+          const event = events.find(e => e.id === eventId);
+          
+          if (!event) {
+            throw new Error(`Evento con ID ${eventId} no encontrado`);
+          }
+          
+          // Convertir a formato de nota
+          const noteData = convertCalendarEventToNote(event);
+          
+          // Crear la nota
+          const note = await this.createNote(noteData);
+          
+          // Vincular la nota con el evento
+          await this.linkNoteToEvent(note.id, eventId);
+          
+          return note;
+        } catch (error) {
+          console.error('Error al convertir evento a nota:', error);
+          throw error;
+        }
+      },
+      
+      // Métodos para React
+      getNotesProvider: function() {
+        return NotesProvider;
+      },
+      
+      getNotesContext: function() {
+        return NotesContext;
+      },
+      
+      getNotesPanel: function() {
+        return NotesPanel;
+      }
+    };
+    
+    // Registrar el módulo con la nueva API pública
+    return this.core.registerModule('notes-manager', publicAPI);
   },
   
   /**
@@ -140,275 +413,6 @@ export default {
     } catch (error) {
       console.error('Error al limpiar recursos del plugin de Notas:', error);
       return false;
-    }
-  },
-  
-  /**
-   * API pública que expone el plugin
-   */
-  publicAPI: {
-    // Obtener todas las notas
-    getAllNotes: async function() {
-      const storageService = this.core?.storage;
-      if (!storageService) return [];
-      
-      try {
-        return await storageService.getItem(this.id, 'notes', []);
-      } catch (error) {
-        console.error('Error al obtener notas:', error);
-        return [];
-      }
-    },
-    
-    // Obtener una nota por ID
-    getNoteById: async function(noteId) {
-      if (!noteId) return null;
-      
-      const notes = await this.getAllNotes();
-      return notes.find(note => note.id === noteId) || null;
-    },
-    
-    // Obtener notas por fecha
-    getNotesByDate: async function(date) {
-      if (!date) return [];
-      
-      const targetDate = new Date(date);
-      const notes = await this.getAllNotes();
-      
-      // Comparar solo la fecha (sin hora)
-      return notes.filter(note => {
-        const noteDate = new Date(note.date);
-        return noteDate.toDateString() === targetDate.toDateString();
-      });
-    },
-    
-    // Obtener notas por evento
-    getNotesByEvent: async function(eventId) {
-      if (!eventId) return [];
-      
-      const notes = await this.getAllNotes();
-      return notes.filter(note => note.eventId === eventId);
-    },
-    
-    // Crear una nueva nota
-    createNote: async function(noteData) {
-      if (!noteData || !noteData.title) {
-        throw new Error('Se requiere al menos un título para la nota');
-      }
-      
-      const storageService = this.core?.storage;
-      if (!storageService) throw new Error('Servicio de almacenamiento no disponible');
-      
-      try {
-        // Obtener notas existentes
-        const notes = await storageService.getItem(this.id, 'notes', []);
-        
-        // Crear nueva nota con ID único
-        const newNote = {
-          id: Date.now().toString(),
-          title: noteData.title,
-          content: noteData.content || '',
-          date: noteData.date || new Date().toISOString(),
-          eventId: noteData.eventId || null,
-          created: new Date().toISOString(),
-          modified: new Date().toISOString(),
-          color: noteData.color || '#2D4B94'
-        };
-        
-        // Añadir a la colección
-        const updatedNotes = [...notes, newNote];
-        
-        // Guardar en almacenamiento
-        await storageService.setItem(this.id, 'notes', updatedNotes);
-        
-        // Notificar creación
-        if (this.core.events) {
-          this.core.events.publish('plugin.notes-manager.noteCreated', newNote);
-        }
-        
-        return newNote;
-      } catch (error) {
-        console.error('Error al crear nota:', error);
-        throw error;
-      }
-    },
-    
-    // Actualizar una nota existente
-    updateNote: async function(noteId, noteData) {
-      if (!noteId || !noteData) {
-        throw new Error('Se requiere ID y datos para actualizar la nota');
-      }
-      
-      const storageService = this.core?.storage;
-      if (!storageService) throw new Error('Servicio de almacenamiento no disponible');
-      
-      try {
-        // Obtener notas existentes
-        const notes = await storageService.getItem(this.id, 'notes', []);
-        
-        // Encontrar la nota a actualizar
-        const noteIndex = notes.findIndex(note => note.id === noteId);
-        if (noteIndex === -1) {
-          throw new Error(`Nota con ID ${noteId} no encontrada`);
-        }
-        
-        // Actualizar la nota
-        const updatedNote = {
-          ...notes[noteIndex],
-          ...noteData,
-          modified: new Date().toISOString()
-        };
-        
-        // Actualizar la colección
-        const updatedNotes = [...notes];
-        updatedNotes[noteIndex] = updatedNote;
-        
-        // Guardar en almacenamiento
-        await storageService.setItem(this.id, 'notes', updatedNotes);
-        
-        // Notificar actualización
-        if (this.core.events) {
-          this.core.events.publish('plugin.notes-manager.noteUpdated', updatedNote);
-        }
-        
-        return updatedNote;
-      } catch (error) {
-        console.error('Error al actualizar nota:', error);
-        throw error;
-      }
-    },
-    
-    // Eliminar una nota
-    deleteNote: async function(noteId) {
-      if (!noteId) {
-        throw new Error('Se requiere ID para eliminar la nota');
-      }
-      
-      const storageService = this.core?.storage;
-      if (!storageService) throw new Error('Servicio de almacenamiento no disponible');
-      
-      try {
-        // Obtener notas existentes
-        const notes = await storageService.getItem(this.id, 'notes', []);
-        
-        // Encontrar la nota a eliminar
-        const noteIndex = notes.findIndex(note => note.id === noteId);
-        if (noteIndex === -1) {
-          throw new Error(`Nota con ID ${noteId} no encontrada`);
-        }
-        
-        // Guardar referencia a la nota que se eliminará
-        const deletedNote = notes[noteIndex];
-        
-        // Filtrar la colección
-        const updatedNotes = notes.filter(note => note.id !== noteId);
-        
-        // Guardar en almacenamiento
-        await storageService.setItem(this.id, 'notes', updatedNotes);
-        
-        // Notificar eliminación
-        if (this.core.events) {
-          this.core.events.publish('plugin.notes-manager.noteDeleted', { id: noteId });
-        }
-        
-        return true;
-      } catch (error) {
-        console.error('Error al eliminar nota:', error);
-        throw error;
-      }
-    },
-    
-    // Vincular nota con evento
-    linkNoteToEvent: async function(noteId, eventId) {
-      if (!noteId || !eventId) {
-        throw new Error('Se requieren IDs de nota y evento para vincular');
-      }
-      
-      try {
-        // Obtener nota existente
-        const note = await this.getNoteById(noteId);
-        if (!note) {
-          throw new Error(`Nota con ID ${noteId} no encontrada`);
-        }
-        
-        // Actualizar con el ID del evento
-        return await this.updateNote(noteId, { eventId });
-      } catch (error) {
-        console.error('Error al vincular nota con evento:', error);
-        throw error;
-      }
-    },
-    
-    // Desvincular nota de evento
-    unlinkNoteFromEvent: async function(noteId) {
-      if (!noteId) {
-        throw new Error('Se requiere ID de nota para desvincular');
-      }
-      
-      try {
-        // Obtener nota existente
-        const note = await this.getNoteById(noteId);
-        if (!note) {
-          throw new Error(`Nota con ID ${noteId} no encontrada`);
-        }
-        
-        // Actualizar quitando el ID del evento
-        return await this.updateNote(noteId, { eventId: null });
-      } catch (error) {
-        console.error('Error al desvincular nota de evento:', error);
-        throw error;
-      }
-    },
-    
-    // Convertir evento a nota
-    convertEventToNote: async function(eventId) {
-      if (!eventId) {
-        throw new Error('Se requiere ID de evento para convertir');
-      }
-      
-      try {
-        // Obtener evento del calendario
-        const calendarModule = this.core.getModule('calendar');
-        if (!calendarModule) {
-          throw new Error('Módulo de calendario no disponible');
-        }
-        
-        const events = calendarModule.getEvents();
-        const event = events.find(e => e.id === eventId);
-        
-        if (!event) {
-          throw new Error(`Evento con ID ${eventId} no encontrado`);
-        }
-        
-        // Convertir a formato de nota
-        const noteData = convertCalendarEventToNote(event);
-        
-        // Crear la nota
-        const note = await this.createNote(noteData);
-        
-        // Vincular la nota con el evento
-        await this.linkNoteToEvent(note.id, eventId);
-        
-        return note;
-      } catch (error) {
-        console.error('Error al convertir evento a nota:', error);
-        throw error;
-      }
-    },
-    
-    // Obtener Provider para React
-    getNotesProvider: function() {
-      return NotesProvider;
-    },
-    
-    // Obtener Context para React
-    getNotesContext: function() {
-      return NotesContext;
-    },
-    
-    // Obtener componente de panel de notas
-    getNotesPanel: function() {
-      return NotesPanel;
     }
   }
 };

@@ -11,19 +11,52 @@ export const NotesProvider = ({ children, pluginId = 'notes-manager' }) => {
   
   // Función para obtener el servicio de almacenamiento
   const getStorageService = useCallback(() => {
-    if (!window.__appModules || !window.__appModules['notes-manager']) {
-      console.error('Módulo de notas no registrado');
-      return null;
-    }
-    
-    const notesModule = window.__appModules['notes-manager'];
-    
-    if (!notesModule.core || !notesModule.core.storage) {
+    try {
+      if (!window.__appModules || !window.__appModules['notes-manager']) {
+        console.error('Módulo de notas no registrado');
+        return null;
+      }
+      
+      const notesModule = window.__appModules['notes-manager'];
+      
+      // Intentar obtener storage directamente desde el módulo
+      if (notesModule.core?.storage) {
+        return notesModule.core.storage;
+      }
+      
+      // Si no está ahí, intentar obtenerlo a través del core global
+      if (window.__appCore?.storage) {
+        return window.__appCore.storage;
+      }
+      
+      // Si todo falla, usar localStorage como fallback
+      if (window.localStorage) {
+        // Crear un adaptador simple para localStorage
+        return {
+          getItem: async (pluginId, key, defaultValue) => {
+            const storageKey = `plugin.${pluginId}.${key}`;
+            const value = localStorage.getItem(storageKey);
+            if (value === null) return defaultValue;
+            try {
+              return JSON.parse(value);
+            } catch (e) {
+              return defaultValue;
+            }
+          },
+          setItem: async (pluginId, key, value) => {
+            const storageKey = `plugin.${pluginId}.${key}`;
+            localStorage.setItem(storageKey, JSON.stringify(value));
+            return true;
+          }
+        };
+      }
+      
       console.error('API de almacenamiento no disponible');
       return null;
+    } catch (err) {
+      console.error('Error al obtener servicio de almacenamiento:', err);
+      return null;
     }
-    
-    return notesModule.core.storage;
   }, []);
   
   // Cargar todas las notas
