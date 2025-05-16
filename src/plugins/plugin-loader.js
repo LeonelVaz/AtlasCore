@@ -22,8 +22,8 @@ export const PLUGIN_EVENTS = {
 // Directorio base para plugins integrados (importados como módulos)
 const PLUGIN_MODULES = {
   // Plugins integrados
-  'notes-manager': () => import('./notes-manager')
-  // Se pueden añadir más plugins integrados aquí
+  // Se pueden añadir plugins integrados aquí
+  // NO AÑADIR NINGUN PLUGIN INTEGRADO NI EXTERNO EN ESTE ARCHIVO
 };
 
 class PluginLoader {
