@@ -15,74 +15,19 @@ class PluginSandbox {
     this.sandboxErrors = {};
     this.maxSandboxErrors = 5;
     
-    // Reglas de análisis estático 
+    // Reglas de análisis estático simplificadas
     this.staticAnalysisRules = [
-      {
-        name: 'preventEval',
-        pattern: /\beval\s*\(/g,
-        severity: 'critical',
-        message: 'Uso de eval() detectado, lo cual es una práctica insegura'
-      },
-      {
-        name: 'preventDocumentWrite',
-        pattern: /document\.write\s*\(/g,
-        severity: 'high',
-        message: 'Uso de document.write() detectado'
-      },
-      {
-        name: 'preventInnerHTML',
-        pattern: /\.innerHTML\s*=/g,
-        severity: 'medium',
-        message: 'Uso de innerHTML detectado'
-      },
-      {
-        name: 'preventWindowOpen',
-        pattern: /window\.open\s*\(/g,
-        severity: 'medium',
-        message: 'Uso de window.open() detectado'
-      },
-      {
-        name: 'preventNewFunction',
-        pattern: /new\s+Function\s*\(/g,
-        severity: 'critical',
-        message: 'Uso de new Function() detectado'
-      },
-      {
-        name: 'preventSetTimeout',
-        pattern: /setTimeout\s*\(\s*['"`]/g,
-        severity: 'high',
-        message: 'Uso de setTimeout con string como argumento detectado'
-      },
-      {
-        name: 'preventSetInterval',
-        pattern: /setInterval\s*\(\s*['"`]/g,
-        severity: 'high',
-        message: 'Uso de setInterval con string como argumento detectado'
-      },
-      {
-        name: 'preventAccessStorage',
-        pattern: /(localStorage|sessionStorage|indexedDB)\./g,
-        severity: 'medium',
-        message: 'Acceso directo a almacenamiento del navegador detectado'
-      },
-      {
-        name: 'preventDirectFetch',
-        pattern: /\bfetch\s*\(/g,
-        severity: 'medium',
-        message: 'Uso directo de fetch() detectado'
-      },
-      {
-        name: 'preventXHR',
-        pattern: /new\s+XMLHttpRequest\s*\(/g,
-        severity: 'medium',
-        message: 'Uso de XMLHttpRequest detectado'
-      },
-      {
-        name: 'preventObjectDefineProperty',
-        pattern: /Object\.defineProperty\s*\(\s*(Object|Array|String|Number|Function|Boolean|Symbol|Math|JSON|Date|RegExp)\./g,
-        severity: 'critical',
-        message: 'Intento de modificar objetos nativos detectado'
-      }
+      {name: 'preventEval', pattern: /\beval\s*\(/g, severity: 'critical'},
+      {name: 'preventDocumentWrite', pattern: /document\.write\s*\(/g, severity: 'high'},
+      {name: 'preventInnerHTML', pattern: /\.innerHTML\s*=/g, severity: 'medium'},
+      {name: 'preventWindowOpen', pattern: /window\.open\s*\(/g, severity: 'medium'},
+      {name: 'preventNewFunction', pattern: /new\s+Function\s*\(/g, severity: 'critical'},
+      {name: 'preventSetTimeout', pattern: /setTimeout\s*\(\s*['"`]/g, severity: 'high'},
+      {name: 'preventSetInterval', pattern: /setInterval\s*\(\s*['"`]/g, severity: 'high'},
+      {name: 'preventAccessStorage', pattern: /(localStorage|sessionStorage|indexedDB)\./g, severity: 'medium'},
+      {name: 'preventDirectFetch', pattern: /\bfetch\s*\(/g, severity: 'medium'},
+      {name: 'preventXHR', pattern: /new\s+XMLHttpRequest\s*\(/g, severity: 'medium'},
+      {name: 'preventObjectDefineProperty', pattern: /Object\.defineProperty\s*\(\s*(Object|Array|String|Number|Function|Boolean|Symbol|Math|JSON|Date|RegExp)\./g, severity: 'critical'}
     ];
   }
 
@@ -146,7 +91,7 @@ class PluginSandbox {
 
   _protectGlobalObjects() {
     const protectedGlobals = [
-      Object, Array, String, Number, Function, 
+      Object, Array, String, Number, Function,
       Boolean, Symbol, Math, JSON, Date, RegExp
     ];
     
@@ -154,9 +99,7 @@ class PluginSandbox {
       try {
         Object.freeze(obj);
         Object.freeze(obj.prototype);
-      } catch (e) {
-        // Algunos objetos no tienen prototype o no se pueden congelar
-      }
+      } catch (e) { /* Algunos objetos no pueden congelarse */ }
     });
     
     console.log('Protecciones globales instaladas');
@@ -164,10 +107,7 @@ class PluginSandbox {
 
   validatePluginCode(pluginId, plugin) {
     if (!pluginId || !plugin) {
-      return {
-        valid: false,
-        reasons: ['Plugin no válido para validación']
-      };
+      return {valid: false, reasons: ['Plugin no válido para validación']};
     }
     
     try {
@@ -203,11 +143,7 @@ class PluginSandbox {
       };
     } catch (error) {
       console.error(`Error al validar código del plugin ${pluginId}:`, error);
-      
-      return {
-        valid: false,
-        reasons: [`Error durante validación de código: ${error.message}`]
-      };
+      return {valid: false, reasons: [`Error durante validación: ${error.message}`]};
     }
   }
 
@@ -279,14 +215,9 @@ class PluginSandbox {
 
   _getExecutionTimeout() {
     switch (this.securityLevel) {
-      case PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW:
-        return 10000; // 10 segundos
-      case PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL:
-        return 5000; // 5 segundos
-      case PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH:
-        return 2000; // 2 segundos
-      default:
-        return 5000;
+      case PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW: return 10000; // 10 segundos
+      case PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH: return 2000; // 2 segundos
+      default: return 5000; // 5 segundos
     }
   }
 
@@ -327,8 +258,6 @@ class PluginSandbox {
     }
   }
 
-  // Métodos adicionales condensados...
-  
   createDOMProxy(element, pluginId) {
     if (!element || !pluginId || !this.activeChecks.has('domManipulation')) {
       return element;
@@ -409,8 +338,7 @@ class PluginSandbox {
     }
   }
 
-  // Métodos simplificados...
-  
+  // Métodos de configuración
   updateSecurityChecks(activeChecks) {
     if (!activeChecks) return;
     
