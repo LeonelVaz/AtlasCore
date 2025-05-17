@@ -13,6 +13,8 @@ import { STORAGE_KEYS } from '../../core/config/constants';
 import eventBus from '../../core/bus/event-bus';
 import pluginCompatibility from './plugin-compatibility';
 import pluginDependencyResolver from './plugin-dependency-resolver';
+import pluginAPIRegistry from './plugin-api-registry';
+import pluginCommunication from './plugin-communication';
 
 // Constantes
 const PLUGIN_STATE_KEY = 'atlas_plugin_states';
@@ -386,6 +388,11 @@ class PluginManager {
       const activated = pluginRegistry.activatePlugin(pluginId, coreAPI);
       
       if (activated) {
+        // Registrar la API pública si existe
+        if (plugin.publicAPI) {
+          pluginAPIRegistry.registerAPI(pluginId, plugin.publicAPI);
+        }
+        
         // Actualizar estado y guardar
         pluginRegistry.setPluginState(pluginId, { active: true, lastActivated: Date.now() });
         await this._savePluginStates();
@@ -449,6 +456,12 @@ class PluginManager {
           return false;
         }
       }
+      
+      // Eliminar la API pública si existe
+      pluginAPIRegistry.unregisterAPI(pluginId);
+      
+      // Limpiar canales de comunicación
+      pluginCommunication.clearPluginResources(pluginId);
       
       // Desactivar el plugin
       const deactivated = pluginRegistry.deactivatePlugin(pluginId);
@@ -616,6 +629,9 @@ class PluginManager {
       // Limpiar compatibilidad
       this._compatibilityResults = {};
       
+      // Limpiar API registry
+      pluginAPIRegistry.clearAll();
+      
       // Registrar nuevos plugins encontrados
       let registeredCount = 0;
       for (const plugin of plugins) {
@@ -740,8 +756,44 @@ class PluginManager {
         this._compatibilityResults[p.id]?.compatible === false
       ).length,
       states: this.initialized ? pluginRegistry.getPluginStates() : {},
-      cycles: pluginDependencyResolver.getDetectedCycles()
+      cycles: pluginDependencyResolver.getDetectedCycles(),
+      apiCount: Object.keys(pluginAPIRegistry.getAPIInfo()).length,
+      activeChannels: Object.keys(pluginCommunication.getChannelsInfo()).length
     };
+  }
+
+  /**
+   * Obtiene información detallada sobre las APIs públicas disponibles
+   * @returns {Object} - Información sobre APIs disponibles
+   */
+  getPluginAPIsInfo() {
+    if (!this.initialized) {
+      return {};
+    }
+
+    try {
+      return pluginAPIRegistry.getAPIInfo();
+    } catch (error) {
+      console.error('Error al obtener información de APIs:', error);
+      return {};
+    }
+  }
+
+  /**
+   * Obtiene información sobre los canales de comunicación disponibles
+   * @returns {Object} - Información sobre canales
+   */
+  getChannelsInfo() {
+    if (!this.initialized) {
+      return {};
+    }
+
+    try {
+      return pluginCommunication.getChannelsInfo();
+    } catch (error) {
+      console.error('Error al obtener información de canales:', error);
+      return {};
+    }
   }
 }
 

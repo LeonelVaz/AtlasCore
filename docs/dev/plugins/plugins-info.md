@@ -511,3 +511,60 @@ Esta implementación proporciona un sistema completo para gestionar un ecosistem
 Los desarrolladores de plugins cuentan con un sistema flexible para declarar dependencias y conflictos, asegurando que sus plugins solo se activen en entornos compatibles. El sistema identifica automáticamente problemas potenciales como ciclos de dependencias, simplificando el proceso de debugging y mantenimiento.
 
 La fase 4 completa los fundamentos críticos del sistema de plugins, proporcionando la infraestructura necesaria para implementar futuras características avanzadas como instalación dinámica, actualizaciones automáticas y un posible marketplace.
+
+
+## Fase 5: Comunicación entre Plugins
+
+La quinta fase ha sido completada, implementando un sistema completo de comunicación entre plugins que permite compartir funcionalidades y datos de forma segura y controlada.
+
+### Archivos nuevos:
+
+**Sistema de comunicación entre plugins:**
+- `src/core/plugins/plugin-api-registry.js`: Registro centralizado para APIs públicas expuestas por los plugins, con gestión de permisos, validación y auditoría de accesos
+- `src/core/plugins/plugin-communication.js`: Sistema para comunicación directa entre plugins y canales de mensajería, incluyendo mecanismos de publicación/suscripción
+
+### Archivos modificados:
+
+**Integración con el sistema existente:**
+- `src/core/plugins/core-api.js`: Ampliado con nuevas funcionalidades para facilitar la comunicación entre plugins y exposición de APIs
+- `src/core/plugins/plugin-manager.js`: Actualizado para gestionar el registro y acceso a APIs públicas y canales de comunicación
+- `src/plugins/example-plugin/index.js`: Mejorado para demostrar las nuevas capacidades de comunicación entre plugins
+- `src/components/settings/plugins-panel.jsx`: Extendido para visualizar información de APIs públicas y canales de comunicación
+
+### Funcionalidades implementadas:
+
+1. **Exposición y consumo de APIs públicas**
+   - Sistema para que los plugins expongan métodos públicos para uso de otros plugins
+   - Mecanismo de proxy para invocar métodos remotos de forma transparente
+   - Validación automática de permisos basada en dependencias declaradas
+   - Protección contra accesos no autorizados con registro detallado
+
+2. **Mecanismo de comunicación directa**
+   - Implementación de llamadas a métodos entre plugins con validación de compatibilidad
+   - Verificación y respeto de dependencias y conflictos declarados
+   - Gestión de errores robusta con aislamiento de fallos
+   - Historial detallado de comunicaciones para auditoría y diagnóstico
+
+3. **Sistema de canales de mensajería**
+   - Canales temáticos para comunicación entre múltiples plugins
+   - Modelo flexibilidad de publicación/suscripción
+   - Opciones configurables de seguridad y acceso por canal
+   - Persistencia de mensajes con recuperación automática para nuevos suscriptores
+
+4. **Seguridad y aislamiento**
+   - Control de acceso basado en relaciones de dependencia
+   - Bloqueo automático de comunicación entre plugins con conflictos declarados
+   - Registro completo de intentos de acceso con alertas para intentos no autorizados
+   - Aislamiento de errores para evitar propagación de fallos entre plugins
+
+5. **Mecanismos de auditoría**
+   - Registro completo de todas las comunicaciones entre plugins
+   - Monitoreo de uso de APIs con timestamps y resultados
+   - Visualización de APIs disponibles y canales activos en la interfaz de administración
+   - Herramientas de diagnóstico para desarrolladores de plugins
+
+Esta implementación establece un ecosistema seguro y potente para que los plugins puedan colaborar entre sí, compartiendo capacidades y coordinando su funcionamiento sin comprometer la estabilidad o seguridad de la aplicación. El sistema permite relaciones complejas entre plugins mientras mantiene un control preciso sobre los permisos y compatibilidades.
+
+El plugin de ejemplo ha sido mejorado para demostrar estas nuevas capacidades, sirviendo como referencia para futuros desarrolladores. Ahora puede exponer sus propias funcionalidades, consumir servicios de otros plugins, y participar en comunicaciones más complejas a través de canales temáticos.
+
+Con esta fase completada, el sistema de plugins de Atlas cuenta ahora con todos los componentes fundamentales para soportar un ecosistema rico y extensible de plugins, permitiendo a los desarrolladores crear integraciones sofisticadas mientras se mantiene la seguridad, estabilidad y experiencia del usuario.

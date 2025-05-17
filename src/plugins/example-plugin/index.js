@@ -4,7 +4,8 @@ import React, { useState } from 'react';
  * Plugin de Ejemplo para Atlas
  * 
  * Este plugin sirve como demostración de la nueva API de plugins
- * y su integración con el sistema de eventos, almacenamiento y extensiones UI.
+ * y su integración con el sistema de eventos, almacenamiento, extensiones UI
+ * y comunicación entre plugins.
  */
 
 // Importación separada de React para evitar problemas con JSX en archivos .js
@@ -130,6 +131,76 @@ function createSettingsExtension() {
   };
 }
 
+// Crear un método de plugin para demo de comunicación entre plugins
+function createPluginMethodDemo(core, pluginId) {
+  const methods = {
+    // Método simple para probar comunicación
+    sayHello: (name) => {
+      const message = `Hola ${name || 'mundo'} desde el plugin de ejemplo!`;
+      console.log(message);
+      return message;
+    },
+    
+    // Método que recupera datos del almacenamiento 
+    getStoredData: async () => {
+      try {
+        const data = await core.storage.getItem(pluginId, 'demoData', { default: 'Sin datos' });
+        return {
+          success: true,
+          data,
+          timestamp: Date.now()
+        };
+      } catch (error) {
+        console.error('Error al obtener datos almacenados:', error);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: Date.now()
+        };
+      }
+    },
+    
+    // Método que guarda datos en el almacenamiento
+    storeData: async (data) => {
+      try {
+        const result = await core.storage.setItem(pluginId, 'demoData', data);
+        return {
+          success: result,
+          timestamp: Date.now()
+        };
+      } catch (error) {
+        console.error('Error al almacenar datos:', error);
+        return {
+          success: false,
+          error: error.message,
+          timestamp: Date.now()
+        };
+      }
+    },
+    
+    // Método que obtiene la lista de plugins activos
+    getActivePlugins: () => {
+      return core.plugins.getActivePlugins();
+    },
+    
+    // Método que publica un evento a través del sistema de eventos
+    broadcastMessage: (message) => {
+      core.events.publish(pluginId, 'examplePlugin.message', {
+        message,
+        sender: pluginId,
+        timestamp: Date.now()
+      });
+      
+      return {
+        success: true,
+        message: `Mensaje "${message}" publicado correctamente`
+      };
+    }
+  };
+  
+  return methods;
+}
+
 /**
  * Definición del plugin
  */
@@ -137,7 +208,7 @@ export default {
   // Metadatos del plugin
   id: 'example-plugin',
   name: 'Plugin de Ejemplo',
-  version: '0.2.0',
+  version: '0.3.0',
   description: 'Plugin de demostración para el sistema de plugins de Atlas',
   author: 'Atlas Team',
   
@@ -158,6 +229,7 @@ export default {
   _subscriptions: [],
   _extensions: [],
   _data: {},
+  _channel: null,
   
   /**
    * Inicialización del plugin
@@ -179,6 +251,12 @@ export default {
       
       // Registrar extensiones UI
       this._registerUIExtensions();
+      
+      // Registrar API pública
+      this._registerPublicAPI();
+      
+      // Crear canal de comunicación
+      this._createCommunicationChannel();
       
       console.log('[Example Plugin] Inicializado correctamente');
       return true;
@@ -204,6 +282,12 @@ export default {
       
       // Limpiar extensiones UI
       this._cleanupUIExtensions();
+      
+      // Cerrar canal de comunicación
+      if (this._channel) {
+        this._channel.close();
+        this._channel = null;
+      }
       
       console.log('[Example Plugin] Limpieza completada');
       return true;
@@ -440,6 +524,114 @@ export default {
    */
   _handlePluginSystemEvent: function(data) {
     console.log('[Example Plugin] Evento del sistema de plugins recibido:', data);
+    
+    // Si se activa un nuevo plugin, intentar comunicarse con él
+    if (data && data.pluginId && data.pluginId !== this.id) {
+      setTimeout(() => {
+        this._tryPluginCommunication(data.pluginId);
+      }, 1000); // Esperar un segundo para asegurar que el plugin está completamente inicializado
+    }
+  },
+  
+  /**
+   * Registra la API pública del plugin
+   * @private
+   */
+  _registerPublicAPI: function() {
+    try {
+      const pluginId = this.id;
+      
+      // Crear métodos de la API
+      const apiMethods = createPluginMethodDemo(this._core, pluginId);
+      
+      // Registrar API pública
+      this._core.plugins.registerAPI(pluginId, apiMethods);
+      
+      console.log('[Example Plugin] API pública registrada');
+    } catch (error) {
+      console.error('[Example Plugin] Error al registrar API pública:', error);
+    }
+  },
+  
+  /**
+   * Crea un canal de comunicación para el plugin
+   * @private
+   */
+  _createCommunicationChannel: function() {
+    try {
+      const pluginId = this.id;
+      
+      // Crear canal con opciones
+      this._channel = this._core.plugins.createChannel(
+        pluginId,
+        'example-channel',
+        {
+          maxMessages: 50,
+          sendHistoryOnSubscribe: true,
+          sendFullHistoryOnSubscribe: false,
+          allowAnyPublisher: true
+        }
+      );
+      
+      if (this._channel) {
+        // Publicar un mensaje inicial
+        this._channel.publish({
+          type: 'welcome',
+          message: 'Canal de ejemplo iniciado',
+          timestamp: Date.now()
+        });
+        
+        // Suscribirse a mensajes (para log)
+        const unsubscribe = this._channel.subscribe((message) => {
+          console.log('[Example Plugin] Mensaje en canal recibido:', message);
+        });
+        
+        // Agregar a las suscripciones para limpieza
+        this._subscriptions.push(unsubscribe);
+        
+        console.log('[Example Plugin] Canal de comunicación creado');
+      }
+    } catch (error) {
+      console.error('[Example Plugin] Error al crear canal de comunicación:', error);
+    }
+  },
+  
+  /**
+   * Intenta comunicarse con otro plugin
+   * @param {string} targetPluginId - ID del plugin objetivo
+   * @private
+   */
+  _tryPluginCommunication: function(targetPluginId) {
+    try {
+      // Verificar si el plugin está activo
+      if (!this._core.plugins.isPluginActive(targetPluginId)) {
+        console.log(`[Example Plugin] El plugin ${targetPluginId} no está activo`);
+        return;
+      }
+      
+      // Intentar obtener la API del plugin
+      const targetAPI = this._core.plugins.getPluginAPI(this.id, targetPluginId);
+      
+      if (!targetAPI) {
+        console.log(`[Example Plugin] El plugin ${targetPluginId} no expone una API pública`);
+        return;
+      }
+      
+      // Verificar si tiene el método sayHello
+      if (typeof targetAPI.sayHello === 'function') {
+        targetAPI.sayHello(`Plugin ${this.id}`)
+          .then(response => {
+            console.log(`[Example Plugin] Respuesta de ${targetPluginId}:`, response);
+          })
+          .catch(error => {
+            console.error(`[Example Plugin] Error al llamar a sayHello de ${targetPluginId}:`, error);
+          });
+      } else {
+        console.log(`[Example Plugin] El plugin ${targetPluginId} no tiene método sayHello`);
+      }
+    } catch (error) {
+      console.error(`[Example Plugin] Error al comunicarse con plugin ${targetPluginId}:`, error);
+    }
   },
   
   /**
@@ -473,6 +665,66 @@ export default {
           message: message || 'Mensaje de ejemplo'
         }
       );
+    },
+    
+    /**
+     * Método de demostración que responde un saludo
+     * @param {string} name - Nombre para saludar
+     * @returns {string} - Mensaje de saludo
+     */
+    sayHello: function(name) {
+      const message = `¡Hola ${name || 'amigo'}! Saludos desde el plugin de ejemplo.`;
+      console.log('[Example Plugin] sayHello llamado con:', name);
+      return message;
+    },
+    
+    /**
+     * Obtiene la hora actual
+     * @returns {Object} - Información de hora actual
+     */
+    getCurrentTime: function() {
+      const now = new Date();
+      return {
+        timestamp: now.getTime(),
+        formatted: now.toLocaleTimeString(),
+        date: now.toLocaleDateString(),
+        hours: now.getHours(),
+        minutes: now.getMinutes(),
+        seconds: now.getSeconds()
+      };
+    },
+    
+    /**
+     * Publica un mensaje en el canal de comunicación
+     * @param {string} message - Mensaje a publicar
+     * @returns {boolean} - true si se publicó correctamente
+     */
+    publishToChannel: function(message) {
+      if (!this._channel) {
+        return false;
+      }
+      
+      return this._channel.publish({
+        type: 'api_message',
+        content: message,
+        timestamp: Date.now()
+      });
+    },
+    
+    /**
+     * Obtiene información del canal de comunicación
+     * @returns {Object} - Información del canal
+     */
+    getChannelInfo: function() {
+      if (!this._channel) {
+        return { exists: false };
+      }
+      
+      return {
+        exists: true,
+        info: this._channel.getInfo(),
+        historyCount: this._channel.getHistory().length
+      };
     }
   }
 };

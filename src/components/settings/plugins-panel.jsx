@@ -35,6 +35,10 @@ const PluginsPanel = () => {
   const [showDependenciesDialog, setShowDependenciesDialog] = useState(false);
   // Plugin seleccionado para dependencias
   const [dependenciesPlugin, setDependenciesPlugin] = useState(null);
+  // Mostrar información de APIs
+  const [showAPIs, setShowAPIs] = useState(false);
+  // Mostrar información de canales
+  const [showChannels, setShowChannels] = useState(false);
 
   // Cargar plugins al iniciar
   useEffect(() => {
@@ -244,6 +248,93 @@ const PluginsPanel = () => {
     );
   };
 
+  // Renderizar información de APIs públicas
+  const renderAPIsInfo = () => {
+    const apiInfo = pluginManager.getPluginAPIsInfo();
+    
+    return (
+      <div className="plugins-apis-info">
+        <div className="apis-header">
+          <h4>APIs Públicas Disponibles</h4>
+          <Button 
+            variant="text" 
+            size="small"
+            onClick={() => setShowAPIs(!showAPIs)}
+          >
+            {showAPIs ? 'Ocultar APIs' : 'Ver APIs'}
+          </Button>
+        </div>
+        
+        {showAPIs && (
+          <div className="apis-content">
+            {Object.keys(apiInfo).length > 0 ? (
+              <div className="apis-list">
+                {Object.entries(apiInfo).map(([pluginId, api]) => (
+                  <div key={pluginId} className="api-item">
+                    <div className="api-header">
+                      <strong>{pluginId}</strong>
+                      <span className="api-methods-count">{api.methods.length} métodos</span>
+                    </div>
+                    <div className="api-methods">
+                      {api.methods.map(method => (
+                        <span key={method} className="api-method">{method}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No hay APIs públicas registradas</p>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar información de canales de comunicación
+  const renderChannelsInfo = () => {
+    const channelsInfo = pluginManager.getChannelsInfo();
+    
+    return (
+      <div className="plugins-channels-info">
+        <div className="channels-header">
+          <h4>Canales de Comunicación</h4>
+          <Button 
+            variant="text" 
+            size="small"
+            onClick={() => setShowChannels(!showChannels)}
+          >
+            {showChannels ? 'Ocultar Canales' : 'Ver Canales'}
+          </Button>
+        </div>
+        
+        {showChannels && (
+          <div className="channels-content">
+            {Object.keys(channelsInfo).length > 0 ? (
+              <div className="channels-list">
+                {Object.entries(channelsInfo).map(([channelName, channel]) => (
+                  <div key={channelName} className="channel-item">
+                    <div className="channel-header">
+                      <strong>{channelName}</strong>
+                      <span className="channel-subscribers">{channel.subscribers.length} suscriptores</span>
+                    </div>
+                    <div className="channel-info">
+                      <span className="channel-creator">Creado por: {channel.creator}</span>
+                      <span className="channel-messages">{channel.messagesCount} mensajes</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No hay canales de comunicación activos</p>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Renderizar el panel principal
   return (
     <div className="plugins-panel">
@@ -270,6 +361,18 @@ const PluginsPanel = () => {
             <span className="status-label">Compatibles:</span>
             <span className="status-value">{systemStatus.compatiblePlugins || 0}</span>
           </div>
+          {systemStatus.apiCount > 0 && (
+            <div className="status-item">
+              <span className="status-label">APIs:</span>
+              <span className="status-value">{systemStatus.apiCount}</span>
+            </div>
+          )}
+          {systemStatus.activeChannels > 0 && (
+            <div className="status-item">
+              <span className="status-label">Canales:</span>
+              <span className="status-value">{systemStatus.activeChannels}</span>
+            </div>
+          )}
         </div>
         
         {Object.keys(pluginErrors).length > 0 && (
@@ -336,6 +439,10 @@ const PluginsPanel = () => {
           {renderCycles()}
         </div>
       )}
+      
+      {/* Información de APIs y Canales */}
+      {systemStatus.apiCount > 0 && renderAPIsInfo()}
+      {systemStatus.activeChannels > 0 && renderChannelsInfo()}
       
       <div className="plugins-control">
         <Button 
@@ -464,6 +571,31 @@ const PluginsPanel = () => {
                 </span>
               )}
             </div>
+            
+            {/* Información de la API pública si existe */}
+            {pluginManager.isPluginActive(selectedPlugin.id) && (
+              <div className="plugin-detail-item">
+                <strong>API Pública:</strong>
+                {(() => {
+                  const apiInfo = pluginManager.getPluginAPIsInfo()[selectedPlugin.id];
+                  if (!apiInfo) {
+                    return <span>No expone API pública</span>;
+                  }
+                  
+                  return (
+                    <div className="plugin-api-info">
+                      <div className="plugin-api-methods">
+                        {apiInfo.methods.map(method => (
+                          <div key={method} className="plugin-api-method">
+                            {method}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
             
             {selectedPlugin.dependencies && selectedPlugin.dependencies.length > 0 && (
               <div className="plugin-detail-item">

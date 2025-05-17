@@ -517,3 +517,212 @@
   transform: translateY(1px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
+
+/* Estilos para la sección de APIs y Canales en el panel de plugins */
+
+/* Contadores de APIs y Canales en el panel de estado */
+.status-item.api-count,
+.status-item.channel-count {
+  background-color: var(--color-atlas-blue-light);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-left: 8px;
+}
+
+.status-item.api-count .status-value,
+.status-item.channel-count .status-value {
+  font-weight: bold;
+  color: var(--color-atlas-blue);
+}
+
+/* Botones de alternancia para APIs y Canales */
+.toggle-section-button {
+  background: none;
+  border: none;
+  color: var(--color-atlas-blue);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  margin-left: 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.toggle-section-button:hover {
+  background-color: var(--color-atlas-blue-light);
+  text-decoration: underline;
+}
+
+.toggle-section-button .material-icons {
+  font-size: 16px;
+  margin-left: 4px;
+}
+
+/* Sección de APIs */
+.plugins-apis-info {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--bg-color-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.plugins-apis-info h4 {
+  margin-top: 0;
+  color: var(--color-heading);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.apis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.api-item {
+  background-color: var(--bg-color-tertiary);
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 3px solid var(--color-atlas-blue);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.api-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.api-header strong {
+  font-size: 1rem;
+  color: var(--color-heading);
+}
+
+.api-methods-count {
+  background-color: var(--color-atlas-blue-light);
+  color: var(--color-atlas-blue);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.api-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.api-method {
+  background-color: var(--bg-color-quaternary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.85rem;
+  font-family: monospace;
+  color: var(--color-text-secondary);
+}
+
+/* Sección de Canales */
+.plugins-channels-info {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--bg-color-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.plugins-channels-info h4 {
+  margin-top: 0;
+  color: var(--color-heading);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.channels-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.channel-item {
+  background-color: var(--bg-color-tertiary);
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 3px solid var(--color-modular-green);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.channel-header strong {
+  font-size: 1rem;
+  color: var(--color-heading);
+}
+
+.channel-subscribers {
+  background-color: rgba(38, 166, 154, 0.15);
+  color: var(--color-modular-green);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.channel-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.channel-creator {
+  display: flex;
+  align-items: center;
+}
+
+.channel-creator::before {
+  content: "👤";
+  margin-right: 4px;
+}
+
+.channel-messages {
+  display: flex;
+  align-items: center;
+}
+
+.channel-messages::before {
+  content: "💬";
+  margin-right: 4px;
+}
+
+/* Estado de sección colapsable */
+.section-collapsed {
+  height: 0;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  border: none;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.section-expanded {
+  height: auto;
+  opacity: 1;
+  transition: all 0.3s ease;
+}

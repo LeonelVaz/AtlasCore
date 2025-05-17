@@ -10,6 +10,9 @@ import storageService from '../../services/storage-service';
 import pluginEvents from './plugin-events';
 import pluginStorage from './plugin-storage';
 import uiExtensionManager from './ui-extension-manager';
+import pluginAPIRegistry from './plugin-api-registry';
+import pluginCommunication from './plugin-communication';
+import pluginRegistry from './plugin-registry';
 // Importar las constantes
 import { PLUGIN_CONSTANTS } from '../config/constants';
 
@@ -44,6 +47,7 @@ class CoreAPI {
     this._initStorage();
     this._initUI();
     this._initErrorHandling();
+    this._initCommunication();
     
     console.log('API Core inicializada (v' + this.version + ')');
   }
@@ -274,6 +278,217 @@ class CoreAPI {
   }
 
   /**
+   * Inicializa el sistema de comunicación entre plugins
+   * @private
+   */
+  _initCommunication() {
+    // API para comunicación entre plugins
+    this.plugins = {
+      /**
+       * Registra la API pública del plugin
+       * @param {string} pluginId - ID del plugin
+       * @param {Object} apiObject - Objeto que contiene la API pública
+       * @returns {boolean} - true si se registró correctamente
+       */
+      registerAPI: (pluginId, apiObject) => {
+        try {
+          return pluginAPIRegistry.registerAPI(pluginId, apiObject);
+        } catch (error) {
+          this._handleError(pluginId, 'registerAPI', error);
+          return false;
+        }
+      },
+      
+      /**
+       * Obtiene un plugin por su ID
+       * @param {string} pluginId - ID del plugin
+       * @returns {Object|null} - Información básica del plugin o null si no existe
+       */
+      getPlugin: (pluginId) => {
+        try {
+          const plugin = pluginRegistry.getPlugin(pluginId);
+          
+          if (!plugin) {
+            return null;
+          }
+          
+          // Devolver solo información pública
+          return {
+            id: plugin.id,
+            name: plugin.name,
+            version: plugin.version,
+            author: plugin.author,
+            description: plugin.description,
+            isActive: pluginRegistry.isPluginActive(pluginId),
+            // No incluir API, dependencias, conflictos, etc.
+          };
+        } catch (error) {
+          this._handleError('app', 'getPlugin', error);
+          return null;
+        }
+      },
+      
+      /**
+       * Obtiene la lista de plugins activos
+       * @returns {Array} - Lista de información básica de plugins activos
+       */
+      getActivePlugins: () => {
+        try {
+          const activePlugins = pluginRegistry.getActivePlugins();
+          
+          // Mapear a información pública
+          return activePlugins.map(plugin => ({
+            id: plugin.id,
+            name: plugin.name,
+            version: plugin.version,
+            author: plugin.author,
+            description: plugin.description,
+            isActive: true
+          }));
+        } catch (error) {
+          this._handleError('app', 'getActivePlugins', error);
+          return [];
+        }
+      },
+      
+      /**
+       * Verifica si un plugin está activo
+       * @param {string} pluginId - ID del plugin
+       * @returns {boolean} - true si el plugin está activo
+       */
+      isPluginActive: (pluginId) => {
+        try {
+          return pluginRegistry.isPluginActive(pluginId);
+        } catch (error) {
+          this._handleError('app', 'isPluginActive', error);
+          return false;
+        }
+      },
+      
+      /**
+       * Obtiene la API pública de un plugin
+       * @param {string} callerPluginId - ID del plugin que realiza la llamada
+       * @param {string} targetPluginId - ID del plugin objetivo
+       * @returns {Object|null} - API pública o null si no existe
+       */
+      getPluginAPI: (callerPluginId, targetPluginId) => {
+        try {
+          // Verificar que ambos plugins existan
+          if (!pluginRegistry.getPlugin(callerPluginId) || 
+              !pluginRegistry.getPlugin(targetPluginId)) {
+            return null;
+          }
+          
+          // Se implementa a través del sistema de comunicación
+          const proxy = {
+            __targetPluginId: targetPluginId,
+            __callerPluginId: callerPluginId
+          };
+          
+          // Crear un proxy que permitirá acceder a los métodos de la API
+          return new Proxy(proxy, {
+            get: (target, prop) => {
+              // Ignorar propiedades internas
+              if (prop.startsWith('__')) {
+                return target[prop];
+              }
+              
+              // Devolver una función que invoca el método remoto
+              return (...args) => {
+                return pluginCommunication.callPluginMethod(
+                  target.__callerPluginId,
+                  target.__targetPluginId,
+                  prop,
+                  args
+                );
+              };
+            }
+          });
+        } catch (error) {
+          this._handleError(callerPluginId, 'getPluginAPI', error);
+          return null;
+        }
+      },
+      
+      /**
+       * Crea un canal de comunicación entre plugins
+       * @param {string} callerPluginId - ID del plugin que crea el canal
+       * @param {string} channelName - Nombre del canal
+       * @param {Object} [options] - Opciones del canal
+       * @returns {Object|null} - API del canal o null si falla
+       */
+      createChannel: (callerPluginId, channelName, options = {}) => {
+        try {
+          return pluginCommunication.createChannel(channelName, callerPluginId, options);
+        } catch (error) {
+          this._handleError(callerPluginId, 'createChannel', error);
+          return null;
+        }
+      },
+      
+      /**
+       * Obtiene un canal de comunicación existente
+       * @param {string} callerPluginId - ID del plugin que solicita el canal
+       * @param {string} channelName - Nombre del canal
+       * @returns {Object|null} - API del canal o null si no existe
+       */
+      getChannel: (callerPluginId, channelName) => {
+        try {
+          const channelsInfo = pluginCommunication.getChannelsInfo();
+          
+          if (!channelsInfo[channelName]) {
+            return null;
+          }
+          
+          const subscribe = (callback) => {
+            return pluginCommunication.subscribeToChannel(channelName, callerPluginId, callback);
+          };
+          
+          const publish = (message) => {
+            return pluginCommunication.publishToChannel(channelName, callerPluginId, message);
+          };
+          
+          // Solo el creador puede cerrar el canal, por defecto
+          const close = () => {
+            return pluginCommunication.closeChannel(channelName, callerPluginId);
+          };
+          
+          // Devolver API del canal
+          return {
+            subscribe,
+            publish,
+            close,
+            name: channelName,
+            createdBy: channelsInfo[channelName].creator
+          };
+        } catch (error) {
+          this._handleError(callerPluginId, 'getChannel', error);
+          return null;
+        }
+      },
+      
+      /**
+       * Obtiene la lista de canales disponibles
+       * @returns {Array} - Lista de nombres de canales
+       */
+      listChannels: () => {
+        try {
+          const channelsInfo = pluginCommunication.getChannelsInfo();
+          
+          return Object.keys(channelsInfo).map(channelName => ({
+            name: channelName,
+            createdBy: channelsInfo[channelName].creator,
+            subscribersCount: channelsInfo[channelName].subscribers.length
+          }));
+        } catch (error) {
+          this._handleError('app', 'listChannels', error);
+          return [];
+        }
+      }
+    };
+  }
+
+  /**
    * Maneja un error de plugin
    * @param {string} pluginId - ID del plugin que generó el error
    * @param {string} context - Contexto del error (storage, events, ui, etc.)
@@ -356,6 +571,12 @@ class CoreAPI {
       
       // Eliminar extensiones UI
       this.ui.removeAllExtensions(pluginId);
+      
+      // Eliminar API registrada
+      pluginAPIRegistry.unregisterAPI(pluginId);
+      
+      // Limpiar recursos de comunicación
+      pluginCommunication.clearPluginResources(pluginId);
       
       // No limpiamos los datos de almacenamiento automáticamente
       // para preservar configuración entre sesiones
