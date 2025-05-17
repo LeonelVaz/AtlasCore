@@ -568,3 +568,94 @@ Esta implementación establece un ecosistema seguro y potente para que los plugi
 El plugin de ejemplo ha sido mejorado para demostrar estas nuevas capacidades, sirviendo como referencia para futuros desarrolladores. Ahora puede exponer sus propias funcionalidades, consumir servicios de otros plugins, y participar en comunicaciones más complejas a través de canales temáticos.
 
 Con esta fase completada, el sistema de plugins de Atlas cuenta ahora con todos los componentes fundamentales para soportar un ecosistema rico y extensible de plugins, permitiendo a los desarrolladores crear integraciones sofisticadas mientras se mantiene la seguridad, estabilidad y experiencia del usuario.
+
+## Fase 6: Seguridad y Aislamiento
+
+La sexta fase ha sido completada, implementando un sistema integral de seguridad y aislamiento que proporciona capas múltiples de protección para garantizar que los plugins interactúen con la aplicación de manera segura y controlada.
+
+## Archivos nuevos:
+
+**Sistema de seguridad central:**
+- `src/core/plugins/plugin-security-manager.js`: Gestor central que coordina todos los aspectos de seguridad, incluyendo detección de amenazas, análisis de riesgos y respuesta a eventos de seguridad.
+- `src/core/plugins/plugin-sandbox.js`: Sistema de aislamiento para ejecución segura de código de plugins, prevención de acceso a APIs sensibles y limitación de efectos secundarios.
+- `src/core/plugins/plugin-resource-monitor.js`: Monitor de consumo de recursos que controla y limita el uso de memoria, CPU, almacenamiento y otras operaciones de los plugins.
+- `src/core/plugins/plugin-permission-checker.js`: Sistema para validar y gestionar los permisos solicitados por los plugins, implementando un modelo basado en privilegios mínimos.
+- `src/core/plugins/plugin-security-audit.js`: Sistema de registro y auditoría para todas las operaciones de seguridad, proporcionando trazabilidad y capacidad de análisis.
+- `src/components/settings/security-panel.jsx`: Interfaz de usuario completa para gestionar todos los aspectos de seguridad, incluyendo configuración, monitoreo y respuesta a incidentes.
+
+### Archivos modificados:
+
+**Integración con el sistema existente:**
+- `src/core/plugins/plugin-manager.js`: Actualizado para integrar el sistema de seguridad en los procesos de gestión de plugins, incluyendo activación, desactivación y validación.
+- `src/core/config/constants.js`: Ampliado con nuevas constantes para niveles de seguridad, tipos de permisos, tipos de eventos, modos de auditoría y más.
+
+### Funcionalidades implementadas:
+
+1. **Sistema de seguridad por capas**
+   - Niveles configurables de seguridad (bajo, normal, alto) para diferentes entornos de uso.
+   - Detección proactiva de amenazas y actividades sospechosas.
+   - Gestión centralizada de políticas de seguridad con verificaciones personalizables.
+   - Mecanismos para blacklisting de plugins maliciosos.
+
+2. **Entorno sandbox para ejecución segura**
+   - Aislamiento de código de plugins para prevenir efectos secundarios no deseados.
+   - Protección contra acceso a APIs sensibles del navegador.
+   - Monitoreo y limitación del tiempo de ejecución para evitar bloqueos.
+   - Análisis estático de código para detectar patrones peligrosos.
+   - Prevención de modificación de objetos nativos o globales.
+
+3. **Sistema de monitoreo y limitación de recursos**
+   - Control preciso del uso de memoria, CPU, almacenamiento y operaciones de red.
+   - Límites configurables basados en el nivel de seguridad y comportamiento previo.
+   - Detección de patrones abusivos de uso de recursos.
+   - Medidas graduales desde monitoreo hasta restricción o desactivación.
+   - Métricas detalladas para análisis y diagnóstico.
+
+4. **Sistema avanzado de gestión de permisos**
+   - Modelo de permisos granular para controlar acceso a funcionalidades críticas.
+   - Aprobación automática o manual de permisos según nivel de seguridad.
+   - Revocación de permisos para plugins que abusan de privilegios.
+   - Validación completa de permisos antes de cada operación sensible.
+   - Información detallada sobre permisos para administradores y usuarios.
+
+5. **Auditoría y trazabilidad completa**
+   - Registro detallado de todos los eventos relacionados con seguridad.
+   - Múltiples modos de auditoría (inmediato, por lotes) según nivel de seguridad.
+   - Persistencia de logs para análisis post-incidente.
+   - Filtrado y visualización avanzada para administradores.
+   - Estadísticas para detección de patrones sospechosos a largo plazo.
+
+6. **Interfaz de usuario para gestión de seguridad**
+   - Panel completo para configuración de seguridad y visualización de métricas.
+   - Gestión de permisos con aprobación/rechazo de solicitudes pendientes.
+   - Visualización de amenazas detectadas y plugins de alto riesgo.
+   - Herramientas para blacklisting y restricción de plugins problemáticos.
+   - Visualización del registro de auditoría con filtros avanzados.
+
+7. **Integración con comunicación y gestión de plugins**
+   - Validación de seguridad durante activación de plugins.
+   - Comprobación de permisos para acceso a APIs públicas de otros plugins.
+   - Restricciones basadas en blacklisting y evaluación de amenazas.
+   - Protección contra plugins maliciosos o con errores.
+
+### Cambios Pendientes
+
+Para completar totalmente la implementación de la Fase 6, quedan pendientes los siguientes elementos:
+
+1. **Integración en el Panel de Configuración** - Actualizar `settings-panel.jsx` para añadir una nueva sección de seguridad que integre el componente `security-panel.jsx` creado.
+
+2. **Componente de Visualización de Amenazas** - Crear un componente adicional para mostrar un dashboard simplificado de amenazas detectadas y estadísticas de seguridad que pueda integrarse en otras partes de la aplicación.
+
+3. **Componente de Gestión de Permisos** - Desarrollar un componente independiente para la gestión de permisos que pueda reutilizarse en diferentes partes de la interfaz.
+
+4. **Actualizaciones en Estilos CSS** - Implementar estilos específicos para los nuevos componentes de seguridad en `src/styles/plugins/security-panel.css` y otros archivos de estilos relacionados.
+
+5. **Modificación del Plugin de Ejemplo** - Actualizar el plugin de ejemplo para demostrar el uso de permisos, manejo de recursos y conformidad con las políticas de seguridad.
+
+6. **Componente de Auditoría** - Crear un componente dedicado para visualización avanzada del historial de auditoría que permita exportar datos y generar informes.
+
+7. **Pruebas de Integración** - Implementar pruebas específicas para verificar el correcto funcionamiento de todas las capas de seguridad en diferentes escenarios.
+
+8. **Documentación para Desarrolladores** - Crear guías detalladas sobre el modelo de seguridad para desarrolladores de plugins, incluyendo mejores prácticas y ejemplos.
+
+Esta implementación proporciona un robusto sistema de seguridad en múltiples capas que protege la aplicación mientras permite un ecosistema de plugins extensible. El sistema está diseñado para adaptarse a diferentes necesidades, desde entornos de desarrollo con menos restricciones hasta entornos de producción de alta seguridad.
