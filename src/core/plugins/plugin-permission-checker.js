@@ -434,22 +434,14 @@ class PluginPermissionChecker {
       return false;
     }
     
-    // SOLUCIÓN: Log mejorado para depuración
-    console.log(`[FIX] Verificando permiso ${permission} para ${pluginId}`);
-    
     // Si el plugin no tiene permisos registrados, no tiene permiso
     if (!this.pluginPermissions[pluginId]) {
-      console.log(`[FIX] Plugin ${pluginId} no tiene permisos registrados`);
       return false;
     }
     
-    // SOLUCIÓN: Verificar directamente si el permiso está en la lista de aprobados
-    const hasPermission = this.pluginPermissions[pluginId].approved.includes(permission);
-    
-    console.log(`[FIX] Resultado verificación: ${hasPermission ? 'Tiene permiso' : 'No tiene permiso'}`);
-    
-    return hasPermission;
-  }  
+    // Verificar en permisos aprobados
+    return this.pluginPermissions[pluginId].approved.includes(permission);
+  }
 
   /**
    * Verifica acceso a un método específico
