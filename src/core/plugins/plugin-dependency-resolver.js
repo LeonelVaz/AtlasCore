@@ -1,36 +1,18 @@
 /**
  * Resolvedor de dependencias para plugins de Atlas
- * 
- * Este módulo se encarga de analizar las dependencias entre plugins,
- * detectar ciclos, y determinar el orden correcto de carga/inicialización.
  */
-
 import pluginRegistry from './plugin-registry';
 import pluginCompatibility from './plugin-compatibility';
 import eventBus from '../bus/event-bus';
 
-/**
- * Clase para resolución de dependencias entre plugins
- */
 class PluginDependencyResolver {
   constructor() {
-    // Caché de orden de carga
     this.loadOrder = [];
-    
-    // Registro de dependencias por plugin
     this.dependencyGraph = {};
-    
-    // Dependencias inversas (quién depende de quién)
     this.reverseDependencies = {};
-    
-    // Caché de ciclos detectados
     this.detectedCycles = [];
   }
 
-  /**
-   * Construye el grafo de dependencias para análisis
-   * @private
-   */
   _buildDependencyGraph() {
     // Obtener todos los plugins registrados
     const allPlugins = pluginRegistry.getAllPlugins();
@@ -79,11 +61,6 @@ class PluginDependencyResolver {
     });
   }
 
-  /**
-   * Detecta ciclos en el grafo de dependencias
-   * @returns {Array} - Lista de ciclos detectados
-   * @private
-   */
   _detectCycles() {
     // Construir grafo si no existe
     if (Object.keys(this.dependencyGraph).length === 0) {
@@ -157,10 +134,6 @@ class PluginDependencyResolver {
     return cycles;
   }
 
-  /**
-   * Calcula el orden de carga basado en dependencias
-   * @returns {Array} - Lista de IDs de plugins en orden de carga
-   */
   calculateLoadOrder() {
     try {
       // Construir grafo si no existe
@@ -242,11 +215,6 @@ class PluginDependencyResolver {
     }
   }
 
-  /**
-   * Obtiene la prioridad de un plugin para carga
-   * @param {Object} plugin - Plugin a evaluar
-   * @returns {number} - Prioridad (menor = carga antes)
-   */
   getPluginPriority(plugin) {
     if (!plugin || !plugin.id) return 999;
     
@@ -272,10 +240,6 @@ class PluginDependencyResolver {
     }
   }
 
-  /**
-   * Valida todos los plugins para dependencias
-   * @returns {Object} - Resultado de la validación
-   */
   validateAllPlugins() {
     try {
       // Construir grafo
@@ -352,10 +316,6 @@ class PluginDependencyResolver {
     }
   }
 
-  /**
-   * Obtiene los ciclos detectados en las dependencias
-   * @returns {Array} - Lista de ciclos
-   */
   getDetectedCycles() {
     // Si no hay ciclos detectados todavía, ejecutar detección
     if (this.detectedCycles.length === 0) {
@@ -365,11 +325,6 @@ class PluginDependencyResolver {
     return [...this.detectedCycles];
   }
 
-  /**
-   * Obtiene plugins que dependen de un plugin específico
-   * @param {string} pluginId - ID del plugin
-   * @returns {Array} - Lista de plugins dependientes
-   */
   getDependentPlugins(pluginId) {
     // Construir grafo si no existe
     if (Object.keys(this.reverseDependencies).length === 0) {
@@ -379,9 +334,6 @@ class PluginDependencyResolver {
     return this.reverseDependencies[pluginId] || [];
   }
 
-  /**
-   * Limpia caché de cálculos
-   */
   clearCache() {
     this.loadOrder = [];
     this.dependencyGraph = {};
@@ -390,6 +342,5 @@ class PluginDependencyResolver {
   }
 }
 
-// Exportar instancia única
 const pluginDependencyResolver = new PluginDependencyResolver();
 export default pluginDependencyResolver;

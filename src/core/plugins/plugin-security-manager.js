@@ -1,10 +1,6 @@
 /**
  * Gestor de Seguridad para el Sistema de Plugins de Atlas
- * 
- * Este módulo se encarga de coordinar todos los aspectos relacionados
- * con la seguridad, aislamiento y protección del sistema de plugins.
  */
-
 import pluginRegistry from './plugin-registry';
 import pluginErrorHandler from './plugin-error-handler';
 import pluginSandbox from './plugin-sandbox';
@@ -14,33 +10,15 @@ import pluginPermissionChecker from './plugin-permission-checker';
 import eventBus from '../bus/event-bus';
 import { PLUGIN_CONSTANTS } from '../config/constants';
 
-/**
- * Clase principal para la gestión de seguridad de plugins
- */
 class PluginSecurityManager {
   constructor() {
-    // Estado de inicialización
     this.initialized = false;
-    
-    // Nivel de seguridad del sistema (normal, estricto, desarrollo)
     this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
-    
-    // Registro de amenazas detectadas
     this.detectedThreats = [];
-    
-    // Plugins en lista negra
     this.blacklistedPlugins = new Set();
-    
-    // Registro de plugins con advertencias de seguridad
     this.pluginsWithWarnings = {};
-    
-    // Historial de eventos de seguridad
     this.securityEvents = [];
-    
-    // Límite de eventos de seguridad a mantener en historial
     this.maxSecurityEvents = 100;
-
-    // Lista de comprobaciones de seguridad activas
     this.activeSecurityChecks = new Set([
       'resourceUsage',
       'apiAccess',
@@ -50,11 +28,6 @@ class PluginSecurityManager {
     ]);
   }
 
-  /**
-   * Inicializa el sistema de seguridad
-   * @param {Object} options - Opciones de configuración
-   * @returns {boolean} - true si se inicializó correctamente
-   */
   initialize(options = {}) {
     if (this.initialized) {
       console.warn('El gestor de seguridad ya está inicializado');
@@ -64,19 +37,10 @@ class PluginSecurityManager {
     try {
       console.log('Inicializando sistema de seguridad para plugins...');
       
-      // Configurar nivel de seguridad
       this.securityLevel = options.securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
       
-      // Inicializar subsistemas
-      pluginSandbox.initialize(this.securityLevel);
-      pluginResourceMonitor.initialize(this.securityLevel);
-      pluginSecurityAudit.initialize(this.securityLevel);
-      pluginPermissionChecker.initialize(this.securityLevel);
-      
-      // Configurar listeners para eventos de seguridad
-      this._setupSecurityEventListeners();
-      
-      // Cargar plugins en lista negra (si existe)
+      this._initializeSubsystems();
+      this._setupEventListeners();
       this._loadBlacklistedPlugins();
       
       // Verificar plugins ya registrados
@@ -87,7 +51,6 @@ class PluginSecurityManager {
       
       this.initialized = true;
       
-      // Publicar evento de inicialización
       eventBus.publish('pluginSystem.securityInitialized', {
         securityLevel: this.securityLevel,
         activeChecks: Array.from(this.activeSecurityChecks)
@@ -101,11 +64,14 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Configura los listeners para eventos de seguridad
-   * @private
-   */
-  _setupSecurityEventListeners() {
+  _initializeSubsystems() {
+    pluginSandbox.initialize(this.securityLevel);
+    pluginResourceMonitor.initialize(this.securityLevel);
+    pluginSecurityAudit.initialize(this.securityLevel);
+    pluginPermissionChecker.initialize(this.securityLevel);
+  }
+
+  _setupEventListeners() {
     // Escuchar eventos de sobrecarga de recursos
     eventBus.subscribe('pluginSystem.resourceOveruse', (data) => {
       this._handleSecurityEvent('resourceOveruse', data);
@@ -139,12 +105,6 @@ class PluginSecurityManager {
     });
   }
 
-  /**
-   * Maneja un evento de seguridad
-   * @param {string} eventType - Tipo de evento de seguridad
-   * @param {Object} data - Datos del evento
-   * @private
-   */
   _handleSecurityEvent(eventType, data) {
     // Crear objeto de evento de seguridad
     const securityEvent = {
@@ -174,13 +134,6 @@ class PluginSecurityManager {
     eventBus.publish('pluginSystem.securityEvent', securityEvent);
   }
 
-  /**
-   * Calcula la severidad de un evento de seguridad
-   * @param {string} eventType - Tipo de evento
-   * @param {Object} data - Datos del evento
-   * @returns {string} - Nivel de severidad (critical, high, medium, low)
-   * @private
-   */
   _calculateEventSeverity(eventType, data) {
     const severityMap = {
       'unauthorizedAccess': 'high',
@@ -207,12 +160,6 @@ class PluginSecurityManager {
     return severity;
   }
 
-  /**
-   * Eleva un nivel la severidad
-   * @param {string} currentSeverity - Nivel actual
-   * @returns {string} - Nivel elevado
-   * @private
-   */
   _escalateSeverity(currentSeverity) {
     const levels = ['low', 'medium', 'high', 'critical'];
     const currentIndex = levels.indexOf(currentSeverity);
@@ -224,11 +171,6 @@ class PluginSecurityManager {
     return currentSeverity;
   }
 
-  /**
-   * Toma acciones en respuesta a un evento de seguridad
-   * @param {Object} securityEvent - Evento de seguridad
-   * @private
-   */
   _takeActionForSecurityEvent(securityEvent) {
     const { pluginId, severity, type } = securityEvent;
     
@@ -279,12 +221,6 @@ class PluginSecurityManager {
     });
   }
 
-  /**
-   * Añade una advertencia de seguridad a un plugin
-   * @param {string} pluginId - ID del plugin
-   * @param {Object} warning - Advertencia a añadir
-   * @private
-   */
   _addWarningToPlugin(pluginId, warning) {
     if (!pluginId) return;
     
@@ -300,12 +236,6 @@ class PluginSecurityManager {
     });
   }
 
-  /**
-   * Obtiene el número de advertencias para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {number} - Número de advertencias
-   * @private
-   */
   _getPluginWarningsCount(pluginId) {
     if (!pluginId || !this.pluginsWithWarnings[pluginId]) {
       return 0;
@@ -314,14 +244,9 @@ class PluginSecurityManager {
     return this.pluginsWithWarnings[pluginId].length;
   }
 
-  /**
-   * Carga la lista de plugins en lista negra
-   * @private
-   */
   _loadBlacklistedPlugins() {
     try {
       // En una implementación real, esto cargaría de almacenamiento
-      // Por ahora, solo inicializamos una lista vacía
       this.blacklistedPlugins = new Set();
     } catch (error) {
       console.error('Error al cargar lista negra de plugins:', error);
@@ -329,11 +254,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Valida la seguridad de un plugin
-   * @param {string} pluginId - ID del plugin a validar
-   * @returns {Object} - Resultado de la validación
-   */
   validatePlugin(pluginId) {
     try {
       if (!this.initialized) {
@@ -407,12 +327,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Desactiva un plugin por razones de seguridad
-   * @param {string} pluginId - ID del plugin a desactivar
-   * @param {string} reason - Razón de la desactivación
-   * @returns {boolean} - true si se desactivó correctamente
-   */
   deactivatePlugin(pluginId, reason) {
     try {
       if (!pluginId) return false;
@@ -429,8 +343,6 @@ class PluginSecurityManager {
       }
       
       // Solicitar desactivación al registro de plugins
-      // Este es un desacoplamiento clave: el registro de plugins
-      // se encargará de la desactivación real
       eventBus.publish('pluginSystem.securityDeactivateRequest', {
         pluginId,
         reason
@@ -454,11 +366,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Añade un plugin a la lista negra
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si se añadió correctamente
-   */
   blacklistPlugin(pluginId) {
     if (!pluginId) return false;
     
@@ -472,9 +379,6 @@ class PluginSecurityManager {
         action: 'add'
       });
       
-      // En una implementación real, esto también guardaría la lista negra
-      // en almacenamiento persistente
-      
       // Publicar evento
       eventBus.publish('pluginSystem.pluginBlacklisted', { pluginId });
       
@@ -487,11 +391,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Elimina un plugin de la lista negra
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si se eliminó correctamente
-   */
   whitelistPlugin(pluginId) {
     if (!pluginId) return false;
     
@@ -520,22 +419,12 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Verifica si un plugin está en la lista negra
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si está en lista negra
-   */
   isPluginBlacklisted(pluginId) {
     if (!pluginId) return false;
     
     return this.blacklistedPlugins.has(pluginId);
   }
 
-  /**
-   * Obtiene información de seguridad de un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object} - Información de seguridad
-   */
   getPluginSecurityInfo(pluginId) {
     if (!pluginId) {
       return {
@@ -583,12 +472,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Calcula una puntuación de seguridad para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {number} - Puntuación (0-100)
-   * @private
-   */
   _calculatePluginSecurityScore(pluginId) {
     try {
       const plugin = pluginRegistry.getPlugin(pluginId);
@@ -633,12 +516,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Activa o desactiva verificaciones de seguridad específicas
-   * @param {string} checkName - Nombre de la verificación
-   * @param {boolean} enabled - true para activar, false para desactivar
-   * @returns {boolean} - true si se cambió correctamente
-   */
   toggleSecurityCheck(checkName, enabled) {
     if (!checkName) return false;
     
@@ -668,11 +545,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Establece el nivel de seguridad del sistema
-   * @param {string} level - Nivel de seguridad (low, normal, high)
-   * @returns {boolean} - true si se cambió correctamente
-   */
   setSecurityLevel(level) {
     if (!level || !PLUGIN_CONSTANTS.SECURITY.LEVEL[level.toUpperCase()]) {
       return false;
@@ -710,11 +582,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Configura las verificaciones de seguridad según el nivel
-   * @param {string} level - Nivel de seguridad
-   * @private
-   */
   _configureSecurityChecksByLevel(level) {
     // Reiniciar las verificaciones activas
     this.activeSecurityChecks.clear();
@@ -753,10 +620,6 @@ class PluginSecurityManager {
     pluginPermissionChecker.updateSecurityChecks(this.activeSecurityChecks);
   }
 
-  /**
-   * Obtiene estadísticas de seguridad del sistema de plugins
-   * @returns {Object} - Estadísticas de seguridad
-   */
   getSecurityStats() {
     try {
       // Número de plugins en lista negra
@@ -822,11 +685,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Limpia todos los datos de seguridad relacionados con un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si se limpió correctamente
-   */
   clearPluginSecurityData(pluginId) {
     if (!pluginId) return false;
     
@@ -854,11 +712,6 @@ class PluginSecurityManager {
     }
   }
 
-  /**
-   * Obtiene información sobre amenazas detectadas
-   * @param {Object} [options] - Opciones de filtrado
-   * @returns {Array} - Lista de amenazas detectadas
-   */
   getDetectedThreats(options = {}) {
     try {
       let threats = [...this.detectedThreats];
@@ -893,6 +746,5 @@ class PluginSecurityManager {
   }
 }
 
-// Exportar instancia única
 const pluginSecurityManager = new PluginSecurityManager();
 export default pluginSecurityManager;

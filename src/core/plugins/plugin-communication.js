@@ -1,42 +1,20 @@
 /**
  * Sistema de comunicación entre plugins de Atlas
- * 
- * Este módulo proporciona una capa de abstracción para facilitar
- * la comunicación segura y controlada entre plugins.
  */
-
 import eventBus from '../bus/event-bus';
 import pluginRegistry from './plugin-registry';
 import pluginAPIRegistry from './plugin-api-registry';
 import pluginCompatibility from './plugin-compatibility';
 import pluginErrorHandler from './plugin-error-handler';
 
-/**
- * Clase para gestionar la comunicación entre plugins
- */
 class PluginCommunication {
   constructor() {
-    // Historial de comunicaciones entre plugins
     this.communicationHistory = {};
-    
-    // ID de la última comunicación
     this.lastCommunicationId = 0;
-    
-    // Límite de tamaño del historial por plugin
     this.maxHistorySize = 100;
-    
-    // Registro de canales de comunicación
     this.channels = {};
   }
 
-  /**
-   * Invoca un método de la API pública de otro plugin
-   * @param {string} callerPluginId - ID del plugin llamador
-   * @param {string} targetPluginId - ID del plugin objetivo
-   * @param {string} methodName - Nombre del método a invocar
-   * @param {Array} args - Argumentos para el método
-   * @returns {Promise<*>} - Resultado de la invocación
-   */
   async callPluginMethod(callerPluginId, targetPluginId, methodName, args = []) {
     if (!callerPluginId || !targetPluginId || !methodName) {
       throw new Error('Argumentos inválidos para callPluginMethod');
@@ -89,13 +67,6 @@ class PluginCommunication {
     }
   }
 
-  /**
-   * Verifica si dos plugins son compatibles para comunicarse
-   * @param {string} pluginId1 - ID del primer plugin
-   * @param {string} pluginId2 - ID del segundo plugin
-   * @returns {Object} - Resultado de la verificación
-   * @private
-   */
   _checkPluginsCompatibility(pluginId1, pluginId2) {
     try {
       // Verificar conflictos declarados
@@ -160,14 +131,6 @@ class PluginCommunication {
     }
   }
 
-  /**
-   * Registra un intento de comunicación en el historial
-   * @param {string} callerPluginId - ID del plugin llamador
-   * @param {string} targetPluginId - ID del plugin objetivo
-   * @param {string} methodName - Nombre del método
-   * @returns {string} - ID de la comunicación
-   * @private
-   */
   _registerCommunication(callerPluginId, targetPluginId, methodName) {
     const id = `comm_${++this.lastCommunicationId}`;
     
@@ -210,13 +173,6 @@ class PluginCommunication {
     return id;
   }
 
-  /**
-   * Actualiza el estado de una comunicación en el historial
-   * @param {string} id - ID de la comunicación
-   * @param {boolean} success - Si la comunicación fue exitosa
-   * @param {string} [error] - Mensaje de error, si hubo
-   * @private
-   */
   _updateCommunicationStatus(id, success, error = null) {
     // Buscar la comunicación en los historiales de todos los plugins
     Object.values(this.communicationHistory).forEach(history => {
@@ -237,13 +193,6 @@ class PluginCommunication {
     });
   }
 
-  /**
-   * Crea un canal de comunicación entre plugins
-   * @param {string} channelName - Nombre del canal
-   * @param {string} creatorPluginId - ID del plugin creador
-   * @param {Object} [options] - Opciones del canal
-   * @returns {Object} - API del canal
-   */
   createChannel(channelName, creatorPluginId, options = {}) {
     if (!channelName || !creatorPluginId) {
       throw new Error('Argumentos inválidos para createChannel');
@@ -279,13 +228,6 @@ class PluginCommunication {
     return this._createChannelAPI(channelName, creatorPluginId);
   }
 
-  /**
-   * Suscribe un plugin a un canal de comunicación
-   * @param {string} channelName - Nombre del canal
-   * @param {string} pluginId - ID del plugin a suscribir
-   * @param {Function} callback - Función a llamar cuando hay mensajes
-   * @returns {Function} - Función para cancelar suscripción
-   */
   subscribeToChannel(channelName, pluginId, callback) {
     if (!channelName || !pluginId || typeof callback !== 'function') {
       throw new Error('Argumentos inválidos para subscribeToChannel');
@@ -337,16 +279,8 @@ class PluginCommunication {
     };
   }
 
-  /**
-   * Cancela la suscripción de un plugin a un canal
-   * @param {string} channelName - Nombre del canal
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si se canceló correctamente
-   */
   unsubscribeFromChannel(channelName, pluginId) {
-    if (!channelName || !pluginId) {
-      return false;
-    }
+    if (!channelName || !pluginId) return false;
     
     // Verificar que el canal exista
     const channel = this.channels[channelName];
@@ -371,13 +305,6 @@ class PluginCommunication {
     return true;
   }
 
-  /**
-   * Publica un mensaje en un canal
-   * @param {string} channelName - Nombre del canal
-   * @param {string} publisherPluginId - ID del plugin que publica
-   * @param {*} message - Mensaje a publicar
-   * @returns {boolean} - true si se publicó correctamente
-   */
   publishToChannel(channelName, publisherPluginId, message) {
     if (!channelName || !publisherPluginId) {
       return false;
@@ -437,12 +364,6 @@ class PluginCommunication {
     return true;
   }
 
-  /**
-   * Cierra y elimina un canal de comunicación
-   * @param {string} channelName - Nombre del canal
-   * @param {string} pluginId - ID del plugin que solicita el cierre
-   * @returns {boolean} - true si se cerró correctamente
-   */
   closeChannel(channelName, pluginId) {
     if (!channelName || !pluginId) {
       return false;
@@ -485,53 +406,24 @@ class PluginCommunication {
     return true;
   }
 
-  /**
-   * Crea la API para interactuar con un canal específico
-   * @param {string} channelName - Nombre del canal
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object} - API del canal
-   * @private
-   */
   _createChannelAPI(channelName, pluginId) {
     return {
-      /**
-       * Publica un mensaje en el canal
-       * @param {*} message - Mensaje a publicar
-       * @returns {boolean} - true si se publicó correctamente
-       */
       publish: (message) => {
         return this.publishToChannel(channelName, pluginId, message);
       },
       
-      /**
-       * Suscribe una función al canal
-       * @param {Function} callback - Función a llamar cuando hay mensajes
-       * @returns {Function} - Función para cancelar suscripción
-       */
       subscribe: (callback) => {
         return this.subscribeToChannel(channelName, pluginId, callback);
       },
       
-      /**
-       * Cierra el canal
-       * @returns {boolean} - true si se cerró correctamente
-       */
       close: () => {
         return this.closeChannel(channelName, pluginId);
       },
       
-      /**
-       * Obtiene el historial de mensajes del canal
-       * @returns {Array} - Historial de mensajes
-       */
       getHistory: () => {
         return this.channels[channelName]?.messages || [];
       },
       
-      /**
-       * Obtiene información del canal
-       * @returns {Object} - Información del canal
-       */
       getInfo: () => {
         const channel = this.channels[channelName];
         if (!channel) return null;
@@ -547,11 +439,6 @@ class PluginCommunication {
     };
   }
 
-  /**
-   * Obtiene el historial de comunicaciones de un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Array} - Historial de comunicaciones
-   */
   getCommunicationHistory(pluginId) {
     if (!pluginId) {
       return [];
@@ -560,10 +447,6 @@ class PluginCommunication {
     return this.communicationHistory[pluginId] || [];
   }
 
-  /**
-   * Limpia el historial de comunicaciones de un plugin
-   * @param {string} pluginId - ID del plugin
-   */
   clearCommunicationHistory(pluginId) {
     if (!pluginId) {
       return;
@@ -572,10 +455,6 @@ class PluginCommunication {
     delete this.communicationHistory[pluginId];
   }
 
-  /**
-   * Limpia todos los recursos asociados a un plugin
-   * @param {string} pluginId - ID del plugin
-   */
   clearPluginResources(pluginId) {
     if (!pluginId) {
       return;
@@ -597,10 +476,6 @@ class PluginCommunication {
     });
   }
 
-  /**
-   * Obtiene información sobre los canales disponibles
-   * @returns {Object} - Información de canales
-   */
   getChannelsInfo() {
     const info = {};
     

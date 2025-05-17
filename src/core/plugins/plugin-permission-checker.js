@@ -1,41 +1,18 @@
 /**
  * Verificador de Permisos para Plugins de Atlas
- * 
- * Este módulo se encarga de gestionar y validar los permisos
- * solicitados por los plugins, asegurando que solo accedan
- * a funcionalidades autorizadas.
  */
-
 import eventBus from '../bus/event-bus';
 import { PLUGIN_CONSTANTS } from '../config/constants';
 
-/**
- * Clase para verificar y gestionar permisos de plugins
- */
 class PluginPermissionChecker {
   constructor() {
-    // Estado de inicialización
     this.initialized = false;
-    
-    // Nivel de seguridad
     this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
-    
-    // Verificaciones activas
     this.activeChecks = new Set(['apiAccess']);
-    
-    // Permisos registrados por plugin
     this.pluginPermissions = {};
-    
-    // Plugins con permisos elevados
     this.elevatedPermissionPlugins = new Set();
-    
-    // Historial de solicitudes de permisos
     this.permissionRequests = [];
-    
-    // Historial de accesos a APIs
     this.apiAccessLogs = {};
-    
-    // Límite de tamaño del historial
     this.maxLogSize = 100;
     
     // Permisos automáticamente aprobados según nivel de seguridad
@@ -119,11 +96,6 @@ class PluginPermissionChecker {
     };
   }
 
-  /**
-   * Inicializa el verificador de permisos
-   * @param {string} securityLevel - Nivel de seguridad
-   * @returns {boolean} - true si se inicializó correctamente
-   */
   initialize(securityLevel) {
     if (this.initialized) {
       console.warn('Verificador de permisos ya inicializado');
@@ -133,7 +105,6 @@ class PluginPermissionChecker {
     try {
       console.log('Inicializando verificador de permisos para plugins...');
       
-      // Establecer nivel de seguridad
       this.securityLevel = securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
       
       this.initialized = true;
@@ -146,12 +117,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Valida los permisos solicitados por un plugin
-   * @param {string} pluginId - ID del plugin
-   * @param {Array|Object} permissions - Permisos solicitados
-   * @returns {Object} - Resultado de la validación
-   */
   validatePermissions(pluginId, permissions) {
     if (!pluginId) {
       return {
@@ -278,12 +243,6 @@ class PluginPermissionChecker {
     }
   }  
 
-  /**
-   * Normaliza permisos a un array
-   * @param {Array|Object|string} permissions - Permisos a normalizar
-   * @returns {Array} - Array de permisos
-   * @private
-   */
   _normalizePermissions(permissions) {
     // Si ya es array, devolver copia
     if (Array.isArray(permissions)) {
@@ -306,12 +265,6 @@ class PluginPermissionChecker {
     return [];
   }
 
-  /**
-   * Registra los permisos aprobados para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos aprobados
-   * @private
-   */
   _registerPluginPermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions)) {
       return;
@@ -360,12 +313,6 @@ class PluginPermissionChecker {
     });
   }
 
-  /**
-   * Registra permisos pendientes de aprobación
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos pendientes
-   * @private
-   */
   _registerPendingPermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions)) {
       return;
@@ -402,12 +349,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Registra una validación de permisos en el historial
-   * @param {string} pluginId - ID del plugin
-   * @param {Object} result - Resultado de la validación
-   * @private
-   */
   _logPermissionValidation(pluginId, result) {
     // Añadir al historial
     this.permissionRequests.push({
@@ -423,12 +364,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Verifica si un plugin tiene un permiso específico
-   * @param {string} pluginId - ID del plugin
-   * @param {string} permission - Permiso a verificar
-   * @returns {boolean} - true si tiene el permiso
-   */
   hasPermission(pluginId, permission) {
     if (!pluginId || !permission) {
       return false;
@@ -443,12 +378,6 @@ class PluginPermissionChecker {
     return this.pluginPermissions[pluginId].approved.includes(permission);
   }
 
-  /**
-   * Verifica acceso a un método específico
-   * @param {string} pluginId - ID del plugin
-   * @param {string} method - Método al que se intenta acceder
-   * @returns {Object} - Resultado de la verificación
-   */
   checkMethodAccess(pluginId, method) {
     if (!pluginId || !method) {
       return {
@@ -537,14 +466,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Registra un acceso a API en el historial
-   * @param {string} pluginId - ID del plugin
-   * @param {string} method - Método accedido
-   * @param {string} permission - Permiso requerido
-   * @param {boolean} permitted - Si fue permitido
-   * @private
-   */
   _logApiAccess(pluginId, method, permission, permitted) {
     // Inicializar log si no existe
     if (!this.apiAccessLogs[pluginId]) {
@@ -565,12 +486,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Aprueba permisos pendientes para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos a aprobar
-   * @returns {boolean} - true si se aprobaron correctamente
-   */
   approvePermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
       console.warn('Argumentos inválidos para approvePermissions', { pluginId, permissions });
@@ -636,12 +551,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Rechaza permisos pendientes para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos a rechazar
-   * @returns {boolean} - true si se rechazaron correctamente
-   */
   rejectPermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
       return false;
@@ -704,12 +613,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Revoca permisos previamente aprobados
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos a revocar
-   * @returns {boolean} - true si se revocaron correctamente
-   */
   revokePermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
       return false;
@@ -761,11 +664,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Actualiza el estado de permisos elevados de un plugin
-   * @param {string} pluginId - ID del plugin
-   * @private
-   */
   _updateElevatedStatus(pluginId) {
     if (!pluginId || !this.pluginPermissions[pluginId]) {
       return;
@@ -785,11 +683,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Obtiene los permisos de un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object|null} - Información de permisos o null
-   */
   getPluginPermissions(pluginId) {
     if (!pluginId) {
       return null;
@@ -824,11 +717,6 @@ class PluginPermissionChecker {
     };
   }
 
-  /**
-   * Obtiene el historial de acceso a API de un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Array} - Historial de accesos
-   */
   getApiAccessHistory(pluginId) {
     if (!pluginId) {
       return [];
@@ -837,19 +725,10 @@ class PluginPermissionChecker {
     return this.apiAccessLogs[pluginId] || [];
   }
 
-  /**
-   * Obtiene las solicitudes de permisos pendientes
-   * @returns {Array} - Solicitudes pendientes
-   */
   getPendingPermissionRequests() {
     return this.permissionRequests.filter(request => request.status === 'pending');
   }
 
-  /**
-   * Establece el nivel de seguridad del verificador
-   * @param {string} level - Nivel de seguridad
-   * @returns {boolean} - true si se cambió correctamente
-   */
   setSecurityLevel(level) {
     if (!level || !PLUGIN_CONSTANTS.SECURITY.LEVEL[level]) {
       return false;
@@ -870,10 +749,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Actualiza la lista de verificaciones de seguridad activas
-   * @param {Set} activeChecks - Conjunto de verificaciones activas
-   */
   updateSecurityChecks(activeChecks) {
     if (!activeChecks) return;
     
@@ -885,11 +760,6 @@ class PluginPermissionChecker {
     });
   }
 
-  /**
-   * Limpia todos los datos relacionados con un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si se limpió correctamente
-   */
   clearPluginData(pluginId) {
     if (!pluginId) return false;
     
@@ -915,10 +785,6 @@ class PluginPermissionChecker {
     }
   }
 
-  /**
-   * Obtiene estadísticas de permisos
-   * @returns {Object} - Estadísticas
-   */
   getPermissionStats() {
     try {
       // Contar plugins con permisos

@@ -1,10 +1,6 @@
 /**
  * Gestor de plugins para Atlas
- * 
- * Este módulo coordina todas las operaciones relacionadas con plugins:
- * carga, inicialización, activación, desactivación, etc.
  */
-
 import { loadPlugins, loadPluginById, validatePluginCompatibility } from './plugin-loader';
 import pluginRegistry from './plugin-registry';
 import coreAPI from './core-api';
@@ -15,7 +11,7 @@ import pluginCompatibility from './plugin-compatibility';
 import pluginDependencyResolver from './plugin-dependency-resolver';
 import pluginAPIRegistry from './plugin-api-registry';
 import pluginCommunication from './plugin-communication';
-// Importaciones para el sistema de seguridad (Fase 6)
+// Importaciones para el sistema de seguridad
 import pluginSecurityManager from './plugin-security-manager';
 import pluginSandbox from './plugin-sandbox';
 import pluginResourceMonitor from './plugin-resource-monitor';
@@ -26,40 +22,20 @@ import { PLUGIN_CONSTANTS } from '../config/constants';
 // Constantes
 const PLUGIN_STATE_KEY = 'atlas_plugin_states';
 const PLUGIN_SECURITY_SETTINGS_KEY = 'atlas_plugin_security_settings';
-const PLUGIN_EVENT_PREFIX = 'plugin.';
 
-/**
- * Clase principal para gestión de plugins
- */
 class PluginManager {
   constructor() {
     this.initialized = false;
     this.loading = false;
     this.error = null;
-    
-    // Suscriptores a eventos del sistema de plugins
     this._subscribers = {};
     this._lastSubscriberId = 0;
-    
-    // Registro de resultados de compatibilidad por plugin
     this._compatibilityResults = {};
-    
-    // Nivel de seguridad del sistema (añadido en Fase 6)
     this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
-    
-    // Indica si el sistema de seguridad está inicializado (añadido en Fase 6)
     this.securityInitialized = false;
-    
-    // Plugins en proceso de activación (para evitar ciclos infinitos)
     this._activatingPlugins = new Set();
   }
 
-  /**
-   * Inicializa el sistema de plugins
-   * @param {Object} services - Servicios internos a proporcionar a la API
-   * @param {Object} options - Opciones de inicialización
-   * @returns {Promise<boolean>} - true si se inicializó correctamente
-   */
   async initialize(services = {}, options = {}) {
     if (this.initialized) {
       console.warn('El gestor de plugins ya está inicializado');
@@ -70,13 +46,13 @@ class PluginManager {
       this.loading = true;
       this.error = null;
       
-      // Configurar nivel de seguridad desde opciones o usar valor predeterminado (añadido en Fase 6)
+      // Configurar nivel de seguridad desde opciones o usar valor predeterminado
       this.securityLevel = options.securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
       
       // Inicializar la API Core
       coreAPI.init(services);
       
-      // Inicializar el sistema de seguridad (añadido en Fase 6)
+      // Inicializar el sistema de seguridad
       if (options.enableSecurity !== false) {
         await this._initializeSecuritySystem();
       }
@@ -120,7 +96,7 @@ class PluginManager {
       console.error('Error al inicializar el sistema de plugins:', error);
       this.error = error.message || 'Error desconocido al inicializar plugins';
       this.loading = false;
-      this.initialized = false; // Asegurarse de que no quede en estado inconsistente
+      this.initialized = false;
       
       // Publicar evento de error
       this._publishEvent('error', { error: this.error });
@@ -129,10 +105,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Inicializa el sistema de seguridad para plugins (añadido en Fase 6)
-   * @private
-   */
   async _initializeSecuritySystem() {
     try {
       console.log('Inicializando sistema de seguridad para plugins...');
@@ -178,10 +150,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Carga la configuración de seguridad desde almacenamiento (añadido en Fase 6)
-   * @private
-   */
   async _loadSecuritySettings() {
     try {
       return await storageService.get(PLUGIN_SECURITY_SETTINGS_KEY, {
@@ -197,11 +165,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Guarda la configuración de seguridad en almacenamiento (añadido en Fase 6)
-   * @param {Object} settings - Configuración a guardar
-   * @private
-   */
   async _saveSecuritySettings(settings = {}) {
     try {
       const currentSettings = await this._loadSecuritySettings();
@@ -219,10 +182,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Carga el estado anterior de los plugins desde almacenamiento
-   * @private
-   */
   async _loadPluginStates() {
     try {
       // Cargar estados previos
@@ -238,10 +197,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Guarda el estado actual de los plugins en almacenamiento
-   * @private
-   */
   async _savePluginStates() {
     try {
       // Obtener estados actuales
@@ -257,10 +212,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Activa plugins basado en estados previamente guardados
-   * @private
-   */
   async _activatePluginsFromState() {
     try {
       // Verificar que el sistema esté inicializado
@@ -296,7 +247,7 @@ class PluginManager {
             continue;
           }
           
-          // Verificar si está en lista negra (añadido en Fase 6)
+          // Verificar si está en lista negra
           if (this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId)) {
             console.warn(`Plugin ${pluginId} no se activará automáticamente porque está en lista negra`);
             continue;
@@ -317,10 +268,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Verifica la compatibilidad y dependencias de todos los plugins registrados
-   * @private
-   */
   async _verifyPluginCompatibility() {
     try {
       // Limpiar resultados anteriores
@@ -367,12 +314,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Publica un evento del sistema de plugins
-   * @param {string} eventName - Nombre del evento sin prefijo
-   * @param {Object} data - Datos del evento
-   * @private
-   */
   _publishEvent(eventName, data = {}) {
     // Publicar en el bus de eventos
     const fullEventName = `pluginSystem.${eventName}`;
@@ -390,11 +331,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Activa un plugin por su ID
-   * @param {string} pluginId - ID del plugin a activar
-   * @returns {Promise<boolean>} - true si se activó correctamente
-   */
   async activatePlugin(pluginId) {
     if (!this.initialized) {
       console.error('El gestor de plugins no está inicializado');
@@ -430,7 +366,7 @@ class PluginManager {
         return false;
       }
       
-      // Verificar si está en lista negra (añadido en Fase 6)
+      // Verificar si está en lista negra
       if (this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId)) {
         console.error(`No se puede activar plugin en lista negra: ${pluginId}`);
         
@@ -504,7 +440,7 @@ class PluginManager {
         return true;
       }
       
-      // Validar seguridad del plugin (añadido en Fase 6)
+      // Validar seguridad del plugin
       if (this.securityInitialized) {
         const securityValidation = pluginSecurityManager.validatePlugin(pluginId);
         
@@ -606,7 +542,7 @@ class PluginManager {
         }
       }
       
-      // Activar el plugin usando sandbox para mayor seguridad (modificado en Fase 6)
+      // Activar el plugin usando sandbox para mayor seguridad
       let activated = false;
       
       try {
@@ -657,7 +593,7 @@ class PluginManager {
         // Publicar evento
         this._publishEvent('pluginActivated', { pluginId, plugin });
         
-        // Registrar evento en auditoría (añadido en Fase 6)
+        // Registrar evento en auditoría
         if (this.securityInitialized) {
           pluginSecurityAudit.recordValidationResult(pluginId, {
             event: 'activation',
@@ -688,12 +624,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Desactiva un plugin por su ID
-   * @param {string} pluginId - ID del plugin a desactivar
-   * @param {boolean} force - Si es true, ignora las dependencias
-   * @returns {Promise<boolean>} - true si se desactivó correctamente
-   */
   async deactivatePlugin(pluginId, force = false) {
     if (!this.initialized) {
       console.error('El gestor de plugins no está inicializado');
@@ -735,7 +665,7 @@ class PluginManager {
       // Limpiar canales de comunicación
       pluginCommunication.clearPluginResources(pluginId);
       
-      // Desactivar el plugin usando sandbox si está disponible (modificado en Fase 6)
+      // Desactivar el plugin usando sandbox si está disponible
       let deactivated = false;
       
       try {
@@ -785,7 +715,7 @@ class PluginManager {
         // Limpiar recursos del plugin en la API
         await coreAPI.cleanupPluginResources(pluginId);
         
-        // Limpiar recursos de seguridad si está disponible (añadido en Fase 6)
+        // Limpiar recursos de seguridad si está disponible
         if (this.securityInitialized) {
           // No eliminamos datos de auditoría, solo desactivamos monitoreo
           pluginResourceMonitor.decreaseMonitoring(pluginId);
@@ -799,7 +729,7 @@ class PluginManager {
         // Publicar evento
         this._publishEvent('pluginDeactivated', { pluginId, plugin });
         
-        // Registrar evento en auditoría (añadido en Fase 6)
+        // Registrar evento en auditoría
         if (this.securityInitialized) {
           pluginSecurityAudit.recordPluginDeactivation(pluginId, {
             forced: force,
@@ -834,10 +764,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Obtiene todos los plugins disponibles
-   * @returns {Object[]} - Array de plugins
-   */
   getAllPlugins() {
     if (!this.initialized) {
       console.warn('El gestor de plugins no está inicializado');
@@ -857,7 +783,7 @@ class PluginManager {
         incompatibilityReason: compatResult && !compatResult.compatible ? compatResult.reason : null
       };
       
-      // Añadir información de seguridad si está disponible (añadido en Fase 6)
+      // Añadir información de seguridad si está disponible
       if (this.securityInitialized) {
         const securityInfo = pluginSecurityManager.getPluginSecurityInfo(plugin.id);
         
@@ -874,10 +800,6 @@ class PluginManager {
     });
   }
 
-  /**
-   * Obtiene todos los plugins activos
-   * @returns {Object[]} - Array de plugins activos
-   */
   getActivePlugins() {
     if (!this.initialized) {
       console.warn('El gestor de plugins no está inicializado');
@@ -887,11 +809,6 @@ class PluginManager {
     return pluginRegistry.getActivePlugins();
   }
 
-  /**
-   * Comprueba si un plugin está activo
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si el plugin está activo
-   */
   isPluginActive(pluginId) {
     if (!this.initialized) {
       console.warn('El gestor de plugins no está inicializado');
@@ -901,11 +818,6 @@ class PluginManager {
     return pluginRegistry.isPluginActive(pluginId);
   }
 
-  /**
-   * Comprueba si un plugin es compatible
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si el plugin es compatible
-   */
   isPluginCompatible(pluginId) {
     if (!this.initialized || !this._compatibilityResults[pluginId]) {
       return true; // Asumir compatibilidad por defecto
@@ -914,11 +826,6 @@ class PluginManager {
     return this._compatibilityResults[pluginId].compatible;
   }
 
-  /**
-   * Obtiene información de compatibilidad de un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object|null} - Información de compatibilidad o null
-   */
   getPluginCompatibilityInfo(pluginId) {
     if (!this.initialized || !this._compatibilityResults[pluginId]) {
       return null;
@@ -927,12 +834,6 @@ class PluginManager {
     return this._compatibilityResults[pluginId];
   }
 
-  /**
-   * Suscribe a eventos del sistema de plugins
-   * @param {string} eventName - Nombre del evento sin prefijo
-   * @param {Function} callback - Función a llamar cuando ocurra el evento
-   * @returns {Function} - Función para cancelar suscripción
-   */
   subscribe(eventName, callback) {
     if (typeof callback !== 'function') return () => {};
     
@@ -956,11 +857,6 @@ class PluginManager {
     };
   }
 
-  /**
-   * Recarga todos los plugins disponibles
-   * @param {boolean} preserveState - Si se debe preservar el estado de activación
-   * @returns {Promise<boolean>} - true si se recargaron correctamente
-   */
   async reloadPlugins(preserveState = true) {
     if (!this.initialized) {
       console.error('El gestor de plugins no está inicializado');
@@ -1012,7 +908,7 @@ class PluginManager {
         
         let activatedCount = 0;
         for (const pluginId of sortedActivePluginIds) {
-          // Verificar si está en lista negra (añadido en Fase 6)
+          // Verificar si está en lista negra
           if (this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId)) {
             console.warn(`Plugin ${pluginId} no se reactivará porque está en lista negra`);
             continue;
@@ -1050,11 +946,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Ejecuta una verificación de compatibilidad para un plugin específico
-   * @param {string} pluginId - ID del plugin
-   * @returns {Promise<Object>} - Resultado de la verificación
-   */
   async checkPluginCompatibility(pluginId) {
     try {
       if (!this.initialized) {
@@ -1081,7 +972,7 @@ class PluginManager {
         lastCompatibilityCheck: Date.now()
       });
       
-      // Verificar seguridad si está disponible (añadido en Fase 6)
+      // Verificar seguridad si está disponible
       if (this.securityInitialized) {
         const securityResult = pluginSecurityManager.validatePlugin(pluginId);
         
@@ -1113,10 +1004,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Obtiene datos del estado actual del sistema de plugins
-   * @returns {Object} - Información del estado del sistema
-   */
   getStatus() {
     const allPlugins = this.initialized ? pluginRegistry.getAllPlugins() : [];
     const activePlugins = this.initialized ? pluginRegistry.getActivePlugins() : [];
@@ -1140,7 +1027,7 @@ class PluginManager {
       activeChannels: Object.keys(pluginCommunication.getChannelsInfo()).length
     };
     
-    // Añadir información de seguridad si está disponible (añadido en Fase 6)
+    // Añadir información de seguridad si está disponible
     if (this.securityInitialized) {
       const securityStats = pluginSecurityManager.getSecurityStats();
       
@@ -1160,10 +1047,6 @@ class PluginManager {
     return status;
   }
 
-  /**
-   * Obtiene información detallada sobre las APIs públicas disponibles
-   * @returns {Object} - Información sobre APIs disponibles
-   */
   getPluginAPIsInfo() {
     if (!this.initialized) {
       return {};
@@ -1177,10 +1060,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Obtiene información sobre los canales de comunicación disponibles
-   * @returns {Object} - Información sobre canales
-   */
   getChannelsInfo() {
     if (!this.initialized) {
       return {};
@@ -1194,11 +1073,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Cambia el nivel de seguridad del sistema (añadido en Fase 6)
-   * @param {string} level - Nuevo nivel de seguridad
-   * @returns {boolean} - true si se cambió correctamente
-   */
   setSecurityLevel(level) {
     if (!this.securityInitialized) {
       console.warn('Sistema de seguridad no inicializado');
@@ -1239,12 +1113,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Desactiva y pone en lista negra un plugin (añadido en Fase 6)
-   * @param {string} pluginId - ID del plugin
-   * @param {string} reason - Razón para la lista negra
-   * @returns {boolean} - true si se completó correctamente
-   */
   async blacklistPlugin(pluginId, reason) {
     if (!this.securityInitialized) {
       console.warn('Sistema de seguridad no inicializado');
@@ -1282,11 +1150,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Elimina un plugin de la lista negra (añadido en Fase 6)
-   * @param {string} pluginId - ID del plugin
-   * @returns {boolean} - true si se completó correctamente
-   */
   whitelistPlugin(pluginId) {
     if (!this.securityInitialized) {
       console.warn('Sistema de seguridad no inicializado');
@@ -1317,12 +1180,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Aprueba permisos pendientes para un plugin (añadido en Fase 6)
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos a aprobar
-   * @returns {boolean} - true si se completó correctamente
-   */
   async approvePluginPermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
       return false;
@@ -1367,12 +1224,6 @@ class PluginManager {
     }
   }
   
-  /**
-   * Rechaza permisos pendientes para un plugin (añadido en Fase 6)
-   * @param {string} pluginId - ID del plugin
-   * @param {Array} permissions - Permisos a rechazar
-   * @returns {boolean} - true si se completó correctamente
-   */
   rejectPluginPermissions(pluginId, permissions) {
     if (!this.securityInitialized) {
       console.warn('Sistema de seguridad no inicializado');
@@ -1405,11 +1256,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Obtiene información de seguridad detallada para un plugin (añadido en Fase 6)
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object} - Información de seguridad
-   */
   getPluginSecurityInfo(pluginId) {
     if (!this.securityInitialized) {
       return {
@@ -1448,10 +1294,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Obtiene solicitudes de permisos pendientes (añadido en Fase 6)
-   * @returns {Array} - Lista de solicitudes pendientes
-   */
   getPendingPermissionRequests() {
     if (!this.securityInitialized) {
       return [];
@@ -1465,10 +1307,6 @@ class PluginManager {
     }
   }
 
-  /**
-   * Obtiene estadísticas de seguridad (añadido en Fase 6)
-   * @returns {Object} - Estadísticas de seguridad
-   */
   getSecurityStats() {
     if (!this.securityInitialized) {
       return {

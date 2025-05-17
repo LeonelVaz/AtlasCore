@@ -1,10 +1,6 @@
 /**
  * API Core para plugins de Atlas
- * 
- * Este módulo define la API que se proporciona a los plugins
- * para que interactúen con la aplicación principal
  */
-
 import eventBus from '../bus/event-bus';
 import storageService from '../../services/storage-service';
 import pluginEvents from './plugin-events';
@@ -13,31 +9,16 @@ import uiExtensionManager from './ui-extension-manager';
 import pluginAPIRegistry from './plugin-api-registry';
 import pluginCommunication from './plugin-communication';
 import pluginRegistry from './plugin-registry';
-// Importar las constantes
 import { PLUGIN_CONSTANTS } from '../config/constants';
 
-/**
- * Clase que implementa la API core para plugins
- */
 class CoreAPI {
   constructor() {
-    // Versión de la API
     this.version = '0.3.0';
-    
-    // Referencias a servicios internos
     this._services = {};
-    
-    // Registro de recursos de plugins para limpieza
     this._pluginResources = {};
-    
-    // Error handlers personalizados
     this._errorHandlers = [];
   }
 
-  /**
-   * Inicializa la API core con los servicios necesarios
-   * @param {Object} services - Servicios internos que se necesitan
-   */
   init(services = {}) {
     // Almacenar referencias a servicios que puedan necesitar los plugins
     this._services = services;
@@ -52,112 +33,47 @@ class CoreAPI {
     console.log('API Core inicializada (v' + this.version + ')');
   }
 
-  /**
-   * Inicializa el componente de eventos
-   * @private
-   */
   _initEvents() {
     // Usar el módulo especializado para eventos de plugins
     this.events = {
-      /**
-       * Suscribirse a un evento
-       * @param {string} pluginId - ID del plugin que se suscribe
-       * @param {string} eventName - Nombre del evento
-       * @param {Function} callback - Función a llamar cuando ocurra el evento
-       * @returns {Function} - Función para cancelar suscripción
-       */
       subscribe: (pluginId, eventName, callback) => {
         return pluginEvents.subscribe(pluginId, eventName, callback);
       },
       
-      /**
-       * Publicar un evento
-       * @param {string} pluginId - ID del plugin que publica
-       * @param {string} eventName - Nombre del evento
-       * @param {*} data - Datos a pasar a los suscriptores
-       */
       publish: (pluginId, eventName, data) => {
         return pluginEvents.publish(pluginId, eventName, data);
       },
       
-      /**
-       * Cancelar todas las suscripciones de un plugin
-       * @param {string} pluginId - ID del plugin
-       * @returns {boolean} - true si se cancelaron correctamente
-       */
       unsubscribeAll: (pluginId) => {
         return pluginEvents.unsubscribeAll(pluginId);
       }
     };
   }
 
-  /**
-   * Inicializa el componente de almacenamiento
-   * @private
-   */
   _initStorage() {
     // Usar el módulo especializado para almacenamiento de plugins
     this.storage = {
-      /**
-       * Guarda un valor en el almacenamiento
-       * @param {string} pluginId - ID del plugin
-       * @param {string} key - Clave
-       * @param {*} value - Valor a guardar
-       * @returns {Promise<boolean>} - true si se guardó correctamente
-       */
       setItem: async (pluginId, key, value) => {
         return pluginStorage.setItem(pluginId, key, value);
       },
       
-      /**
-       * Recupera un valor del almacenamiento
-       * @param {string} pluginId - ID del plugin
-       * @param {string} key - Clave
-       * @param {*} defaultValue - Valor por defecto si no existe
-       * @returns {Promise<*>} - Valor recuperado o defaultValue
-       */
       getItem: async (pluginId, key, defaultValue = null) => {
         return pluginStorage.getItem(pluginId, key, defaultValue);
       },
       
-      /**
-       * Elimina un valor del almacenamiento
-       * @param {string} pluginId - ID del plugin
-       * @param {string} key - Clave
-       * @returns {Promise<boolean>} - true si se eliminó correctamente
-       */
       removeItem: async (pluginId, key) => {
         return pluginStorage.removeItem(pluginId, key);
       },
       
-      /**
-       * Elimina todos los datos de almacenamiento de un plugin
-       * @param {string} pluginId - ID del plugin
-       * @returns {Promise<boolean>} - true si se eliminaron correctamente
-       */
       clearPluginData: async (pluginId) => {
         return pluginStorage.clearPluginData(pluginId);
       }
     };
   }
 
-  /**
-   * Inicializa el componente de UI
-   * @private
-   */
   _initUI() {
     // Sistema de integración UI para plugins - Mejorado con Extensiones
     this.ui = {
-      /**
-       * Registra un componente en un punto de extensión
-       * @param {string} pluginId - ID del plugin
-       * @param {string} zoneId - ID de la zona donde registrar
-       * @param {Object|Function} component - Componente React a registrar
-       * @param {Object} [options] - Opciones adicionales
-       * @param {Object} [options.props] - Props adicionales para el componente
-       * @param {number} [options.order] - Orden de renderizado (menor = primero)
-       * @returns {string|null} - ID de registro o null si falla
-       */
       registerExtension: (pluginId, zoneId, component, options = {}) => {
         if (!pluginId || !zoneId || !component) {
           console.error('Argumentos inválidos para registerExtension');
@@ -202,12 +118,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Elimina una extensión registrada
-       * @param {string} pluginId - ID del plugin
-       * @param {string} extensionId - ID de la extensión
-       * @returns {boolean} - true si se eliminó correctamente
-       */
       removeExtension: (pluginId, extensionId) => {
         if (!pluginId || !extensionId) {
           console.error('Argumentos inválidos para removeExtension');
@@ -233,10 +143,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Obtiene información sobre las zonas de extensión disponibles
-       * @returns {Object} - Mapa de zonas de extensión
-       */
       getExtensionZones: () => {
         try {
           return { ...PLUGIN_CONSTANTS.UI_EXTENSION_ZONES };
@@ -246,11 +152,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Elimina todas las extensiones de un plugin
-       * @param {string} pluginId - ID del plugin
-       * @returns {boolean} - true si se eliminaron correctamente
-       */
       removeAllExtensions: (pluginId) => {
         if (!pluginId) {
           return false;
@@ -266,10 +167,6 @@ class CoreAPI {
     };
   }
 
-  /**
-   * Inicializa el sistema de manejo de errores
-   * @private
-   */
   _initErrorHandling() {
     // Registrar handler de errores por defecto
     this._errorHandlers.push((pluginId, context, error) => {
@@ -277,19 +174,9 @@ class CoreAPI {
     });
   }
 
-  /**
-   * Inicializa el sistema de comunicación entre plugins
-   * @private
-   */
   _initCommunication() {
     // API para comunicación entre plugins
     this.plugins = {
-      /**
-       * Registra la API pública del plugin
-       * @param {string} pluginId - ID del plugin
-       * @param {Object} apiObject - Objeto que contiene la API pública
-       * @returns {boolean} - true si se registró correctamente
-       */
       registerAPI: (pluginId, apiObject) => {
         try {
           return pluginAPIRegistry.registerAPI(pluginId, apiObject);
@@ -299,11 +186,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Obtiene un plugin por su ID
-       * @param {string} pluginId - ID del plugin
-       * @returns {Object|null} - Información básica del plugin o null si no existe
-       */
       getPlugin: (pluginId) => {
         try {
           const plugin = pluginRegistry.getPlugin(pluginId);
@@ -328,10 +210,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Obtiene la lista de plugins activos
-       * @returns {Array} - Lista de información básica de plugins activos
-       */
       getActivePlugins: () => {
         try {
           const activePlugins = pluginRegistry.getActivePlugins();
@@ -351,11 +229,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Verifica si un plugin está activo
-       * @param {string} pluginId - ID del plugin
-       * @returns {boolean} - true si el plugin está activo
-       */
       isPluginActive: (pluginId) => {
         try {
           return pluginRegistry.isPluginActive(pluginId);
@@ -365,12 +238,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Obtiene la API pública de un plugin
-       * @param {string} callerPluginId - ID del plugin que realiza la llamada
-       * @param {string} targetPluginId - ID del plugin objetivo
-       * @returns {Object|null} - API pública o null si no existe
-       */
       getPluginAPI: (callerPluginId, targetPluginId) => {
         try {
           // Verificar que ambos plugins existan
@@ -410,13 +277,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Crea un canal de comunicación entre plugins
-       * @param {string} callerPluginId - ID del plugin que crea el canal
-       * @param {string} channelName - Nombre del canal
-       * @param {Object} [options] - Opciones del canal
-       * @returns {Object|null} - API del canal o null si falla
-       */
       createChannel: (callerPluginId, channelName, options = {}) => {
         try {
           return pluginCommunication.createChannel(channelName, callerPluginId, options);
@@ -426,12 +286,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Obtiene un canal de comunicación existente
-       * @param {string} callerPluginId - ID del plugin que solicita el canal
-       * @param {string} channelName - Nombre del canal
-       * @returns {Object|null} - API del canal o null si no existe
-       */
       getChannel: (callerPluginId, channelName) => {
         try {
           const channelsInfo = pluginCommunication.getChannelsInfo();
@@ -467,10 +321,6 @@ class CoreAPI {
         }
       },
       
-      /**
-       * Obtiene la lista de canales disponibles
-       * @returns {Array} - Lista de nombres de canales
-       */
       listChannels: () => {
         try {
           const channelsInfo = pluginCommunication.getChannelsInfo();
@@ -488,13 +338,6 @@ class CoreAPI {
     };
   }
 
-  /**
-   * Maneja un error de plugin
-   * @param {string} pluginId - ID del plugin que generó el error
-   * @param {string} context - Contexto del error (storage, events, ui, etc.)
-   * @param {Error} error - Objeto de error
-   * @private
-   */
   _handleError(pluginId, context, error) {
     // Llamar a todos los handlers registrados
     for (const handler of this._errorHandlers) {
@@ -506,11 +349,6 @@ class CoreAPI {
     }
   }
 
-  /**
-   * Registra un handler personalizado para errores de plugins
-   * @param {Function} handler - Función que maneja errores
-   * @returns {Function} - Función para cancelar el registro
-   */
   registerErrorHandler(handler) {
     if (typeof handler !== 'function') return () => {};
     
@@ -525,11 +363,6 @@ class CoreAPI {
     };
   }
 
-  /**
-   * Obtiene una referencia a un módulo del sistema
-   * @param {string} moduleId - ID del módulo
-   * @returns {Object|null} - Referencia al módulo o null si no existe
-   */
   getModule(moduleId) {
     if (!moduleId) {
       console.error('ID de módulo inválido');
@@ -550,11 +383,6 @@ class CoreAPI {
     return null;
   }
 
-  /**
-   * Limpia todos los recursos asociados a un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Promise<boolean>} - true si se limpiaron correctamente
-   */
   async cleanupPluginResources(pluginId) {
     if (!pluginId) {
       return true;

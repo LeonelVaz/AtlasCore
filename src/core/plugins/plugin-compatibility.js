@@ -1,18 +1,11 @@
 /**
  * Sistema de compatibilidad para plugins de Atlas
- * 
- * Este módulo se encarga de verificar la compatibilidad entre plugins
- * y con la aplicación principal, así como gestionar conflictos.
  */
-
 import { compareVersions } from './plugin-validator';
 import pluginRegistry from './plugin-registry';
 import { PLUGIN_CONSTANTS } from '../config/constants';
 import eventBus from '../bus/event-bus';
 
-/**
- * Clase para gestionar la compatibilidad entre plugins
- */
 class PluginCompatibility {
   constructor() {
     this.appVersion = PLUGIN_CONSTANTS.CURRENT_APP_VERSION || '0.4.0';
@@ -20,11 +13,6 @@ class PluginCompatibility {
     this.conflicts = {};
   }
 
-  /**
-   * Verifica la compatibilidad de un plugin con la aplicación
-   * @param {Object} plugin - Plugin a verificar
-   * @returns {Object} - Resultado de la verificación con detalles
-   */
   checkAppCompatibility(plugin) {
     if (!plugin || !plugin.id) {
       return {
@@ -77,11 +65,6 @@ class PluginCompatibility {
     }
   }
 
-  /**
-   * Verifica las dependencias de un plugin
-   * @param {Object} plugin - Plugin a verificar
-   * @returns {Object} - Resultado de la verificación con detalles
-   */
   checkDependencies(plugin) {
     if (!plugin || !plugin.id) {
       return {
@@ -155,11 +138,6 @@ class PluginCompatibility {
     }
   }
 
-  /**
-   * Verifica si un plugin tiene conflictos con otros plugins activos
-   * @param {Object} plugin - Plugin a verificar
-   * @returns {Object} - Resultado de la verificación con detalles
-   */
   checkConflicts(plugin) {
     if (!plugin || !plugin.id) {
       return {
@@ -219,11 +197,6 @@ class PluginCompatibility {
     }
   }
 
-  /**
-   * Verifica si los plugins activos tienen conflictos con un plugin específico
-   * @param {Object} plugin - Plugin a verificar
-   * @returns {Object} - Resultado de la verificación con detalles
-   */
   checkReversedConflicts(plugin) {
     if (!plugin || !plugin.id) {
       return {
@@ -278,11 +251,6 @@ class PluginCompatibility {
     }
   }
 
-  /**
-   * Realiza un chequeo completo de compatibilidad para un plugin
-   * @param {Object} plugin - Plugin a verificar
-   * @returns {Object} - Resultado completo de la verificación
-   */
   runFullCompatibilityCheck(plugin) {
     if (!plugin || !plugin.id) {
       return {
@@ -391,49 +359,27 @@ class PluginCompatibility {
     }
   }
 
-  /**
-   * Obtiene la información de incompatibilidad para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object|null} - Información de incompatibilidad o null
-   */
   getIncompatibilityInfo(pluginId) {
     return this.incompatibilities[pluginId] || null;
   }
 
-  /**
-   * Obtiene la información de conflictos para un plugin
-   * @param {string} pluginId - ID del plugin
-   * @returns {Object|null} - Información de conflictos o null
-   */
   getConflictInfo(pluginId) {
     return this.conflicts[pluginId] || null;
   }
 
-  /**
-   * Obtiene todos los plugins incompatibles registrados
-   * @returns {Object} - Mapa de plugins incompatibles con sus razones
-   */
   getAllIncompatibilities() {
     return { ...this.incompatibilities };
   }
 
-  /**
-   * Obtiene todos los conflictos entre plugins registrados
-   * @returns {Object} - Mapa de conflictos entre plugins
-   */
   getAllConflicts() {
     return { ...this.conflicts };
   }
 
-  /**
-   * Limpia registros de incompatibilidades y conflictos
-   */
   clear() {
     this.incompatibilities = {};
     this.conflicts = {};
   }
 }
 
-// Exportar instancia única
 const pluginCompatibility = new PluginCompatibility();
 export default pluginCompatibility;

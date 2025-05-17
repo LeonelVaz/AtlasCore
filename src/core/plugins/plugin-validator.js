@@ -1,19 +1,10 @@
 /**
  * Validador de plugins para Atlas
- * 
- * Este módulo se encarga de validar que un plugin cumpla
- * con los requisitos básicos de estructura y metadatos
  */
-
 import { PLUGIN_CONSTANTS } from '../config/constants';
 import pluginCompatibility from './plugin-compatibility';
 import pluginDependencyResolver from './plugin-dependency-resolver';
 
-/**
- * Valida que un plugin tenga la estructura requerida
- * @param {Object} plugin - Plugin a validar
- * @returns {boolean} - true si el plugin es válido
- */
 export function validatePlugin(plugin) {
   try {
     // Verificar que existan las propiedades básicas requeridas
@@ -54,11 +45,6 @@ export function validatePlugin(plugin) {
   }
 }
 
-/**
- * Valida que el plugin tenga los metadatos requeridos
- * @param {Object} plugin - Plugin a validar
- * @returns {boolean} - true si los metadatos son válidos
- */
 function validateMetadata(plugin) {
   // Verificar ID
   if (!plugin.id || typeof plugin.id !== 'string' || plugin.id.trim() === '') {
@@ -93,11 +79,6 @@ function validateMetadata(plugin) {
   return true;
 }
 
-/**
- * Valida que el plugin tenga los métodos requeridos
- * @param {Object} plugin - Plugin a validar
- * @returns {boolean} - true si los métodos son válidos
- */
 function validateMethods(plugin) {
   // Verificar método init
   if (!plugin.init || typeof plugin.init !== 'function') {
@@ -114,11 +95,6 @@ function validateMethods(plugin) {
   return true;
 }
 
-/**
- * Valida que la versión del plugin sea compatible con la versión de la aplicación
- * @param {Object} plugin - Plugin a validar
- * @returns {boolean} - true si la versión es compatible
- */
 function validateVersionCompatibility(plugin) {
   // Verificar versión mínima
   if (!plugin.minAppVersion || typeof plugin.minAppVersion !== 'string') {
@@ -142,11 +118,6 @@ function validateVersionCompatibility(plugin) {
   return true;
 }
 
-/**
- * Valida las dependencias declaradas del plugin
- * @param {Object} plugin - Plugin a validar
- * @returns {boolean} - true si las dependencias son válidas
- */
 function validateDependencies(plugin) {
   // Si no hay dependencias declaradas, es válido
   if (!plugin.dependencies) return true;
@@ -190,11 +161,6 @@ function validateDependencies(plugin) {
   return true;
 }
 
-/**
- * Valida la declaración de conflictos del plugin
- * @param {Object} plugin - Plugin a validar
- * @returns {boolean} - true si la declaración de conflictos es válida
- */
 function validateConflicts(plugin) {
   // Si no hay conflictos declarados, es válido
   if (!plugin.conflicts) return true;
@@ -238,12 +204,6 @@ function validateConflicts(plugin) {
   return true;
 }
 
-/**
- * Compara dos versiones en formato semántico
- * @param {string} v1 - Primera versión
- * @param {string} v2 - Segunda versión
- * @returns {number} - -1 si v1<v2, 0 si v1=v2, 1 si v1>v2
- */
 export function compareVersions(v1, v2) {
   const parts1 = v1.split('.').map(Number);
   const parts2 = v2.split('.').map(Number);
@@ -259,11 +219,6 @@ export function compareVersions(v1, v2) {
   return 0;
 }
 
-/**
- * Realiza una validación completa del plugin
- * @param {Object} plugin - Plugin a validar
- * @returns {Object} - Resultado detallado de la validación
- */
 export function validatePluginComplete(plugin) {
   try {
     if (!plugin || typeof plugin !== 'object') {
