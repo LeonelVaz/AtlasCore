@@ -7,6 +7,11 @@ import pluginSecurityManager from '../../core/plugins/plugin-security-manager';
 import pluginSecurityAudit from '../../core/plugins/plugin-security-audit';
 import { PLUGIN_CONSTANTS } from '../../core/config/constants';
 
+// Importar los nuevos componentes
+import ThreatsDashboard from '../security/threats-dashboard';
+import PermissionsManager from '../security/permissions-manager';
+import AuditDashboard from '../security/audit-dashboard';
+
 /**
  * Componente para la administración de seguridad de plugins
  */
@@ -407,182 +412,6 @@ const SecurityPanel = () => {
               <span className="check-description">Previene ejecución de código potencialmente peligroso</span>
             </label>
           </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Renderizar sección de estadísticas de seguridad
-  const renderSecurityStats = () => {
-    if (!securityStats || !securityStats.securityEnabled) {
-      return (
-        <div className="security-stats-empty">
-          <p>Sistema de seguridad no inicializado.</p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="security-stats-section">
-        <h3>Estadísticas de Seguridad</h3>
-        
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-title">Amenazas Detectadas</div>
-            <div className="stat-value">{securityStats.threats?.total || 0}</div>
-            {securityStats.threats?.total > 0 && (
-              <Button 
-                variant="text" 
-                size="small"
-                onClick={() => setShowThreatsDialog(true)}
-              >
-                Ver Detalles
-              </Button>
-            )}
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-title">Plugins en Lista Negra</div>
-            <div className="stat-value">{securityStats.blacklistedPlugins || 0}</div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-title">Plugins con Advertencias</div>
-            <div className="stat-value">{securityStats.pluginsWithWarnings || 0}</div>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-title">Solicitudes de Permisos Pendientes</div>
-            <div className="stat-value">{securityStats.pendingPermissions || 0}</div>
-            {securityStats.pendingPermissions > 0 && (
-              <Button 
-                variant="text" 
-                size="small"
-                onClick={() => setShowPermissionsDialog(true)}
-              >
-                Revisar Permisos
-              </Button>
-            )}
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-title">Eventos de Seguridad</div>
-            <div className="stat-value">{securityStats.securityEvents || 0}</div>
-            <Button 
-              variant="text" 
-              size="small"
-              onClick={() => setShowAuditLogs(true)}
-            >
-              Ver Registro
-            </Button>
-          </div>
-          
-          <div className="stat-card">
-            <div className="stat-title">Errores de Sandbox</div>
-            <div className="stat-value">{securityStats.sandboxErrors || 0}</div>
-          </div>
-        </div>
-        
-        {securityStats.resourceOveruse && securityStats.resourceOveruse.length > 0 && (
-          <div className="resource-overuse-section">
-            <h4>Uso Excesivo de Recursos Reciente</h4>
-            <div className="resource-overuse-list">
-              {securityStats.resourceOveruse.map((violation, index) => (
-                <div key={index} className="resource-violation-item">
-                  <div className="violation-plugin">{violation.pluginId}</div>
-                  <div className="violation-types">
-                    {violation.violationCount} violaciones, última: {violation.lastViolationTypes.join(', ')}
-                  </div>
-                  <div className="violation-time">
-                    {new Date(violation.lastViolationTime).toLocaleString()}
-                  </div>
-                  <Button 
-                    variant="text" 
-                    size="small"
-                    onClick={() => showPluginSecurity(violation.pluginId)}
-                  >
-                    Ver Detalles
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Renderizar sección de plugins con más advertencias
-  const renderTopWarningPlugins = () => {
-    // Esta sección podría mostrar los plugins con más problemas de seguridad
-    const plugins = pluginManager.getAllPlugins();
-    
-    // Filtrar plugins con información de seguridad y ordenar por puntuación
-    const pluginsWithSecurity = plugins
-      .filter(plugin => plugin.securityScore !== undefined)
-      .sort((a, b) => a.securityScore - b.securityScore)
-      .slice(0, 5); // Top 5
-    
-    if (pluginsWithSecurity.length === 0) {
-      return null;
-    }
-    
-    return (
-      <div className="top-warning-plugins-section">
-        <h3>Plugins con Mayor Riesgo</h3>
-        <div className="warning-plugins-list">
-          {pluginsWithSecurity.map(plugin => (
-            <div key={plugin.id} className="warning-plugin-item">
-              <div className="warning-plugin-info">
-                <div className="warning-plugin-name">{plugin.name}</div>
-                <div className="warning-plugin-id">{plugin.id}</div>
-              </div>
-              
-              <div className="warning-plugin-score">
-                <div className="score-value">
-                  Puntuación de Seguridad: {plugin.securityScore}/100
-                </div>
-                <div className="score-bar">
-                  <div 
-                    className="score-indicator"
-                    style={{ 
-                      width: `${plugin.securityScore}%`,
-                      backgroundColor: plugin.securityScore > 70 ? '#4CAF50' : 
-                                     plugin.securityScore > 40 ? '#FFB300' : '#E53935'
-                    }}
-                  />
-                </div>
-              </div>
-              
-              <div className="warning-plugin-actions">
-                <Button 
-                  variant="text" 
-                  size="small"
-                  onClick={() => showPluginSecurity(plugin.id)}
-                >
-                  Ver Detalles
-                </Button>
-                
-                {!plugin.blacklisted ? (
-                  <Button 
-                    variant="danger" 
-                    size="small"
-                    onClick={() => handleBlacklistPlugin(plugin.id)}
-                  >
-                    Lista Negra
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="primary" 
-                    size="small"
-                    onClick={() => handleWhitelistPlugin(plugin.id)}
-                  >
-                    Lista Blanca
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     );
@@ -1063,8 +892,15 @@ const SecurityPanel = () => {
       ) : (
         <div className="security-content">
           {renderSecurityConfig()}
-          {renderSecurityStats()}
-          {renderTopWarningPlugins()}
+          
+          {/* Dashboard de amenazas */}
+          <ThreatsDashboard onPluginClick={showPluginSecurity} />
+          
+          {/* Gestor de permisos */}
+          <PermissionsManager onPluginClick={showPluginSecurity} />
+          
+          {/* Dashboard de auditoría */}
+          <AuditDashboard onPluginClick={showPluginSecurity} />
         </div>
       )}
       

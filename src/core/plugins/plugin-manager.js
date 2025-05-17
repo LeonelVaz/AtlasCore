@@ -15,9 +15,17 @@ import pluginCompatibility from './plugin-compatibility';
 import pluginDependencyResolver from './plugin-dependency-resolver';
 import pluginAPIRegistry from './plugin-api-registry';
 import pluginCommunication from './plugin-communication';
+// Importaciones para el sistema de seguridad (Fase 6)
+import pluginSecurityManager from './plugin-security-manager';
+import pluginSandbox from './plugin-sandbox';
+import pluginResourceMonitor from './plugin-resource-monitor';
+import pluginPermissionChecker from './plugin-permission-checker';
+import pluginSecurityAudit from './plugin-security-audit';
+import { PLUGIN_CONSTANTS } from '../config/constants';
 
 // Constantes
 const PLUGIN_STATE_KEY = 'atlas_plugin_states';
+const PLUGIN_SECURITY_SETTINGS_KEY = 'atlas_plugin_security_settings';
 const PLUGIN_EVENT_PREFIX = 'plugin.';
 
 /**
@@ -35,14 +43,24 @@ class PluginManager {
     
     // Registro de resultados de compatibilidad por plugin
     this._compatibilityResults = {};
+    
+    // Nivel de seguridad del sistema (añadido en Fase 6)
+    this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
+    
+    // Indica si el sistema de seguridad está inicializado (añadido en Fase 6)
+    this.securityInitialized = false;
+    
+    // Plugins en proceso de activación (para evitar ciclos infinitos)
+    this._activatingPlugins = new Set();
   }
 
   /**
    * Inicializa el sistema de plugins
    * @param {Object} services - Servicios internos a proporcionar a la API
+   * @param {Object} options - Opciones de inicialización
    * @returns {Promise<boolean>} - true si se inicializó correctamente
    */
-  async initialize(services = {}) {
+  async initialize(services = {}, options = {}) {
     if (this.initialized) {
       console.warn('El gestor de plugins ya está inicializado');
       return true;
@@ -52,8 +70,16 @@ class PluginManager {
       this.loading = true;
       this.error = null;
       
+      // Configurar nivel de seguridad desde opciones o usar valor predeterminado (añadido en Fase 6)
+      this.securityLevel = options.securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
+      
       // Inicializar la API Core
       coreAPI.init(services);
+      
+      // Inicializar el sistema de seguridad (añadido en Fase 6)
+      if (options.enableSecurity !== false) {
+        await this._initializeSecuritySystem();
+      }
       
       // Cargar estados previos de plugins
       await this._loadPluginStates();
@@ -82,7 +108,9 @@ class PluginManager {
       // Publicar evento de inicialización
       this._publishEvent('initialized', { 
         pluginsCount: registeredCount,
-        activePlugins: pluginRegistry.getActivePlugins().map(p => p.id)
+        activePlugins: pluginRegistry.getActivePlugins().map(p => p.id),
+        securityEnabled: this.securityInitialized,
+        securityLevel: this.securityLevel
       });
       
       this.loading = false;
@@ -98,6 +126,96 @@ class PluginManager {
       this._publishEvent('error', { error: this.error });
       
       return false;
+    }
+  }
+
+  /**
+   * Inicializa el sistema de seguridad para plugins (añadido en Fase 6)
+   * @private
+   */
+  async _initializeSecuritySystem() {
+    try {
+      console.log('Inicializando sistema de seguridad para plugins...');
+      
+      // Cargar configuración de seguridad
+      const securitySettings = await this._loadSecuritySettings();
+      
+      // Utilizar nivel de seguridad guardado o predeterminado
+      this.securityLevel = securitySettings?.securityLevel || this.securityLevel;
+      
+      // Inicializar subsistemas de seguridad
+      pluginSecurityManager.initialize({
+        securityLevel: this.securityLevel
+      });
+      
+      pluginSandbox.initialize(this.securityLevel);
+      pluginResourceMonitor.initialize(this.securityLevel);
+      pluginPermissionChecker.initialize(this.securityLevel);
+      pluginSecurityAudit.initialize(this.securityLevel);
+      
+      // Suscribirse a eventos de desactivación por seguridad
+      eventBus.subscribe('pluginSystem.securityDeactivateRequest', async (data) => {
+        if (data && data.pluginId) {
+          console.warn(`Solicitud de desactivación de seguridad para plugin ${data.pluginId}: ${data.reason}`);
+          await this.deactivatePlugin(data.pluginId, true);
+          
+          // Registrar en auditoría
+          pluginSecurityAudit.recordPluginDeactivation(data.pluginId, {
+            reason: data.reason,
+            timestamp: Date.now(),
+            source: 'security'
+          });
+        }
+      });
+      
+      this.securityInitialized = true;
+      
+      console.log(`Sistema de seguridad inicializado (nivel: ${this.securityLevel})`);
+      return true;
+    } catch (error) {
+      console.error('Error al inicializar sistema de seguridad:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Carga la configuración de seguridad desde almacenamiento (añadido en Fase 6)
+   * @private
+   */
+  async _loadSecuritySettings() {
+    try {
+      return await storageService.get(PLUGIN_SECURITY_SETTINGS_KEY, {
+        securityLevel: PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL,
+        activeChecks: ['resourceUsage', 'apiAccess', 'storageUsage', 'domManipulation']
+      });
+    } catch (error) {
+      console.error('Error al cargar configuración de seguridad:', error);
+      return {
+        securityLevel: PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL,
+        activeChecks: ['resourceUsage', 'apiAccess', 'storageUsage', 'domManipulation']
+      };
+    }
+  }
+
+  /**
+   * Guarda la configuración de seguridad en almacenamiento (añadido en Fase 6)
+   * @param {Object} settings - Configuración a guardar
+   * @private
+   */
+  async _saveSecuritySettings(settings = {}) {
+    try {
+      const currentSettings = await this._loadSecuritySettings();
+      
+      // Fusionar con configuración actual
+      const updatedSettings = {
+        ...currentSettings,
+        ...settings,
+        lastUpdated: Date.now()
+      };
+      
+      await storageService.set(PLUGIN_SECURITY_SETTINGS_KEY, updatedSettings);
+    } catch (error) {
+      console.error('Error al guardar configuración de seguridad:', error);
     }
   }
 
@@ -175,6 +293,12 @@ class PluginManager {
           
           if (compatResult && !compatResult.compatible) {
             console.warn(`Plugin ${pluginId} no se activará automáticamente debido a incompatibilidad: ${compatResult.reason}`);
+            continue;
+          }
+          
+          // Verificar si está en lista negra (añadido en Fase 6)
+          if (this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId)) {
+            console.warn(`Plugin ${pluginId} no se activará automáticamente porque está en lista negra`);
             continue;
           }
           
@@ -277,7 +401,16 @@ class PluginManager {
       return false;
     }
     
+    // Evitar ciclos infinitos en activación de dependencias
+    if (this._activatingPlugins.has(pluginId)) {
+      console.warn(`Ciclo de activación detectado para plugin ${pluginId}, evitando ciclo infinito`);
+      return false;
+    }
+    
     try {
+      // Marcar como en proceso de activación
+      this._activatingPlugins.add(pluginId);
+      
       // Verificar compatibilidad antes de activar
       const compatResult = this._compatibilityResults[pluginId];
       
@@ -291,6 +424,26 @@ class PluginManager {
           details: compatResult
         });
         
+        // Quitar de plugins en activación
+        this._activatingPlugins.delete(pluginId);
+        
+        return false;
+      }
+      
+      // Verificar si está en lista negra (añadido en Fase 6)
+      if (this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId)) {
+        console.error(`No se puede activar plugin en lista negra: ${pluginId}`);
+        
+        // Publicar evento
+        this._publishEvent('securityViolation', {
+          pluginId,
+          reason: 'Intento de activar plugin en lista negra',
+          severity: 'high'
+        });
+        
+        // Quitar de plugins en activación
+        this._activatingPlugins.delete(pluginId);
+        
         return false;
       }
       
@@ -303,6 +456,10 @@ class PluginManager {
         
         if (!plugin) {
           console.error(`No se pudo cargar el plugin: ${pluginId}`);
+          
+          // Quitar de plugins en activación
+          this._activatingPlugins.delete(pluginId);
+          
           return false;
         }
         
@@ -319,6 +476,9 @@ class PluginManager {
             details: validation.details
           });
           
+          // Quitar de plugins en activación
+          this._activatingPlugins.delete(pluginId);
+          
           return false;
         }
         
@@ -326,6 +486,10 @@ class PluginManager {
         const registered = pluginRegistry.registerPlugin(plugin);
         if (!registered) {
           console.error(`No se pudo registrar el plugin: ${pluginId}`);
+          
+          // Quitar de plugins en activación
+          this._activatingPlugins.delete(pluginId);
+          
           return false;
         }
       }
@@ -333,7 +497,59 @@ class PluginManager {
       // Si ya está activo, no hacer nada
       if (pluginRegistry.isPluginActive(pluginId)) {
         console.warn(`Plugin ya activo: ${pluginId}`);
+        
+        // Quitar de plugins en activación
+        this._activatingPlugins.delete(pluginId);
+        
         return true;
+      }
+      
+      // Validar seguridad del plugin (añadido en Fase 6)
+      if (this.securityInitialized) {
+        const securityValidation = pluginSecurityManager.validatePlugin(pluginId);
+        
+        if (!securityValidation.valid) {
+          console.error(`No se puede activar plugin por razones de seguridad: ${securityValidation.reasons.join(', ')}`);
+          
+          // Publicar evento
+          this._publishEvent('securityViolation', {
+            pluginId,
+            reason: 'Validación de seguridad fallida',
+            details: securityValidation,
+            severity: 'medium'
+          });
+          
+          // Quitar de plugins en activación
+          this._activatingPlugins.delete(pluginId);
+          
+          return false;
+        }
+        
+        // Validar permisos solicitados
+        if (plugin.permissions) {
+          const permissionsValidation = pluginPermissionChecker.validatePermissions(
+            pluginId, 
+            plugin.permissions
+          );
+          
+          // Si hay permisos pendientes y estamos en nivel alto, rechazar
+          if (permissionsValidation.pendingPermissions.length > 0 && 
+              this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
+            console.error(`No se puede activar plugin que requiere permisos manuales en nivel de seguridad alto`);
+            
+            // Publicar evento
+            this._publishEvent('permissionDenied', {
+              pluginId,
+              permissions: permissionsValidation.pendingPermissions,
+              reason: 'Nivel de seguridad alto no permite aprobación manual'
+            });
+            
+            // Quitar de plugins en activación
+            this._activatingPlugins.delete(pluginId);
+            
+            return false;
+          }
+        }
       }
       
       // Verificar que todas las dependencias estén activadas
@@ -358,6 +574,9 @@ class PluginManager {
               reason: 'Dependencia no encontrada'
             });
             
+            // Quitar de plugins en activación
+            this._activatingPlugins.delete(pluginId);
+            
             return false;
           }
           
@@ -378,14 +597,52 @@ class PluginManager {
                 reason: 'No se pudo activar la dependencia'
               });
               
+              // Quitar de plugins en activación
+              this._activatingPlugins.delete(pluginId);
+              
               return false;
             }
           }
         }
       }
       
-      // Activar el plugin
-      const activated = pluginRegistry.activatePlugin(pluginId, coreAPI);
+      // Activar el plugin usando sandbox para mayor seguridad (modificado en Fase 6)
+      let activated = false;
+      
+      try {
+        if (this.securityInitialized) {
+          // Usar el sandbox para activar el plugin
+          const finishOperation = pluginResourceMonitor.trackOperation(pluginId, 'activation');
+          
+          activated = await pluginSandbox.executeSandboxed(
+            pluginId,
+            () => pluginRegistry.activatePlugin(pluginId, coreAPI),
+            [], // Sin argumentos adicionales
+            null // Usar contexto predeterminado
+          );
+          
+          finishOperation();
+        } else {
+          // Activación normal sin sandbox
+          activated = pluginRegistry.activatePlugin(pluginId, coreAPI);
+        }
+      } catch (activationError) {
+        console.error(`Error durante la activación del plugin ${pluginId}:`, activationError);
+        
+        // Registrar en auditoría si está disponible
+        if (this.securityInitialized) {
+          pluginSecurityAudit.recordPluginDeactivation(pluginId, {
+            action: 'activation_failed',
+            error: activationError.message,
+            timestamp: Date.now()
+          });
+        }
+        
+        // Quitar de plugins en activación
+        this._activatingPlugins.delete(pluginId);
+        
+        return false;
+      }
       
       if (activated) {
         // Registrar la API pública si existe
@@ -399,11 +656,26 @@ class PluginManager {
         
         // Publicar evento
         this._publishEvent('pluginActivated', { pluginId, plugin });
+        
+        // Registrar evento en auditoría (añadido en Fase 6)
+        if (this.securityInitialized) {
+          pluginSecurityAudit.recordValidationResult(pluginId, {
+            event: 'activation',
+            success: true,
+            timestamp: Date.now()
+          });
+        }
       }
+      
+      // Quitar de plugins en activación
+      this._activatingPlugins.delete(pluginId);
       
       return activated;
     } catch (error) {
       console.error(`Error al activar plugin [${pluginId}]:`, error);
+      
+      // Quitar de plugins en activación
+      this._activatingPlugins.delete(pluginId);
       
       // Publicar evento de error
       this._publishEvent('error', { 
@@ -463,12 +735,62 @@ class PluginManager {
       // Limpiar canales de comunicación
       pluginCommunication.clearPluginResources(pluginId);
       
-      // Desactivar el plugin
-      const deactivated = pluginRegistry.deactivatePlugin(pluginId);
+      // Desactivar el plugin usando sandbox si está disponible (modificado en Fase 6)
+      let deactivated = false;
+      
+      try {
+        if (this.securityInitialized) {
+          // Usar el sandbox para desactivar el plugin
+          const finishOperation = pluginResourceMonitor.trackOperation(pluginId, 'deactivation');
+          
+          // Intentar con sandbox, pero con timeout
+          const cleanupPromise = pluginSandbox.executeSandboxed(
+            pluginId,
+            () => pluginRegistry.deactivatePlugin(pluginId),
+            [], // Sin argumentos adicionales
+            null // Usar contexto predeterminado
+          );
+          
+          // Añadir timeout
+          const timeoutPromise = new Promise((resolve) => {
+            setTimeout(() => resolve(false), 5000); // 5 segundos de timeout
+          });
+          
+          // Esperar la primera promesa que se resuelva
+          deactivated = await Promise.race([cleanupPromise, timeoutPromise]);
+          
+          // Si hubo timeout, desactivar de forma forzada
+          if (!deactivated) {
+            console.warn(`Timeout en desactivación de plugin ${pluginId}, forzando desactivación`);
+            deactivated = pluginRegistry.deactivatePlugin(pluginId);
+          }
+          
+          finishOperation();
+        } else {
+          // Desactivación normal sin sandbox
+          deactivated = pluginRegistry.deactivatePlugin(pluginId);
+        }
+      } catch (deactivationError) {
+        console.error(`Error durante la desactivación del plugin ${pluginId}:`, deactivationError);
+        
+        // Si es forzado, intentar deactivar de todas formas
+        if (force) {
+          deactivated = pluginRegistry.deactivatePlugin(pluginId);
+        } else {
+          return false;
+        }
+      }
       
       if (deactivated) {
         // Limpiar recursos del plugin en la API
         await coreAPI.cleanupPluginResources(pluginId);
+        
+        // Limpiar recursos de seguridad si está disponible (añadido en Fase 6)
+        if (this.securityInitialized) {
+          // No eliminamos datos de auditoría, solo desactivamos monitoreo
+          pluginResourceMonitor.decreaseMonitoring(pluginId);
+          pluginResourceMonitor.removeRestrictions(pluginId);
+        }
         
         // Actualizar estado y guardar
         pluginRegistry.setPluginState(pluginId, { active: false, lastDeactivated: Date.now() });
@@ -476,6 +798,15 @@ class PluginManager {
         
         // Publicar evento
         this._publishEvent('pluginDeactivated', { pluginId, plugin });
+        
+        // Registrar evento en auditoría (añadido en Fase 6)
+        if (this.securityInitialized) {
+          pluginSecurityAudit.recordPluginDeactivation(pluginId, {
+            forced: force,
+            reason: force ? 'Desactivación forzada' : 'Desactivación normal',
+            timestamp: Date.now()
+          });
+        }
       }
       
       return deactivated;
@@ -488,6 +819,16 @@ class PluginManager {
         operation: 'deactivate',
         error: error.message || 'Error desconocido'
       });
+      
+      // Si es forzado, intentar deactivar de todas formas
+      if (force) {
+        try {
+          return pluginRegistry.deactivatePlugin(pluginId);
+        } catch (forceError) {
+          console.error(`Error al forzar desactivación de plugin ${pluginId}:`, forceError);
+          return false;
+        }
+      }
       
       return false;
     }
@@ -509,11 +850,27 @@ class PluginManager {
     return plugins.map(plugin => {
       const compatResult = this._compatibilityResults[plugin.id];
       
-      return {
+      // Información base
+      const pluginInfo = {
         ...plugin,
         compatible: compatResult ? compatResult.compatible : true,
         incompatibilityReason: compatResult && !compatResult.compatible ? compatResult.reason : null
       };
+      
+      // Añadir información de seguridad si está disponible (añadido en Fase 6)
+      if (this.securityInitialized) {
+        const securityInfo = pluginSecurityManager.getPluginSecurityInfo(plugin.id);
+        
+        // Fusionar información de seguridad
+        Object.assign(pluginInfo, {
+          securityScore: securityInfo.securityScore,
+          blacklisted: securityInfo.blacklisted,
+          securityWarnings: securityInfo.warnings.length,
+          permissions: pluginPermissionChecker.getPluginPermissions(plugin.id)
+        });
+      }
+      
+      return pluginInfo;
     });
   }
 
@@ -655,6 +1012,12 @@ class PluginManager {
         
         let activatedCount = 0;
         for (const pluginId of sortedActivePluginIds) {
+          // Verificar si está en lista negra (añadido en Fase 6)
+          if (this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId)) {
+            console.warn(`Plugin ${pluginId} no se reactivará porque está en lista negra`);
+            continue;
+          }
+          
           // Verificar si es compatible antes de reactivar
           if (this.isPluginCompatible(pluginId)) {
             const success = await this.activatePlugin(pluginId);
@@ -718,6 +1081,21 @@ class PluginManager {
         lastCompatibilityCheck: Date.now()
       });
       
+      // Verificar seguridad si está disponible (añadido en Fase 6)
+      if (this.securityInitialized) {
+        const securityResult = pluginSecurityManager.validatePlugin(pluginId);
+        
+        // Si hay problemas de seguridad, actualizar resultado
+        if (!securityResult.valid) {
+          result.compatible = false;
+          result.reason = `Problemas de seguridad: ${securityResult.reasons.join(', ')}`;
+          result.details.security = securityResult;
+          
+          // Actualizar registro interno
+          this._compatibilityResults[pluginId] = result;
+        }
+      }
+      
       return result;
     } catch (error) {
       console.error(`Error al verificar compatibilidad del plugin ${pluginId}:`, error);
@@ -743,7 +1121,8 @@ class PluginManager {
     const allPlugins = this.initialized ? pluginRegistry.getAllPlugins() : [];
     const activePlugins = this.initialized ? pluginRegistry.getActivePlugins() : [];
     
-    return {
+    // Información base del sistema
+    const status = {
       initialized: this.initialized,
       loading: this.loading,
       error: this.error,
@@ -760,6 +1139,25 @@ class PluginManager {
       apiCount: Object.keys(pluginAPIRegistry.getAPIInfo()).length,
       activeChannels: Object.keys(pluginCommunication.getChannelsInfo()).length
     };
+    
+    // Añadir información de seguridad si está disponible (añadido en Fase 6)
+    if (this.securityInitialized) {
+      const securityStats = pluginSecurityManager.getSecurityStats();
+      
+      Object.assign(status, {
+        securityEnabled: true,
+        securityLevel: this.securityLevel,
+        blacklistedPlugins: securityStats.blacklistedPlugins,
+        pluginsWithWarnings: securityStats.pluginsWithWarnings,
+        detectedThreats: securityStats.detectedThreats.total,
+        resourceStats: pluginResourceMonitor.getResourceStats(),
+        permissionStats: pluginPermissionChecker.getPermissionStats()
+      });
+    } else {
+      status.securityEnabled = false;
+    }
+    
+    return status;
   }
 
   /**
@@ -793,6 +1191,309 @@ class PluginManager {
     } catch (error) {
       console.error('Error al obtener información de canales:', error);
       return {};
+    }
+  }
+
+  /**
+   * Cambia el nivel de seguridad del sistema (añadido en Fase 6)
+   * @param {string} level - Nuevo nivel de seguridad
+   * @returns {boolean} - true si se cambió correctamente
+   */
+  setSecurityLevel(level) {
+    if (!this.securityInitialized) {
+      console.warn('Sistema de seguridad no inicializado');
+      return false;
+    }
+    
+    if (!PLUGIN_CONSTANTS.SECURITY.LEVEL[level?.toUpperCase()]) {
+      console.error(`Nivel de seguridad inválido: ${level}`);
+      return false;
+    }
+    
+    try {
+      const newLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL[level.toUpperCase()];
+      
+      // Cambiar nivel en subsistemas
+      pluginSecurityManager.setSecurityLevel(newLevel);
+      pluginSandbox.setSecurityLevel(newLevel);
+      pluginResourceMonitor.setSecurityLevel(newLevel);
+      pluginPermissionChecker.setSecurityLevel(newLevel);
+      pluginSecurityAudit.setSecurityLevel(newLevel);
+      
+      // Actualizar nivel interno
+      this.securityLevel = newLevel;
+      
+      // Guardar configuración
+      this._saveSecuritySettings({ securityLevel: newLevel });
+      
+      // Publicar evento
+      this._publishEvent('securityLevelChanged', {
+        level: newLevel,
+        previousLevel: this.securityLevel
+      });
+      
+      return true;
+    } catch (error) {
+      console.error(`Error al cambiar nivel de seguridad a ${level}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Desactiva y pone en lista negra un plugin (añadido en Fase 6)
+   * @param {string} pluginId - ID del plugin
+   * @param {string} reason - Razón para la lista negra
+   * @returns {boolean} - true si se completó correctamente
+   */
+  async blacklistPlugin(pluginId, reason) {
+    if (!this.securityInitialized) {
+      console.warn('Sistema de seguridad no inicializado');
+      return false;
+    }
+    
+    try {
+      // Desactivar primero si está activo
+      if (pluginRegistry.isPluginActive(pluginId)) {
+        await this.deactivatePlugin(pluginId, true);
+      }
+      
+      // Añadir a lista negra
+      const result = pluginSecurityManager.blacklistPlugin(pluginId);
+      
+      if (result) {
+        // Registrar en auditoría
+        pluginSecurityAudit.recordBlacklistAction(pluginId, {
+          action: 'add',
+          reason,
+          timestamp: Date.now()
+        });
+        
+        // Publicar evento
+        this._publishEvent('pluginBlacklisted', {
+          pluginId,
+          reason
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Error al poner en lista negra el plugin ${pluginId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Elimina un plugin de la lista negra (añadido en Fase 6)
+   * @param {string} pluginId - ID del plugin
+   * @returns {boolean} - true si se completó correctamente
+   */
+  whitelistPlugin(pluginId) {
+    if (!this.securityInitialized) {
+      console.warn('Sistema de seguridad no inicializado');
+      return false;
+    }
+    
+    try {
+      // Quitar de lista negra
+      const result = pluginSecurityManager.whitelistPlugin(pluginId);
+      
+      if (result) {
+        // Registrar en auditoría
+        pluginSecurityAudit.recordBlacklistAction(pluginId, {
+          action: 'remove',
+          timestamp: Date.now()
+        });
+        
+        // Publicar evento
+        this._publishEvent('pluginWhitelisted', {
+          pluginId
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Error al quitar de lista negra el plugin ${pluginId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Aprueba permisos pendientes para un plugin (añadido en Fase 6)
+   * @param {string} pluginId - ID del plugin
+   * @param {Array} permissions - Permisos a aprobar
+   * @returns {boolean} - true si se completó correctamente
+   */
+  approvePluginPermissions(pluginId, permissions) {
+    if (!this.securityInitialized) {
+      console.warn('Sistema de seguridad no inicializado');
+      return false;
+    }
+    
+    try {
+      // Aprobar permisos
+      const result = pluginPermissionChecker.approvePermissions(pluginId, permissions);
+      
+      if (result) {
+        // Registrar en auditoría
+        pluginSecurityAudit.recordValidationResult(pluginId, {
+          event: 'permissionApproved',
+          permissions,
+          timestamp: Date.now()
+        });
+        
+        // Publicar evento
+        this._publishEvent('permissionGranted', {
+          pluginId,
+          permissions
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Error al aprobar permisos para el plugin ${pluginId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Rechaza permisos pendientes para un plugin (añadido en Fase 6)
+   * @param {string} pluginId - ID del plugin
+   * @param {Array} permissions - Permisos a rechazar
+   * @returns {boolean} - true si se completó correctamente
+   */
+  rejectPluginPermissions(pluginId, permissions) {
+    if (!this.securityInitialized) {
+      console.warn('Sistema de seguridad no inicializado');
+      return false;
+    }
+    
+    try {
+      // Rechazar permisos
+      const result = pluginPermissionChecker.rejectPermissions(pluginId, permissions);
+      
+      if (result) {
+        // Registrar en auditoría
+        pluginSecurityAudit.recordValidationResult(pluginId, {
+          event: 'permissionRejected',
+          permissions,
+          timestamp: Date.now()
+        });
+        
+        // Publicar evento
+        this._publishEvent('permissionDenied', {
+          pluginId,
+          permissions
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Error al rechazar permisos para el plugin ${pluginId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Obtiene información de seguridad detallada para un plugin (añadido en Fase 6)
+   * @param {string} pluginId - ID del plugin
+   * @returns {Object} - Información de seguridad
+   */
+  getPluginSecurityInfo(pluginId) {
+    if (!this.securityInitialized) {
+      return {
+        securityEnabled: false
+      };
+    }
+    
+    try {
+      // Obtener información básica
+      const securityInfo = pluginSecurityManager.getPluginSecurityInfo(pluginId);
+      
+      // Obtener información adicional
+      const resourceUsage = pluginResourceMonitor.getPluginResourceUsage(pluginId);
+      const permissionsInfo = pluginPermissionChecker.getPluginPermissions(pluginId);
+      const auditHistory = pluginSecurityAudit.getPluginAuditHistory(pluginId);
+      const sandboxErrors = pluginSandbox.getSandboxErrors(pluginId);
+      
+      // Combinar toda la información
+      return {
+        securityEnabled: true,
+        ...securityInfo,
+        resourceUsage,
+        permissions: permissionsInfo,
+        auditHistory: auditHistory.slice(0, 20), // Limitar a 20 entradas
+        sandboxErrors,
+        securityLevel: this.securityLevel
+      };
+    } catch (error) {
+      console.error(`Error al obtener información de seguridad para el plugin ${pluginId}:`, error);
+      
+      return {
+        securityEnabled: true,
+        error: error.message,
+        securityLevel: this.securityLevel
+      };
+    }
+  }
+
+  /**
+   * Obtiene solicitudes de permisos pendientes (añadido en Fase 6)
+   * @returns {Array} - Lista de solicitudes pendientes
+   */
+  getPendingPermissionRequests() {
+    if (!this.securityInitialized) {
+      return [];
+    }
+    
+    try {
+      return pluginPermissionChecker.getPendingPermissionRequests();
+    } catch (error) {
+      console.error('Error al obtener solicitudes de permisos pendientes:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtiene estadísticas de seguridad (añadido en Fase 6)
+   * @returns {Object} - Estadísticas de seguridad
+   */
+  getSecurityStats() {
+    if (!this.securityInitialized) {
+      return {
+        securityEnabled: false
+      };
+    }
+    
+    try {
+      // Obtener estadísticas de cada subsistema
+      const managerStats = pluginSecurityManager.getSecurityStats();
+      const resourceStats = pluginResourceMonitor.getResourceStats();
+      const permissionStats = pluginPermissionChecker.getPermissionStats();
+      const auditStats = pluginSecurityAudit.getAuditStats();
+      const sandboxStats = pluginSandbox.getStats();
+      
+      // Combinar estadísticas
+      return {
+        securityEnabled: true,
+        securityLevel: this.securityLevel,
+        activeChecks: Array.from(managerStats.activeChecks || []),
+        threats: managerStats.detectedThreats,
+        blacklistedPlugins: managerStats.blacklistedPlugins,
+        pluginsWithWarnings: managerStats.pluginsWithWarnings,
+        pendingPermissions: permissionStats.pendingRequests,
+        resourceOveruse: resourceStats.recentViolations,
+        securityEvents: auditStats.totalEntries,
+        recentAuditEvents: auditStats.recentEvents,
+        sandboxErrors: sandboxStats.totalErrors
+      };
+    } catch (error) {
+      console.error('Error al obtener estadísticas de seguridad:', error);
+      
+      return {
+        securityEnabled: true,
+        securityLevel: this.securityLevel,
+        error: error.message
+      };
     }
   }
 }

@@ -6,6 +6,7 @@ import CalendarConfig from './calendar-config';
 import PluginsPanel from './plugins-panel';
 import SidebarItem from '../ui/sidebar/sidebar-item';
 import SettingsExtensions from '../plugin-extension/settings-extensions';
+import SecurityPanel from './security-panel';
 
 // Iconos para las secciones de configuración (usando Material Icons)
 const SECTION_ICONS = {
@@ -16,7 +17,8 @@ const SECTION_ICONS = {
   TIME_SLOTS: 'horizontal_split',
   BACKUP: 'backup',
   PLUGINS: 'extension',
-  EXTENSIONS: 'extension_plus' // Icono para sección de extensiones
+  EXTENSIONS: 'extension_plus', // Icono para sección de extensiones
+  SECURITY: 'security' // Nuevo icono para la sección de seguridad
 };
 
 /**
@@ -35,6 +37,7 @@ const SettingsPanel = () => {
     { id: 'calendar', label: 'Calendario', icon: SECTION_ICONS.CALENDAR },
     { id: 'plugins', label: 'Plugins', icon: SECTION_ICONS.PLUGINS },
     { id: 'extensions', label: 'Extensiones', icon: SECTION_ICONS.EXTENSIONS },
+    { id: 'security', label: 'Seguridad', icon: SECTION_ICONS.SECURITY }, // Nueva sección de seguridad
     { id: 'backup', label: 'Respaldo', icon: SECTION_ICONS.BACKUP }
   ];
   
@@ -58,6 +61,8 @@ const SettingsPanel = () => {
         return <PluginsPanel />;
       case 'extensions':
         return <SettingsExtensions />;
+      case 'security':
+        return <SecurityPanel />; // Renderizar el panel de seguridad
       case 'general':
       case 'backup':
         return (
