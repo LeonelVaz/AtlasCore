@@ -70,7 +70,12 @@ export const STORAGE_KEYS = {
   // Claves para el sistema de plugins
   PLUGIN_STATES: 'atlas_plugin_states',
   PLUGIN_SETTINGS: 'atlas_plugin_settings',
-  PLUGIN_DATA_PREFIX: 'atlas_plugin_data_'
+  PLUGIN_DATA_PREFIX: 'atlas_plugin_data_',
+  // Claves para el sistema de seguridad
+  PLUGIN_SECURITY_SETTINGS: 'atlas_plugin_security_settings',
+  PLUGIN_BLACKLIST: 'atlas_plugin_blacklist',
+  PLUGIN_AUDIT_LOG: 'atlas_plugin_audit_log',
+  PLUGIN_PERMISSIONS: 'atlas_plugin_permissions'
 };
 
 // Tipos de franja horaria
@@ -158,7 +163,18 @@ export const PLUGIN_CONSTANTS = {
     CYCLES_DETECTED: 'cyclesDetected',
     LOAD_ORDER_CALCULATED: 'loadOrderCalculated',
     PLUGINS_SORTED: 'pluginsSorted',
-    PLUGINS_VALIDATED: 'pluginsValidated'
+    PLUGINS_VALIDATED: 'pluginsValidated',
+    // Eventos específicos de seguridad
+    SECURITY_INITIALIZED: 'securityInitialized',
+    SECURITY_EVENT: 'securityEvent',
+    PERMISSION_REQUEST: 'permissionRequest',
+    PERMISSION_GRANTED: 'permissionGranted',
+    PERMISSION_DENIED: 'permissionDenied',
+    SUSPICIOUS_ACTIVITY: 'suspiciousActivity',
+    RESOURCE_OVERUSE: 'resourceOveruse',
+    SANDBOX_ERROR: 'sandboxError',
+    BLACKLIST_CHANGED: 'blacklistChanged',
+    SECURITY_LEVEL_CHANGED: 'securityLevelChanged'
   },
   
   // Zonas de extensión UI disponibles
@@ -167,6 +183,72 @@ export const PLUGIN_CONSTANTS = {
     SETTINGS_PANEL: 'settings-panel',
     // Se añadirán más en versiones futuras
     // DASHBOARD_WIDGETS: 'dashboard-widgets' (v0.5.0+)
+    SECURITY_PANEL: 'security-panel' // Nueva zona para el panel de seguridad
+  },
+  
+  // Constantes para el sistema de seguridad
+  SECURITY: {
+    // Niveles de seguridad
+    LEVEL: {
+      LOW: 'low',           // Para desarrollo
+      NORMAL: 'normal',     // Predeterminado
+      HIGH: 'high'          // Para entornos críticos
+    },
+    
+    // Tipos de permisos
+    PERMISSION_TYPES: {
+      STORAGE: 'storage',
+      NETWORK: 'network',
+      DOM: 'dom',
+      EVENTS: 'events',
+      COMMUNICATION: 'communication',
+      UI: 'ui',
+      NOTIFICATIONS: 'notifications',
+      CODE_EXECUTION: 'codeExecution'
+    },
+    
+    // Niveles de riesgo
+    RISK_LEVELS: {
+      LOW: 'low',
+      MEDIUM: 'medium',
+      HIGH: 'high',
+      CRITICAL: 'critical'
+    },
+    
+    // Modos de auditoría
+    AUDIT_MODES: {
+      DISABLED: 'disabled',
+      BATCH: 'batch',
+      IMMEDIATE: 'immediate'
+    },
+    
+    // Estados de solicitud de permiso
+    PERMISSION_STATUS: {
+      PENDING: 'pending',
+      APPROVED: 'approved',
+      REJECTED: 'rejected',
+      REVOKED: 'revoked'
+    },
+    
+    // Tipos de eventos de seguridad
+    EVENT_TYPES: {
+      SECURITY_VIOLATION: 'securityViolation',
+      UNAUTHORIZED_ACCESS: 'unauthorizedAccess',
+      RESOURCE_OVERUSE: 'resourceOveruse',
+      SUSPICIOUS_CODE: 'suspiciousCode',
+      SANDBOX_ESCAPE: 'sandboxEscape',
+      DATA_LEAK: 'dataLeak',
+      DOM_MANIPULATION: 'domManipulation'
+    },
+    
+    // Acciones de seguridad
+    ACTIONS: {
+      MONITOR: 'monitor',
+      RESTRICT: 'restrict',
+      DEACTIVATE: 'deactivate',
+      BLACKLIST: 'blacklist',
+      QUARANTINE: 'quarantine'
+    }
   },
   
   // Límites del sistema
@@ -181,6 +263,33 @@ export const PLUGIN_CONSTANTS = {
     MAX_UI_COMPONENTS: 10,
     
     // Tamaño máximo del log de errores
-    MAX_ERROR_LOG_SIZE: 100
+    MAX_ERROR_LOG_SIZE: 100,
+    
+    // Límites específicos para sistema de seguridad
+    SECURITY: {
+      // Memoria máxima para un plugin (4MB)
+      MAX_MEMORY: 4 * 1024 * 1024,
+      
+      // Tiempo máximo de CPU por minuto (ms)
+      MAX_CPU_TIME: 1000,
+      
+      // Tiempo máximo de ejecución para una operación (ms)
+      MAX_OPERATION_TIME: 2000,
+      
+      // Máximo de operaciones por minuto
+      MAX_OPERATIONS_PER_MINUTE: 1000,
+      
+      // Máximo de llamadas a API por minuto
+      MAX_API_CALLS_PER_MINUTE: 100,
+      
+      // Máximo de peticiones de red por minuto
+      MAX_NETWORK_REQUESTS_PER_MINUTE: 30,
+      
+      // Máximo de operaciones DOM por minuto
+      MAX_DOM_OPERATIONS_PER_MINUTE: 200,
+      
+      // Máximo de errores antes de desactivar un plugin
+      MAX_ERRORS_BEFORE_DEACTIVATION: 5
+    }
   }
 };
