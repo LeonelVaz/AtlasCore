@@ -5,12 +5,14 @@
  * carga, inicialización, activación, desactivación, etc.
  */
 
-import { loadPlugins, loadPluginById } from './plugin-loader';
+import { loadPlugins, loadPluginById, validatePluginCompatibility } from './plugin-loader';
 import pluginRegistry from './plugin-registry';
 import coreAPI from './core-api';
 import storageService from '../../services/storage-service';
 import { STORAGE_KEYS } from '../../core/config/constants';
 import eventBus from '../../core/bus/event-bus';
+import pluginCompatibility from './plugin-compatibility';
+import pluginDependencyResolver from './plugin-dependency-resolver';
 
 // Constantes
 const PLUGIN_STATE_KEY = 'atlas_plugin_states';
@@ -28,6 +30,9 @@ class PluginManager {
     // Suscriptores a eventos del sistema de plugins
     this._subscribers = {};
     this._lastSubscriberId = 0;
+    
+    // Registro de resultados de compatibilidad por plugin
+    this._compatibilityResults = {};
   }
 
   /**
@@ -61,6 +66,12 @@ class PluginManager {
         if (success) registeredCount++;
       }
       
+      // Verificar compatibilidad y dependencias
+      await this._verifyPluginCompatibility();
+      
+      // Marcar como inicializado antes de activar plugins
+      this.initialized = true;
+      
       // Activar automáticamente plugins según estado previo
       await this._activatePluginsFromState();
       
@@ -72,7 +83,6 @@ class PluginManager {
         activePlugins: pluginRegistry.getActivePlugins().map(p => p.id)
       });
       
-      this.initialized = true;
       this.loading = false;
       
       return true;
@@ -80,6 +90,7 @@ class PluginManager {
       console.error('Error al inicializar el sistema de plugins:', error);
       this.error = error.message || 'Error desconocido al inicializar plugins';
       this.loading = false;
+      this.initialized = false; // Asegurarse de que no quede en estado inconsistente
       
       // Publicar evento de error
       this._publishEvent('error', { error: this.error });
@@ -132,18 +143,100 @@ class PluginManager {
    */
   async _activatePluginsFromState() {
     try {
+      // Verificar que el sistema esté inicializado
+      if (!this.initialized) {
+        console.warn('No se pueden activar plugins, el sistema no está inicializado');
+        return false;
+      }
+      
       const pluginStates = pluginRegistry.getPluginStates();
       
-      // Activar plugins marcados como activos
-      for (const [pluginId, state] of Object.entries(pluginStates)) {
-        if (state.active) {
-          await this.activatePlugin(pluginId);
+      // Obtener lista de plugins activos ordenados por dependencias
+      const allPlugins = pluginRegistry.getAllPlugins();
+      const sortedPluginIds = pluginDependencyResolver.calculateLoadOrder();
+      
+      // Mapeo de ID a objeto plugin
+      const pluginsMap = {};
+      allPlugins.forEach(plugin => {
+        if (plugin && plugin.id) {
+          pluginsMap[plugin.id] = plugin;
+        }
+      });
+      
+      // Activar plugins marcados como activos en orden de dependencias
+      for (const pluginId of sortedPluginIds) {
+        const state = pluginStates[pluginId];
+        
+        if (state && state.active && pluginsMap[pluginId]) {
+          // Verificar compatibilidad antes de activar
+          const compatResult = this._compatibilityResults[pluginId];
+          
+          if (compatResult && !compatResult.compatible) {
+            console.warn(`Plugin ${pluginId} no se activará automáticamente debido a incompatibilidad: ${compatResult.reason}`);
+            continue;
+          }
+          
+          try {
+            await this.activatePlugin(pluginId);
+          } catch (error) {
+            console.error(`Error al activar plugin ${pluginId} desde estado previo:`, error);
+          }
         }
       }
       
       return true;
     } catch (error) {
       console.error('Error al activar plugins desde estado previo:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Verifica la compatibilidad y dependencias de todos los plugins registrados
+   * @private
+   */
+  async _verifyPluginCompatibility() {
+    try {
+      // Limpiar resultados anteriores
+      this._compatibilityResults = {};
+      
+      // Obtener todos los plugins registrados
+      const allPlugins = pluginRegistry.getAllPlugins();
+      
+      // Verificar compatibilidad de cada plugin
+      for (const plugin of allPlugins) {
+        try {
+          // Verificación completa
+          const result = pluginCompatibility.runFullCompatibilityCheck(plugin);
+          
+          // Almacenar resultado
+          this._compatibilityResults[plugin.id] = result;
+          
+          // Actualizar estado en el registro
+          pluginRegistry.setPluginState(plugin.id, { 
+            compatible: result.compatible,
+            incompatibilityReason: result.compatible ? null : result.reason,
+            lastCompatibilityCheck: Date.now()
+          });
+          
+          if (!result.compatible) {
+            console.warn(`Plugin ${plugin.id} incompatible: ${result.reason}`);
+          }
+        } catch (error) {
+          console.error(`Error al verificar compatibilidad del plugin ${plugin.id}:`, error);
+          this._compatibilityResults[plugin.id] = {
+            compatible: false,
+            reason: `Error en verificación: ${error.message}`
+          };
+        }
+      }
+      
+      // Resolver dependencias y calcular el orden de carga
+      pluginDependencyResolver.calculateLoadOrder();
+      
+      return true;
+    } catch (error) {
+      console.error('Error al verificar compatibilidad de plugins:', error);
       return false;
     }
   }
@@ -183,6 +276,22 @@ class PluginManager {
     }
     
     try {
+      // Verificar compatibilidad antes de activar
+      const compatResult = this._compatibilityResults[pluginId];
+      
+      if (compatResult && !compatResult.compatible) {
+        console.error(`No se puede activar plugin incompatible: ${compatResult.reason}`);
+        
+        // Publicar evento de error de compatibilidad
+        this._publishEvent('compatibilityError', {
+          pluginId,
+          reason: compatResult.reason,
+          details: compatResult
+        });
+        
+        return false;
+      }
+      
       // Verificar si ya está registrado
       let plugin = pluginRegistry.getPlugin(pluginId);
       
@@ -192,6 +301,22 @@ class PluginManager {
         
         if (!plugin) {
           console.error(`No se pudo cargar el plugin: ${pluginId}`);
+          return false;
+        }
+        
+        // Verificar compatibilidad del plugin recién cargado
+        const validation = validatePluginCompatibility(plugin);
+        
+        if (!validation.valid) {
+          console.error(`No se puede registrar plugin incompatible: ${validation.reason}`);
+          
+          // Publicar evento de error de compatibilidad
+          this._publishEvent('compatibilityError', {
+            pluginId,
+            reason: validation.reason,
+            details: validation.details
+          });
+          
           return false;
         }
         
@@ -207,6 +332,54 @@ class PluginManager {
       if (pluginRegistry.isPluginActive(pluginId)) {
         console.warn(`Plugin ya activo: ${pluginId}`);
         return true;
+      }
+      
+      // Verificar que todas las dependencias estén activadas
+      const dependencies = plugin.dependencies || [];
+      
+      if (dependencies.length > 0) {
+        for (const dependency of dependencies) {
+          const depId = typeof dependency === 'string' ? dependency : dependency.id;
+          
+          if (!depId) continue;
+          
+          // Verificar si la dependencia existe
+          const depPlugin = pluginRegistry.getPlugin(depId);
+          
+          if (!depPlugin) {
+            console.error(`Dependencia ${depId} no encontrada para el plugin ${pluginId}`);
+            
+            // Publicar evento de error de dependencia
+            this._publishEvent('dependencyError', {
+              pluginId,
+              dependencyId: depId,
+              reason: 'Dependencia no encontrada'
+            });
+            
+            return false;
+          }
+          
+          // Verificar si la dependencia está activa
+          if (!pluginRegistry.isPluginActive(depId)) {
+            console.log(`Activando dependencia ${depId} para el plugin ${pluginId}`);
+            
+            // Activar dependencia recursivamente
+            const depActivated = await this.activatePlugin(depId);
+            
+            if (!depActivated) {
+              console.error(`No se pudo activar la dependencia ${depId} para el plugin ${pluginId}`);
+              
+              // Publicar evento de error de dependencia
+              this._publishEvent('dependencyError', {
+                pluginId,
+                dependencyId: depId,
+                reason: 'No se pudo activar la dependencia'
+              });
+              
+              return false;
+            }
+          }
+        }
       }
       
       // Activar el plugin
@@ -239,9 +412,10 @@ class PluginManager {
   /**
    * Desactiva un plugin por su ID
    * @param {string} pluginId - ID del plugin a desactivar
+   * @param {boolean} force - Si es true, ignora las dependencias
    * @returns {Promise<boolean>} - true si se desactivó correctamente
    */
-  async deactivatePlugin(pluginId) {
+  async deactivatePlugin(pluginId, force = false) {
     if (!this.initialized) {
       console.error('El gestor de plugins no está inicializado');
       return false;
@@ -256,6 +430,25 @@ class PluginManager {
       
       // Obtener plugin antes de desactivarlo
       const plugin = pluginRegistry.getPlugin(pluginId);
+      
+      // Si no es forzado, verificar que ningún plugin activo dependa de este
+      if (!force) {
+        const dependentPlugins = pluginDependencyResolver.getDependentPlugins(pluginId);
+        const activeDependent = dependentPlugins.filter(depId => pluginRegistry.isPluginActive(depId));
+        
+        if (activeDependent.length > 0) {
+          console.error(`No se puede desactivar plugin ${pluginId} porque ${activeDependent.length} plugins dependen de él`);
+          
+          // Publicar evento de error de dependencia
+          this._publishEvent('dependencyError', {
+            pluginId,
+            dependent: activeDependent,
+            reason: 'Otros plugins activos dependen de este'
+          });
+          
+          return false;
+        }
+      }
       
       // Desactivar el plugin
       const deactivated = pluginRegistry.deactivatePlugin(pluginId);
@@ -297,7 +490,18 @@ class PluginManager {
       return [];
     }
     
-    return pluginRegistry.getAllPlugins();
+    const plugins = pluginRegistry.getAllPlugins();
+    
+    // Añadir información de compatibilidad
+    return plugins.map(plugin => {
+      const compatResult = this._compatibilityResults[plugin.id];
+      
+      return {
+        ...plugin,
+        compatible: compatResult ? compatResult.compatible : true,
+        incompatibilityReason: compatResult && !compatResult.compatible ? compatResult.reason : null
+      };
+    });
   }
 
   /**
@@ -325,6 +529,32 @@ class PluginManager {
     }
     
     return pluginRegistry.isPluginActive(pluginId);
+  }
+
+  /**
+   * Comprueba si un plugin es compatible
+   * @param {string} pluginId - ID del plugin
+   * @returns {boolean} - true si el plugin es compatible
+   */
+  isPluginCompatible(pluginId) {
+    if (!this.initialized || !this._compatibilityResults[pluginId]) {
+      return true; // Asumir compatibilidad por defecto
+    }
+    
+    return this._compatibilityResults[pluginId].compatible;
+  }
+
+  /**
+   * Obtiene información de compatibilidad de un plugin
+   * @param {string} pluginId - ID del plugin
+   * @returns {Object|null} - Información de compatibilidad o null
+   */
+  getPluginCompatibilityInfo(pluginId) {
+    if (!this.initialized || !this._compatibilityResults[pluginId]) {
+      return null;
+    }
+    
+    return this._compatibilityResults[pluginId];
   }
 
   /**
@@ -383,12 +613,18 @@ class PluginManager {
       // Limpiar registro existente
       pluginRegistry.clear();
       
+      // Limpiar compatibilidad
+      this._compatibilityResults = {};
+      
       // Registrar nuevos plugins encontrados
       let registeredCount = 0;
       for (const plugin of plugins) {
         const success = pluginRegistry.registerPlugin(plugin);
         if (success) registeredCount++;
       }
+      
+      // Verificar compatibilidad de los plugins
+      await this._verifyPluginCompatibility();
       
       // Cargar estados desde almacenamiento
       await this._loadPluginStates();
@@ -397,13 +633,22 @@ class PluginManager {
       
       // Reactivar los plugins que estaban activos
       if (preserveState) {
+        // Recalcular orden de carga
+        const loadOrder = pluginDependencyResolver.calculateLoadOrder();
+        const sortedActivePluginIds = loadOrder.filter(id => activePluginIds.includes(id));
+        
         let activatedCount = 0;
-        for (const pluginId of activePluginIds) {
-          const success = await this.activatePlugin(pluginId);
-          if (success) activatedCount++;
+        for (const pluginId of sortedActivePluginIds) {
+          // Verificar si es compatible antes de reactivar
+          if (this.isPluginCompatible(pluginId)) {
+            const success = await this.activatePlugin(pluginId);
+            if (success) activatedCount++;
+          } else {
+            console.warn(`Plugin ${pluginId} no se reactivará por incompatibilidad: ${this._compatibilityResults[pluginId]?.reason}`);
+          }
         }
         
-        console.log(`${activatedCount}/${activePluginIds.length} plugins reactivados.`);
+        console.log(`${activatedCount}/${sortedActivePluginIds.length} plugins reactivados.`);
       }
       
       // Publicar evento
@@ -427,17 +672,75 @@ class PluginManager {
   }
 
   /**
+   * Ejecuta una verificación de compatibilidad para un plugin específico
+   * @param {string} pluginId - ID del plugin
+   * @returns {Promise<Object>} - Resultado de la verificación
+   */
+  async checkPluginCompatibility(pluginId) {
+    try {
+      if (!this.initialized) {
+        console.warn('El gestor de plugins no está inicializado');
+        return { compatible: false, reason: 'Sistema de plugins no inicializado' };
+      }
+      
+      const plugin = pluginRegistry.getPlugin(pluginId);
+      
+      if (!plugin) {
+        return { compatible: false, reason: 'Plugin no encontrado' };
+      }
+      
+      // Ejecutar verificación completa
+      const result = pluginCompatibility.runFullCompatibilityCheck(plugin);
+      
+      // Actualizar registro interno
+      this._compatibilityResults[pluginId] = result;
+      
+      // Actualizar estado en el registro
+      pluginRegistry.setPluginState(pluginId, { 
+        compatible: result.compatible,
+        incompatibilityReason: result.compatible ? null : result.reason,
+        lastCompatibilityCheck: Date.now()
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`Error al verificar compatibilidad del plugin ${pluginId}:`, error);
+      
+      const errorResult = {
+        compatible: false,
+        reason: `Error en verificación: ${error.message}`,
+        details: { error: error.message }
+      };
+      
+      // Actualizar registro interno
+      this._compatibilityResults[pluginId] = errorResult;
+      
+      return errorResult;
+    }
+  }
+
+  /**
    * Obtiene datos del estado actual del sistema de plugins
    * @returns {Object} - Información del estado del sistema
    */
   getStatus() {
+    const allPlugins = this.initialized ? pluginRegistry.getAllPlugins() : [];
+    const activePlugins = this.initialized ? pluginRegistry.getActivePlugins() : [];
+    
     return {
       initialized: this.initialized,
       loading: this.loading,
       error: this.error,
-      totalPlugins: this.initialized ? pluginRegistry.getAllPlugins().length : 0,
-      activePlugins: this.initialized ? pluginRegistry.getActivePlugins().length : 0,
-      states: this.initialized ? pluginRegistry.getPluginStates() : {}
+      totalPlugins: allPlugins.length,
+      activePlugins: activePlugins.length,
+      compatiblePlugins: allPlugins.filter(p => 
+        this._compatibilityResults[p.id]?.compatible !== false
+      ).length,
+      incompatiblePlugins: allPlugins.filter(p => 
+        this._compatibilityResults[p.id]?.compatible === false
+      ).length,
+      states: this.initialized ? pluginRegistry.getPluginStates() : {},
+      cycles: pluginDependencyResolver.getDetectedCycles()
     };
   }
 }

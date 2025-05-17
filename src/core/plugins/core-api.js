@@ -10,6 +10,8 @@ import storageService from '../../services/storage-service';
 import pluginEvents from './plugin-events';
 import pluginStorage from './plugin-storage';
 import uiExtensionManager from './ui-extension-manager';
+// Importar las constantes
+import { PLUGIN_CONSTANTS } from '../config/constants';
 
 /**
  * Clase que implementa la API core para plugins

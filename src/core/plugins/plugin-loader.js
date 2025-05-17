@@ -5,8 +5,11 @@
  * la carpeta designada del sistema
  */
 
-import { validatePlugin } from './plugin-validator';
+import { validatePlugin, validatePluginComplete } from './plugin-validator';
+import pluginCompatibility from './plugin-compatibility';
+import pluginDependencyResolver from './plugin-dependency-resolver';
 import { PLUGIN_CONSTANTS } from '../config/constants';
+import eventBus from '../bus/event-bus';
 
 /**
  * Carga todos los plugins disponibles en la carpeta designada
@@ -22,8 +25,11 @@ export async function loadPlugins() {
       return validatePlugin(plugin);
     });
     
-    console.log(`Plugins cargados: ${validPlugins.length}`);
-    return validPlugins;
+    // Ordenar plugins según prioridades y dependencias
+    const sortedPlugins = sortPluginsByPriority(validPlugins);
+    
+    console.log(`Plugins cargados: ${sortedPlugins.length}`);
+    return sortedPlugins;
   } catch (error) {
     console.error('Error al cargar plugins:', error);
     return [];
@@ -88,5 +94,123 @@ export async function loadPluginById(pluginId) {
   } catch (error) {
     console.error(`Error al cargar plugin ${pluginId}:`, error);
     return null;
+  }
+}
+
+/**
+ * Ordena los plugins según prioridad y dependencias
+ * @param {Array} plugins - Lista de plugins a ordenar
+ * @returns {Array} - Lista de plugins ordenada
+ */
+function sortPluginsByPriority(plugins) {
+  try {
+    // Si no hay plugins o solo hay uno, no es necesario ordenar
+    if (!plugins || !Array.isArray(plugins) || plugins.length <= 1) {
+      return plugins || [];
+    }
+    
+    // Obtener orden de dependencias
+    const dependencyOrder = pluginDependencyResolver.calculateLoadOrder();
+    
+    // Crear mapa de plugins por ID para búsqueda rápida
+    const pluginsMap = {};
+    plugins.forEach(plugin => {
+      if (plugin && plugin.id) {
+        pluginsMap[plugin.id] = plugin;
+      }
+    });
+    
+    // Ordenar primero por dependencias
+    let sortedPlugins = [];
+    
+    // Añadir plugins en orden de dependencias
+    for (const pluginId of dependencyOrder) {
+      if (pluginsMap[pluginId]) {
+        sortedPlugins.push(pluginsMap[pluginId]);
+        
+        // Eliminar del mapa para no añadirlo dos veces
+        delete pluginsMap[pluginId];
+      }
+    }
+    
+    // Añadir plugins restantes que no estaban en el orden de dependencias
+    const remainingPlugins = Object.values(pluginsMap);
+    
+    // Ordenar plugins restantes por prioridad
+    remainingPlugins.sort((a, b) => {
+      // Obtener prioridad (menor número = mayor prioridad)
+      const priorityA = pluginDependencyResolver.getPluginPriority(a);
+      const priorityB = pluginDependencyResolver.getPluginPriority(b);
+      
+      // Ordenar primero por prioridad
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      
+      // Si las prioridades son iguales, ordenar por ID para consistencia
+      return a.id.localeCompare(b.id);
+    });
+    
+    // Combinar los dos conjuntos
+    sortedPlugins = [...sortedPlugins, ...remainingPlugins];
+    
+    // Publicar evento con información de orden
+    eventBus.publish('pluginSystem.pluginsSorted', {
+      original: plugins.length,
+      sorted: sortedPlugins.length,
+      order: sortedPlugins.map(p => p.id)
+    });
+    
+    return sortedPlugins;
+  } catch (error) {
+    console.error('Error al ordenar plugins:', error);
+    
+    // En caso de error, devolver lista original
+    return plugins;
+  }
+}
+
+/**
+ * Valida que un plugin sea compatible con la aplicación
+ * @param {Object} plugin - Plugin a validar
+ * @returns {Object} - Resultado de la validación
+ */
+export function validatePluginCompatibility(plugin) {
+  try {
+    if (!plugin || !plugin.id) {
+      return {
+        valid: false,
+        reason: 'Plugin inválido'
+      };
+    }
+    
+    // Validación básica de estructura
+    const basicValidation = validatePluginComplete(plugin);
+    
+    // Si no pasa la validación básica, no continuar
+    if (!basicValidation.valid) {
+      return basicValidation;
+    }
+    
+    // Validación completa de compatibilidad
+    const compatResult = pluginCompatibility.runFullCompatibilityCheck(plugin);
+    
+    return {
+      valid: compatResult.compatible,
+      reason: compatResult.reason,
+      details: {
+        ...basicValidation.details,
+        compatibility: compatResult.details
+      }
+    };
+  } catch (error) {
+    console.error(`Error al validar compatibilidad del plugin ${plugin?.id}:`, error);
+    return {
+      valid: false,
+      reason: `Error en validación: ${error.message}`,
+      details: {
+        error: error.message
+      }
+    };
   }
 }

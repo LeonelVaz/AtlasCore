@@ -24,6 +24,12 @@ class PluginRegistry {
     
     // Plugins con error
     this.pluginErrors = {};
+    
+    // Información de dependencias
+    this.pluginDependencies = {};
+    
+    // Información de conflictos
+    this.pluginConflicts = {};
   }
 
   /**
@@ -60,6 +66,32 @@ class PluginRegistry {
       // Limpiar errores previos
       delete this.pluginErrors[plugin.id];
       
+      // Registrar dependencias si existen
+      if (plugin.dependencies && Array.isArray(plugin.dependencies) && plugin.dependencies.length > 0) {
+        this.pluginDependencies[plugin.id] = plugin.dependencies.map(dep => {
+          if (typeof dep === 'string') {
+            return { id: dep };
+          }
+          return dep;
+        });
+      } else {
+        // Limpiar dependencias si no tiene
+        delete this.pluginDependencies[plugin.id];
+      }
+      
+      // Registrar conflictos si existen
+      if (plugin.conflicts && Array.isArray(plugin.conflicts) && plugin.conflicts.length > 0) {
+        this.pluginConflicts[plugin.id] = plugin.conflicts.map(conflict => {
+          if (typeof conflict === 'string') {
+            return { id: conflict, reason: 'Conflicto declarado con este plugin' };
+          }
+          return conflict;
+        });
+      } else {
+        // Limpiar conflictos si no tiene
+        delete this.pluginConflicts[plugin.id];
+      }
+      
       return true;
     } catch (error) {
       console.error(`Error al registrar plugin [${plugin?.id}]:`, error);
@@ -95,6 +127,8 @@ class PluginRegistry {
       delete this.plugins[pluginId];
       delete this.activePlugins[pluginId];
       delete this.instances[pluginId];
+      delete this.pluginDependencies[pluginId];
+      delete this.pluginConflicts[pluginId];
       
       // Mantener el estado para referencia histórica
       if (this.pluginStates[pluginId]) {
@@ -327,6 +361,24 @@ class PluginRegistry {
   }
 
   /**
+   * Obtiene dependencias de un plugin
+   * @param {string} pluginId - ID del plugin
+   * @returns {Array} - Lista de dependencias
+   */
+  getPluginDependencies(pluginId) {
+    return this.pluginDependencies[pluginId] || [];
+  }
+
+  /**
+   * Obtiene conflictos declarados de un plugin
+   * @param {string} pluginId - ID del plugin
+   * @returns {Array} - Lista de conflictos
+   */
+  getPluginConflicts(pluginId) {
+    return this.pluginConflicts[pluginId] || [];
+  }
+
+  /**
    * Obtiene el estado de un plugin específico
    * @param {string} pluginId - ID del plugin
    * @returns {Object} - Estado del plugin
@@ -408,6 +460,8 @@ class PluginRegistry {
     this.activePlugins = {};
     this.instances = {};
     this.pluginErrors = {};
+    this.pluginDependencies = {};
+    this.pluginConflicts = {};
     
     // No limpiamos pluginStates para mantener historial
   }

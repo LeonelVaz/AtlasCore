@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 /**
  * Plugin de Ejemplo para Atlas
  * 
@@ -14,7 +16,7 @@
 function createSidebarExtension() {
   // Creamos la función que construirá el componente
   return function SidebarExtensionComponent(props) {
-    const React = require('react');
+    // Ahora usamos React importado, no require
     const { pluginId, extensionId } = props;
     
     // Crear el elemento con React.createElement en lugar de JSX
@@ -48,14 +50,11 @@ function createSidebarExtension() {
 function createSettingsExtension() {
   // Creamos la función que construirá el componente
   return function SettingsExtensionComponent(props) {
-    const React = require('react');
-    const { useState } = React;
+    // Ahora usamos React y useState importados, no require
     const { pluginId, extensionId } = props;
     
     // Usar hooks sin JSX
-    const countState = useState(0);
-    const count = countState[0];
-    const setCount = countState[1];
+    const [count, setCount] = useState(0);
     
     // Estilo en línea en lugar de JSX style
     const styles = {
@@ -138,13 +137,22 @@ export default {
   // Metadatos del plugin
   id: 'example-plugin',
   name: 'Plugin de Ejemplo',
-  version: '0.1.0',
+  version: '0.2.0',
   description: 'Plugin de demostración para el sistema de plugins de Atlas',
   author: 'Atlas Team',
   
   // Restricciones de compatibilidad
   minAppVersion: '0.3.0',
   maxAppVersion: '1.0.0',
+  
+  // Dependencias (ejemplo de declaración)
+  dependencies: [],
+  
+  // Conflictos (ejemplo de declaración)
+  conflicts: [],
+  
+  // Prioridad de carga (menor = mayor prioridad)
+  priority: 100,
   
   // Estado interno
   _subscriptions: [],

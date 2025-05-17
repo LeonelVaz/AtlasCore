@@ -5,6 +5,10 @@
  * con los requisitos básicos de estructura y metadatos
  */
 
+import { PLUGIN_CONSTANTS } from '../config/constants';
+import pluginCompatibility from './plugin-compatibility';
+import pluginDependencyResolver from './plugin-dependency-resolver';
+
 /**
  * Valida que un plugin tenga la estructura requerida
  * @param {Object} plugin - Plugin a validar
@@ -30,6 +34,16 @@ export function validatePlugin(plugin) {
     
     // Verificar compatibilidad de versiones
     if (!validateVersionCompatibility(plugin)) {
+      return false;
+    }
+    
+    // Verificar dependencias
+    if (!validateDependencies(plugin)) {
+      return false;
+    }
+    
+    // Verificar declaración de conflictos
+    if (!validateConflicts(plugin)) {
       return false;
     }
     
@@ -118,27 +132,110 @@ function validateVersionCompatibility(plugin) {
     return false;
   }
   
-  // Aquí normalmente compararíamos con la versión actual de la aplicación
-  // En esta implementación inicial, solo verificamos formato
-  const currentVersion = '0.3.0'; // Versión simulada de la aplicación
-  
-  try {
-    // Verificar que estamos en rango (simplificado)
-    if (compareVersions(currentVersion, plugin.minAppVersion) < 0) {
-      console.error(`Plugin [${plugin.id}] requiere versión mínima ${plugin.minAppVersion}`);
-      return false;
-    }
-    
-    if (compareVersions(currentVersion, plugin.maxAppVersion) > 0) {
-      console.error(`Plugin [${plugin.id}] solo soporta hasta versión ${plugin.maxAppVersion}`);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error(`Error al verificar compatibilidad de versiones para plugin [${plugin.id}]:`, error);
+  // Realizar verificación completa
+  const compatibility = pluginCompatibility.checkAppCompatibility(plugin);
+  if (!compatibility.compatible) {
+    console.error(`Plugin [${plugin.id}] incompatible: ${compatibility.reason}`);
     return false;
   }
+  
+  return true;
+}
+
+/**
+ * Valida las dependencias declaradas del plugin
+ * @param {Object} plugin - Plugin a validar
+ * @returns {boolean} - true si las dependencias son válidas
+ */
+function validateDependencies(plugin) {
+  // Si no hay dependencias declaradas, es válido
+  if (!plugin.dependencies) return true;
+  
+  // Verificar que sea un array
+  if (!Array.isArray(plugin.dependencies)) {
+    console.error(`Plugin [${plugin.id}] con dependencias declaradas en formato inválido`);
+    return false;
+  }
+  
+  // Verificar cada dependencia
+  for (const dependency of plugin.dependencies) {
+    // Formato simple (string)
+    if (typeof dependency === 'string') {
+      if (!dependency.trim()) {
+        console.error(`Plugin [${plugin.id}] contiene una dependencia con ID vacío`);
+        return false;
+      }
+      continue;
+    }
+    
+    // Formato completo (objeto)
+    if (typeof dependency !== 'object' || !dependency) {
+      console.error(`Plugin [${plugin.id}] contiene una dependencia en formato inválido`);
+      return false;
+    }
+    
+    // Verificar ID
+    if (!dependency.id || typeof dependency.id !== 'string' || !dependency.id.trim()) {
+      console.error(`Plugin [${plugin.id}] contiene una dependencia sin ID válido`);
+      return false;
+    }
+    
+    // Verificar versión mínima
+    if (!dependency.version || typeof dependency.version !== 'string') {
+      console.error(`Plugin [${plugin.id}] contiene una dependencia sin versión especificada`);
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+/**
+ * Valida la declaración de conflictos del plugin
+ * @param {Object} plugin - Plugin a validar
+ * @returns {boolean} - true si la declaración de conflictos es válida
+ */
+function validateConflicts(plugin) {
+  // Si no hay conflictos declarados, es válido
+  if (!plugin.conflicts) return true;
+  
+  // Verificar que sea un array
+  if (!Array.isArray(plugin.conflicts)) {
+    console.error(`Plugin [${plugin.id}] con conflictos declarados en formato inválido`);
+    return false;
+  }
+  
+  // Verificar cada conflicto
+  for (const conflict of plugin.conflicts) {
+    // Formato simple (string)
+    if (typeof conflict === 'string') {
+      if (!conflict.trim()) {
+        console.error(`Plugin [${plugin.id}] contiene un conflicto con ID vacío`);
+        return false;
+      }
+      continue;
+    }
+    
+    // Formato completo (objeto)
+    if (typeof conflict !== 'object' || !conflict) {
+      console.error(`Plugin [${plugin.id}] contiene un conflicto en formato inválido`);
+      return false;
+    }
+    
+    // Verificar ID
+    if (!conflict.id || typeof conflict.id !== 'string' || !conflict.id.trim()) {
+      console.error(`Plugin [${plugin.id}] contiene un conflicto sin ID válido`);
+      return false;
+    }
+    
+    // Verificar razón (opcional pero recomendada)
+    if (conflict.reason && typeof conflict.reason !== 'string') {
+      console.error(`Plugin [${plugin.id}] contiene un conflicto con razón inválida`);
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 /**
@@ -147,7 +244,7 @@ function validateVersionCompatibility(plugin) {
  * @param {string} v2 - Segunda versión
  * @returns {number} - -1 si v1<v2, 0 si v1=v2, 1 si v1>v2
  */
-function compareVersions(v1, v2) {
+export function compareVersions(v1, v2) {
   const parts1 = v1.split('.').map(Number);
   const parts2 = v2.split('.').map(Number);
   
@@ -160,4 +257,64 @@ function compareVersions(v1, v2) {
   }
   
   return 0;
+}
+
+/**
+ * Realiza una validación completa del plugin
+ * @param {Object} plugin - Plugin a validar
+ * @returns {Object} - Resultado detallado de la validación
+ */
+export function validatePluginComplete(plugin) {
+  try {
+    if (!plugin || typeof plugin !== 'object') {
+      return {
+        valid: false,
+        reason: 'El plugin no es un objeto válido',
+        details: {}
+      };
+    }
+    
+    // Resultados por categoría
+    const results = {
+      metadata: validateMetadata(plugin),
+      methods: validateMethods(plugin),
+      compatibility: validateVersionCompatibility(plugin),
+      dependencies: validateDependencies(plugin),
+      conflicts: validateConflicts(plugin)
+    };
+    
+    // Validez general
+    const isValid = Object.values(results).every(result => result === true);
+    
+    // Determinar razón principal si no es válido
+    let mainReason = '';
+    if (!results.metadata) mainReason = 'Metadatos inválidos';
+    else if (!results.methods) mainReason = 'Métodos requeridos faltantes';
+    else if (!results.compatibility) mainReason = 'Incompatible con la versión de la aplicación';
+    else if (!results.dependencies) mainReason = 'Declaración de dependencias inválida';
+    else if (!results.conflicts) mainReason = 'Declaración de conflictos inválida';
+    
+    // Obtener información detallada de compatibilidad
+    const compatDetails = isValid ? 
+      pluginCompatibility.runFullCompatibilityCheck(plugin) : 
+      { compatible: false, details: {} };
+    
+    return {
+      valid: isValid && compatDetails.compatible,
+      reason: isValid ? (compatDetails.compatible ? 'Plugin válido' : compatDetails.reason) : mainReason,
+      details: {
+        basicValidation: results,
+        compatibility: compatDetails
+      }
+    };
+  } catch (error) {
+    console.error(`Error en validación completa del plugin ${plugin?.id}:`, error);
+    return {
+      valid: false,
+      reason: `Error en validación: ${error.message}`,
+      details: {
+        error: error.message
+      }
+    };
+  }
 }

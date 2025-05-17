@@ -125,15 +125,21 @@ export const TIME_SCALES = {
 
 // Sistema de plugins
 export const PLUGIN_CONSTANTS = {
+  // Versión actual de la aplicación
+  CURRENT_APP_VERSION: '0.3.0',
+  
   // Versión mínima para compatibilidad
   MIN_COMPATIBLE_VERSION: '0.3.0',
+  
   // Versión máxima para compatibilidad
   MAX_COMPATIBLE_VERSION: '1.0.0',
+  
   // Prefijos para eventos
   EVENT_PREFIXES: {
     PLUGIN: 'plugin.',
     SYSTEM: 'pluginSystem.'
   },
+  
   // Tipos de eventos del sistema de plugins
   SYSTEM_EVENTS: {
     INITIALIZED: 'initialized',
@@ -145,8 +151,16 @@ export const PLUGIN_CONSTANTS = {
     STORAGE_CLEARED: 'storageCleared',
     STORAGE_LIMIT_EXCEEDED: 'storageLimitExceeded',
     EVENT_HANDLER_ERROR: 'eventHandlerError',
-    EXTENSION_POINT_CHANGED: 'extensionPointChanged'
+    EXTENSION_POINT_CHANGED: 'extensionPointChanged',
+    COMPATIBILITY_CHECKED: 'compatibilityChecked',
+    COMPATIBILITY_ERROR: 'compatibilityError',
+    DEPENDENCY_ERROR: 'dependencyError',
+    CYCLES_DETECTED: 'cyclesDetected',
+    LOAD_ORDER_CALCULATED: 'loadOrderCalculated',
+    PLUGINS_SORTED: 'pluginsSorted',
+    PLUGINS_VALIDATED: 'pluginsValidated'
   },
+  
   // Zonas de extensión UI disponibles
   UI_EXTENSION_ZONES: {
     CALENDAR_SIDEBAR: 'calendar-sidebar',
@@ -154,14 +168,18 @@ export const PLUGIN_CONSTANTS = {
     // Se añadirán más en versiones futuras
     // DASHBOARD_WIDGETS: 'dashboard-widgets' (v0.5.0+)
   },
+  
   // Límites del sistema
   LIMITS: {
     // 1MB de almacenamiento por plugin
     STORAGE_LIMIT_BYTES: 1024 * 1024,
+    
     // 50 suscripciones a eventos máximo por plugin
     MAX_EVENT_SUBSCRIPTIONS: 50,
+    
     // 10 componentes UI máximo por plugin
     MAX_UI_COMPONENTS: 10,
+    
     // Tamaño máximo del log de errores
     MAX_ERROR_LOG_SIZE: 100
   }
