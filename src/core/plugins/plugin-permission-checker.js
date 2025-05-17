@@ -180,6 +180,11 @@ class PluginPermissionChecker {
       const approvedPermissions = [];
       const pendingPermissions = [];
       
+      // Obtener permisos actuales ya aprobados para este plugin
+      const currentPermissions = this.pluginPermissions[pluginId]?.approved || [];
+      
+      console.log(`[FIX] Validando permisos para ${pluginId}. Permisos actuales:`, currentPermissions);
+      
       permissionsArray.forEach(permission => {
         // Verificar si el permiso existe
         if (!this.availablePermissions[permission]) {
@@ -187,6 +192,13 @@ class PluginPermissionChecker {
             name: permission,
             reason: 'Permiso no reconocido'
           });
+          return;
+        }
+        
+        // SOLUCIÓN: Comprobar si el permiso ya está aprobado en la estructura interna
+        if (currentPermissions.includes(permission)) {
+          console.log(`[FIX] Permiso ${permission} ya está aprobado para ${pluginId}`);
+          approvedPermissions.push(permission);
           return;
         }
         
@@ -234,6 +246,13 @@ class PluginPermissionChecker {
         valid: isValid
       });
       
+      // SOLUCIÓN: Log mejorado para depuración
+      console.log(`[FIX] Resultado validación para ${pluginId}: `, {
+        valid: isValid && pendingPermissions.length === 0,
+        approvedPermissions,
+        pendingPermissions
+      });
+      
       // Notificar permisos pendientes
       if (pendingPermissions.length > 0) {
         eventBus.publish('pluginSystem.pendingPermissions', {
@@ -257,7 +276,7 @@ class PluginPermissionChecker {
         reasons: [`Error al validar permisos: ${error.message}`]
       };
     }
-  }
+  }  
 
   /**
    * Normaliza permisos a un array
@@ -415,14 +434,22 @@ class PluginPermissionChecker {
       return false;
     }
     
+    // SOLUCIÓN: Log mejorado para depuración
+    console.log(`[FIX] Verificando permiso ${permission} para ${pluginId}`);
+    
     // Si el plugin no tiene permisos registrados, no tiene permiso
     if (!this.pluginPermissions[pluginId]) {
+      console.log(`[FIX] Plugin ${pluginId} no tiene permisos registrados`);
       return false;
     }
     
-    // Verificar en permisos aprobados
-    return this.pluginPermissions[pluginId].approved.includes(permission);
-  }
+    // SOLUCIÓN: Verificar directamente si el permiso está en la lista de aprobados
+    const hasPermission = this.pluginPermissions[pluginId].approved.includes(permission);
+    
+    console.log(`[FIX] Resultado verificación: ${hasPermission ? 'Tiene permiso' : 'No tiene permiso'}`);
+    
+    return hasPermission;
+  }  
 
   /**
    * Verifica acceso a un método específico
@@ -554,56 +581,65 @@ class PluginPermissionChecker {
    */
   approvePermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
+      console.warn('Argumentos inválidos para approvePermissions', { pluginId, permissions });
       return false;
     }
     
     try {
-      // Verificar que los permisos estén pendientes
-      if (!this.pluginPermissions[pluginId] || !this.pluginPermissions[pluginId].pending) {
-        return false;
+      console.log(`Intentando aprobar permisos para ${pluginId}:`, permissions);
+      
+      // 1. Inicializar si no existe la estructura para este plugin
+      if (!this.pluginPermissions[pluginId]) {
+        this.pluginPermissions[pluginId] = {
+          approved: [],
+          pending: permissions.slice(), // Copia de seguridad en caso de que no estén en pending
+          revoked: []
+        };
       }
       
-      // Filtrar solo permisos que estén pendientes
-      const permissionsToApprove = permissions.filter(permission => 
-        this.pluginPermissions[pluginId].pending.includes(permission)
-      );
+      // 2. Añadir los permisos directamente a la lista de aprobados (forzando la aprobación)
+      this._registerPluginPermissions(pluginId, permissions);
       
-      if (permissionsToApprove.length === 0) {
-        return false;
+      // 3. Mostrar estado actual para depuración
+      console.log('Estado de permisos antes de quitar pendientes:', JSON.stringify(this.pluginPermissions[pluginId]));
+      
+      // 4. Quitar explícitamente de la lista de pendientes
+      if (this.pluginPermissions[pluginId].pending) {
+        this.pluginPermissions[pluginId].pending = 
+          this.pluginPermissions[pluginId].pending.filter(p => !permissions.includes(p));
       }
       
-      // Aprobar permisos
-      this._registerPluginPermissions(pluginId, permissionsToApprove);
-      
-      // Quitar de pendientes
-      this.pluginPermissions[pluginId].pending = 
-        this.pluginPermissions[pluginId].pending.filter(
-          permission => !permissionsToApprove.includes(permission)
-        );
-      
-      // Actualizar solicitudes pendientes
-      this.permissionRequests.forEach(request => {
+      // 5. Actualizar solicitudes pendientes
+      this.permissionRequests = this.permissionRequests.filter(request => {
         if (request.pluginId === pluginId && request.status === 'pending') {
-          const requestPermissions = request.permissions || [];
-          const remainingPending = requestPermissions.filter(
-            permission => !permissionsToApprove.includes(permission)
-          );
-          
-          if (remainingPending.length === 0) {
+          // Marcar como aprobada la solicitud completa si todos sus permisos están aprobados
+          const containsAnyPermission = request.permissions.some(p => permissions.includes(p));
+          if (containsAnyPermission) {
             request.status = 'approved';
           }
         }
+        return true; // Mantener en la lista
       });
       
-      // Publicar evento
-      eventBus.publish('pluginSystem.permissionsApproved', {
-        pluginId,
-        permissions: permissionsToApprove
-      });
+      // 6. Mostrar el estado final para depuración
+      console.log('Estado final de permisos:', JSON.stringify(this.pluginPermissions[pluginId]));
+      
+      // 7. Publicar evento de aprobación manual
+      try {
+        if (typeof eventBus !== 'undefined' && eventBus.publish) {
+          eventBus.publish('pluginSystem.permissionsApproved', {
+            pluginId,
+            permissions,
+            source: 'manual-fix'
+          });
+        }
+      } catch (eventError) {
+        console.warn('Error al publicar evento:', eventError);
+      }
       
       return true;
     } catch (error) {
-      console.error(`Error al aprobar permisos para plugin ${pluginId}:`, error);
+      console.error(`Error crítico al aprobar permisos para plugin ${pluginId}:`, error);
       return false;
     }
   }

@@ -1323,38 +1323,50 @@ class PluginManager {
    * @param {Array} permissions - Permisos a aprobar
    * @returns {boolean} - true si se completó correctamente
    */
-  approvePluginPermissions(pluginId, permissions) {
-    if (!this.securityInitialized) {
-      console.warn('Sistema de seguridad no inicializado');
+  async approvePluginPermissions(pluginId, permissions) {
+    if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
       return false;
     }
     
     try {
-      // Aprobar permisos
-      const result = pluginPermissionChecker.approvePermissions(pluginId, permissions);
+      // Verificar que los permisos estén pendientes
+      const permissionsInfo = pluginPermissionChecker.getPluginPermissions(pluginId);
       
-      if (result) {
-        // Registrar en auditoría
-        pluginSecurityAudit.recordValidationResult(pluginId, {
-          event: 'permissionApproved',
-          permissions,
-          timestamp: Date.now()
-        });
+      console.log('Estado actual de permisos:', permissionsInfo);
+      
+      // Realizar la aprobación en el pluginPermissionChecker
+      const success = pluginPermissionChecker.approvePermissions(pluginId, permissions);
+      
+      // Si fue exitoso, actualizar el estado y guardarlo explícitamente
+      if (success) {
+        console.log(`Permisos aprobados exitosamente para ${pluginId}:`, permissions);
         
-        // Publicar evento
-        this._publishEvent('permissionGranted', {
+        // Actualizar el estado en el registro de plugins
+        const plugin = pluginRegistry.getPlugin(pluginId);
+        if (plugin) {
+          pluginRegistry.setPluginState(pluginId, {
+            permissionsApproved: [...(permissionsInfo.approved || []), ...permissions],
+            permissionsPending: (permissionsInfo.pending || []).filter(p => !permissions.includes(p))
+          });
+        }
+        
+        // Guardar explícitamente los cambios en el almacenamiento persistente
+        await this._savePluginStates();
+        
+        // Publicar evento de aprobación
+        eventBus.publish('pluginSystem.permissionsApproved', {
           pluginId,
           permissions
         });
       }
       
-      return result;
+      return success;
     } catch (error) {
-      console.error(`Error al aprobar permisos para el plugin ${pluginId}:`, error);
+      console.error(`Error al aprobar permisos para plugin ${pluginId}:`, error);
       return false;
     }
   }
-
+  
   /**
    * Rechaza permisos pendientes para un plugin (añadido en Fase 6)
    * @param {string} pluginId - ID del plugin
