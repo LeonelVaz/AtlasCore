@@ -75,7 +75,17 @@ export const STORAGE_KEYS = {
   PLUGIN_SECURITY_SETTINGS: 'atlas_plugin_security_settings',
   PLUGIN_BLACKLIST: 'atlas_plugin_blacklist',
   PLUGIN_AUDIT_LOG: 'atlas_plugin_audit_log',
-  PLUGIN_PERMISSIONS: 'atlas_plugin_permissions'
+  PLUGIN_PERMISSIONS: 'atlas_plugin_permissions',
+  // Claves para el sistema de distribución y actualizaciones
+  INSTALLED_PLUGINS: 'atlas_installed_plugins',
+  PACKAGE_MANIFESTS: 'atlas_package_manifests',
+  REPOSITORIES: 'atlas_repositories',
+  REPOSITORY_CACHE: 'atlas_repository_cache',
+  REPOSITORY_SYNC_TIMESTAMPS: 'atlas_repository_sync_timestamps',
+  AVAILABLE_UPDATES: 'atlas_available_updates',
+  UPDATE_HISTORY: 'atlas_update_history',
+  UPDATE_SETTINGS: 'atlas_update_settings',
+  LAST_UPDATE_CHECK: 'atlas_last_update_check'
 };
 
 // Tipos de franja horaria
@@ -174,7 +184,35 @@ export const PLUGIN_CONSTANTS = {
     RESOURCE_OVERUSE: 'resourceOveruse',
     SANDBOX_ERROR: 'sandboxError',
     BLACKLIST_CHANGED: 'blacklistChanged',
-    SECURITY_LEVEL_CHANGED: 'securityLevelChanged'
+    SECURITY_LEVEL_CHANGED: 'securityLevelChanged',
+    // Eventos específicos del sistema de distribución y actualizaciones
+    PLUGIN_PACKAGED: 'pluginPackaged',
+    PLUGIN_INSTALL_STARTED: 'pluginInstallStarted',
+    PLUGIN_INSTALLED: 'pluginInstalled',
+    PLUGIN_UNINSTALL_STARTED: 'pluginUninstallStarted',
+    PLUGIN_UNINSTALLED: 'pluginUninstalled',
+    INSTALLATION_ERROR: 'installationError',
+    UNINSTALLATION_ERROR: 'uninstallationError',
+    REPOSITORY_ADDED: 'repositoryAdded',
+    REPOSITORY_UPDATED: 'repositoryUpdated',
+    REPOSITORY_REMOVED: 'repositoryRemoved',
+    REPOSITORY_TOGGLED: 'repositoryToggled',
+    REPOSITORY_SYNC_STARTED: 'repositorySyncStarted',
+    REPOSITORY_SYNC_COMPLETED: 'repositorySyncCompleted',
+    REPOSITORY_ERROR: 'repositoryError',
+    ALL_REPOSITORIES_SYNCED: 'allRepositoriesSynced',
+    UPDATE_CHECK_STARTED: 'updateCheckStarted',
+    UPDATE_CHECK_COMPLETED: 'updateCheckCompleted',
+    UPDATE_CHECK_ERROR: 'updateCheckError',
+    UPDATE_AVAILABLE: 'updateAvailable',
+    UPDATE_STARTED: 'updateStarted',
+    UPDATE_COMPLETED: 'updateCompleted',
+    UPDATE_ERROR: 'updateError',
+    MASS_UPDATE_STARTED: 'massUpdateStarted',
+    MASS_UPDATE_COMPLETED: 'massUpdateCompleted',
+    UPDATE_SETTINGS_CHANGED: 'updateSettingsChanged',
+    INTEGRITY_VERIFIED: 'integrityVerified',
+    INTEGRITY_ERROR: 'integrityError'
   },
   
   // Zonas de extensión UI disponibles
@@ -251,6 +289,42 @@ export const PLUGIN_CONSTANTS = {
     }
   },
   
+  // Constantes para el sistema de distribución y actualizaciones
+  DISTRIBUTION: {
+    // Tipos de repositorios
+    REPOSITORY_TYPES: {
+      OFFICIAL: 'official',
+      COMMUNITY: 'community',
+      PRIVATE: 'private'
+    },
+    
+    // Estados de instalación
+    INSTALLATION_STATUS: {
+      PENDING: 'pending',
+      INSTALLING: 'installing',
+      INSTALLED: 'installed',
+      FAILED: 'failed',
+      UNINSTALLING: 'uninstalling',
+      UNINSTALLED: 'uninstalled'
+    },
+    
+    // Estados de actualización
+    UPDATE_STATUS: {
+      AVAILABLE: 'available',
+      DOWNLOADING: 'downloading',
+      INSTALLING: 'installing',
+      COMPLETED: 'completed',
+      FAILED: 'failed'
+    },
+    
+    // Tipos de verificación de integridad
+    INTEGRITY_CHECK_TYPES: {
+      CHECKSUM: 'checksum',
+      SIGNATURE: 'signature',
+      FULL: 'full'
+    }
+  },
+  
   // Límites del sistema
   LIMITS: {
     // 1MB de almacenamiento por plugin
@@ -290,6 +364,27 @@ export const PLUGIN_CONSTANTS = {
       
       // Máximo de errores antes de desactivar un plugin
       MAX_ERRORS_BEFORE_DEACTIVATION: 5
+    },
+    
+    // Límites para el sistema de distribución y actualizaciones
+    DISTRIBUTION: {
+      // Tamaño máximo de paquete de plugin (10MB)
+      MAX_PACKAGE_SIZE: 10 * 1024 * 1024,
+      
+      // Número máximo de repositorios
+      MAX_REPOSITORIES: 20,
+      
+      // Máximo de intentos de instalación
+      MAX_INSTALL_ATTEMPTS: 3,
+      
+      // Tiempo máximo de instalación (10 minutos)
+      MAX_INSTALL_TIME: 10 * 60 * 1000,
+      
+      // Cache máximo de repositorios (100MB)
+      MAX_REPOSITORY_CACHE: 100 * 1024 * 1024,
+      
+      // Tiempo de expiración de cache (24 horas)
+      CACHE_EXPIRATION_TIME: 24 * 60 * 60 * 1000
     }
   }
 };
