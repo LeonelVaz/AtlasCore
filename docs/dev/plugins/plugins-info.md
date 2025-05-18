@@ -264,7 +264,7 @@ A continuación se presenta un plan por fases para implementar el sistema de plu
 4. Implementar verificación de integridad de plugins
 5. Desarrollar interfaz para gestionar repositorios de plugins
 
-## Fase 8: Características Avanzadas
+## Fase 8: Características Avanzadas (Pospuesto para la v1.0.0)
 
 1. Implementar soporte completo para internacionalización
 2. Desarrollar sistema extensible de widgets para dashboard
