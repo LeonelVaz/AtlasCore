@@ -1,0 +1,241 @@
+/**
+ * Estilos CSS para el Plugin Tester
+ */
+
+/* Variables de colores y tamaños */
+:root {
+  --pt-primary-color: #3498db;
+  --pt-secondary-color: #2ecc71;
+  --pt-warning-color: #e67e22;
+  --pt-danger-color: #e74c3c;
+  --pt-purple-color: #9b59b6;
+  --pt-dark-color: #2c3e50;
+  --pt-light-color: #ecf0f1;
+  --pt-border-color: #ddd;
+  --pt-background-color: #f5f5f5;
+  --pt-text-color: #333;
+  --pt-text-light-color: #666;
+  
+  --pt-border-radius: 4px;
+  --pt-spacing-small: 5px;
+  --pt-spacing-normal: 10px;
+  --pt-spacing-large: 15px;
+  --pt-spacing-xlarge: 20px;
+}
+
+/* Estilos generales */
+.plugin-tester-page {
+  padding: var(--pt-spacing-xlarge);
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: var(--pt-text-color);
+}
+
+.plugin-tester-card {
+  background-color: var(--pt-background-color);
+  padding: var(--pt-spacing-large);
+  border-radius: var(--pt-border-radius);
+  margin-bottom: var(--pt-spacing-xlarge);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Barra lateral */
+.plugin-tester-sidebar {
+  padding: var(--pt-spacing-normal);
+  margin: var(--pt-spacing-small) 0;
+  background-color: var(--pt-background-color);
+  border-radius: var(--pt-border-radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.plugin-tester-sidebar h3 {
+  margin-top: 0;
+  color: var(--pt-dark-color);
+  font-size: 16px;
+}
+
+/* Botones */
+.plugin-tester-button {
+  padding: 8px 16px;
+  background-color: var(--pt-primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--pt-border-radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.plugin-tester-button:hover {
+  background-color: #2980b9;
+}
+
+.plugin-tester-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+}
+
+.plugin-tester-button-green {
+  background-color: var(--pt-secondary-color);
+}
+
+.plugin-tester-button-green:hover {
+  background-color: #27ae60;
+}
+
+.plugin-tester-button-orange {
+  background-color: var(--pt-warning-color);
+}
+
+.plugin-tester-button-orange:hover {
+  background-color: #d35400;
+}
+
+.plugin-tester-button-red {
+  background-color: var(--pt-danger-color);
+}
+
+.plugin-tester-button-red:hover {
+  background-color: #c0392b;
+}
+
+.plugin-tester-button-purple {
+  background-color: var(--pt-purple-color);
+}
+
+.plugin-tester-button-purple:hover {
+  background-color: #8e44ad;
+}
+
+.plugin-tester-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pt-spacing-normal);
+}
+
+/* Formularios y entradas */
+.plugin-tester-input {
+  width: 100%;
+  padding: var(--pt-spacing-small);
+  margin-top: var(--pt-spacing-small);
+  border: 1px solid var(--pt-border-color);
+  border-radius: var(--pt-border-radius);
+  font-size: 14px;
+}
+
+.plugin-tester-color-input {
+  margin-left: var(--pt-spacing-normal);
+  vertical-align: middle;
+  border: none;
+  cursor: pointer;
+}
+
+.plugin-tester-number-input {
+  margin-left: var(--pt-spacing-normal);
+  width: 60px;
+  padding: 3px 5px;
+  border: 1px solid var(--pt-border-color);
+  border-radius: var(--pt-border-radius);
+}
+
+/* Configuraciones */
+.plugin-tester-settings {
+  padding: var(--pt-spacing-large);
+  background-color: var(--pt-light-color);
+  border-radius: var(--pt-border-radius);
+}
+
+.plugin-tester-settings h3 {
+  margin-top: 0;
+  color: var(--pt-dark-color);
+}
+
+.plugin-tester-settings-group {
+  margin-bottom: var(--pt-spacing-large);
+}
+
+/* Celda de calendario */
+.plugin-tester-cell-indicator {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--pt-primary-color);
+}
+
+/* Vista de detalle de evento */
+.plugin-tester-event-detail {
+  padding: var(--pt-spacing-normal);
+  margin: var(--pt-spacing-normal) 0;
+  background-color: #f9f9f9;
+  border-left: 3px solid var(--pt-primary-color);
+  border-radius: 2px;
+}
+
+.plugin-tester-event-detail h4 {
+  margin-top: 0;
+  color: var(--pt-dark-color);
+  font-size: 14px;
+}
+
+/* Formulario de evento */
+.plugin-tester-event-form {
+  padding: var(--pt-spacing-normal);
+  margin: var(--pt-spacing-normal) 0;
+  border-top: 1px solid #eee;
+}
+
+/* Navegación */
+.plugin-tester-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: var(--pt-border-radius);
+  transition: background-color 0.2s;
+}
+
+.plugin-tester-nav-item:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.plugin-tester-nav-item .material-icons {
+  margin-right: 8px;
+  font-size: 18px;
+  color: var(--pt-primary-color);
+}
+
+/* Contenedor de eventos */
+.plugin-tester-events-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--pt-border-color);
+  border-radius: var(--pt-border-radius);
+  padding: var(--pt-spacing-normal);
+  background-color: white;
+}
+
+.plugin-tester-event-item {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9em;
+}
+
+.plugin-tester-event-item:last-child {
+  border-bottom: none;
+}
+
+.plugin-tester-event-header {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.plugin-tester-event-data {
+  word-break: break-word;
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--pt-text-light-color);
+}
