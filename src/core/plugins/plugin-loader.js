@@ -7,113 +7,120 @@ import pluginDependencyResolver from './plugin-dependency-resolver';
 import { PLUGIN_CONSTANTS } from '../config/constants';
 import eventBus from '../bus/event-bus';
 
-export async function loadPlugins() {
+// Esta función es específica para Vite/Rollup
+function importAllPlugins() {
   try {
-    const plugins = await discoverPlugins();
-    const validPlugins = plugins.filter(plugin => validatePlugin(plugin));
-    const sortedPlugins = sortPluginsByPriority(validPlugins);
+    // Usar import.meta.glob para cargar dinámicamente todos los archivos index.js en subdirectorios de plugins
+    const pluginModules = import.meta.glob('/src/plugins/*/index.js', { eager: true });
     
-    console.log(`Plugins cargados: ${sortedPlugins.length}`);
-    return sortedPlugins;
+    const plugins = [];
+    for (const path in pluginModules) {
+      const module = pluginModules[path];
+      if (module && module.default) {
+        console.log(`Plugin cargado desde: ${path}`);
+        plugins.push(module.default);
+      }
+    }
+    
+    return plugins;
   } catch (error) {
-    console.error('Error al cargar plugins:', error);
+    console.error('Error al importar plugins usando import.meta.glob:', error);
     return [];
   }
 }
 
-async function discoverPlugins() {
+// Alternativa para entornos webpack
+function requireAllPlugins() {
   try {
-    const plugins = [];
-    
-    // En un entorno web, podemos intentar cargar plugins desde una configuración global
-    if (typeof window !== 'undefined') {
-      // Verificar si hay una configuración global de plugins
-      if (window.AtlasConfig && Array.isArray(window.AtlasConfig.plugins)) {
-        plugins.push(...window.AtlasConfig.plugins);
-      }
+    if (typeof require !== 'undefined' && typeof require.context === 'function') {
+      // Este código sólo se ejecuta en entornos webpack
+      const context = require.context('/src/plugins', true, /\/index\.js$/);
+      const plugins = [];
       
-      // En entornos de desarrollo moderno, podemos usar importación dinámica
-      // para cargar plugins desde una carpeta
-      if (window.AtlasConfig && Array.isArray(window.AtlasConfig.pluginPaths)) {
-        for (const pluginPath of window.AtlasConfig.pluginPaths) {
-          try {
-            const module = await import(/* @vite-ignore */ pluginPath);
-            if (module && module.default) {
-              plugins.push(module.default);
-            }
-          } catch (importError) {
-            console.warn(`No se pudo cargar el plugin desde ${pluginPath}:`, importError.message);
+      context.keys().forEach(key => {
+        try {
+          const module = context(key);
+          if (module && module.default) {
+            console.log(`Plugin cargado desde webpack: ${key}`);
+            plugins.push(module.default);
           }
+        } catch (error) {
+          console.warn(`Error al cargar plugin desde ${key}:`, error);
         }
+      });
+      
+      return plugins;
+    }
+  } catch (error) {
+    console.error('Error al importar plugins usando require.context:', error);
+  }
+  
+  return [];
+}
+
+export async function loadPlugins() {
+  try {
+    // Array para almacenar plugins de todas las fuentes
+    let plugins = [];
+    
+    // Intentar cargar con import.meta.glob primero (Vite/Rollup)
+    try {
+      const vitePlugins = importAllPlugins();
+      if (vitePlugins.length > 0) {
+        console.log(`Cargados ${vitePlugins.length} plugins con import.meta.glob`);
+        plugins = [...plugins, ...vitePlugins];
+      }
+    } catch (e) {
+      console.log('import.meta.glob no disponible, probando otras estrategias');
+    }
+    
+    // Si no hay plugins y estamos en un entorno webpack, usar require.context
+    if (plugins.length === 0) {
+      const webpackPlugins = requireAllPlugins();
+      if (webpackPlugins.length > 0) {
+        console.log(`Cargados ${webpackPlugins.length} plugins con require.context`);
+        plugins = [...plugins, ...webpackPlugins];
       }
     }
     
-    // Método para entornos Node.js
-    // Este código solo se ejecutará en entornos Node
-    if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    // Si aún no hay plugins, intentar con la estrategia de importación dinámica
+    if (plugins.length === 0) {
       try {
-        const fs = await import('fs');
-        const path = await import('path');
+        // Lista de plugins que sabemos que deberían existir
+        // En una aplicación real, podrías obtener esta lista de la configuración o del servidor
+        const pluginDirs = ['plugin1', 'plugin2', 'custom-plugin', 'calendar-extension', 'task-manager'];
         
-        const pluginsDir = path.resolve(__dirname, '../../plugins');
-        
-        if (fs.existsSync(pluginsDir)) {
-          const pluginFolders = fs.readdirSync(pluginsDir, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => dirent.name);
-          
-          for (const folder of pluginFolders) {
-            const pluginIndexPath = path.join(pluginsDir, folder, 'index.js');
-            
-            if (fs.existsSync(pluginIndexPath)) {
-              try {
-                const plugin = require(pluginIndexPath).default;
-                if (plugin) {
-                  plugins.push(plugin);
-                }
-              } catch (requireError) {
-                console.warn(`Error al cargar plugin desde ${pluginIndexPath}:`, requireError.message);
-              }
+        for (const dir of pluginDirs) {
+          try {
+            // Usar dynamic import para cargar cada plugin
+            const module = await import(`/src/plugins/${dir}/index.js`);
+            if (module && module.default) {
+              console.log(`Plugin cargado dinámicamente: ${dir}`);
+              plugins.push(module.default);
             }
+          } catch (error) {
+            // Ignorar errores de importación individual, continuar con el siguiente plugin
+            console.log(`Plugin ${dir} no encontrado o no pudo ser cargado`);
           }
         }
       } catch (error) {
-        console.warn('Error al escanear carpeta de plugins:', error.message);
+        console.error('Error en importación dinámica:', error);
       }
     }
     
-    // Agrega plugins específicos de entorno si se definen
-    try {
-      if (typeof __PLUGINS__ !== 'undefined' && Array.isArray(__PLUGINS__)) {
-        plugins.push(...__PLUGINS__);
-      }
-    } catch (e) {
-      // Variable __PLUGINS__ no definida, ignorar
+    // Si seguimos sin plugins, mostrar mensaje de error
+    if (plugins.length === 0) {
+      console.error('No se pudieron cargar plugins con ningún método. Comprueba la estructura del proyecto.');
     }
     
-    // Uso de require.context para entornos Webpack
-    if (typeof require !== 'undefined' && typeof require.context === 'function') {
-      try {
-        const pluginsContext = require.context('../../plugins', true, /index\.js$/);
-        
-        pluginsContext.keys().forEach(key => {
-          try {
-            const plugin = pluginsContext(key).default;
-            if (plugin) {
-              plugins.push(plugin);
-            }
-          } catch (contextError) {
-            console.warn(`Error al cargar plugin con require.context desde ${key}:`, contextError.message);
-          }
-        });
-      } catch (contextError) {
-        console.warn('Error al usar require.context:', contextError.message);
-      }
-    }
-
-    return plugins;
+    // Validar y ordenar los plugins encontrados
+    const validPlugins = plugins.filter(plugin => validatePlugin(plugin));
+    const sortedPlugins = sortPluginsByPriority(validPlugins);
+    
+    console.log(`Plugins cargados y validados: ${sortedPlugins.length}`);
+    return sortedPlugins;
   } catch (error) {
-    console.error('Error al descubrir plugins:', error);
+    console.error('Error al cargar plugins:', error);
     return [];
   }
 }
@@ -128,43 +135,15 @@ export async function loadPluginById(pluginId) {
       return existingPlugin;
     }
     
-    // Si no está cargado, intentar buscar por configuración
-    if (typeof window !== 'undefined' && window.AtlasConfig) {
-      // Buscar en plugins configurados
-      if (Array.isArray(window.AtlasConfig.plugins)) {
-        const configPlugin = window.AtlasConfig.plugins.find(p => p.id === pluginId);
-        if (configPlugin) {
-          return configPlugin;
-        }
-      }
-      
-      // Buscar en rutas configuradas
-      if (Array.isArray(window.AtlasConfig.pluginPaths)) {
-        for (const path of window.AtlasConfig.pluginPaths) {
-          if (path.includes(pluginId)) {
-            try {
-              const module = await import(/* @vite-ignore */ path);
-              if (module && module.default && module.default.id === pluginId) {
-                return module.default;
-              }
-            } catch (importError) {
-              console.warn(`No se pudo cargar el plugin ${pluginId} desde ${path}:`, importError.message);
-            }
-          }
-        }
-      }
-    }
-    
-    // Intento genérico con importación dinámica
+    // Si no se encontró, intentar cargar directamente
     try {
-      // Esta importación solo funcionará en entornos que la soporten
-      const dynamicPath = `../../plugins/${pluginId}/index.js`;
-      const module = await import(/* @vite-ignore */ dynamicPath);
+      const module = await import(`/src/plugins/${pluginId}/index.js`);
       if (module && module.default) {
+        console.log(`Plugin ${pluginId} cargado directamente`);
         return module.default;
       }
-    } catch (dynamicError) {
-      // Silenciar error ya que es un intento genérico
+    } catch (error) {
+      console.warn(`No se pudo cargar directamente el plugin ${pluginId}:`, error);
     }
     
     console.warn(`Plugin no encontrado: ${pluginId}`);
