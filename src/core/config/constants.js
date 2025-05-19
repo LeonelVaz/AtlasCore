@@ -219,9 +219,11 @@ export const PLUGIN_CONSTANTS = {
   UI_EXTENSION_ZONES: {
     CALENDAR_SIDEBAR: 'calendar-sidebar',
     SETTINGS_PANEL: 'settings-panel',
-    // Se añadirán más en versiones futuras
-    // DASHBOARD_WIDGETS: 'dashboard-widgets' (v0.5.0+)
-    SECURITY_PANEL: 'security-panel' // Nueva zona para el panel de seguridad
+    // Nuevos puntos de extensión para navegación y páginas de plugins
+    MAIN_NAVIGATION: 'main-navigation',
+    PLUGIN_PAGES: 'plugin-pages',
+    // Otros puntos de extensión existentes
+    SECURITY_PANEL: 'security-panel'
   },
   
   // Constantes para el sistema de seguridad

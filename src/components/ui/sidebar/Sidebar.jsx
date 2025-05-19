@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import SidebarExtensions from '../../plugin-extension/sidebar-extensions';
+import NavigationExtensions from '../../plugin-extension/navigation-extensions'; // Importar nuevo componente
 
 /**
  * Componente del panel lateral de navegación
  * @param {Object} props - Propiedades del componente
  */
-const Sidebar = ({ children }) => {
+const Sidebar = ({ children, onPluginNavigate }) => {
   // Estado para controlar si el sidebar está expandido (para vista móvil)
   const [expanded, setExpanded] = useState(true);
 
@@ -29,7 +30,10 @@ const Sidebar = ({ children }) => {
       <div className="sidebar-content">
         {children}
         
-        {/* Punto de extensión para plugins en sidebar */}
+        {/* Punto de extensión para navegación de plugins */}
+        <NavigationExtensions onNavigate={onPluginNavigate} />
+        
+        {/* Punto de extensión para widgets en sidebar */}
         <SidebarExtensions />
       </div>
       <div className="sidebar-footer">
@@ -41,6 +45,7 @@ const Sidebar = ({ children }) => {
 
 Sidebar.propTypes = {
   children: PropTypes.node,
+  onPluginNavigate: PropTypes.func
 };
 
 export default Sidebar;
