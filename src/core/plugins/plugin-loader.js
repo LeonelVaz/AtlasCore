@@ -93,7 +93,8 @@ export async function loadPlugins() {
         for (const dir of pluginDirs) {
           try {
             // Usar dynamic import para cargar cada plugin
-            const module = await import(`/src/plugins/${dir}/index.js`);
+            // Añadimos @vite-ignore para evitar las advertencias de análisis estático
+            const module = await import(/* @vite-ignore */ `/src/plugins/${dir}/index.js`);
             if (module && module.default) {
               console.log(`Plugin cargado dinámicamente: ${dir}`);
               plugins.push(module.default);
@@ -137,7 +138,8 @@ export async function loadPluginById(pluginId) {
     
     // Si no se encontró, intentar cargar directamente
     try {
-      const module = await import(`/src/plugins/${pluginId}/index.js`);
+      // Añadimos @vite-ignore para evitar las advertencias de análisis estático
+      const module = await import(/* @vite-ignore */ `/src/plugins/${pluginId}/index.js`);
       if (module && module.default) {
         console.log(`Plugin ${pluginId} cargado directamente`);
         return module.default;
