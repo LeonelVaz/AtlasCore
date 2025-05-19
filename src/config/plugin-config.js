@@ -5,17 +5,11 @@
 
 window.AtlasConfig = window.AtlasConfig || {};
 
-// Método para registrar plugins directamente
+// Array para almacenar plugins registrados en tiempo de ejecución
 window.AtlasConfig.plugins = window.AtlasConfig.plugins || [];
 
-// Rutas a plugins - Esto puede ser utilizado por el cargador de plugins
-// para importar dinámicamente los plugins desde estas rutas
-window.AtlasConfig.pluginPaths = [
-  // Estas rutas son relativas al entorno de ejecución
-  // y pueden necesitar ser ajustadas según el bundler utilizado
-  './plugins/example-plugin/index.js',
-  './plugins/notas-calendario/index.js'
-];
+// No hay rutas predefinidas - estas se descubrirán automáticamente
+window.AtlasConfig.pluginPaths = window.AtlasConfig.pluginPaths || [];
 
 // Método para registrar un nuevo plugin en tiempo de ejecución
 window.registerPlugin = function(plugin) {
