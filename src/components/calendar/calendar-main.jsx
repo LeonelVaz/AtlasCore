@@ -12,6 +12,7 @@ import { setupDebugTools } from '../../utils/debug-utils';
 import { CALENDAR_VIEWS, SNAP_VALUES, STORAGE_KEYS } from '../../core/config/constants';
 import storageService from '../../services/storage-service';
 import eventBus from '../../core/bus/event-bus';
+import calendarModule from '../../core/modules/calendar-module';
 
 function CalendarMain() {
   // Hooks para gestión de eventos
@@ -61,6 +62,34 @@ function CalendarMain() {
     return () => unsubscribe && unsubscribe();
   }, []);
 
+  // Inicializar el módulo de calendario
+  useEffect(() => {
+    // Crear un servicio de calendario para el módulo
+    const calendarService = {
+      getCurrentDate: () => currentDate,
+      getCurrentView: () => view,
+      getEvents: () => events,
+      createEvent: createEvent,
+      updateEvent: updateEvent,
+      deleteEvent: deleteEvent,
+      getConfig: () => ({
+        timeScale: { id: 'standard', pixelsPerHour: 60 },
+        maxSimultaneousEvents,
+        snapValue,
+        dayHeaderStyle: 'default',
+        timeDisplayStyle: 'start-end'
+      })
+    };
+
+    // Inicializar el módulo con el servicio
+    calendarModule.init(calendarService);
+
+    // Limpiar cuando el componente se desmonte
+    return () => {
+      // No hay limpieza específica para el módulo por ahora
+    };
+  }, [currentDate, view, events, maxSimultaneousEvents, snapValue]);
+
   // Registrar módulo
   useEffect(() => {
     // API del calendario
@@ -74,12 +103,26 @@ function CalendarMain() {
         const validValue = Math.min(10, Math.max(1, value));
         setMaxSimultaneousEvents(validValue);
         return validValue;
-      }
+      },
+      getEventsForDate: (date) => {
+        return calendarModule.getEventsForDate(date);
+      },
+      getEventsForDateRange: (startDate, endDate) => {
+        return calendarModule.getEventsForDateRange(startDate, endDate);
+      },
+      getUpcomingEvents: (limit) => {
+        return calendarModule.getUpcomingEvents(limit);
+      },
+      getMonthMetadata: (month) => {
+        return calendarModule.getMonthMetadata(month);
+      },
+      getCurrentView: () => view,
+      getSelectedDate: () => selectedDay
     };
     
     registerModule('calendar', moduleAPI);
     return () => unregisterModule('calendar');
-  }, [maxSimultaneousEvents, getEvents, createEvent, updateEvent, deleteEvent]);
+  }, [maxSimultaneousEvents, getEvents, createEvent, updateEvent, deleteEvent, events, view, selectedDay]);
 
   // Debug tools
   useEffect(() => {

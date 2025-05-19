@@ -33,6 +33,7 @@ function App() {
           // Aquí se pasarán servicios internos en fase 2+
         };
         
+        // Inicializar el sistema de plugins - sin dependencias a plugins específicos
         await pluginManager.initialize(services);
         console.log('Sistema de plugins inicializado');
       } catch (error) {

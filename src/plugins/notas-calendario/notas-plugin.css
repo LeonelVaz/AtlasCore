@@ -1,0 +1,279 @@
+/* Estilos para el plugin Administrador de Notas */
+
+/* Panel principal de notas */
+.notes-dashboard {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.notes-dashboard h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: var(--color-text-primary);
+}
+
+/* Pestañas */
+.notes-dashboard-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-button {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  color: var(--color-primary);
+}
+
+.tab-button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* Contenedor de notas */
+.notes-dashboard-content {
+  min-height: 300px;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--color-text-secondary);
+}
+
+.no-notes-message {
+  padding: 20px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  background-color: var(--bg-color-secondary);
+  border-radius: 8px;
+}
+
+/* Listas de notas */
+.event-notes-list,
+.day-notes-list,
+.upcoming-notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-note-item {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--bg-color-primary);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-note-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-note-item.upcoming {
+  padding: 15px;
+}
+
+/* Información de eventos y días */
+.note-event-info,
+.note-day-info {
+  padding: 12px 15px;
+  background-color: var(--bg-color-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.note-event-info h4,
+.note-day-info h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.event-date {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+/* Contenido de notas */
+.event-notes-summary,
+.day-notes-summary {
+  padding: 15px;
+}
+
+.event-notes-summary h5,
+.day-notes-summary h5 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.note-count {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 12px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.note-preview {
+  padding: 10px;
+  background-color: var(--bg-color-secondary);
+  border-radius: 6px;
+}
+
+.note-title {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+/* Componentes de notas en eventos */
+.event-notes {
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--bg-color-secondary);
+  margin-top: 15px;
+}
+
+.event-notes h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.event-notes h4 .material-icons {
+  font-size: 18px;
+}
+
+.event-notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-note-item {
+  padding: 12px;
+  background-color: var(--bg-color-primary);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.note-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.note-header h5 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.note-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.note-actions button {
+  color: var(--color-text-secondary);
+}
+
+.note-actions button:hover {
+  color: var(--color-text-primary);
+}
+
+.note-content {
+  font-size: 14px;
+}
+
+/* Componentes para próximas notas */
+.upcoming-notes-section {
+  margin-bottom: 30px;
+}
+
+.upcoming-notes-section h4 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: var(--color-text-primary);
+}
+
+/* Estilo para modo oscuro */
+.theme-dark .dashboard-note-item {
+  border-color: var(--color-border-dark);
+  background-color: var(--bg-color-primary-dark);
+}
+
+.theme-dark .note-event-info,
+.theme-dark .note-day-info {
+  background-color: var(--bg-color-secondary-dark);
+  border-color: var(--color-border-dark);
+}
+
+.theme-dark .note-preview {
+  background-color: var(--bg-color-secondary-dark);
+}
+
+.theme-dark .event-notes {
+  background-color: var(--bg-color-secondary-dark);
+}
+
+.theme-dark .event-note-item {
+  background-color: var(--bg-color-primary-dark);
+  border-color: var(--color-border-dark);
+}
+
+.theme-dark .no-notes-message {
+  background-color: var(--bg-color-secondary-dark);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-note-item {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .event-notes-list,
+  .day-notes-list,
+  .upcoming-notes {
+    grid-template-columns: 1fr;
+  }
+  
+  .notes-dashboard {
+    padding: 15px;
+  }
+  
+  .tab-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+}

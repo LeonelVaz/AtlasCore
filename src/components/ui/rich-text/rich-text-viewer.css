@@ -1,0 +1,179 @@
+/* Estilos para el visualizador de texto enriquecido */
+.rich-text-viewer {
+  font-family: var(--font-family);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+/* Encabezados */
+.rich-text-viewer h1,
+.rich-text-viewer h2,
+.rich-text-viewer h3,
+.rich-text-viewer h4,
+.rich-text-viewer h5,
+.rich-text-viewer h6 {
+  margin-top: 0.8em;
+  margin-bottom: 0.4em;
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.rich-text-viewer h1 {
+  font-size: 1.8em;
+}
+
+.rich-text-viewer h2 {
+  font-size: 1.5em;
+}
+
+.rich-text-viewer h3 {
+  font-size: 1.3em;
+}
+
+.rich-text-viewer h4 {
+  font-size: 1.2em;
+}
+
+.rich-text-viewer h5,
+.rich-text-viewer h6 {
+  font-size: 1.1em;
+}
+
+/* Párrafos y separación */
+.rich-text-viewer p {
+  margin-bottom: 1em;
+}
+
+.rich-text-viewer hr {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 1em 0;
+}
+
+/* Listas */
+.rich-text-viewer ul,
+.rich-text-viewer ol {
+  margin-bottom: 1em;
+  padding-left: 2em;
+}
+
+.rich-text-viewer li {
+  margin-bottom: 0.5em;
+}
+
+.rich-text-viewer ul li {
+  list-style: disc;
+}
+
+.rich-text-viewer ol li {
+  list-style: decimal;
+}
+
+/* Citas */
+.rich-text-viewer blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding-left: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  margin-block: 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--bg-color-secondary);
+  padding: 0.8em 1em;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Enlaces e imágenes */
+.rich-text-viewer a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.rich-text-viewer a:hover {
+  text-decoration: underline;
+}
+
+.rich-text-viewer img {
+  max-width: 100%;
+  height: auto;
+  margin: 8px 0;
+  border-radius: 6px;
+}
+
+/* Código y preformateo */
+.rich-text-viewer pre,
+.rich-text-viewer code {
+  font-family: monospace;
+  background-color: var(--bg-color-secondary);
+  border-radius: 4px;
+}
+
+.rich-text-viewer pre {
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.rich-text-viewer code {
+  padding: 0.2em 0.4em;
+}
+
+.rich-text-viewer pre code {
+  padding: 0;
+  background-color: transparent;
+}
+
+/* Alineación de texto */
+.rich-text-viewer .align-left {
+  text-align: left;
+}
+
+.rich-text-viewer .align-center {
+  text-align: center;
+}
+
+.rich-text-viewer .align-right {
+  text-align: right;
+}
+
+.rich-text-viewer .align-justify {
+  text-align: justify;
+}
+
+/* Tema oscuro */
+.theme-dark .rich-text-viewer {
+  color: var(--color-text-primary-dark);
+}
+
+.theme-dark .rich-text-viewer blockquote {
+  background-color: var(--bg-color-secondary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.theme-dark .rich-text-viewer hr {
+  border-color: var(--color-border-dark);
+}
+
+.theme-dark .rich-text-viewer pre,
+.theme-dark .rich-text-viewer code {
+  background-color: var(--bg-color-secondary-dark);
+}
+
+/* Cuando está dentro de un contenedor con altura máxima */
+.rich-text-viewer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rich-text-viewer::-webkit-scrollbar-track {
+  background: var(--bg-color-secondary);
+  border-radius: 4px;
+}
+
+.rich-text-viewer::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar);
+  border-radius: 4px;
+}
+
+.rich-text-viewer::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-scrollbar-hover);
+}

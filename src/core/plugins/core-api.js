@@ -10,6 +10,8 @@ import pluginAPIRegistry from './plugin-api-registry';
 import pluginCommunication from './plugin-communication';
 import pluginRegistry from './plugin-registry';
 import { PLUGIN_CONSTANTS } from '../config/constants';
+// Importar los componentes de texto enriquecido
+import RichText from '../../components/ui/rich-text';
 
 class CoreAPI {
   constructor() {
@@ -163,6 +165,13 @@ class CoreAPI {
           this._handleError(pluginId, 'ui', error);
           return false;
         }
+      },
+
+      // Agregar componentes de UI básicos para plugins
+      components: {
+        // Componentes de texto enriquecido
+        RichTextEditor: RichText.Editor,
+        RichTextViewer: RichText.Viewer
       }
     };
   }

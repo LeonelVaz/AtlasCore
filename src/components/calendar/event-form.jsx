@@ -1,6 +1,8 @@
 import React from 'react';
 import Dialog from '../ui/dialog';
 import Button from '../ui/button';
+import { PLUGIN_CONSTANTS } from '../../core/config/constants';
+import ExtensionPoint from '../plugin-extension/extension-point';
 
 function EventForm({ 
   event,
@@ -11,6 +13,71 @@ function EventForm({
   onDelete,
   onClose
 }) {
+  // Renderizar extensiones para el formulario de eventos
+  const renderEventExtensions = () => {
+    return (
+      <ExtensionPoint
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.EVENT_FORM}
+        render={(extensions) => (
+          <div className="event-form-extensions">
+            {extensions.map(extension => {
+              const ExtComponent = extension.component;
+              return (
+                <div 
+                  key={extension.id}
+                  className="event-form-extension"
+                  data-plugin-id={extension.pluginId}
+                >
+                  <ExtComponent
+                    {...extension.props}
+                    event={event}
+                    isEditing={isEditing}
+                    onChange={onChange}
+                    pluginId={extension.pluginId}
+                    extensionId={extension.id}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+        fallback={null}
+      />
+    );
+  };
+
+  // Renderizar extensiones para la vista detallada del evento
+  const renderEventDetailExtensions = () => {
+    return (
+      <ExtensionPoint
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.EVENT_DETAIL_VIEW}
+        render={(extensions) => (
+          <div className="event-detail-extensions">
+            {extensions.map(extension => {
+              const ExtComponent = extension.component;
+              return (
+                <div 
+                  key={extension.id}
+                  className="event-detail-extension"
+                  data-plugin-id={extension.pluginId}
+                >
+                  <ExtComponent
+                    {...extension.props}
+                    event={event}
+                    isEditing={isEditing}
+                    pluginId={extension.pluginId}
+                    extensionId={extension.id}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+        fallback={null}
+      />
+    );
+  };
+
   return (
     <Dialog
       isOpen={true}
@@ -69,7 +136,13 @@ function EventForm({
             onChange={onChange} 
           />
         </div>
+
+        {/* Extensiones para el formulario de eventos */}
+        {renderEventExtensions()}
       </div>
+      
+      {/* Extensiones para la vista detallada del evento */}
+      {renderEventDetailExtensions()}
       
       {isEditing && (
         <div className="form-actions">

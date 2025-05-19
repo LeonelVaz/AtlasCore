@@ -3,6 +3,8 @@ import EventItem from './event-item';
 import useTimeGrid from '../../hooks/use-time-grid';
 import { TimeScaleContext } from '../../contexts/time-scale-context';
 import { TIME_SCALES } from '../../core/config/constants';
+import { PLUGIN_CONSTANTS } from '../../core/config/constants';
+import ExtensionPoint from '../plugin-extension/extension-point';
 
 // Componente para renderizar un evento individual
 const EventRenderer = ({ 
@@ -48,6 +50,40 @@ const TimeSlotRow = ({
   const dateWithTime = new Date(day);
   dateWithTime.setHours(hour, 0, 0, 0);
   
+  // Nuevo componente para el punto de extensión CALENDAR_DAY_CELL
+  const renderDayCellExtensions = () => {
+    return (
+      <ExtensionPoint
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_DAY_CELL}
+        render={(extensions) => (
+          <>
+            {extensions.map(extension => {
+              const ExtComponent = extension.component;
+              return (
+                <div
+                  key={extension.id}
+                  className="calendar-day-cell-extension"
+                  data-plugin-id={extension.pluginId}
+                >
+                  <ExtComponent
+                    {...extension.props}
+                    day={day}
+                    hour={hour}
+                    minutes={0}
+                    date={dateWithTime}
+                    pluginId={extension.pluginId}
+                    extensionId={extension.id}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
+        fallback={null}
+      />
+    );
+  };
+  
   return (
     <div 
       className={`calendar-cell calendar-time-slot ${slotType}`}
@@ -57,6 +93,7 @@ const TimeSlotRow = ({
       onClick={() => onCellClick(dateWithTime, hour, 0, slotDuration)}
       style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
     >
+      {renderDayCellExtensions()}
       {renderEvents && renderEvents(day, hour, 0, slotDuration)}
     </div>
   );
@@ -70,6 +107,40 @@ const CustomTimeSlot = ({
   const dateWithTime = new Date(day);
   dateWithTime.setHours(hour, slot.minutes, 0, 0);
   
+  // Nuevo componente para el punto de extensión CALENDAR_DAY_CELL para franjas personalizadas
+  const renderCustomDayCellExtensions = () => {
+    return (
+      <ExtensionPoint
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_DAY_CELL}
+        render={(extensions) => (
+          <>
+            {extensions.map(extension => {
+              const ExtComponent = extension.component;
+              return (
+                <div
+                  key={extension.id}
+                  className="calendar-day-cell-extension"
+                  data-plugin-id={extension.pluginId}
+                >
+                  <ExtComponent
+                    {...extension.props}
+                    day={day}
+                    hour={hour}
+                    minutes={slot.minutes}
+                    date={dateWithTime}
+                    pluginId={extension.pluginId}
+                    extensionId={extension.id}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
+        fallback={null}
+      />
+    );
+  };
+  
   return (
     <div 
       className={`calendar-cell calendar-time-slot ${slotType}`}
@@ -79,6 +150,7 @@ const CustomTimeSlot = ({
       onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)}
       style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
     >
+      {renderCustomDayCellExtensions()}
       {renderEvents && renderEvents(day, hour, slot.minutes, slotDuration)}
     </div>
   );
