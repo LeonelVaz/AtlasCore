@@ -1,0 +1,390 @@
+/**
+ * animations.css
+ * Estilos y animaciones para el plugin
+ */
+
+/* ===== Definiciones de animaciones ===== */
+
+/* Animación: Fade */
+@keyframes pgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pgFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Animación: Slide */
+@keyframes pgSlideInRight {
+  from { transform: translateX(-40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pgSlideInLeft {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pgSlideInUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pgSlideInDown {
+  from { transform: translateY(-40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Animación: Bounce */
+@keyframes pgBounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-30px); }
+  60% { transform: translateY(-15px); }
+}
+
+/* Animación: Flip */
+@keyframes pgFlipX {
+  0% { transform: perspective(400px) rotateX(90deg); opacity: 0; }
+  40% { transform: perspective(400px) rotateX(-10deg); }
+  70% { transform: perspective(400px) rotateX(10deg); }
+  100% { transform: perspective(400px) rotateX(0deg); opacity: 1; }
+}
+
+@keyframes pgFlipY {
+  0% { transform: perspective(400px) rotateY(90deg); opacity: 0; }
+  40% { transform: perspective(400px) rotateY(-10deg); }
+  70% { transform: perspective(400px) rotateY(10deg); }
+  100% { transform: perspective(400px) rotateY(0deg); opacity: 1; }
+}
+
+/* Animación: Scale */
+@keyframes pgScaleIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pgScaleOut {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0); opacity: 0; }
+}
+
+@keyframes pgPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Animación: Rotate */
+@keyframes pgRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Animación: Shake */
+@keyframes pgShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+  20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+/* ===== Clases de animación ===== */
+
+/* Clase base para todas las animaciones */
+[class*="pg-animation-"] {
+  animation-fill-mode: both;
+}
+
+/* Velocidades de animación */
+.pg-animation-speed-slow {
+  animation-duration: calc(var(--transition-slow) * 1.5);
+}
+
+.pg-animation-speed-normal {
+  animation-duration: var(--transition-normal);
+}
+
+.pg-animation-speed-fast {
+  animation-duration: var(--transition-fast);
+}
+
+/* Retrasos de animación */
+.pg-animation-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.pg-animation-delay-2 {
+  animation-delay: 0.3s;
+}
+
+.pg-animation-delay-3 {
+  animation-delay: 0.5s;
+}
+
+/* Tipos de animación */
+.pg-animation-fade {
+  animation-name: pgFadeIn;
+}
+
+.pg-animation-slide {
+  animation-name: pgSlideInRight;
+}
+
+.pg-animation-bounce {
+  animation-name: pgBounce;
+  transform-origin: center bottom;
+}
+
+.pg-animation-flip {
+  animation-name: pgFlipY;
+  backface-visibility: visible !important;
+}
+
+.pg-animation-scale {
+  animation-name: pgScaleIn;
+}
+
+.pg-animation-rotate {
+  animation-name: pgRotate;
+}
+
+.pg-animation-shake {
+  animation-name: pgShake;
+}
+
+/* ===== Transiciones ===== */
+
+/* Transición base para elementos interactivos */
+.pg-transition {
+  transition-property: opacity, transform, background-color, color, border-color;
+  transition-duration: var(--transition-normal);
+  transition-timing-function: ease;
+}
+
+.pg-transition-fast {
+  transition-duration: var(--transition-fast);
+}
+
+.pg-transition-slow {
+  transition-duration: var(--transition-slow);
+}
+
+/* ===== Estilos específicos para la demostración de animaciones ===== */
+
+.pg-animations-demo {
+  background-color: var(--pg-bg-color);
+  border-radius: var(--pg-border-radius-md);
+  border: 1px solid var(--pg-border-color);
+  padding: var(--pg-spacing-md);
+  margin-bottom: var(--pg-spacing-lg);
+}
+
+.pg-animation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pg-spacing-md);
+  margin-bottom: var(--pg-spacing-md);
+  padding: var(--pg-spacing-md);
+  background-color: var(--pg-bg-color-secondary);
+  border-radius: var(--pg-border-radius-md);
+}
+
+.pg-toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.pg-toggle-label input {
+  margin-right: var(--pg-spacing-sm);
+}
+
+.pg-animation-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--pg-spacing-md);
+  margin-bottom: var(--pg-spacing-lg);
+}
+
+.pg-animation-card {
+  background-color: var(--pg-bg-color);
+  border: 1px solid var(--pg-border-color);
+  border-radius: var(--pg-border-radius-md);
+  padding: var(--pg-spacing-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+.pg-animation-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--pg-shadow-md);
+}
+
+.pg-animation-preview {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--pg-spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--pg-bg-color-secondary);
+  border-radius: 50%;
+}
+
+.pg-animation-icon {
+  font-size: 36px;
+  color: var(--pg-primary-color);
+}
+
+.pg-animation-card h3 {
+  margin: 0 0 var(--pg-spacing-xs) 0;
+  font-size: 1.1rem;
+  color: var(--pg-text-color);
+}
+
+.pg-animation-card p {
+  margin: 0 0 var(--pg-spacing-sm) 0;
+  font-size: 0.85rem;
+  color: var(--pg-text-color-secondary);
+  min-height: 40px;
+}
+
+.pg-animation-plays {
+  font-size: 0.8rem;
+  color: var(--pg-text-color-secondary);
+  font-style: italic;
+}
+
+/* Ejemplo práctico */
+.pg-animation-example {
+  margin-bottom: var(--pg-spacing-lg);
+}
+
+.pg-example-component {
+  background-color: var(--pg-bg-color);
+  border: 1px solid var(--pg-border-color);
+  border-radius: var(--pg-border-radius-md);
+  overflow: hidden;
+  max-width: 600px;
+  margin: var(--pg-spacing-md) 0;
+}
+
+.pg-example-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--pg-spacing-sm) var(--pg-spacing-md);
+  background-color: var(--pg-bg-color-secondary);
+  border-bottom: 1px solid var(--pg-border-color);
+}
+
+.pg-example-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pg-example-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: var(--pg-primary-color);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0 8px;
+}
+
+.pg-example-list {
+  padding: var(--pg-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pg-spacing-sm);
+}
+
+.pg-example-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pg-spacing-sm);
+  padding: var(--pg-spacing-sm);
+  background-color: var(--pg-bg-color);
+  border: 1px solid var(--pg-border-color);
+  border-radius: var(--pg-border-radius-md);
+}
+
+.pg-example-icon {
+  font-size: 24px;
+  padding: var(--pg-spacing-xs);
+  border-radius: 50%;
+}
+
+.pg-example-icon-info {
+  color: var(--pg-info-color);
+  background-color: rgba(var(--pg-info-color-rgb, 66, 133, 244), 0.1);
+}
+
+.pg-example-icon-success {
+  color: var(--pg-success-color);
+  background-color: rgba(var(--pg-success-color-rgb, 52, 168, 83), 0.1);
+}
+
+.pg-example-icon-warning {
+  color: var(--pg-warning-color);
+  background-color: rgba(var(--pg-warning-color-rgb, 251, 188, 5), 0.1);
+}
+
+.pg-example-content {
+  flex: 1;
+}
+
+.pg-example-content > div:first-child {
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: var(--pg-text-color);
+}
+
+.pg-example-content > div:last-child {
+  font-size: 0.9rem;
+  color: var(--pg-text-color-secondary);
+}
+
+/* Código de ejemplo */
+.pg-code-example {
+  margin-bottom: var(--pg-spacing-lg);
+}
+
+.pg-practices-list li {
+  margin-bottom: var(--pg-spacing-sm);
+}
+
+/* ===== Soporte para prefers-reduced-motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  [class*="pg-animation-"] {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .pg-transition {
+    transition: none !important;
+  }
+  
+  .pg-animation-card:hover {
+    transform: none !important;
+  }
+}
+
+/* ===== Adaptaciones responsivas ===== */
+@media screen and (max-width: 768px) {
+  .pg-animation-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .pg-animation-controls {
+    flex-direction: column;
+    gap: var(--pg-spacing-sm);
+  }
+}
