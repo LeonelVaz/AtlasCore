@@ -24,18 +24,29 @@
    - [Extensiones para el calendario](#extensiones-para-el-calendario)
    - [Páginas completas de plugin](#páginas-completas-de-plugin)
    - [Widgets para el panel de configuración](#widgets-para-el-panel-de-configuración)
-9. [Dependencias y conflictos](#dependencias-y-conflictos)
-   - [Manejo de dependencias](#manejo-de-dependencias)
-   - [Resolución de conflictos](#resolución-de-conflictos)
-   - [Resolver ciclos de dependencias](#resolver-ciclos-de-dependencias)
-10. [Empaquetado y distribución](#empaquetado-y-distribución)
+9. [Estilos y temas](#estilos-y-temas)
+   - [Sistema de temas de Atlas](#sistema-de-temas-de-atlas)
+   - [Variables CSS disponibles](#variables-css-disponibles)
+   - [Adaptación a diferentes temas](#adaptación-a-diferentes-temas)
+   - [Buenas prácticas de CSS](#buenas-prácticas-de-css)
+10. [Dependencias y conflictos](#dependencias-y-conflictos)
+    - [Manejo de dependencias](#manejo-de-dependencias)
+    - [Resolución de conflictos](#resolución-de-conflictos)
+    - [Resolver ciclos de dependencias](#resolver-ciclos-de-dependencias)
+11. [Empaquetado y distribución](#empaquetado-y-distribución)
     - [Estructura del paquete](#estructura-del-paquete)
     - [Verificación de integridad](#verificación-de-integridad)
     - [Repositorios de plugins](#repositorios-de-plugins)
     - [Actualizaciones automáticas](#actualizaciones-automáticas)
-11. [Mejores prácticas](#mejores-prácticas)
-12. [Depuración](#depuración)
-13. [Ejemplos prácticos](#ejemplos-prácticos)
+12. [Mejores prácticas](#mejores-prácticas)
+    - [Manejo asíncrono de datos](#manejo-asíncrono-de-datos)
+    - [Gestión de errores robusta](#gestión-de-errores-robusta)
+    - [Prevención de errores comunes](#prevención-de-errores-comunes)
+    - [Optimización de rendimiento](#optimización-de-rendimiento)
+13. [Depuración](#depuración)
+    - [Técnicas de depuración](#técnicas-de-depuración)
+    - [Errores comunes y soluciones](#errores-comunes-y-soluciones)
+14. [Ejemplos prácticos](#ejemplos-prácticos)
 
 ## Introducción
 
@@ -95,6 +106,28 @@ export default {
 
 Esta estructura debe exportarse como exportación predeterminada desde el archivo principal de tu plugin (normalmente `index.js`).
 
+### Organización de archivos
+
+Para plugins más complejos, se recomienda una estructura organizada de archivos:
+
+```
+mi-plugin/
+├── index.js                  // Punto de entrada principal
+├── components/               // Componentes React/UI
+│   ├── SidebarWidget.jsx     // Widget para la barra lateral
+│   ├── MainPage.jsx          // Página principal del plugin
+│   └── SettingsPanel.jsx     // Panel de configuración
+├── services/                 // Lógica de servicios
+│   ├── api.js                // Comunicación con APIs externas
+│   └── storage.js            // Manejo de almacenamiento
+├── utils/                    // Utilidades
+│   ├── constants.js          // Constantes y configuración
+│   └── helpers.js            // Funciones auxiliares
+├── styles/                   // Estilos CSS
+│   └── plugin-styles.css     // Estilos del plugin
+└── package.json              // Para dependencias y metadatos
+```
+
 ## Metadatos del plugin
 
 Los metadatos son propiedades que describen tu plugin y determinan cómo interactúa con Atlas:
@@ -133,32 +166,46 @@ El método `init` se llama cuando el plugin se activa. Recibe el objeto `core` q
 
 ```javascript
 init: function(core) {
-  try {
-    // Guardar referencia al core
-    this._core = core;
-    
-    // Cargar datos almacenados
-    this._loadData();
-    
-    // Suscribirse a eventos
-    this._setupEventListeners();
-    
-    // Registrar extensiones UI
-    this._registerUIExtensions();
-    
-    // Registrar API pública
-    core.plugins.registerAPI(this.id, this.publicAPI);
-    
-    console.log('[Mi Plugin] Inicializado correctamente');
-    return true;
-  } catch (error) {
-    console.error('[Mi Plugin] Error durante la inicialización:', error);
-    return false;
-  }
+  const self = this; // Preservar el contexto 'this'
+  
+  // Se recomienda devolver una Promise para manejar operaciones asíncronas
+  return new Promise(function(resolve) {
+    try {
+      // Guardar referencia al core
+      self._core = core;
+      
+      // Cargar datos almacenados (operación asíncrona)
+      core.storage.getItem(self.id, 'plugin-data', null)
+        .then(function(savedData) {
+          if (savedData) {
+            self._data = savedData;
+          }
+          
+          // Configurar el resto del plugin
+          self._setupEventListeners();
+          self._registerUIExtensions();
+          
+          // Registrar API pública si existe
+          if (self.publicAPI) {
+            core.plugins.registerAPI(self.id, self.publicAPI);
+          }
+          
+          console.log('[Mi Plugin] Inicializado correctamente');
+          resolve(true);
+        })
+        .catch(function(error) {
+          console.error('[Mi Plugin] Error al cargar datos:', error);
+          resolve(false);
+        });
+    } catch (error) {
+      console.error('[Mi Plugin] Error durante la inicialización:', error);
+      resolve(false);
+    }
+  });
 }
 ```
 
-Si `init` devuelve `false`, el sistema considerará que la inicialización ha fallado y el plugin no se activará.
+Si `init` devuelve `false` o una Promise resuelta con `false`, el sistema considerará que la inicialización ha fallado y el plugin no se activará.
 
 ### Limpieza
 
@@ -168,12 +215,21 @@ El método `cleanup` se llama cuando el plugin se desactiva. Debes liberar todos
 cleanup: function() {
   try {
     // Guardar datos
-    this._saveData();
+    if (this._core) {
+      this._core.storage.setItem(this.id, 'plugin-data', this._data)
+        .catch(function(error) {
+          console.error('[Mi Plugin] Error al guardar datos:', error);
+        });
+    }
     
     // Cancelar suscripciones a eventos
     this._unsubscribeFromEvents();
     
-    // Las extensiones UI se limpian automáticamente
+    // Limpiar temporizadores
+    if (this._timerId) {
+      clearInterval(this._timerId);
+      this._timerId = null;
+    }
     
     console.log('[Mi Plugin] Limpieza completada');
     return true;
@@ -672,6 +728,204 @@ const extensionId = core.ui.registerExtension(
 );
 ```
 
+## Estilos y temas
+
+### Sistema de temas de Atlas
+
+Atlas utiliza un sistema de temas basado en variables CSS que permite a los plugins adaptarse automáticamente a diferentes esquemas de colores. Todos los plugins deben usar estas variables en lugar de colores directos para garantizar una apariencia coherente.
+
+```javascript
+// Ejemplo de componente con estilos adaptados al tema
+function ThemeAwareComponent() {
+  return React.createElement(
+    'div',
+    {
+      style: {
+        backgroundColor: 'var(--card-bg)',
+        color: 'var(--text-color)',
+        border: '1px solid var(--border-color)',
+        padding: 'var(--spacing-md)',
+        borderRadius: 'var(--border-radius-md)'
+      }
+    },
+    'Este componente se adapta automáticamente al tema'
+  );
+}
+```
+
+### Variables CSS disponibles
+
+Las variables CSS de Atlas están organizadas por categorías:
+
+#### Colores y apariencia
+
+```css
+/* Colores primarios y de acento */
+--primary-color        /* Color principal de la aplicación */
+--primary-hover        /* Versión hover del color principal */
+--secondary-color      /* Color secundario */
+--success-color        /* Color para acciones exitosas */
+--warning-color        /* Color para advertencias */
+--danger-color         /* Color para errores o acciones peligrosas */
+--info-color           /* Color para información */
+
+/* Fondos y texto */
+--bg-color             /* Color de fondo principal */
+--bg-color-secondary   /* Color de fondo secundario */
+--text-color           /* Color de texto principal */
+--text-color-secondary /* Color de texto secundario */
+
+/* Componentes UI */
+--header-bg            /* Fondo de encabezado */
+--sidebar-bg           /* Fondo de barra lateral */
+--card-bg              /* Fondo de tarjetas */
+--modal-bg             /* Fondo de ventanas modales */
+--input-bg             /* Fondo de campos de entrada */
+--border-color         /* Color de bordes */
+--hover-color          /* Color para estados hover */
+
+/* Botones */
+--color-button-primary-bg     /* Fondo de botones primarios */
+--color-button-primary-text   /* Texto de botones primarios */
+--color-button-primary-hover  /* Hover de botones primarios */
+--color-button-secondary-bg   /* Fondo de botones secundarios */
+--color-button-secondary-text /* Texto de botones secundarios */
+```
+
+#### Espaciado y dimensiones
+
+```css
+/* Espaciado */
+--spacing-xs           /* Espaciado extra pequeño (0.25rem) */
+--spacing-sm           /* Espaciado pequeño (0.5rem) */
+--spacing-md           /* Espaciado medio (1rem) */
+--spacing-lg           /* Espaciado grande (1.5rem) */
+--spacing-xl           /* Espaciado extra grande (2rem) */
+
+/* Radios de borde */
+--border-radius-sm     /* Radio pequeño (0.25rem) */
+--border-radius-md     /* Radio medio (0.375rem) */
+--border-radius-lg     /* Radio grande (0.5rem) */
+--border-radius-xl     /* Radio extra grande (0.75rem) */
+
+/* Sombras */
+--shadow-sm            /* Sombra pequeña */
+--shadow-md            /* Sombra media */
+--shadow-lg            /* Sombra grande */
+--shadow-xl            /* Sombra extra grande */
+```
+
+#### Tipografía
+
+```css
+/* Familias de fuentes */
+--font-family-heading  /* Fuente para encabezados */
+--font-family-body     /* Fuente para texto general */
+--font-family-mono     /* Fuente monoespaciada */
+```
+
+#### Transiciones y animaciones
+
+```css
+/* Transiciones */
+--transition-fast      /* Transición rápida (0.15s) */
+--transition-normal    /* Transición normal (0.25s) */
+--transition-slow      /* Transición lenta (0.4s) */
+```
+
+### Adaptación a diferentes temas
+
+Para garantizar que tu plugin se vea bien en todos los temas, sigue estas pautas:
+
+1. **Usa siempre variables CSS** en lugar de colores directos:
+
+```css
+/* Mal */
+.mi-componente {
+  background-color: #ffffff;
+  color: #333333;
+  border: 1px solid #dddddd;
+}
+
+/* Bien */
+.mi-componente {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+```
+
+2. **Considera diferentes modos de color**:
+
+El sistema de temas de Atlas incluye temas claros y oscuros. Asegúrate de que tu UI sea legible en ambos modos.
+
+3. **Prueba tu plugin en diferentes temas**:
+
+Verifica que tu plugin luce bien en todos los temas disponibles de Atlas, especialmente en los temas predeterminados y cualquier tema de alto contraste.
+
+### Buenas prácticas de CSS
+
+1. **Usa prefijos específicos** para clases CSS para evitar conflictos:
+
+```css
+/* Prefijo todas las clases con tu ID de plugin */
+.mi-plugin-container { }
+.mi-plugin-button { }
+.mi-plugin-input { }
+```
+
+2. **Evita selectores demasiado genéricos** que puedan afectar a otros plugins:
+
+```css
+/* Mal - selector demasiado genérico */
+.container { }
+.button { }
+
+/* Bien - selector específico */
+.mi-plugin-container { }
+.mi-plugin-button { }
+```
+
+3. **Aprovecha los componentes existentes**:
+
+Atlas proporciona varios componentes UI reutilizables. Úsalos cuando sea posible para mantener consistencia.
+
+4. **Considera la accesibilidad**:
+
+- Mantén suficiente contraste entre texto y fondo
+- No dependas solo del color para transmitir información
+- Asegúrate de que los elementos interactivos sean claramente identificables
+
+5. **Organiza tus estilos**:
+
+```css
+/* Ejemplo de organización de CSS */
+
+/* 1. Variables y configuración */
+:root {
+  --mi-plugin-spacing: 12px;
+}
+
+/* 2. Estructuras generales */
+.mi-plugin-container { }
+.mi-plugin-header { }
+.mi-plugin-content { }
+
+/* 3. Componentes específicos */
+.mi-plugin-button { }
+.mi-plugin-button:hover { }
+.mi-plugin-input { }
+
+/* 4. Modificadores y estados */
+.mi-plugin-button--primary { }
+.mi-plugin-button--disabled { }
+.mi-plugin-input--focused { }
+
+/* 5. Estilos específicos de páginas o vistas */
+.mi-plugin-settings-page { }
+.mi-plugin-dashboard { }
+```
+
 ## Dependencias y conflictos
 
 ### Manejo de dependencias
@@ -789,128 +1043,526 @@ const updateSettings = {
 
 ## Mejores prácticas
 
-1. **Manejo de errores**: Implementa try/catch en todas las operaciones importantes
+### Manejo asíncrono de datos
+
+Al trabajar con operaciones asíncronas como almacenamiento o solicitudes de red:
+
+1. **Usa Promesas de forma consistente**:
+
+```javascript
+// Recomendado: devolver Promise desde init
+init: function(core) {
+  const self = this;
+  
+  return new Promise(function(resolve) {
+    // Operaciones asíncronas aquí
+    core.storage.getItem(self.id, 'data', null)
+      .then(function(data) {
+        // Procesar datos
+        resolve(true);
+      })
+      .catch(function(error) {
+        console.error('Error:', error);
+        resolve(false);
+      });
+  });
+}
+```
+
+2. **Maneja el contexto `this` correctamente**:
+
+```javascript
+// Problema: contexto 'this' perdido en callbacks
+init: function(core) {
+  this._core = core;
+  
+  core.storage.getItem(this.id, 'data', null)
+    .then(function(data) {
+      // ¡Error! 'this' no se refiere al plugin aquí
+      this._data = data; // 'this' es undefined o window
+    });
+}
+
+// Solución 1: Guardar 'this' en una variable
+init: function(core) {
+  const self = this;
+  this._core = core;
+  
+  core.storage.getItem(this.id, 'data', null)
+    .then(function(data) {
+      self._data = data; // Funciona correctamente
+    });
+}
+
+// Solución 2: Usar funciones flecha (si el entorno lo permite)
+init: function(core) {
+  this._core = core;
+  
+  core.storage.getItem(this.id, 'data', null)
+    .then((data) => {
+      this._data = data; // Funciona correctamente
+    });
+}
+```
+
+3. **Implementa inicialización por etapas** para tareas complejas:
+
+```javascript
+init: function(core) {
+  const self = this;
+  
+  return new Promise(function(resolve) {
+    // Paso 1: Cargar datos
+    function step1() {
+      return core.storage.getItem(self.id, 'data', null);
+    }
+    
+    // Paso 2: Configurar cosas que dependen de los datos
+    function step2(data) {
+      self._data = data || { configuracion: {} };
+      return self._setupSomething(self._data);
+    }
+    
+    // Paso 3: Finalizar inicialización
+    function step3() {
+      self._registerUIExtensions();
+      return true;
+    }
+    
+    // Ejecutar pasos en secuencia
+    step1()
+      .then(step2)
+      .then(step3)
+      .then(function(success) {
+        resolve(success);
+      })
+      .catch(function(error) {
+        console.error('Error en inicialización:', error);
+        resolve(false);
+      });
+  });
+}
+```
+
+### Gestión de errores robusta
+
+Una buena gestión de errores es crucial para plugins estables:
+
+1. **Usa bloques try/catch**:
+
+```javascript
+try {
+  // Código que podría fallar
+} catch (error) {
+  console.error('[Mi Plugin] Error:', error);
+  // Manejar el error apropiadamente
+}
+```
+
+2. **Valida datos antes de usarlos**:
+
+```javascript
+// Malo: Acceso directo sin validación
+function processData(data) {
+  const result = data.items.filter(item => item.active);
+  return result;
+}
+
+// Bueno: Validación antes de uso
+function processData(data) {
+  if (!data || !Array.isArray(data.items)) {
+    console.warn('Datos inválidos, usando valores predeterminados');
+    return [];
+  }
+  
+  const result = data.items.filter(item => item.active === true);
+  return result;
+}
+```
+
+3. **Proporciona valores por defecto**:
+
+```javascript
+// Rescate con valores predeterminados
+function getConfig() {
+  try {
+    return this._data.configuracion || {};
+  } catch (error) {
+    console.warn('Error al obtener configuración, usando valores predeterminados');
+    return {};
+  }
+}
+```
+
+4. **Maneja errores asíncronos**:
+
+```javascript
+// Manejo de promesas con catch
+core.storage.getItem(this.id, 'data')
+  .then(function(data) {
+    // Usar datos
+  })
+  .catch(function(error) {
+    console.error('Error al obtener datos:', error);
+    // Manejar el error
+  });
+```
+
+### Prevención de errores comunes
+
+Evita estos errores comunes en el desarrollo de plugins:
+
+1. **Problema**: Usar `async/await` directamente en la definición de funciones de objeto:
+
+```javascript
+// Incorrecto: Puede causar errores de sintaxis en algunos entornos
+{
+  init: async function(core) { /* ... */ }
+}
+
+// Correcto: Usar Promise explícita
+{
+  init: function(core) {
+    return new Promise(async function(resolve) {
+      // Código asíncrono aquí
+      resolve(true);
+    });
+  }
+}
+```
+
+2. **Problema**: No verificar si los objetos existen antes de acceder a sus propiedades:
+
+```javascript
+// Incorrecto: Acceso sin verificación
+function doSomething(props) {
+  const count = props.data.items.length; // Error si props.data es undefined
+}
+
+// Correcto: Verificar antes de acceder
+function doSomething(props) {
+  if (props && props.data && Array.isArray(props.data.items)) {
+    const count = props.data.items.length;
+    // continuar
+  } else {
+    // manejar caso donde props.data.items no existe
+  }
+}
+
+// Alternativa concisa con operador opcional (si el entorno lo soporta)
+function doSomething(props) {
+  const count = props?.data?.items?.length || 0;
+  // continuar
+}
+```
+
+3. **Problema**: Inicialización insegura en componentes React:
+
+```javascript
+// Incorrecto: Asume que plugin.publicAPI existe
+function Dashboard(props) {
+  const [stats, setStats] = useState(props.plugin.publicAPI.getStats());
+  // ...
+}
+
+// Correcto: Inicialización segura con valores predeterminados
+function Dashboard(props) {
+  const getInitialStats = () => {
+    try {
+      return props.plugin?.publicAPI?.getStats() || { count: 0 };
+    } catch (e) {
+      return { count: 0 };
+    }
+  };
+  
+  const [stats, setStats] = useState(getInitialStats());
+  // ...
+}
+```
+
+4. **Problema**: No limpiar recursos adecuadamente:
+
+```javascript
+// Incorrecto: Suscripción sin limpieza
+useEffect(() => {
+  const subscription = props.core.events.subscribe(
+    'event',
+    handleEvent
+  );
+  // Sin función de limpieza
+}, []);
+
+// Correcto: Limpieza adecuada
+useEffect(() => {
+  const subscription = props.core.events.subscribe(
+    'event',
+    handleEvent
+  );
+  
+  return () => {
+    if (typeof subscription === 'function') {
+      subscription(); // Cancelar suscripción al desmontar
+    }
+  };
+}, []);
+```
+
+### Optimización de rendimiento
+
+Para crear plugins eficientes:
+
+1. **Minimiza las suscripciones a eventos**:
+
+```javascript
+// Mejor: Suscribirse solo a eventos necesarios
+_setupEventListeners: function() {
+  // Suscribirse solo a eventos específicos
+  this._subscriptions.push(
+    this._core.events.subscribe(
+      this.id,
+      'calendar.eventCreated',
+      this._handleEventChange.bind(this)
+    )
+  );
+}
+```
+
+2. **Memoiza valores o componentes** en React:
+
+```javascript
+// Usar useMemo para cálculos costosos
+function MyComponent(props) {
+  const expensiveResult = React.useMemo(() => {
+    return computeExpensiveValue(props.data);
+  }, [props.data]);
+  
+  return <div>{expensiveResult}</div>;
+}
+```
+
+3. **Evita renderizados innecesarios**:
+
+```javascript
+// Evitar recrear funciones en cada renderizado
+function MyComponent() {
+  // Mal: Se crea una nueva función en cada renderizado
+  return <Button onClick={() => handleClick()} />;
+  
+  // Bien: Usar useCallback
+  const handleButtonClick = React.useCallback(() => {
+    handleClick();
+  }, []);
+  
+  return <Button onClick={handleButtonClick} />;
+}
+```
+
+4. **Carga perezosa de recursos pesados**:
+
+```javascript
+// Cargar grandes conjuntos de datos solo cuando sea necesario
+function UserList() {
+  const [users, setUsers] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  
+  const loadUsers = () => {
+    if (!loaded) {
+      fetchUsers().then(data => {
+        setUsers(data);
+        setLoaded(true);
+      });
+    }
+  };
+  
+  return (
+    <div>
+      {!loaded && <button onClick={loadUsers}>Cargar usuarios</button>}
+      {loaded && <UserTable users={users} />}
+    </div>
+  );
+}
+```
+
+## Depuración
+
+### Técnicas de depuración
+
+Para depurar tu plugin de manera efectiva:
+
+1. **Uso de console.log con prefijo**:
+
+```javascript
+function log(message, data) {
+  console.log(`[${this.id}] ${message}`, data);
+}
+
+function error(message, err) {
+  console.error(`[${this.id}] ${message}`, err);
+}
+```
+
+2. **Inspección del estado del plugin**:
+
+```javascript
+// Para ver el estado completo del plugin
+console.log('[Mi Plugin] Estado actual:', JSON.parse(JSON.stringify(this)));
+
+// Para ver una versión limpia para inspección
+console.log('[Mi Plugin] Datos:', {
+  configuracion: this._data.configuracion,
+  contador: this._data.contador,
+  eventos: this._data.registroEventos.length
+});
+```
+
+3. **Depuración de componentes React**:
+
+```javascript
+function DebugComponent(props) {
+  console.log('Renderizando con props:', props);
+  
+  // Depurar ciclo de vida
+  React.useEffect(() => {
+    console.log('Componente montado');
+    return () => {
+      console.log('Componente desmontado');
+    };
+  }, []);
+  
+  return <div>Componente</div>;
+}
+```
+
+4. **Monitoreo de eventos**:
+
+```javascript
+// Función para monitorear eventos en el sistema
+function monitorEvents(core, eventPattern) {
+  return core.events.subscribe(
+    'debug-monitor',
+    eventPattern || '*',
+    function(data, eventName, pluginId) {
+      console.log(`[Event] ${pluginId} → ${eventName}`, data);
+    }
+  );
+}
+
+// Usar en depuración
+const unsubscribe = monitorEvents(core, 'calendar.*');
+// Cuando termines:
+unsubscribe();
+```
+
+### Errores comunes y soluciones
+
+Estos son errores frecuentes y cómo solucionarlos:
+
+1. **Error**: `Cannot read property 'X' of undefined`
+
+   **Solución**: Verificar que los objetos existen antes de acceder a sus propiedades.
+   
    ```javascript
-   try {
-     // Operación que podría fallar
-   } catch (error) {
-     console.error('[Mi Plugin] Error:', error);
-     // Manejar el error apropiadamente
-   }
+   // Incorrecto
+   const value = obj.prop.deepProp;
+   
+   // Correcto
+   const value = obj && obj.prop ? obj.prop.deepProp : undefined;
+   
+   // Alternativa (si el entorno lo soporta)
+   const value = obj?.prop?.deepProp;
    ```
 
-2. **Limpieza de recursos**: Asegúrate de liberar todos los recursos en el método `cleanup`
+2. **Error**: `this` es `undefined` en callbacks
+
+   **Solución**: Guardar referencia a `this` o usar funciones flecha.
+   
    ```javascript
+   // Guardar 'this'
+   const self = this;
+   someFunction(function() {
+     self.doSomething();
+   });
+   
+   // O usar arrow function
+   someFunction(() => {
+     this.doSomething();
+   });
+   ```
+
+3. **Error**: No se cancelan suscripciones a eventos
+
+   **Solución**: Mantener referencias a las funciones de cancelación y usarlas.
+   
+   ```javascript
+   init: function(core) {
+     this._subscriptions = [];
+     
+     this._subscriptions.push(
+       core.events.subscribe(this.id, 'event', this._handler)
+     );
+     
+     return true;
+   },
+   
    cleanup: function() {
-     // Cancelar temporizadores
-     if (this._timerId) clearInterval(this._timerId);
-     
-     // Cancelar suscripciones a eventos
-     this._unsubscribeFromEvents();
-     
-     // Guardar datos pendientes
-     this._saveData();
+     // Cancelar todas las suscripciones
+     this._subscriptions.forEach(unsub => {
+       if (typeof unsub === 'function') unsub();
+     });
      
      return true;
    }
    ```
 
-3. **Namespaces de eventos**: Usa el formato `tuPlugin.nombreEvento` para eventos propios
+4. **Error**: Estado de React no se actualiza
+
+   **Solución**: Verificar dependencias en useEffect y estructura de datos.
+   
    ```javascript
-   core.events.publish(
-     this.id,
-     'miPlugin.datosActualizados',
-     { datos: 'nuevos' }
-   );
+   // Incorrecto
+   useEffect(() => {
+     fetchData().then(setData);
+   }, []); // Falta dependencia
+   
+   // Correcto
+   useEffect(() => {
+     fetchData().then(setData);
+   }, [fetchData]); // Incluye todas las dependencias
    ```
 
-4. **Organización del código**: Separa la lógica en métodos con propósitos claros
+5. **Error**: Manejo incorrecto de promesas
+
+   **Solución**: Usar correctamente then/catch o async/await.
+   
    ```javascript
-   {
-     // Método para cargar datos
-     _loadData: async function() { /* ... */ },
-     
-     // Método para guardar datos
-     _saveData: async function() { /* ... */ },
-     
-     // Método para configurar listeners
-     _setupEventListeners: function() { /* ... */ },
-     
-     // Método para manejar eventos
-     _handleEvent: function(data) { /* ... */ }
+   // Incorrecto
+   function saveData() {
+     core.storage.setItem(id, 'data', data);
+     // Continúa sin esperar a que termine la operación
+     doNextThing();
+   }
+   
+   // Correcto con then/catch
+   function saveData() {
+     core.storage.setItem(id, 'data', data)
+       .then(() => {
+         doNextThing();
+       })
+       .catch(error => {
+         console.error('Error al guardar:', error);
+       });
+   }
+   
+   // Correcto con async/await
+   async function saveData() {
+     try {
+       await core.storage.setItem(id, 'data', data);
+       doNextThing();
+     } catch (error) {
+       console.error('Error al guardar:', error);
+     }
    }
    ```
-
-5. **Rendimiento**: Evita operaciones costosas en el hilo principal
-   ```javascript
-   // Mal (bloquea el hilo principal)
-   const resultado = procesarDatosGrandes(datos);
-   
-   // Mejor (asíncrono)
-   setTimeout(() => {
-     const resultado = procesarDatosGrandes(datos);
-     this._handleResultado(resultado);
-   }, 0);
-   ```
-
-6. **Seguridad**: No solicites más permisos de los que necesitas
-   ```javascript
-   // Bien - Solo los permisos necesarios
-   permissions: ['storage', 'events', 'ui'],
-   
-   // Mal - Demasiados permisos
-   permissions: ['storage', 'events', 'ui', 'network', 'dom', 'codeExecution'],
-   ```
-
-7. **Uso eficiente de recursos**: Monitoriza y optimiza el uso de recursos
-   ```javascript
-   // Optimiza llamadas a API
-   if (Date.now() - this._lastApiCall > 5000) {
-     this._lastApiCall = Date.now();
-     await this._fetchData();
-   }
-   ```
-
-## Depuración
-
-Para depurar tu plugin:
-
-1. **Uso de console.log**: Incluye un prefijo para identificar los logs de tu plugin
-   ```javascript
-   console.log('[Mi Plugin] Inicializando...');
-   console.error('[Mi Plugin] Error:', error);
-   ```
-
-2. **Inspección de estado**: Atlas proporciona una API de depuración
-   ```javascript
-   // Para ver todos los plugins registrados
-   console.log(pluginManager.getAllPlugins());
-   
-   // Para ver plugins activos
-   console.log(pluginManager.getActivePlugins());
-   
-   // Para ver estado del sistema de plugins
-   console.log(pluginManager.getStatus());
-   
-   // Para ver información de seguridad
-   console.log(pluginManager.getPluginSecurityInfo(pluginId));
-   ```
-
-3. **Depuración de extensiones UI**: Verifica las extensiones registradas
-   ```javascript
-   // Ver extensiones registradas
-   console.log(uiExtensionManager.getExtensionsForZone('calendar-sidebar'));
-   
-   // Ver extensiones de tu plugin
-   console.log(uiExtensionManager.getPluginExtensions(pluginId));
-   ```
-
-4. **Errores comunes**:
-   - No guardar referencias a las funciones de cancelación (unsubscribe)
-   - No manejar adecuadamente las promesas
-   - No verificar si los objetos existen antes de accederlos
-   - No limpiar adecuadamente los recursos
-   - Exceder los límites de recursos monitoreados
 
 ## Ejemplos prácticos
 
@@ -1206,65 +1858,88 @@ export default {
   },
   
   init: function(core) {
-    this._core = core;
+    const self = this;
     
-    // Cargar datos
-    this._loadData();
-    
-    // Registrar nav item
-    core.ui.registerExtension(
-      this.id,
-      core.ui.getExtensionZones().MAIN_NAVIGATION,
-      this._createNavItem(),
-      { order: 100 }
-    );
-    
-    // Registrar página
-    core.ui.registerExtension(
-      this.id,
-      core.ui.getExtensionZones().PLUGIN_PAGES,
-      this._createStatsPage(),
-      {
-        order: 100,
-        props: { pageId: 'estadisticas' }
+    return new Promise(function(resolve) {
+      try {
+        self._core = core;
+        
+        // Cargar datos
+        core.storage.getItem(self.id, 'stats', { stats: {}, lastUpdate: null })
+          .then(function(data) {
+            self._data = data;
+            
+            // Registrar nav item
+            core.ui.registerExtension(
+              self.id,
+              core.ui.getExtensionZones().MAIN_NAVIGATION,
+              self._createNavItem(),
+              { order: 100 }
+            );
+            
+            // Registrar página
+            core.ui.registerExtension(
+              self.id,
+              core.ui.getExtensionZones().PLUGIN_PAGES,
+              self._createStatsPage(),
+              {
+                order: 100,
+                props: { pageId: 'estadisticas' }
+              }
+            );
+            
+            // Suscribirse a eventos para actualizar estadísticas
+            self._setupEventListeners();
+            
+            // Crear y registrar API pública
+            self.publicAPI = self._createPublicAPI();
+            core.plugins.registerAPI(self.id, self.publicAPI);
+            
+            resolve(true);
+          })
+          .catch(function(error) {
+            console.error('[Estadísticas] Error al cargar datos:', error);
+            resolve(false);
+          });
+      } catch (error) {
+        console.error('[Estadísticas] Error de inicialización:', error);
+        resolve(false);
       }
-    );
-    
-    // Suscribirse a eventos para actualizar estadísticas
-    this._setupEventListeners();
-    
-    // Registrar API pública
-    core.plugins.registerAPI(this.id, this.publicAPI);
-    
-    return true;
+    });
   },
   
   cleanup: function() {
     // Guardar datos
-    this._saveData();
-    
-    // Cancelar suscripciones
-    this._core.events.unsubscribeAll(this.id);
+    if (this._core) {
+      this._core.storage.setItem(this.id, 'stats', this._data)
+        .catch(function(error) {
+          console.error('[Estadísticas] Error al guardar datos:', error);
+        });
+      
+      // Cancelar suscripciones
+      this._core.events.unsubscribeAll(this.id);
+    }
     
     return true;
   },
   
-  _loadData: async function() {
-    const data = await this._core.storage.getItem(
-      this.id,
-      'stats',
-      { stats: {}, lastUpdate: null }
-    );
+  _createPublicAPI: function() {
+    const self = this;
     
-    this._data = data;
-  },
-  
-  _saveData: async function() {
-    await this._core.storage.setItem(
-      this.id,
-      'stats',
-      this._data
-    );
+    return {
+      getStats: function() {
+        return { ...self._data.stats };
+      },
+      
+      getDailySummary: function(date) {
+        const dateStr = date ? new Date(date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        return self._data.stats[dateStr] || { created: 0, updated: 0, deleted: 0 };
+      },
+      
+      getLastUpdateTime: function() {
+        return self._data.lastUpdate;
+      }
+    };
   },
   
   _setupEventListeners: function() {
@@ -1315,7 +1990,10 @@ export default {
     );
     
     // Guardar datos
-    this._saveData();
+    this._core.storage.setItem(this.id, 'stats', this._data)
+      .catch(function(error) {
+        console.error('[Estadísticas] Error al guardar estadísticas:', error);
+      });
   },
   
   _createNavItem: function() {
@@ -1327,7 +2005,7 @@ export default {
       return React.createElement(
         'div',
         {
-          className: 'sidebar-item',
+          className: 'navigation-item',
           onClick: handleClick
         },
         [
@@ -1350,9 +2028,12 @@ export default {
     const self = this;
     
     return function StatsPage(props) {
-      const [stats, setStats] = React.useState(self._data.stats);
+      const [stats, setStats] = React.useState({});
       
       React.useEffect(() => {
+        // Cargar estadísticas iniciales
+        setStats({...self._data.stats});
+        
         // Suscribirse a actualizaciones
         const unsub = self._core.events.subscribe(
           props.pluginId,
@@ -1421,28 +2102,12 @@ export default {
         ]
       );
     };
-  },
-  
-  // API pública
-  publicAPI: {
-    getStats: function() {
-      return { ...this._data.stats };
-    },
-    
-    getDailySummary: function(date) {
-      const dateStr = date ? new Date(date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-      return this._data.stats[dateStr] || { created: 0, updated: 0, deleted: 0 };
-    },
-    
-    getLastUpdateTime: function() {
-      return this._data.lastUpdate;
-    }
   }
 };
 ```
 
 ---
 
-Este documento cubre los aspectos fundamentales y avanzados del desarrollo de plugins para Atlas, incluyendo las nuevas características del sistema de seguridad, extensiones de UI para calendario, sistema de repositorios y actualizaciones automáticas. Recuerda que el sistema de plugins está diseñado para ser flexible y extensible, lo que te permite crear una amplia variedad de integraciones y mejoras para la aplicación.
+Este documento cubre los aspectos fundamentales y avanzados del desarrollo de plugins para Atlas, incluyendo las nuevas secciones sobre estilos y temas, y mejores prácticas para la prevención de errores comunes. Utiliza estos ejemplos y guías para crear plugins robustos, eficientes y visualmente integrados con la aplicación Atlas.
 
 ¡Buena suerte con tus proyectos de desarrollo de plugins!

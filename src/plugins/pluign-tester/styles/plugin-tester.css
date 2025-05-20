@@ -1,158 +1,154 @@
 /**
  * Estilos CSS para el Plugin Tester
+ * Adaptado para usar las variables de tema de Atlas
  */
-
-/* Variables de colores y tamaños */
-:root {
-  --pt-primary-color: #3498db;
-  --pt-secondary-color: #2ecc71;
-  --pt-warning-color: #e67e22;
-  --pt-danger-color: #e74c3c;
-  --pt-purple-color: #9b59b6;
-  --pt-dark-color: #2c3e50;
-  --pt-light-color: #ecf0f1;
-  --pt-border-color: #ddd;
-  --pt-background-color: #f5f5f5;
-  --pt-text-color: #333;
-  --pt-text-light-color: #666;
-  
-  --pt-border-radius: 4px;
-  --pt-spacing-small: 5px;
-  --pt-spacing-normal: 10px;
-  --pt-spacing-large: 15px;
-  --pt-spacing-xlarge: 20px;
-}
 
 /* Estilos generales */
 .plugin-tester-page {
-  padding: var(--pt-spacing-xlarge);
+  padding: var(--spacing-xl);
   max-width: 800px;
   margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: var(--pt-text-color);
+  font-family: var(--font-family-body);
+  color: var(--text-color);
 }
 
 .plugin-tester-card {
-  background-color: var(--pt-background-color);
-  padding: var(--pt-spacing-large);
-  border-radius: var(--pt-border-radius);
-  margin-bottom: var(--pt-spacing-xlarge);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-bg);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 /* Barra lateral */
 .plugin-tester-sidebar {
-  padding: var(--pt-spacing-normal);
-  margin: var(--pt-spacing-small) 0;
-  background-color: var(--pt-background-color);
-  border-radius: var(--pt-border-radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-md);
+  margin: var(--spacing-sm) 0;
+  background-color: var(--sidebar-bg);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
 }
 
 .plugin-tester-sidebar h3 {
   margin-top: 0;
-  color: var(--pt-dark-color);
+  color: var(--text-color);
   font-size: 16px;
+  font-family: var(--font-family-heading);
 }
 
 /* Botones */
 .plugin-tester-button {
   padding: 8px 16px;
-  background-color: var(--pt-primary-color);
-  color: white;
+  background-color: var(--color-button-primary-bg);
+  color: var(--color-button-primary-text);
   border: none;
-  border-radius: var(--pt-border-radius);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s;
+  transition: background-color var(--transition-fast);
 }
 
 .plugin-tester-button:hover {
-  background-color: #2980b9;
+  background-color: var(--color-button-primary-hover);
 }
 
 .plugin-tester-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.5);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.5);
 }
 
 .plugin-tester-button-green {
-  background-color: var(--pt-secondary-color);
+  background-color: var(--success-color);
 }
 
 .plugin-tester-button-green:hover {
-  background-color: #27ae60;
+  background-color: var(--success-hover);
 }
 
 .plugin-tester-button-orange {
-  background-color: var(--pt-warning-color);
+  background-color: var(--warning-color);
 }
 
 .plugin-tester-button-orange:hover {
-  background-color: #d35400;
+  background-color: var(--warning-hover);
 }
 
 .plugin-tester-button-red {
-  background-color: var(--pt-danger-color);
+  background-color: var(--danger-color);
 }
 
 .plugin-tester-button-red:hover {
-  background-color: #c0392b;
+  background-color: var(--danger-hover);
 }
 
 .plugin-tester-button-purple {
-  background-color: var(--pt-purple-color);
+  background-color: var(--color-custom-purple);
 }
 
 .plugin-tester-button-purple:hover {
-  background-color: #8e44ad;
+  background-color: var(--color-custom-purple);
+  opacity: 0.9;
 }
 
 .plugin-tester-button-group {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--pt-spacing-normal);
+  gap: var(--spacing-md);
 }
 
 /* Formularios y entradas */
 .plugin-tester-input {
   width: 100%;
-  padding: var(--pt-spacing-small);
-  margin-top: var(--pt-spacing-small);
-  border: 1px solid var(--pt-border-color);
-  border-radius: var(--pt-border-radius);
+  padding: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-input-bg);
+  color: var(--text-color);
   font-size: 14px;
 }
 
+.plugin-tester-input:focus {
+  border-color: var(--color-input-focus);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.3);
+}
+
 .plugin-tester-color-input {
-  margin-left: var(--pt-spacing-normal);
+  margin-left: var(--spacing-md);
   vertical-align: middle;
   border: none;
   cursor: pointer;
+  background-color: transparent;
 }
 
 .plugin-tester-number-input {
-  margin-left: var(--pt-spacing-normal);
+  margin-left: var(--spacing-md);
   width: 60px;
   padding: 3px 5px;
-  border: 1px solid var(--pt-border-color);
-  border-radius: var(--pt-border-radius);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--color-input-bg);
+  color: var(--text-color);
 }
 
 /* Configuraciones */
 .plugin-tester-settings {
-  padding: var(--pt-spacing-large);
-  background-color: var(--pt-light-color);
-  border-radius: var(--pt-border-radius);
+  padding: var(--spacing-lg);
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
 }
 
 .plugin-tester-settings h3 {
   margin-top: 0;
-  color: var(--pt-dark-color);
+  color: var(--text-color);
+  font-family: var(--font-family-heading);
 }
 
 .plugin-tester-settings-group {
-  margin-bottom: var(--pt-spacing-large);
+  margin-bottom: var(--spacing-lg);
 }
 
 /* Celda de calendario */
@@ -163,29 +159,30 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--pt-primary-color);
+  background-color: var(--primary-color);
 }
 
 /* Vista de detalle de evento */
 .plugin-tester-event-detail {
-  padding: var(--pt-spacing-normal);
-  margin: var(--pt-spacing-normal) 0;
-  background-color: #f9f9f9;
-  border-left: 3px solid var(--pt-primary-color);
-  border-radius: 2px;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  background-color: var(--bg-color-secondary);
+  border-left: 3px solid var(--primary-color);
+  border-radius: var(--border-radius-sm);
 }
 
 .plugin-tester-event-detail h4 {
   margin-top: 0;
-  color: var(--pt-dark-color);
+  color: var(--text-color);
   font-size: 14px;
+  font-family: var(--font-family-heading);
 }
 
 /* Formulario de evento */
 .plugin-tester-event-form {
-  padding: var(--pt-spacing-normal);
-  margin: var(--pt-spacing-normal) 0;
-  border-top: 1px solid #eee;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-top: 1px solid var(--border-color);
 }
 
 /* Navegación */
@@ -194,31 +191,69 @@
   align-items: center;
   padding: 8px 12px;
   cursor: pointer;
-  border-radius: var(--pt-border-radius);
-  transition: background-color 0.2s;
+  border-radius: var(--border-radius-md);
+  transition: background-color var(--transition-fast);
 }
 
 .plugin-tester-nav-item:hover {
-  background-color: rgba(52, 152, 219, 0.1);
+  background-color: var(--hover-color);
 }
 
 .plugin-tester-nav-item .material-icons {
   margin-right: 8px;
   font-size: 18px;
-  color: var(--pt-primary-color);
+  color: var(--primary-color);
 }
 
 /* Contenedor de eventos */
 .plugin-tester-events-container {
   max-height: 300px;
   overflow-y: auto;
-  border: 1px solid var(--pt-border-color);
-  border-radius: var(--pt-border-radius);
-  padding: var(--pt-spacing-normal);
-  background-color: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-color-secondary);
+}
+
+.plugin-tester-events-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.plugin-tester-events-container::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: var(--border-radius-md);
+}
+
+.plugin-tester-events-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 .plugin-tester-event-item {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9em;
+}
+
+.plugin-tester-event-item:last-child {
+  border-bottom: none;
+}
+
+.plugin-tester-event-header {
+  font-weight: bold;
+  margin-bottom: 3px;
+  color: var(--text-color);
+}
+
+.plugin-tester-event-data {
+  word-break: break-word;
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+}
+-tester-event-item {
   padding: 8px;
   border-bottom: 1px solid #eee;
   font-size: 0.9em;
