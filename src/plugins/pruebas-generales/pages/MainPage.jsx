@@ -11,7 +11,7 @@ import logger from '../utils/logger';
  * Componente para la página principal del plugin
  */
 function MainPage(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useMemo } = React;
   
   // Extraer propiedades

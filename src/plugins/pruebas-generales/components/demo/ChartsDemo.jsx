@@ -9,7 +9,7 @@ import logger from '../../utils/logger';
  * Componente de demostración de gráficas
  */
 function ChartsDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades

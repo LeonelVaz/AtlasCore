@@ -12,7 +12,7 @@
  * @param {string} props.className - Clases CSS adicionales
  */
 function TabNavigation(props) {
-  const React = window.React;
+  const React = require('react');
   
   // Extraer propiedades
   const {

@@ -13,7 +13,7 @@ import CalendarDemo from '../components/demo/CalendarDemo';
  * Componente para la página de demostraciones avanzadas
  */
 function AdvancedDemosPage(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

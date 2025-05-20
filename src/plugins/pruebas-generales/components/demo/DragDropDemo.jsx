@@ -10,7 +10,7 @@ import { publishDemoEvent } from '../../api/eventManager';
  * Componente de demostración de drag and drop
  */
 function DragDropDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades

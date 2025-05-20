@@ -11,8 +11,11 @@ import { incrementCounter } from '../../api/storageManager';
  * Componente para la barra lateral del calendario
  */
 function SidebarWidget(props) {
-  const React = window.React;
-  const { useState, useEffect } = React;
+  // Importar React explícitamente
+  const React = require('react');
+  
+  // Importar hooks específicamente
+  const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades
   const { core, plugin } = props;

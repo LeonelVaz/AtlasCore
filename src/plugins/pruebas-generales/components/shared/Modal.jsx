@@ -18,7 +18,7 @@
  * @param {React.ReactNode} props.headerContent - Contenido personalizado para el encabezado (opcional)
  */
 function Modal(props) {
-  const React = window.React;
+  const React = require('react');
   const { useEffect, useRef } = React;
   
   // Extraer propiedades

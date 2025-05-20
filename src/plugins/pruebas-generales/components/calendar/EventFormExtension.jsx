@@ -9,7 +9,7 @@ import logger from '../../utils/logger';
  * Componente para extender el formulario de eventos
  */
 function EventFormExtension(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

@@ -9,7 +9,7 @@ import logger from '../../utils/logger';
  * Componente para extender las celdas de día en el calendario
  */
 function DayCellExtension(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

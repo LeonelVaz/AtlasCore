@@ -10,7 +10,7 @@ import { incrementCounter } from '../../api/storageManager';
  * Componente para acceso rápido desde la barra lateral
  */
 function QuickAccess(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

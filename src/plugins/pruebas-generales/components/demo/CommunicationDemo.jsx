@@ -10,7 +10,7 @@ import { publishDemoEvent, createCommunicationChannel } from '../../api/eventMan
  * Componente de demostración de comunicación entre plugins
  */
 function CommunicationDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades

@@ -11,7 +11,7 @@ import { publishDemoEvent, createCommunicationChannel } from '../../api/eventMan
  * Componente de demostración de eventos
  */
 function EventsDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades

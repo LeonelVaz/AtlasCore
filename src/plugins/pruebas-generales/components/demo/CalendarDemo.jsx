@@ -11,7 +11,7 @@ import { formatDate, generateId } from '../../utils/helpers';
  * Componente de demostración de integración con calendario
  */
 function CalendarDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades

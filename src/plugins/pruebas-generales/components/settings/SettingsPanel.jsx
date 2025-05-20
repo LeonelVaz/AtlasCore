@@ -11,7 +11,7 @@ import { updateSettings, clearAllData } from '../../api/storageManager';
  * Componente para el panel de configuración
  */
 function SettingsPanel(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

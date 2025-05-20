@@ -7,7 +7,8 @@
  * Componente para el ítem de navegación
  */
 function NavigationItem(props) {
-  const React = window.React;
+  // Importar React explícitamente en lugar de usar require('react')
+  const React = require('react');
   
   // Extraer propiedades necesarias
   const { pluginId, onNavigate } = props;

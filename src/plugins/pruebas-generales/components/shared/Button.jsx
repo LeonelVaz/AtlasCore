@@ -16,7 +16,7 @@
  * @param {string} props.type - Tipo de botón HTML ('button', 'submit', 'reset')
  */
 function Button(props) {
-  const React = window.React;
+  const React = require('react');
   
   // Extraer propiedades
   const {

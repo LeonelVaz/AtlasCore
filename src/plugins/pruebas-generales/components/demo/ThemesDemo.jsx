@@ -10,7 +10,7 @@ import { publishDemoEvent } from '../../api/eventManager';
  * Componente de demostración de temas
  */
 function ThemesDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades
@@ -429,7 +429,7 @@ function ThemesDemo(props) {
  * Renderiza el contenido de muestra según el tipo seleccionado
  */
 function renderSampleContent(contentType) {
-  const React = window.React;
+  const React = require('react');
   
   switch (contentType) {
     case 'form':
@@ -448,7 +448,7 @@ function renderSampleContent(contentType) {
  * Renderiza muestra de contenido general
  */
 function renderDefaultSample() {
-  const React = window.React;
+  const React = require('react');
   
   return React.createElement(
     'div',
@@ -491,7 +491,7 @@ function renderDefaultSample() {
  * Renderiza muestra de formulario
  */
 function renderFormSample() {
-  const React = window.React;
+  const React = require('react');
   
   return React.createElement(
     'div',
@@ -585,7 +585,7 @@ function renderFormSample() {
  * Renderiza muestra de tarjetas
  */
 function renderCardSample() {
-  const React = window.React;
+  const React = require('react');
   
   return React.createElement(
     'div',
@@ -691,7 +691,7 @@ function renderCardSample() {
  * Renderiza muestra de colores
  */
 function renderColorsSample() {
-  const React = window.React;
+  const React = require('react');
   
   // Lista de variables de color y sus nombres
   const colorVariables = [

@@ -17,7 +17,7 @@
  * @param {React.ReactNode} props.footer - Contenido de pie personalizado (opcional)
  */
 function Card(props) {
-  const React = window.React;
+  const React = require('react');
   
   // Extraer propiedades
   const {

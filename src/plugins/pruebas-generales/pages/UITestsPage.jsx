@@ -14,7 +14,7 @@ import UIExtensionsDemo from '../components/demo/UIExtensionsDemo';
  * Componente para la página de pruebas de UI
  */
 function UITestsPage(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

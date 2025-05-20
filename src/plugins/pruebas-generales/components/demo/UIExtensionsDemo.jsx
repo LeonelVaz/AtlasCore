@@ -10,7 +10,7 @@ import { publishDemoEvent } from '../../api/eventManager';
  * Componente de demostración de extensiones UI
  */
 function UIExtensionsDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades

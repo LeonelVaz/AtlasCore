@@ -15,7 +15,7 @@
  * @param {React.ReactNode} props.children - Contenido de las pestañas (debe incluir componentes Tab)
  */
 function Tabs(props) {
-  const React = window.React;
+  const React = require('react');
   
   // Extraer propiedades
   const {
@@ -87,7 +87,7 @@ function Tabs(props) {
  * @param {React.ReactNode} props.children - Contenido de la pestaña
  */
 function Tab(props) {
-  const React = window.React;
+  const React = require('react');
   
   // Extraer propiedades
   const { tabId, className = '', children } = props;

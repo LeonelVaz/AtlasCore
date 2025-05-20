@@ -11,7 +11,7 @@ import { publishDemoEvent } from '../../api/eventManager';
  * Componente de demostración de almacenamiento
  */
 function StorageDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect, useRef } = React;
   
   // Extraer propiedades

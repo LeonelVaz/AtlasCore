@@ -11,7 +11,7 @@ import { validateEmail, validateRequired, validateLength, validateNumber } from 
  * Componente de demostración de formularios
  */
 function FormsDemo(props) {
-  const React = window.React;
+  const React = require('react');
   const { useState, useEffect } = React;
   
   // Extraer propiedades
