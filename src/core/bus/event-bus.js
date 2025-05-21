@@ -11,6 +11,15 @@ export const EventCategories = {
   STORAGE: 'storage',
 };
 
+// Re-exportar todos los eventos desde events.js para compatibilidad
+export { 
+  CalendarEvents, 
+  AppEvents, 
+  StorageEvents, 
+  UIEvents,
+  default as Events 
+} from './events';
+
 class EventBus {
   constructor() {
     this.subscribers = {};
@@ -73,7 +82,18 @@ class EventBus {
    * @param {*} data - Datos a pasar a los suscriptores
    */
   publish(eventType, data) {
-    if (!eventType || !this.subscribers[eventType]) return;
+    if (!eventType) return;
+    
+    // Log del evento para depuración
+    console.log(`[EventBus] Publicando evento: ${eventType}`, data);
+    
+    if (!this.subscribers[eventType]) {
+      console.log(`[EventBus] No hay suscriptores para: ${eventType}`);
+      return;
+    }
+    
+    const subscriberCount = Object.keys(this.subscribers[eventType]).length;
+    console.log(`[EventBus] Notificando a ${subscriberCount} suscriptores de ${eventType}`);
     
     Object.values(this.subscribers[eventType] || {}).forEach(callback => {
       if (typeof callback === 'function') {
@@ -119,6 +139,14 @@ class EventBus {
    */
   clear() {
     this.subscribers = {};
+  }
+  
+  /**
+   * Obtiene lista de todos los eventos con suscriptores
+   * Útil para depuración
+   */
+  getActiveEvents() {
+    return Object.keys(this.subscribers);
   }
 }
 

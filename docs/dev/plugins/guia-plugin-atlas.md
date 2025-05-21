@@ -289,17 +289,80 @@ core.events.publish(
 core.events.unsubscribeAll(pluginId);
 ```
 
-Eventos importantes del sistema:
+#### Eventos importantes del sistema:
 
-- `calendar.eventCreated` - Cuando se crea un evento en el calendario
-- `calendar.eventUpdated` - Cuando se actualiza un evento
-- `calendar.eventDeleted` - Cuando se elimina un evento
-- `calendar.viewChanged` - Cuando se cambia la vista del calendario
-- `calendar.dateChanged` - Cuando se cambia la fecha seleccionada
-- `app.themeChanged` - Cuando cambia el tema de la aplicación
-- `app.initialized` - Cuando la aplicación ha terminado de inicializarse
-- `app.moduleRegistered` - Cuando se registra un nuevo módulo en el sistema
-- `storage.dataChanged` - Cuando cambian datos en el almacenamiento
+Los eventos del calendario incluyen información detallada para que los plugins puedan reaccionar apropiadamente:
+
+##### Eventos del calendario
+
+- **`calendar.eventCreated`** - Cuando se crea un evento en el calendario
+  ```javascript
+  // Estructura de datos del evento
+  {
+    event: {
+      id: "1234567890",
+      title: "Reunión de equipo",
+      start: "2025-05-21T14:00:00.000Z",
+      end: "2025-05-21T15:00:00.000Z",
+      color: "#2D4B94",
+      // ... otros campos del evento
+    }
+  }
+  ```
+
+- **`calendar.eventUpdated`** - Cuando se actualiza un evento
+  ```javascript
+  // Estructura de datos del evento
+  {
+    oldEvent: {
+      id: "1234567890",
+      title: "Reunión de equipo",
+      start: "2025-05-21T14:00:00.000Z",
+      // ... datos anteriores del evento
+    },
+    newEvent: {
+      id: "1234567890",
+      title: "Reunión de equipo - ACTUALIZADA",
+      start: "2025-05-21T15:00:00.000Z", // Nueva hora
+      // ... datos actualizados del evento
+    }
+  }
+  ```
+
+- **`calendar.eventDeleted`** - Cuando se elimina un evento
+  ```javascript
+  // Estructura de datos del evento
+  {
+    event: {
+      id: "1234567890",
+      title: "Reunión de equipo",
+      // ... todos los datos del evento eliminado
+    }
+  }
+  ```
+
+- **`calendar.eventsLoaded`** - Cuando se cargan los eventos del calendario
+  ```javascript
+  // Estructura de datos del evento
+  {
+    events: [ /* array de todos los eventos */ ],
+    count: 42 // número total de eventos
+  }
+  ```
+
+- **`calendar.viewChanged`** - Cuando se cambia la vista del calendario (día/semana/mes)
+- **`calendar.dateChanged`** - Cuando se cambia la fecha seleccionada
+
+##### Eventos de la aplicación
+
+- **`app.themeChanged`** - Cuando cambia el tema de la aplicación
+- **`app.initialized`** - Cuando la aplicación ha terminado de inicializarse
+- **`app.moduleRegistered`** - Cuando se registra un nuevo módulo en el sistema
+
+##### Eventos de almacenamiento
+
+- **`storage.dataChanged`** - Cuando cambian datos en el almacenamiento
+- **`storage.eventsUpdated`** - Cuando se actualizan los eventos almacenados
 
 ### Extensiones de UI
 
@@ -380,6 +443,55 @@ const info = canal.getInfo();
 
 // Cerrar un canal
 canal.close();
+```
+
+### Acceso al módulo de calendario
+
+El módulo de calendario proporciona acceso completo a los eventos y configuración del calendario:
+
+```javascript
+// Obtener el módulo de calendario
+const calendar = core.getModule('calendar');
+
+// El módulo de calendario se mantiene automáticamente sincronizado con los eventos
+// No necesitas escuchar eventos para actualizar el estado, el módulo lo hace por ti
+
+// Obtener todos los eventos
+const allEvents = calendar.getEvents();
+
+// Obtener eventos para una fecha específica
+const eventsToday = calendar.getEventsForDate(new Date());
+
+// Obtener eventos en un rango de fechas
+const weekEvents = calendar.getEventsForDateRange(startDate, endDate);
+
+// Obtener próximos eventos
+const upcomingEvents = calendar.getUpcomingEvents(5); // Los próximos 5 eventos
+
+// Obtener un evento específico por ID
+const event = calendar.getEvent(eventId);
+
+// Crear un nuevo evento
+const newEvent = calendar.createEvent({
+  title: 'Mi evento',
+  start: new Date(),
+  end: new Date(Date.now() + 3600000), // 1 hora después
+  color: '#2D4B94'
+});
+
+// Actualizar un evento existente
+const updatedEvent = calendar.updateEvent(eventId, {
+  title: 'Título actualizado'
+});
+
+// Eliminar un evento
+const deleted = calendar.deleteEvent(eventId);
+
+// Obtener eventos agrupados por categoría
+const eventsByColor = calendar.getEventsByCategory('color');
+
+// Obtener metadatos del mes actual
+const monthMetadata = calendar.getMonthMetadata(); // Array con info de cada día
 ```
 
 ## Sistema de permisos
@@ -1503,6 +1615,20 @@ const unsubscribe = monitorEvents(core, 'calendar.*');
 unsubscribe();
 ```
 
+5. **Depuración del sistema de eventos del calendario**:
+
+El EventBus ahora incluye logs de depuración automáticos. Cuando se publican eventos, verás en la consola:
+
+```
+[EventBus] Publicando evento: calendar.eventCreated {...}
+[EventBus] Notificando a 3 suscriptores de calendar.eventCreated
+```
+
+Si un evento no funciona como esperas, puedes verificar:
+- Si el evento se está publicando (busca los logs `[EventBus]`)
+- Cuántos suscriptores tiene el evento
+- Si hay errores en los manejadores de eventos
+
 ### Errores comunes y soluciones
 
 Estos son errores frecuentes y cómo solucionarlos:
@@ -1612,6 +1738,29 @@ Estos son errores frecuentes y cómo solucionarlos:
        console.error('Error al guardar:', error);
      }
    }
+   ```
+
+6. **Error**: Los eventos del calendario no se reciben
+
+   **Solución**: Verificar que estás suscrito a los nombres correctos de eventos.
+   
+   ```javascript
+   // Los nombres correctos de eventos son:
+   'calendar.eventCreated'    // NO 'calendar.create'
+   'calendar.eventUpdated'    // NO 'calendar.update'
+   'calendar.eventDeleted'    // NO 'calendar.delete'
+   'calendar.eventsLoaded'    // Cuando se cargan todos los eventos
+   
+   // Ejemplo correcto:
+   core.events.subscribe(
+     pluginId,
+     'calendar.eventUpdated',
+     function(data) {
+       // data contiene { oldEvent, newEvent }
+       console.log('Evento actualizado de:', data.oldEvent);
+       console.log('a:', data.newEvent);
+     }
+   );
    ```
 
 ## Ejemplos prácticos
@@ -1731,6 +1880,7 @@ export default {
   _handleEventChanged: function(data) {
     // Aquí podrías procesar los cambios de eventos
     // Para este plugin, las extensiones UI reaccionan automáticamente
+    console.log('[Notificador] Evento del calendario recibido:', data);
   },
   
   _registerUIExtensions: function() {

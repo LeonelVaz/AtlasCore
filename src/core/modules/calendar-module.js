@@ -3,6 +3,7 @@
  * Proporciona acceso a información detallada sobre eventos, vistas y configuraciones del calendario
  */
 import { CALENDAR_VIEWS } from '../config/constants';
+import eventBus, { CalendarEvents } from '../bus/event-bus';
 
 class CalendarModule {
   constructor() {
@@ -14,6 +15,7 @@ class CalendarModule {
       lastUpdate: null
     };
     this._eventListeners = [];
+    this._initialized = false;
   }
 
   /**
@@ -31,8 +33,58 @@ class CalendarModule {
     // Realizar inicialización específica si es necesario
     this._syncState();
     
+    // Configurar escucha de eventos del calendario
+    this._setupEventListeners();
+    
+    this._initialized = true;
     console.log('CalendarModule: Inicializado correctamente');
     return true;
+  }
+
+  /**
+   * Configura los listeners para mantener el estado sincronizado
+   * @private
+   */
+  _setupEventListeners() {
+    // Escuchar cuando se cargan eventos
+    const loadedSub = eventBus.subscribe(CalendarEvents.EVENTS_LOADED, (data) => {
+      console.log('[CalendarModule] Eventos cargados:', data);
+      this._calendarState.events = data.events || [];
+      this._calendarState.lastUpdate = Date.now();
+    });
+
+    // Escuchar creación de eventos
+    const createdSub = eventBus.subscribe(CalendarEvents.EVENT_CREATED, (data) => {
+      console.log('[CalendarModule] Evento creado:', data);
+      if (data.event) {
+        this._calendarState.events.push(data.event);
+        this._calendarState.lastUpdate = Date.now();
+      }
+    });
+
+    // Escuchar actualización de eventos
+    const updatedSub = eventBus.subscribe(CalendarEvents.EVENT_UPDATED, (data) => {
+      console.log('[CalendarModule] Evento actualizado:', data);
+      if (data.newEvent) {
+        const index = this._calendarState.events.findIndex(e => e.id === data.newEvent.id);
+        if (index !== -1) {
+          this._calendarState.events[index] = data.newEvent;
+          this._calendarState.lastUpdate = Date.now();
+        }
+      }
+    });
+
+    // Escuchar eliminación de eventos
+    const deletedSub = eventBus.subscribe(CalendarEvents.EVENT_DELETED, (data) => {
+      console.log('[CalendarModule] Evento eliminado:', data);
+      if (data.event) {
+        this._calendarState.events = this._calendarState.events.filter(e => e.id !== data.event.id);
+        this._calendarState.lastUpdate = Date.now();
+      }
+    });
+
+    // Guardar referencias para limpieza
+    this._eventListeners.push(loadedSub, createdSub, updatedSub, deletedSub);
   }
 
   /**
@@ -68,8 +120,7 @@ class CalendarModule {
    * @returns {Array} Lista de eventos
    */
   getEvents() {
-    this._syncState();
-    return this._calendarState.events;
+    return [...this._calendarState.events];
   }
 
   /**
@@ -78,8 +129,6 @@ class CalendarModule {
    * @returns {Array} Lista de eventos para esa fecha
    */
   getEventsForDate(date) {
-    this._syncState();
-    
     if (!date) return [];
     
     const targetDate = typeof date === 'string' ? new Date(date) : date;
@@ -111,8 +160,6 @@ class CalendarModule {
    * @returns {Array} Lista de eventos en el rango
    */
   getEventsForDateRange(startDate, endDate) {
-    this._syncState();
-    
     if (!startDate || !endDate) return [];
     
     const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
@@ -138,8 +185,6 @@ class CalendarModule {
    * @returns {Array} Lista de próximos eventos
    */
   getUpcomingEvents(limit = 10) {
-    this._syncState();
-    
     const now = new Date();
     
     // Filtrar eventos futuros o en curso
@@ -163,8 +208,6 @@ class CalendarModule {
    * @returns {Object|null} El evento encontrado o null
    */
   getEvent(eventId) {
-    this._syncState();
-    
     if (!eventId) return null;
     
     return this._calendarState.events.find(event => event.id === eventId) || null;
@@ -199,7 +242,7 @@ class CalendarModule {
     
     try {
       const createdEvent = this._calendarService.createEvent(eventData);
-      this._syncState();
+      // No es necesario publicar aquí, el servicio lo hará
       return createdEvent;
     } catch (error) {
       console.error('Error al crear evento:', error);
@@ -221,7 +264,7 @@ class CalendarModule {
     
     try {
       const updatedEvent = this._calendarService.updateEvent(eventId, eventData);
-      this._syncState();
+      // No es necesario publicar aquí, el servicio lo hará
       return updatedEvent;
     } catch (error) {
       console.error(`Error al actualizar evento ${eventId}:`, error);
@@ -241,9 +284,9 @@ class CalendarModule {
     }
     
     try {
-      const success = this._calendarService.deleteEvent(eventId);
-      this._syncState();
-      return success;
+      this._calendarService.deleteEvent(eventId);
+      // No es necesario publicar aquí, el servicio lo hará
+      return true;
     } catch (error) {
       console.error(`Error al eliminar evento ${eventId}:`, error);
       return false;
@@ -256,8 +299,6 @@ class CalendarModule {
    * @returns {Object} Eventos agrupados por categoría
    */
   getEventsByCategory(categoryField = 'color') {
-    this._syncState();
-    
     const grouped = {};
     
     this._calendarState.events.forEach(event => {
@@ -280,8 +321,6 @@ class CalendarModule {
    * @returns {Array} Metadatos de días con información sobre eventos
    */
   getMonthMetadata(month) {
-    this._syncState();
-    
     const targetDate = month ? (typeof month === 'string' ? new Date(month) : month) : new Date();
     const year = targetDate.getFullYear();
     const monthIndex = targetDate.getMonth();
@@ -333,6 +372,20 @@ class CalendarModule {
       dayHeaderStyle: 'default',
       timeDisplayStyle: 'start-end'
     };
+  }
+
+  /**
+   * Limpia los listeners del módulo
+   */
+  cleanup() {
+    // Cancelar todas las suscripciones
+    this._eventListeners.forEach(unsub => {
+      if (typeof unsub === 'function') {
+        unsub();
+      }
+    });
+    this._eventListeners = [];
+    this._initialized = false;
   }
 }
 
