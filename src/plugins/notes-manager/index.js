@@ -18,6 +18,7 @@ export default {
     },
     configuracion: {
       mostrarIndicadores: true,
+      mostrarNotasRecientes: true,
       formatoFecha: 'DD/MM/YYYY',
       ordenamiento: 'fecha-desc'
     }
@@ -49,6 +50,11 @@ export default {
         }).then((savedData) => {
           if (savedData) {
             self._data = { ...self._data, ...savedData };
+          }
+          
+          // Asegurar que mostrarNotasRecientes esté definido
+          if (self._data.configuracion.mostrarNotasRecientes === undefined) {
+            self._data.configuracion.mostrarNotasRecientes = true;
           }
           
           // Registrar componentes UI
@@ -176,7 +182,7 @@ export default {
     ]) => {
       const zones = self._core.ui.getExtensionZones();
       
-      // Botón en la barra de herramientas
+      // Botón en la barra de herramientas (ahora con dropdown integrado)
       self._extensionIds.push(
         self._core.ui.registerExtension(
           self.id,
@@ -216,7 +222,7 @@ export default {
         )
       );
       
-      // Widget en la barra lateral
+      // Widget en la barra lateral (ahora vacío, todo está en el toolbar)
       self._extensionIds.push(
         self._core.ui.registerExtension(
           self.id,

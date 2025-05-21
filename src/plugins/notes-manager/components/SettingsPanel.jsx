@@ -221,6 +221,24 @@ export function createSettingsPanel(plugin) {
             Mostrar indicadores de notas en el calendario
           </label>
           
+          {/* Mostrar notas recientes en sidebar */}
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-sm)',
+              marginBottom: 'var(--spacing-md)',
+              cursor: 'pointer'
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={configuracion.mostrarNotasRecientes !== false}
+              onChange={(e) => handleConfigChange('mostrarNotasRecientes', e.target.checked)}
+            />
+            Mostrar desplegable de notas recientes en la barra lateral
+          </label>
+          
           {/* Formato de fecha */}
           <div style={{ marginBottom: 'var(--spacing-md)' }}>
             <label style={{ display: 'block', marginBottom: '4px' }}>
