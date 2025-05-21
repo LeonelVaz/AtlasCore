@@ -511,13 +511,14 @@ Atlas proporciona múltiples puntos donde los plugins pueden insertar sus compon
 ```javascript
 // Zonas de extensión principales
 const EXTENSION_ZONES = {
-  CALENDAR_SIDEBAR: 'calendar-sidebar',     // Barra lateral del calendario
-  SETTINGS_PANEL: 'settings-panel',         // Panel de configuración
-  MAIN_NAVIGATION: 'main-navigation',       // Navegación principal
-  PLUGIN_PAGES: 'plugin-pages',             // Páginas completas
-  CALENDAR_DAY_CELL: 'calendar-day-cell',   // Celdas de día en calendario
-  EVENT_DETAIL_VIEW: 'event-detail-view',   // Vista detallada de eventos
-  EVENT_FORM: 'event-form'                  // Formulario de eventos
+  CALENDAR_SIDEBAR: 'calendar-sidebar',          // Barra lateral del calendario
+  SETTINGS_PANEL: 'settings-panel',              // Panel de configuración
+  MAIN_NAVIGATION: 'main-navigation',            // Navegación principal
+  PLUGIN_PAGES: 'plugin-pages',                  // Páginas completas
+  CALENDAR_DAY_HEADER: 'calendar-day-header',    // Encabezados de día en calendario
+  CALENDAR_HOUR_CELL: 'calendar-hour-cell',      // Celdas de hora en calendario
+  EVENT_DETAIL_VIEW: 'event-detail-view',        // Vista detallada de eventos
+  EVENT_FORM: 'event-form'                       // Formulario de eventos
 };
 ```
 
@@ -546,31 +547,76 @@ const extensionId = core.ui.registerExtension(
 
 ### Extensiones para el calendario
 
-Ahora puedes extender directamente las celdas del calendario y los formularios de eventos:
+Puedes extender diferentes partes del calendario:
+
+#### Extensión para encabezados de día
 
 ```javascript
-// Extensión para celdas de días
-function DayCellExtension(props) {
-  // props contiene: day, hour, minutes, date
+// Extensión para encabezados de días
+function DayHeaderExtension(props) {
+  // props contiene: date
+  const dayOfWeek = props.date.getDay();
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  
   return React.createElement(
     'div',
-    { className: 'day-cell-extension' },
-    React.createElement(
-      'span',
-      { className: 'cell-indicator' },
-      '⭐'
-    )
+    { 
+      className: 'day-header-extension',
+      style: { 
+        backgroundColor: isWeekend ? '#ffebee' : 'transparent',
+        padding: '2px 4px',
+        borderRadius: '4px'
+      }
+    },
+    isWeekend ? '🌟' : null
   );
 }
 
-// Registrar extensión para celdas del calendario
+// Registrar extensión para encabezados de día
 core.ui.registerExtension(
   pluginId,
-  core.ui.getExtensionZones().CALENDAR_DAY_CELL,
-  DayCellExtension,
+  core.ui.getExtensionZones().CALENDAR_DAY_HEADER,
+  DayHeaderExtension,
   { order: 100 }
 );
+```
 
+#### Extensión para celdas de hora
+
+```javascript
+// Extensión para celdas de hora
+function HourCellExtension(props) {
+  // props contiene: date, hour, minutes
+  const isLunchTime = props.hour === 12 || props.hour === 13;
+  
+  return React.createElement(
+    'div',
+    { 
+      className: 'hour-cell-extension',
+      style: {
+        position: 'absolute',
+        right: '4px',
+        top: '4px',
+        fontSize: '12px',
+        opacity: 0.6
+      }
+    },
+    isLunchTime ? '🍽️' : null
+  );
+}
+
+// Registrar extensión para celdas de hora
+core.ui.registerExtension(
+  pluginId,
+  core.ui.getExtensionZones().CALENDAR_HOUR_CELL,
+  HourCellExtension,
+  { order: 100 }
+);
+```
+
+#### Extensión para detalles de eventos
+
+```javascript
 // Extensión para detalles de eventos
 function EventDetailExtension(props) {
   // props contiene: event, isEditing
@@ -589,7 +635,11 @@ core.ui.registerExtension(
   EventDetailExtension,
   { order: 100 }
 );
+```
 
+#### Extensión para el formulario de eventos
+
+```javascript
 // Extensión para el formulario de eventos
 function EventFormExtension(props) {
   // props contiene: event, isEditing, onChange
@@ -1573,7 +1623,7 @@ export default {
   id: 'calendario-notificador',
   name: 'Notificador de Eventos',
   version: '1.0.0',
-  description: 'Añade notificaciones visuales a las celdas del calendario',
+  description: 'Añade notificaciones visuales al calendario',
   author: 'Tu Nombre',
   minAppVersion: '0.3.0',
   maxAppVersion: '1.0.0',
@@ -1582,8 +1632,8 @@ export default {
   _core: null,
   _settings: {
     notificationColor: '#FF5722',
-    showInDay: true,
-    showInWeek: true
+    showInHeaders: true,
+    showInCells: true
   },
   _subscriptions: [],
   
@@ -1686,36 +1736,67 @@ export default {
   _registerUIExtensions: function() {
     const self = this;
     
-    // Crear componente para celdas del calendario
-    function CalendarCellExtension(props) {
-      const [eventos, setEventos] = React.useState([]);
+    // Crear componente para encabezados de día
+    function DayHeaderExtension(props) {
+      const [eventCount, setEventCount] = React.useState(0);
       
       React.useEffect(() => {
         // Obtener módulo de calendario
         const calendar = self._core.getModule('calendar');
         if (!calendar) return;
         
-        // Obtener eventos para esta fecha y hora
-        const date = props.date;
-        const eventsForDay = calendar.getEventsForDate(date);
+        // Obtener eventos para esta fecha
+        const eventsForDay = calendar.getEventsForDate(props.date);
+        setEventCount(eventsForDay.length);
+      }, [props.date]);
+      
+      // No mostrar nada si no hay eventos o según configuración
+      if (eventCount === 0 || !self._settings.showInHeaders) return null;
+      
+      return React.createElement(
+        'span',
+        { 
+          className: 'notification-badge',
+          style: {
+            backgroundColor: self._settings.notificationColor,
+            color: 'white',
+            borderRadius: '50%',
+            padding: '2px 6px',
+            fontSize: '11px',
+            marginLeft: '4px'
+          }
+        },
+        eventCount
+      );
+    }
+    
+    // Crear componente para celdas de hora
+    function HourCellExtension(props) {
+      const [hasEvent, setHasEvent] = React.useState(false);
+      
+      React.useEffect(() => {
+        // Obtener módulo de calendario
+        const calendar = self._core.getModule('calendar');
+        if (!calendar) return;
         
-        // Filtrar eventos para esta hora específica
-        const eventsForCell = eventsForDay.filter(event => {
+        // Verificar si hay eventos en esta hora
+        const eventsForDay = calendar.getEventsForDate(props.date);
+        const eventsInHour = eventsForDay.filter(event => {
           const eventStart = new Date(event.start);
           return eventStart.getHours() === props.hour &&
                  eventStart.getMinutes() === props.minutes;
         });
         
-        setEventos(eventsForCell);
+        setHasEvent(eventsInHour.length > 0);
       }, [props.date, props.hour, props.minutes]);
       
       // No mostrar nada si no hay eventos o según configuración
-      if (eventos.length === 0) return null;
+      if (!hasEvent || !self._settings.showInCells) return null;
       
       return React.createElement(
         'div',
         { 
-          className: 'notification-indicator',
+          className: 'hour-notification-indicator',
           style: {
             position: 'absolute',
             top: '2px',
@@ -1729,11 +1810,19 @@ export default {
       );
     }
     
-    // Registrar extensión para celdas del calendario
+    // Registrar extensión para encabezados de día
     this._core.ui.registerExtension(
       this.id,
-      this._core.ui.getExtensionZones().CALENDAR_DAY_CELL,
-      CalendarCellExtension,
+      this._core.ui.getExtensionZones().CALENDAR_DAY_HEADER,
+      DayHeaderExtension,
+      { order: 100 }
+    );
+    
+    // Registrar extensión para celdas de hora
+    this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().CALENDAR_HOUR_CELL,
+      HourCellExtension,
       { order: 100 }
     );
   },
@@ -1792,16 +1881,16 @@ export default {
           
           React.createElement(
             'div',
-            { key: 'day', className: 'settings-group' },
+            { key: 'headers', className: 'settings-group' },
             [
-              React.createElement('label', { key: 'label' }, 'Mostrar en vista de día:'),
+              React.createElement('label', { key: 'label' }, 'Mostrar en encabezados de día:'),
               React.createElement(
                 'input',
                 {
                   key: 'input',
                   type: 'checkbox',
-                  checked: settings.showInDay,
-                  onChange: handleToggleChange('showInDay')
+                  checked: settings.showInHeaders,
+                  onChange: handleToggleChange('showInHeaders')
                 }
               )
             ]
@@ -1809,16 +1898,16 @@ export default {
           
           React.createElement(
             'div',
-            { key: 'week', className: 'settings-group' },
+            { key: 'cells', className: 'settings-group' },
             [
-              React.createElement('label', { key: 'label' }, 'Mostrar en vista de semana:'),
+              React.createElement('label', { key: 'label' }, 'Mostrar en celdas de hora:'),
               React.createElement(
                 'input',
                 {
                   key: 'input',
                   type: 'checkbox',
-                  checked: settings.showInWeek,
-                  onChange: handleToggleChange('showInWeek')
+                  checked: settings.showInCells,
+                  onChange: handleToggleChange('showInCells')
                 }
               )
             ]

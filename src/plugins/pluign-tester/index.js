@@ -180,7 +180,7 @@ export default {
     // 2. Registrar extensión para celdas del calendario
     this._extensionIds.calendarCell = this._core.ui.registerExtension(
       this.id,
-      this._core.ui.getExtensionZones().CALENDAR_DAY_CELL,
+      this._core.ui.getExtensionZones().CALENDAR_DAY_HEADER,
       CalendarCellExtension,
       { 
         order: 100,

@@ -190,7 +190,7 @@ export default {
       self._extensionIds.push(
         self._core.ui.registerExtension(
           self.id,
-          zones.CALENDAR_DAY_CELL,
+          zones.CALENDAR_DAY_HEADER,
           CalendarIndicatorModule.createCalendarIndicator(self),
           { order: 150 }
         )

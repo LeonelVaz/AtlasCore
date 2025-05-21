@@ -50,11 +50,11 @@ const TimeSlotRow = ({
   const dateWithTime = new Date(day);
   dateWithTime.setHours(hour, 0, 0, 0);
   
-  // Nuevo componente para el punto de extensión CALENDAR_DAY_CELL
-  const renderDayCellExtensions = () => {
+  // Punto de extensión para CALENDAR_HOUR_CELL
+  const renderHourCellExtensions = () => {
     return (
       <ExtensionPoint
-        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_DAY_CELL}
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_HOUR_CELL}
         render={(extensions) => (
           <>
             {extensions.map(extension => {
@@ -62,15 +62,14 @@ const TimeSlotRow = ({
               return (
                 <div
                   key={extension.id}
-                  className="calendar-day-cell-extension"
+                  className="calendar-hour-cell-extension"
                   data-plugin-id={extension.pluginId}
                 >
                   <ExtComponent
                     {...extension.props}
-                    day={day}
+                    date={dateWithTime}
                     hour={hour}
                     minutes={0}
-                    date={dateWithTime}
                     pluginId={extension.pluginId}
                     extensionId={extension.id}
                   />
@@ -93,7 +92,7 @@ const TimeSlotRow = ({
       onClick={() => onCellClick(dateWithTime, hour, 0, slotDuration)}
       style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
     >
-      {renderDayCellExtensions()}
+      {renderHourCellExtensions()}
       {renderEvents && renderEvents(day, hour, 0, slotDuration)}
     </div>
   );
@@ -107,11 +106,11 @@ const CustomTimeSlot = ({
   const dateWithTime = new Date(day);
   dateWithTime.setHours(hour, slot.minutes, 0, 0);
   
-  // Nuevo componente para el punto de extensión CALENDAR_DAY_CELL para franjas personalizadas
-  const renderCustomDayCellExtensions = () => {
+  // Punto de extensión para CALENDAR_HOUR_CELL para franjas personalizadas
+  const renderCustomHourCellExtensions = () => {
     return (
       <ExtensionPoint
-        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_DAY_CELL}
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_HOUR_CELL}
         render={(extensions) => (
           <>
             {extensions.map(extension => {
@@ -119,15 +118,14 @@ const CustomTimeSlot = ({
               return (
                 <div
                   key={extension.id}
-                  className="calendar-day-cell-extension"
+                  className="calendar-hour-cell-extension"
                   data-plugin-id={extension.pluginId}
                 >
                   <ExtComponent
                     {...extension.props}
-                    day={day}
+                    date={dateWithTime}
                     hour={hour}
                     minutes={slot.minutes}
-                    date={dateWithTime}
                     pluginId={extension.pluginId}
                     extensionId={extension.id}
                   />
@@ -150,7 +148,7 @@ const CustomTimeSlot = ({
       onClick={() => onCellClick(dateWithTime, hour, slot.minutes, slotDuration)}
       style={{ height: `${slotHeight}px`, minHeight: `${slotHeight}px` }}
     >
-      {renderCustomDayCellExtensions()}
+      {renderCustomHourCellExtensions()}
       {renderEvents && renderEvents(day, hour, slot.minutes, slotDuration)}
     </div>
   );
@@ -341,6 +339,37 @@ function TimeGrid({
     });
   };
 
+  // Renderizar extensiones para el encabezado del día
+  const renderDayHeaderExtensions = (day) => {
+    return (
+      <ExtensionPoint
+        zoneId={PLUGIN_CONSTANTS.UI_EXTENSION_ZONES.CALENDAR_DAY_HEADER}
+        render={(extensions) => (
+          <>
+            {extensions.map(extension => {
+              const ExtComponent = extension.component;
+              return (
+                <div
+                  key={extension.id}
+                  className="calendar-day-header-extension"
+                  data-plugin-id={extension.pluginId}
+                >
+                  <ExtComponent
+                    {...extension.props}
+                    date={day}
+                    pluginId={extension.pluginId}
+                    extensionId={extension.id}
+                  />
+                </div>
+              );
+            })}
+          </>
+        )}
+        fallback={null}
+      />
+    );
+  };
+
   return (
     <div className={`calendar-grid ${isCompactScale ? 'time-scale-compact' : ''}`}>
       {/* Encabezado */}
@@ -353,6 +382,7 @@ function TimeGrid({
             data-testid="calendar-day-header"
           >
             {renderDayHeader(day)}
+            {renderDayHeaderExtensions(day)}
           </div>
         ))}
       </div>

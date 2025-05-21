@@ -223,7 +223,8 @@ export const PLUGIN_CONSTANTS = {
     MAIN_NAVIGATION: 'main-navigation',
     PLUGIN_PAGES: 'plugin-pages',
     // Nuevos puntos de extensión para calendario y eventos
-    CALENDAR_DAY_CELL: 'calendar-day-cell',        // Nueva zona para celdas de día
+    CALENDAR_DAY_HEADER: 'calendar-day-header',    // Nueva zona para encabezados de día
+    CALENDAR_HOUR_CELL: 'calendar-hour-cell',      // Nueva zona para celdas de hora
     EVENT_DETAIL_VIEW: 'event-detail-view',        // Nueva zona para detalles de evento
     EVENT_FORM: 'event-form',                      // Extensión para el formulario de eventos
     // Otros puntos de extensión existentes
