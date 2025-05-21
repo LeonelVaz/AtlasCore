@@ -306,9 +306,16 @@ export default {
   _handleEventUpdate: function(data) {
     // Actualizar referencias de notas si el evento cambió de fecha
     if (data.oldEvent && data.newEvent && data.oldEvent.start !== data.newEvent.start) {
+      // Actualizar fecha de almacenamiento y fechaCalendario
       this._notesService.actualizarReferenciasEvento(
         data.oldEvent.id,
         data.oldEvent.start,
+        data.newEvent.start
+      );
+    } else if (data.oldEvent && data.newEvent) {
+      // Solo actualizar fechaCalendario si la fecha cambió pero el evento es el mismo
+      this._notesService.actualizarFechaCalendarioPorEvento(
+        data.newEvent.id,
         data.newEvent.start
       );
     }

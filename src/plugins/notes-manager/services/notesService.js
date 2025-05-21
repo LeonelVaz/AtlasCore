@@ -10,11 +10,14 @@ export class NotesService {
       const fechaStr = this._formatDateKey(fecha);
       const notaId = this._generateId();
       
+      const ahora = Date.now();
+      
       const nuevaNota = {
         id: notaId,
         contenido: contenido,
-        fechaCreacion: Date.now(),
-        fechaModificacion: Date.now(),
+        fechaCreacion: ahora,
+        fechaModificacion: ahora,
+        fechaCalendario: opciones.fechaCalendario || null, // Nueva propiedad
         categoria: opciones.categoria || 'general',
         color: opciones.color || this.plugin._data.categorias[opciones.categoria || 'general'].color,
         etiquetas: opciones.etiquetas || [],
@@ -22,6 +25,11 @@ export class NotesService {
         completada: false,
         ...opciones
       };
+      
+      // Si se crea desde un evento, usar la fecha del evento para fechaCalendario
+      if (opciones.eventoId && opciones.fechaEvento) {
+        nuevaNota.fechaCalendario = new Date(opciones.fechaEvento).getTime();
+      }
       
       // Inicializar array de notas para la fecha si no existe
       if (!this.plugin._data.notas[fechaStr]) {
@@ -67,8 +75,11 @@ export class NotesService {
       const notaActualizada = {
         ...notas[indiceNota],
         ...cambios,
-        fechaModificacion: Date.now()
+        fechaModificacion: Date.now() // Siempre actualizar fecha de modificación
       };
+      
+      // Mantener fechaCreacion original
+      notaActualizada.fechaCreacion = notas[indiceNota].fechaCreacion;
       
       this.plugin._data.notas[fechaStr][indiceNota] = notaActualizada;
       
@@ -127,6 +138,29 @@ export class NotesService {
       console.error('[NotesService] Error al eliminar nota:', error);
       throw error;
     }
+  }
+  
+  // Obtener notas por fecha de calendario
+  getNotasPorFechaCalendario(fecha) {
+    const fechaInicio = new Date(fecha);
+    fechaInicio.setHours(0, 0, 0, 0);
+    const fechaFin = new Date(fecha);
+    fechaFin.setHours(23, 59, 59, 999);
+    
+    const notasDelDia = [];
+    
+    Object.entries(this.plugin._data.notas).forEach(([fechaStr, notas]) => {
+      notas.forEach(nota => {
+        if (nota.fechaCalendario) {
+          const fechaNota = new Date(nota.fechaCalendario);
+          if (fechaNota >= fechaInicio && fechaNota <= fechaFin) {
+            notasDelDia.push(nota);
+          }
+        }
+      });
+    });
+    
+    return notasDelDia;
   }
   
   // Buscar notas por término
@@ -219,6 +253,40 @@ export class NotesService {
     }
   }
   
+  // Actualizar fechaCalendario cuando cambia el evento
+  actualizarFechaCalendarioPorEvento(eventoId, nuevaFechaEvento) {
+    try {
+      let notasActualizadas = 0;
+      const nuevaFechaTimestamp = new Date(nuevaFechaEvento).getTime();
+      
+      Object.entries(this.plugin._data.notas).forEach(([fecha, notas]) => {
+        notas.forEach(nota => {
+          if (nota.eventoId === eventoId && nota.fechaCalendario !== null) {
+            nota.fechaCalendario = nuevaFechaTimestamp;
+            nota.fechaModificacion = Date.now();
+            notasActualizadas++;
+          }
+        });
+      });
+      
+      if (notasActualizadas > 0) {
+        this._guardarCambios();
+        
+        // Publicar evento para actualizar UI
+        this.core.events.publish(
+          this.plugin.id,
+          'administradorNotas.fechasCalendarioActualizadas',
+          { eventoId, cantidad: notasActualizadas }
+        );
+      }
+      
+      return notasActualizadas;
+    } catch (error) {
+      console.error('[NotesService] Error al actualizar fechas de calendario:', error);
+      return 0;
+    }
+  }
+  
   // Actualizar referencias de evento cuando cambia de fecha
   actualizarReferenciasEvento(eventoId, fechaAnterior, fechaNueva) {
     try {
@@ -239,6 +307,9 @@ export class NotesService {
         });
       }
       
+      // Actualizar fechaCalendario para todas las notas del evento
+      this.actualizarFechaCalendarioPorEvento(eventoId, fechaNueva);
+      
       return notasAfectadas;
     } catch (error) {
       console.error('[NotesService] Error al actualizar referencias:', error);
@@ -256,6 +327,7 @@ export class NotesService {
           nota.huerfana = true;
           nota.eventoIdAnterior = eventoId;
           nota.eventoId = null;
+          nota.fechaModificacion = Date.now();
           notasActualizadas++;
         }
       });
@@ -308,7 +380,8 @@ export class NotesService {
       notasPorCategoria: {},
       notasPorMes: {},
       etiquetasMasUsadas: {},
-      notasHuerfanas: 0
+      notasHuerfanas: 0,
+      notasConFechaCalendario: 0
     };
     
     Object.entries(this.plugin._data.notas).forEach(([fecha, notas]) => {
@@ -331,6 +404,11 @@ export class NotesService {
         // Huérfanas
         if (nota.huerfana) {
           stats.notasHuerfanas++;
+        }
+        
+        // Con fecha de calendario
+        if (nota.fechaCalendario) {
+          stats.notasConFechaCalendario++;
         }
       });
     });

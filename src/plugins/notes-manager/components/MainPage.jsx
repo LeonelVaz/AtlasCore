@@ -20,6 +20,8 @@ export function createMainPage(plugin) {
     const [categoriaNota, setCategoriaNota] = React.useState('general');
     const [etiquetasNota, setEtiquetasNota] = React.useState('');
     const [fechaNota, setFechaNota] = React.useState(new Date().toISOString().split('T')[0]);
+    const [fechaCalendario, setFechaCalendario] = React.useState('');
+    const [horaCalendario, setHoraCalendario] = React.useState('');
     
     React.useEffect(() => {
       cargarTodasLasNotas();
@@ -97,6 +99,8 @@ export function createMainPage(plugin) {
       setCategoriaNota('general');
       setEtiquetasNota('');
       setFechaNota(new Date().toISOString().split('T')[0]);
+      setFechaCalendario('');
+      setHoraCalendario('');
       setMostrarFormulario(true);
     };
     
@@ -106,6 +110,17 @@ export function createMainPage(plugin) {
       setCategoriaNota(nota.categoria);
       setEtiquetasNota(plugin._helpers.etiquetasToString(nota.etiquetas));
       setFechaNota(fecha);
+      
+      // Si la nota tiene fechaCalendario, configurar los campos
+      if (nota.fechaCalendario) {
+        const fechaCal = new Date(nota.fechaCalendario);
+        setFechaCalendario(fechaCal.toISOString().split('T')[0]);
+        setHoraCalendario(fechaCal.toTimeString().substring(0, 5));
+      } else {
+        setFechaCalendario('');
+        setHoraCalendario('');
+      }
+      
       setMostrarFormulario(true);
     };
     
@@ -113,6 +128,17 @@ export function createMainPage(plugin) {
       if (!contenidoNota.trim()) return;
       
       const etiquetas = plugin._helpers.parseEtiquetas(etiquetasNota);
+      
+      // Construir fechaCalendario si se proporcionó
+      let fechaCalendarioTimestamp = null;
+      if (fechaCalendario) {
+        const fechaCal = new Date(fechaCalendario);
+        if (horaCalendario) {
+          const [horas, minutos] = horaCalendario.split(':');
+          fechaCal.setHours(parseInt(horas), parseInt(minutos));
+        }
+        fechaCalendarioTimestamp = fechaCal.getTime();
+      }
       
       if (notaEditando) {
         // Actualizar nota existente
@@ -122,7 +148,8 @@ export function createMainPage(plugin) {
           {
             contenido: contenidoNota,
             categoria: categoriaNota,
-            etiquetas: etiquetas
+            etiquetas: etiquetas,
+            fechaCalendario: fechaCalendarioTimestamp
           }
         );
       } else {
@@ -132,7 +159,8 @@ export function createMainPage(plugin) {
           contenidoNota,
           {
             categoria: categoriaNota,
-            etiquetas: etiquetas
+            etiquetas: etiquetas,
+            fechaCalendario: fechaCalendarioTimestamp
           }
         );
       }
@@ -200,6 +228,15 @@ export function createMainPage(plugin) {
               }}
             >
               Total de notas
+            </div>
+            <div
+              style={{
+                color: 'var(--text-color-secondary)',
+                fontSize: '12px',
+                marginTop: '4px'
+              }}
+            >
+              {stats.notasConFechaCalendario} en calendario
             </div>
           </div>
           
@@ -443,7 +480,20 @@ export function createMainPage(plugin) {
                           color: 'var(--text-color-secondary)'
                         }}
                       >
-                        {plugin._helpers.formatDateDisplay(fecha)}
+                        Creada: {plugin._helpers.formatDateDisplay(new Date(nota.fechaCreacion).toISOString().split('T')[0])}
+                        {nota.fechaCalendario && (
+                          <span
+                            style={{
+                              marginLeft: '8px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '2px'
+                            }}
+                          >
+                            <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
+                            {plugin._helpers.formatDateDisplay(new Date(nota.fechaCalendario).toISOString().split('T')[0])}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '4px' }}>
@@ -576,9 +626,18 @@ export function createMainPage(plugin) {
                 {notaEditando ? 'Editar Nota' : 'Nueva Nota'}
               </h2>
               
-              {/* Fecha */}
+              {/* Fecha de almacenamiento */}
               <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                <label>Fecha:</label>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontSize: '14px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  Fecha de almacenamiento:
+                </label>
                 <input
                   type="date"
                   value={fechaNota}
@@ -586,7 +645,6 @@ export function createMainPage(plugin) {
                   style={{
                     width: '100%',
                     padding: 'var(--spacing-sm)',
-                    marginTop: '4px',
                     borderRadius: 'var(--border-radius-sm)',
                     border: '1px solid var(--border-color)',
                     backgroundColor: 'var(--input-bg)',
@@ -595,16 +653,76 @@ export function createMainPage(plugin) {
                 />
               </div>
               
+              {/* Fecha de calendario (opcional) */}
+              <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontSize: '14px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  Mostrar en el calendario (opcional):
+                </label>
+                <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+                  <input
+                    type="date"
+                    value={fechaCalendario}
+                    onChange={(e) => setFechaCalendario(e.target.value)}
+                    placeholder="Fecha"
+                    style={{
+                      flex: '1',
+                      padding: 'var(--spacing-sm)',
+                      borderRadius: 'var(--border-radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--input-bg)',
+                      color: 'var(--text-color)'
+                    }}
+                  />
+                  <input
+                    type="time"
+                    value={horaCalendario}
+                    onChange={(e) => setHoraCalendario(e.target.value)}
+                    placeholder="Hora"
+                    style={{
+                      padding: 'var(--spacing-sm)',
+                      borderRadius: 'var(--border-radius-sm)',
+                      border: '1px solid var(--border-color)',
+                      backgroundColor: 'var(--input-bg)',
+                      color: 'var(--text-color)'
+                    }}
+                  />
+                </div>
+                <div
+                  style={{
+                    marginTop: '4px',
+                    fontSize: '12px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  Si estableces esta fecha, la nota aparecerá como indicador en el calendario
+                </div>
+              </div>
+              
               {/* Categoría */}
               <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                <label>Categoría:</label>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontSize: '14px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  Categoría:
+                </label>
                 <select
                   value={categoriaNota}
                   onChange={(e) => setCategoriaNota(e.target.value)}
                   style={{
                     width: '100%',
                     padding: 'var(--spacing-sm)',
-                    marginTop: '4px',
                     borderRadius: 'var(--border-radius-sm)',
                     border: '1px solid var(--border-color)',
                     backgroundColor: 'var(--input-bg)',
@@ -619,7 +737,16 @@ export function createMainPage(plugin) {
               
               {/* Contenido */}
               <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                <label>Contenido:</label>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontSize: '14px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  Contenido:
+                </label>
                 {RichTextEditor ? (
                   <RichTextEditor
                     value={contenidoNota}
@@ -635,7 +762,6 @@ export function createMainPage(plugin) {
                       width: '100%',
                       minHeight: '200px',
                       padding: 'var(--spacing-sm)',
-                      marginTop: '4px',
                       borderRadius: 'var(--border-radius-sm)',
                       border: '1px solid var(--border-color)',
                       backgroundColor: 'var(--input-bg)',
@@ -648,7 +774,16 @@ export function createMainPage(plugin) {
               
               {/* Etiquetas */}
               <div style={{ marginBottom: 'var(--spacing-md)' }}>
-                <label>Etiquetas (separadas por comas):</label>
+                <label
+                  style={{
+                    display: 'block',
+                    marginBottom: '4px',
+                    fontSize: '14px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  Etiquetas (separadas por comas):
+                </label>
                 <input
                   type="text"
                   value={etiquetasNota}
@@ -657,7 +792,6 @@ export function createMainPage(plugin) {
                   style={{
                     width: '100%',
                     padding: 'var(--spacing-sm)',
-                    marginTop: '4px',
                     borderRadius: 'var(--border-radius-sm)',
                     border: '1px solid var(--border-color)',
                     backgroundColor: 'var(--input-bg)',
@@ -665,6 +799,23 @@ export function createMainPage(plugin) {
                   }}
                 />
               </div>
+              
+              {/* Información de fechas si estamos editando */}
+              {notaEditando && (
+                <div
+                  style={{
+                    marginBottom: 'var(--spacing-md)',
+                    padding: 'var(--spacing-sm)',
+                    backgroundColor: 'var(--bg-color-secondary)',
+                    borderRadius: 'var(--border-radius-sm)',
+                    fontSize: '12px',
+                    color: 'var(--text-color-secondary)'
+                  }}
+                >
+                  <div>Creada: {new Date(notaEditando.nota.fechaCreacion).toLocaleString()}</div>
+                  <div>Última modificación: {new Date(notaEditando.nota.fechaModificacion).toLocaleString()}</div>
+                </div>
+              )}
               
               {/* Botones */}
               <div

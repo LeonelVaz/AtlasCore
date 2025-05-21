@@ -24,7 +24,9 @@ export function createEventFormExtension(plugin) {
         newNotaContent,
         {
           eventoId: props.event.id,
-          categoria: selectedCategoria
+          categoria: selectedCategoria,
+          fechaEvento: fecha, // Pasar la fecha del evento para establecer fechaCalendario
+          fechaCalendario: new Date(fecha).getTime() // Establecer explícitamente fechaCalendario
         }
       );
       
@@ -106,22 +108,36 @@ export function createEventFormExtension(plugin) {
                   justifyContent: 'space-between'
                 }}
               >
-                <div>
-                  <span
-                    style={{
-                      display: 'inline-block',
-                      backgroundColor: plugin._helpers.generateLightColor(
-                        plugin._data.categorias[nota.categoria]?.color || '#9E9E9E'
-                      ),
-                      color: plugin._data.categorias[nota.categoria]?.color || '#9E9E9E',
-                      padding: '2px 8px',
-                      borderRadius: 'var(--border-radius-sm)',
-                      fontSize: '12px',
-                      marginRight: 'var(--spacing-xs)'
-                    }}
-                  >
-                    {plugin._data.categorias[nota.categoria]?.nombre || nota.categoria}
-                  </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)', marginBottom: '4px' }}>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        backgroundColor: plugin._helpers.generateLightColor(
+                          plugin._data.categorias[nota.categoria]?.color || '#9E9E9E'
+                        ),
+                        color: plugin._data.categorias[nota.categoria]?.color || '#9E9E9E',
+                        padding: '2px 8px',
+                        borderRadius: 'var(--border-radius-sm)',
+                        fontSize: '12px'
+                      }}
+                    >
+                      {plugin._data.categorias[nota.categoria]?.nombre || nota.categoria}
+                    </span>
+                    {nota.fechaCalendario && (
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          color: 'var(--text-color-secondary)'
+                        }}
+                        title="Visible en el calendario"
+                      >
+                        <span className="material-icons" style={{ fontSize: '14px', verticalAlign: 'middle' }}>
+                          calendar_today
+                        </span>
+                      </span>
+                    )}
+                  </div>
                   <span style={{ color: 'var(--text-color)' }}>
                     {plugin._helpers.truncateText(plugin._helpers.stripHtml(nota.contenido), 50)}
                   </span>
@@ -133,7 +149,8 @@ export function createEventFormExtension(plugin) {
                     border: 'none',
                     color: 'var(--danger-color)',
                     cursor: 'pointer',
-                    padding: '4px'
+                    padding: '4px',
+                    marginLeft: '8px'
                   }}
                 >
                   <span className="material-icons" style={{ fontSize: '18px' }}>delete</span>
@@ -198,6 +215,20 @@ export function createEventFormExtension(plugin) {
                 fontSize: '14px'
               }}
             />
+            
+            <div
+              style={{
+                marginTop: 'var(--spacing-sm)',
+                fontSize: '12px',
+                color: 'var(--text-color-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span className="material-icons" style={{ fontSize: '16px' }}>info</span>
+              Esta nota se mostrará en el calendario en la fecha del evento
+            </div>
             
             <div
               style={{

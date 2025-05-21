@@ -6,15 +6,15 @@ export function createCalendarIndicator(plugin) {
     const [notasCount, setNotasCount] = React.useState(0);
     
     React.useEffect(() => {
-      // Verificar si hay notas para esta fecha
+      // Verificar si hay notas para esta fecha usando fechaCalendario
       const checkNotas = () => {
         if (!plugin._data.configuracion.mostrarIndicadores) {
           setHasNotas(false);
           return;
         }
         
-        const fechaStr = plugin._helpers.formatDateKey(props.date);
-        const notas = plugin._data.notas[fechaStr] || [];
+        // Obtener notas que tienen fechaCalendario en este día
+        const notas = plugin._notesService.getNotasPorFechaCalendario(props.date);
         
         setHasNotas(notas.length > 0);
         setNotasCount(notas.length);
@@ -27,30 +27,32 @@ export function createCalendarIndicator(plugin) {
         plugin._core.events.subscribe(
           plugin.id,
           'administradorNotas.notaCreada',
-          (data) => {
-            if (data.fecha === plugin._helpers.formatDateKey(props.date)) {
-              checkNotas();
-            }
-          }
+          checkNotas
         ),
         plugin._core.events.subscribe(
           plugin.id,
           'administradorNotas.notaEliminada',
-          (data) => {
-            if (data.fecha === plugin._helpers.formatDateKey(props.date)) {
-              checkNotas();
-            }
-          }
+          checkNotas
+        ),
+        plugin._core.events.subscribe(
+          plugin.id,
+          'administradorNotas.notaActualizada',
+          checkNotas
         ),
         plugin._core.events.subscribe(
           plugin.id,
           'administradorNotas.notaMovida',
-          (data) => {
-            const fechaStr = plugin._helpers.formatDateKey(props.date);
-            if (data.fechaOrigen === fechaStr || data.fechaDestino === fechaStr) {
-              checkNotas();
-            }
-          }
+          checkNotas
+        ),
+        plugin._core.events.subscribe(
+          plugin.id,
+          'administradorNotas.fechasCalendarioActualizadas',
+          checkNotas
+        ),
+        plugin._core.events.subscribe(
+          plugin.id,
+          'administradorNotas.calendarioActualizado',
+          checkNotas
         )
       ];
       
@@ -65,8 +67,7 @@ export function createCalendarIndicator(plugin) {
     
     // Determinar el color basado en las categorías de las notas
     const getIndicatorColor = () => {
-      const fechaStr = plugin._helpers.formatDateKey(props.date);
-      const notas = plugin._data.notas[fechaStr] || [];
+      const notas = plugin._notesService.getNotasPorFechaCalendario(props.date);
       
       // Si todas las notas son de la misma categoría, usar ese color
       const categorias = [...new Set(notas.map(n => n.categoria))];
