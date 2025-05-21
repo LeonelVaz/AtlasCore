@@ -239,6 +239,7 @@ export function useEventDrag({
         setDragging(false);
         
         if (!noRealChange) {
+          // Llamar a onUpdate que debería disparar el evento
           onUpdate({
             ...event,
             start: startDate.toISOString(),

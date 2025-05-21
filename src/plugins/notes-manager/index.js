@@ -259,12 +259,29 @@ export default {
   _setupEventListeners: function() {
     const self = this;
     
+    console.log('[Administrador de Notas] Configurando listeners de eventos...');
+    
     // Escuchar cambios en eventos del calendario
     self._subscriptions.push(
       self._core.events.subscribe(
         self.id,
         'calendar.eventUpdated',
         function(data) {
+          console.log('[Administrador de Notas] === EVENTO ACTUALIZADO RECIBIDO ===');
+          console.log('[Administrador de Notas] Datos completos:', data);
+          console.log('[Administrador de Notas] oldEvent:', data.oldEvent);
+          console.log('[Administrador de Notas] newEvent:', data.newEvent);
+          
+          if (data.oldEvent) {
+            console.log('[Administrador de Notas] oldEvent.id:', data.oldEvent.id);
+            console.log('[Administrador de Notas] oldEvent.start:', data.oldEvent.start);
+          }
+          
+          if (data.newEvent) {
+            console.log('[Administrador de Notas] newEvent.id:', data.newEvent.id);
+            console.log('[Administrador de Notas] newEvent.start:', data.newEvent.start);
+          }
+          
           self._handleEventUpdate(data);
         }
       )
@@ -275,6 +292,7 @@ export default {
         self.id,
         'calendar.eventDeleted',
         function(data) {
+          console.log('[Administrador de Notas] Evento eliminado:', data);
           self._handleEventDelete(data);
         }
       )
@@ -301,30 +319,80 @@ export default {
         }
       )
     );
+    
+    // Debug: Escuchar TODOS los eventos para ver qué está pasando
+    self._subscriptions.push(
+      self._core.events.subscribe(
+        self.id,
+        '*', // Escuchar todos los eventos
+        function(data, eventName, sourcePluginId) {
+          if (eventName && eventName.startsWith('calendar.')) {
+            console.log(`[Administrador de Notas][DEBUG] Evento recibido: ${eventName} desde ${sourcePluginId}`, data);
+          }
+        }
+      )
+    );
   },
   
   _handleEventUpdate: function(data) {
+    console.log('[Administrador de Notas] _handleEventUpdate ejecutándose...');
+    
+    // Validar que tenemos los datos necesarios
+    if (!data || !data.oldEvent || !data.newEvent) {
+      console.error('[Administrador de Notas] Datos inválidos en _handleEventUpdate:', data);
+      return;
+    }
+    
+    console.log('[Administrador de Notas] Comparando fechas:');
+    console.log('[Administrador de Notas] oldEvent.start:', data.oldEvent.start);
+    console.log('[Administrador de Notas] newEvent.start:', data.newEvent.start);
+    console.log('[Administrador de Notas] Son diferentes?', data.oldEvent.start !== data.newEvent.start);
+    
     // Actualizar referencias de notas si el evento cambió de fecha
-    if (data.oldEvent && data.newEvent && data.oldEvent.start !== data.newEvent.start) {
+    if (data.oldEvent.start !== data.newEvent.start) {
+      console.log('[Administrador de Notas] El evento cambió de fecha, actualizando referencias...');
+      
+      // Verificar que tenemos IDs válidos
+      if (!data.oldEvent.id || !data.newEvent.id) {
+        console.error('[Administrador de Notas] Evento sin ID válido:', {
+          oldEventId: data.oldEvent.id,
+          newEventId: data.newEvent.id
+        });
+        return;
+      }
+      
+      // Buscar notas con el eventoId antes de actualizar
+      console.log('[Administrador de Notas] Buscando notas con eventoId:', data.oldEvent.id);
+      const notasDelEvento = this.publicAPI.getNotasPorEvento(data.oldEvent.id);
+      console.log('[Administrador de Notas] Notas encontradas:', notasDelEvento);
+      
       // Actualizar fecha de almacenamiento y fechaCalendario
-      this._notesService.actualizarReferenciasEvento(
+      const notasActualizadas = this._notesService.actualizarReferenciasEvento(
         data.oldEvent.id,
         data.oldEvent.start,
         data.newEvent.start
       );
-    } else if (data.oldEvent && data.newEvent) {
+      
+      console.log('[Administrador de Notas] Notas actualizadas:', notasActualizadas);
+    } else if (data.oldEvent.id === data.newEvent.id) {
       // Solo actualizar fechaCalendario si la fecha cambió pero el evento es el mismo
-      this._notesService.actualizarFechaCalendarioPorEvento(
+      console.log('[Administrador de Notas] Actualizando solo fechaCalendario para el evento:', data.newEvent.id);
+      
+      const notasActualizadas = this._notesService.actualizarFechaCalendarioPorEvento(
         data.newEvent.id,
         data.newEvent.start
       );
+      
+      console.log('[Administrador de Notas] Notas con fechaCalendario actualizada:', notasActualizadas);
     }
   },
   
   _handleEventDelete: function(data) {
     // Marcar notas relacionadas como huérfanas
     if (data.event && data.event.id) {
-      this._notesService.marcarNotasHuerfanas(data.event.id);
+      console.log('[Administrador de Notas] Marcando notas huérfanas para evento:', data.event.id);
+      const notasHuerfanas = this._notesService.marcarNotasHuerfanas(data.event.id);
+      console.log('[Administrador de Notas] Notas marcadas como huérfanas:', notasHuerfanas);
     }
   },
   

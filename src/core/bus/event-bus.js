@@ -24,6 +24,8 @@ class EventBus {
   constructor() {
     this.subscribers = {};
     this.lastId = 0;
+    // Flag para controlar el debugging
+    this.debugEnabled = false;
   }
 
   /**
@@ -84,16 +86,22 @@ class EventBus {
   publish(eventType, data) {
     if (!eventType) return;
     
-    // Log del evento para depuración
-    console.log(`[EventBus] Publicando evento: ${eventType}`, data);
+    // Solo log si el debug está habilitado
+    if (this.debugEnabled) {
+      console.log(`[EventBus] Publicando evento: ${eventType}`, data);
+    }
     
     if (!this.subscribers[eventType]) {
-      console.log(`[EventBus] No hay suscriptores para: ${eventType}`);
+      if (this.debugEnabled) {
+        console.log(`[EventBus] No hay suscriptores para: ${eventType}`);
+      }
       return;
     }
     
     const subscriberCount = Object.keys(this.subscribers[eventType]).length;
-    console.log(`[EventBus] Notificando a ${subscriberCount} suscriptores de ${eventType}`);
+    if (this.debugEnabled && subscriberCount > 0) {
+      console.log(`[EventBus] Notificando a ${subscriberCount} suscriptores de ${eventType}`);
+    }
     
     Object.values(this.subscribers[eventType] || {}).forEach(callback => {
       if (typeof callback === 'function') {
@@ -147,6 +155,14 @@ class EventBus {
    */
   getActiveEvents() {
     return Object.keys(this.subscribers);
+  }
+  
+  /**
+   * Habilita o deshabilita el modo debug
+   * @param {boolean} enabled - true para habilitar debug
+   */
+  setDebugMode(enabled) {
+    this.debugEnabled = enabled;
   }
 }
 

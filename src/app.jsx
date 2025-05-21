@@ -8,6 +8,7 @@ import ConfigProvider from './contexts/config-provider';
 import { isElectronEnv } from './utils/electron-detector';
 import pluginManager from './core/plugins/plugin-manager';
 import PluginPages from './components/plugin-extension/plugin-pages'; // Importar el nuevo componente
+import EventDebugger from './debug/EventDebugger'
 
 // Iconos para los elementos del sidebar
 const APP_SECTIONS = {
@@ -105,6 +106,7 @@ function App() {
           </main>
         </div>
       </div>
+      <EventDebugger />
     </ConfigProvider>
   );
 }

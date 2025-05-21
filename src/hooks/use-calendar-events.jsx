@@ -148,14 +148,18 @@ function useCalendarEvents() {
 
   // Cargar todos los eventos cuando se inicializa
   useEffect(() => {
-    // Disparar evento de carga de eventos completada
-    if (events.length > 0 || events.length === 0) {
-      eventBus.publish(CalendarEvents.EVENTS_LOADED, { 
-        events: events,
-        count: events.length
-      });
+    // Disparar evento de carga de eventos completada solo cuando cambia el contador
+    if (events.length > 0) {
+      const timeoutId = setTimeout(() => {
+        eventBus.publish(CalendarEvents.EVENTS_LOADED, { 
+          events: events,
+          count: events.length
+        });
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [events]);
+  }, [events.length]); // Solo cuando cambia la cantidad de eventos
 
   return {
     events,

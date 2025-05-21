@@ -13,12 +13,16 @@ import { PLUGIN_CONSTANTS } from '../config/constants';
 // Importar los componentes de texto enriquecido
 import RichText from '../../components/ui/rich-text';
 
+// Importar el módulo de calendario
+import calendarModule from '../modules/calendar-module';
+
 class CoreAPI {
   constructor() {
     this.version = '0.3.0';
     this._services = {};
     this._pluginResources = {};
     this._errorHandlers = [];
+    this._modulesInitialized = new Set();
   }
 
   init(services = {}) {
@@ -376,6 +380,19 @@ class CoreAPI {
     if (!moduleId) {
       console.error('ID de módulo inválido');
       return null;
+    }
+    
+    // Caso especial para el módulo de calendario
+    if (moduleId === 'calendar') {
+      // Inicializar solo una vez
+      if (!this._modulesInitialized.has('calendar')) {
+        const calendarService = this._services.calendar;
+        if (calendarService) {
+          calendarModule.init(calendarService);
+          this._modulesInitialized.add('calendar');
+        }
+      }
+      return calendarModule;
     }
     
     // Intentar obtener el módulo del registro global

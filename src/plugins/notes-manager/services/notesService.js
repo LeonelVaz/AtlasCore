@@ -28,7 +28,19 @@ export class NotesService {
       
       // Si se crea desde un evento, usar la fecha del evento para fechaCalendario
       if (opciones.eventoId && opciones.fechaEvento) {
-        nuevaNota.fechaCalendario = new Date(opciones.fechaEvento).getTime();
+        const fechaEventoTimestamp = opciones.fechaEvento instanceof Date 
+          ? opciones.fechaEvento.getTime() 
+          : new Date(opciones.fechaEvento).getTime();
+        
+        nuevaNota.fechaCalendario = fechaEventoTimestamp;
+        
+        console.log('[NotesService] Nota creada desde evento con fechaCalendario:', 
+          new Date(fechaEventoTimestamp).toISOString());
+      }
+      
+      // Asegurar que fechaCalendario sea un timestamp si se proporcionó
+      if (nuevaNota.fechaCalendario && typeof nuevaNota.fechaCalendario !== 'number') {
+        nuevaNota.fechaCalendario = new Date(nuevaNota.fechaCalendario).getTime();
       }
       
       // Inicializar array de notas para la fecha si no existe

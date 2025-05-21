@@ -16,6 +16,7 @@ class CalendarModule {
     };
     this._eventListeners = [];
     this._initialized = false;
+    this._subscriptionsActive = false;
   }
 
   /**
@@ -28,16 +29,27 @@ class CalendarModule {
       return false;
     }
     
+    // Si ya está inicializado, limpiar primero
+    if (this._initialized) {
+      this.cleanup();
+    }
+    
     this._calendarService = calendarService;
     
     // Realizar inicialización específica si es necesario
     this._syncState();
     
-    // Configurar escucha de eventos del calendario
-    this._setupEventListeners();
+    // Configurar escucha de eventos del calendario solo una vez
+    if (!this._subscriptionsActive) {
+      this._setupEventListeners();
+      this._subscriptionsActive = true;
+    }
     
     this._initialized = true;
-    console.log('CalendarModule: Inicializado correctamente');
+    // Solo log en la primera inicialización real
+    if (!this._subscriptionsActive) {
+      console.log('CalendarModule: Inicializado correctamente');
+    }
     return true;
   }
 
@@ -46,25 +58,29 @@ class CalendarModule {
    * @private
    */
   _setupEventListeners() {
+    // Limpiar suscripciones anteriores si existen
+    this._cleanupEventListeners();
+    
     // Escuchar cuando se cargan eventos
     const loadedSub = eventBus.subscribe(CalendarEvents.EVENTS_LOADED, (data) => {
-      console.log('[CalendarModule] Eventos cargados:', data);
       this._calendarState.events = data.events || [];
       this._calendarState.lastUpdate = Date.now();
     });
 
     // Escuchar creación de eventos
     const createdSub = eventBus.subscribe(CalendarEvents.EVENT_CREATED, (data) => {
-      console.log('[CalendarModule] Evento creado:', data);
       if (data.event) {
-        this._calendarState.events.push(data.event);
-        this._calendarState.lastUpdate = Date.now();
+        // Verificar que el evento no exista ya
+        const exists = this._calendarState.events.some(e => e.id === data.event.id);
+        if (!exists) {
+          this._calendarState.events.push(data.event);
+          this._calendarState.lastUpdate = Date.now();
+        }
       }
     });
 
     // Escuchar actualización de eventos
     const updatedSub = eventBus.subscribe(CalendarEvents.EVENT_UPDATED, (data) => {
-      console.log('[CalendarModule] Evento actualizado:', data);
       if (data.newEvent) {
         const index = this._calendarState.events.findIndex(e => e.id === data.newEvent.id);
         if (index !== -1) {
@@ -76,7 +92,6 @@ class CalendarModule {
 
     // Escuchar eliminación de eventos
     const deletedSub = eventBus.subscribe(CalendarEvents.EVENT_DELETED, (data) => {
-      console.log('[CalendarModule] Evento eliminado:', data);
       if (data.event) {
         this._calendarState.events = this._calendarState.events.filter(e => e.id !== data.event.id);
         this._calendarState.lastUpdate = Date.now();
@@ -84,7 +99,22 @@ class CalendarModule {
     });
 
     // Guardar referencias para limpieza
-    this._eventListeners.push(loadedSub, createdSub, updatedSub, deletedSub);
+    this._eventListeners = [loadedSub, createdSub, updatedSub, deletedSub];
+  }
+
+  /**
+   * Limpia los event listeners
+   * @private
+   */
+  _cleanupEventListeners() {
+    if (this._eventListeners.length > 0) {
+      this._eventListeners.forEach(unsub => {
+        if (typeof unsub === 'function') {
+          unsub();
+        }
+      });
+      this._eventListeners = [];
+    }
   }
 
   /**
@@ -379,12 +409,8 @@ class CalendarModule {
    */
   cleanup() {
     // Cancelar todas las suscripciones
-    this._eventListeners.forEach(unsub => {
-      if (typeof unsub === 'function') {
-        unsub();
-      }
-    });
-    this._eventListeners = [];
+    this._cleanupEventListeners();
+    this._subscriptionsActive = false;
     this._initialized = false;
   }
 }
