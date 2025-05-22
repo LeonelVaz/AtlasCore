@@ -144,18 +144,21 @@ export const DialogProvider = ({ children }) => {
   return (
     <DialogContext.Provider value={contextValue}>
       {children}
-      <CustomDialog
-        isOpen={dialogState.isOpen}
-        type={dialogState.type}
-        title={dialogState.title}
-        message={dialogState.message}
-        defaultValue={dialogState.defaultValue}
-        confirmText={dialogState.confirmText}
-        cancelText={dialogState.cancelText}
-        onConfirm={dialogState.onConfirm}
-        onCancel={dialogState.onCancel}
-        onClose={dialogState.onClose}
-      />
+      {/* Solo renderizar el diálogo si está abierto y tiene handlers válidos */}
+      {dialogState.isOpen && dialogState.onConfirm && (
+        <CustomDialog
+          isOpen={dialogState.isOpen}
+          type={dialogState.type}
+          title={dialogState.title}
+          message={dialogState.message}
+          defaultValue={dialogState.defaultValue}
+          confirmText={dialogState.confirmText}
+          cancelText={dialogState.cancelText}
+          onConfirm={dialogState.onConfirm}
+          onCancel={dialogState.onCancel}
+          onClose={dialogState.onClose}
+        />
+      )}
     </DialogContext.Provider>
   );
 };
