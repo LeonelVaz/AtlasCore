@@ -1,0 +1,196 @@
+/* src/components/ui/dialog-system/CustomDialog.css */
+
+/* Overlay del diálogo */
+.custom-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.custom-dialog-overlay.visible {
+  opacity: 1;
+}
+
+/* Contenedor del diálogo */
+.custom-dialog {
+  background-color: var(--bg-color-primary, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform 0.2s ease-in-out;
+  border: 1px solid var(--color-border, #e0e0e0);
+}
+
+.custom-dialog-overlay.visible .custom-dialog {
+  transform: scale(1);
+}
+
+/* Encabezado */
+.custom-dialog-header {
+  padding: 20px 20px 10px 20px;
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+
+.custom-dialog-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #333333);
+}
+
+/* Cuerpo del diálogo */
+.custom-dialog-body {
+  padding: 20px;
+}
+
+.custom-dialog-message {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary, #333333);
+  word-wrap: break-word;
+}
+
+/* Input para prompt */
+.custom-dialog-input-container {
+  margin-top: 15px;
+}
+
+.custom-dialog-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--bg-color-secondary, #f5f5f5);
+  color: var(--color-text-primary, #333333);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.custom-dialog-input:focus {
+  border-color: var(--color-primary, #2d4b94);
+  box-shadow: 0 0 0 2px rgba(45, 75, 148, 0.2);
+}
+
+/* Pie del diálogo */
+.custom-dialog-footer {
+  padding: 15px 20px 20px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* Botones */
+.custom-dialog-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.custom-dialog-button-primary {
+  background-color: var(--color-primary, #2d4b94);
+  color: white;
+}
+
+.custom-dialog-button-primary:hover {
+  background-color: var(--color-primary-hover, #1f3a7a);
+}
+
+.custom-dialog-button-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(45, 75, 148, 0.3);
+}
+
+.custom-dialog-button-secondary {
+  background-color: var(--bg-color-secondary, #f5f5f5);
+  color: var(--color-text-primary, #333333);
+  border: 1px solid var(--color-border, #e0e0e0);
+}
+
+.custom-dialog-button-secondary:hover {
+  background-color: var(--color-hover, #eeeeee);
+}
+
+.custom-dialog-button-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Variantes por tipo de diálogo */
+.custom-dialog-alert .custom-dialog-footer {
+  justify-content: center;
+}
+
+.custom-dialog-alert .custom-dialog-button-primary {
+  min-width: 100px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .custom-dialog {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .custom-dialog-footer {
+    flex-direction: column-reverse;
+  }
+  
+  .custom-dialog-button {
+    width: 100%;
+  }
+}
+
+/* Tema oscuro */
+.theme-dark .custom-dialog {
+  background-color: var(--bg-color-primary-dark, #2a2a2a);
+  border-color: var(--color-border-dark, #404040);
+}
+
+.theme-dark .custom-dialog-header {
+  border-color: var(--color-border-dark, #404040);
+}
+
+.theme-dark .custom-dialog-title {
+  color: var(--color-text-primary-dark, #ffffff);
+}
+
+.theme-dark .custom-dialog-message {
+  color: var(--color-text-primary-dark, #ffffff);
+}
+
+.theme-dark .custom-dialog-input {
+  background-color: var(--bg-color-secondary-dark, #1a1a1a);
+  border-color: var(--color-border-dark, #404040);
+  color: var(--color-text-primary-dark, #ffffff);
+}
+
+.theme-dark .custom-dialog-button-secondary {
+  background-color: var(--bg-color-secondary-dark, #1a1a1a);
+  border-color: var(--color-border-dark, #404040);
+  color: var(--color-text-primary-dark, #ffffff);
+}
+
+.theme-dark .custom-dialog-button-secondary:hover {
+  background-color: var(--color-hover-dark, #333333);
+}

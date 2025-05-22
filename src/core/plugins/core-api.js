@@ -1,5 +1,6 @@
+// src/core/plugins/core-api.js
 /**
- * API Core para plugins de Atlas
+ * API Core para plugins de Atlas - Actualizado con soporte para diálogos
  */
 import eventBus from '../bus/event-bus';
 import storageService from '../../services/storage-service';
@@ -10,6 +11,7 @@ import pluginAPIRegistry from './plugin-api-registry';
 import pluginCommunication from './plugin-communication';
 import pluginRegistry from './plugin-registry';
 import { PLUGIN_CONSTANTS } from '../config/constants';
+import { createPluginDialogAPI } from '../../utils/dialog-interceptor';
 // Importar los componentes de texto enriquecido
 import RichText from '../../components/ui/rich-text';
 
@@ -23,16 +25,23 @@ class CoreAPI {
     this._pluginResources = {};
     this._errorHandlers = [];
     this._modulesInitialized = new Set();
+    this._dialogAPI = null;
   }
 
   init(services = {}) {
     // Almacenar referencias a servicios que puedan necesitar los plugins
     this._services = services;
     
+    // Inicializar API de diálogos si está disponible
+    if (services.dialog) {
+      this._dialogAPI = createPluginDialogAPI();
+    }
+    
     // Inicializar subcomponentes básicos de la API
     this._initEvents();
     this._initStorage();
     this._initUI();
+    this._initDialogs(); // Nueva inicialización para diálogos
     this._initErrorHandling();
     this._initCommunication();
     
@@ -180,10 +189,113 @@ class CoreAPI {
     };
   }
 
+  _initDialogs() {
+    // Sistema de diálogos para plugins
+    this.dialogs = {
+      // Función alert personalizada para plugins
+      alert: async (pluginId, message, title = 'Información') => {
+        try {
+          if (this._dialogAPI && this._dialogAPI.alert) {
+            return await this._dialogAPI.alert(String(message), title);
+          }
+          
+          // Fallback a console si no hay API de diálogos
+          console.log(`[Plugin ${pluginId}] Alert:`, message);
+          return true;
+        } catch (error) {
+          this._handleError(pluginId, 'dialog.alert', error);
+          return false;
+        }
+      },
+      
+      // Función confirm personalizada para plugins
+      confirm: async (pluginId, message, title = 'Confirmación') => {
+        try {
+          if (this._dialogAPI && this._dialogAPI.confirm) {
+            return await this._dialogAPI.confirm(String(message), title);
+          }
+          
+          // Fallback a console si no hay API de diálogos
+          console.log(`[Plugin ${pluginId}] Confirm:`, message, '(auto-false)');
+          return false;
+        } catch (error) {
+          this._handleError(pluginId, 'dialog.confirm', error);
+          return false;
+        }
+      },
+      
+      // Función prompt personalizada para plugins
+      prompt: async (pluginId, message, defaultValue = '', title = 'Entrada de datos') => {
+        try {
+          if (this._dialogAPI && this._dialogAPI.prompt) {
+            return await this._dialogAPI.prompt(String(message), String(defaultValue), title);
+          }
+          
+          // Fallback a console si no hay API de diálogos
+          console.log(`[Plugin ${pluginId}] Prompt:`, message, '(auto-null)');
+          return null;
+        } catch (error) {
+          this._handleError(pluginId, 'dialog.prompt', error);
+          return null;
+        }
+      },
+      
+      // Función para diálogos personalizados avanzados
+      showCustomDialog: async (pluginId, options) => {
+        try {
+          if (this._dialogAPI && this._dialogAPI.showDialog) {
+            return await this._dialogAPI.showDialog(options);
+          }
+          
+          // Fallback básico
+          console.log(`[Plugin ${pluginId}] Custom dialog:`, options);
+          return null;
+        } catch (error) {
+          this._handleError(pluginId, 'dialog.showCustomDialog', error);
+          return null;
+        }
+      },
+      
+      // Función de conveniencia que envuelve todas las opciones
+      show: (pluginId, type, message, options = {}) => {
+        const {
+          title,
+          defaultValue,
+          confirmText,
+          cancelText
+        } = options;
+        
+        switch (type) {
+          case 'alert':
+            return this.alert(pluginId, message, title);
+          case 'confirm':
+            return this.confirm(pluginId, message, title);
+          case 'prompt':
+            return this.prompt(pluginId, message, defaultValue, title);
+          default:
+            console.error(`Tipo de diálogo no válido: ${type}`);
+            return Promise.resolve(null);
+        }
+      }
+    };
+  }
+
   _initErrorHandling() {
     // Registrar handler de errores por defecto
     this._errorHandlers.push((pluginId, context, error) => {
       console.error(`Error en plugin [${pluginId}] (${context}):`, error);
+      
+      // Mostrar errores críticos usando el sistema de diálogos si está disponible
+      if (context === 'init' || context === 'critical') {
+        if (this._dialogAPI && this._dialogAPI.alert) {
+          this._dialogAPI.alert(
+            `Error crítico en plugin "${pluginId}": ${error.message}`,
+            'Error de Plugin'
+          ).catch(e => {
+            console.error('Error al mostrar diálogo de error:', e);
+          });
+        }
+      }
     });
   }
 
