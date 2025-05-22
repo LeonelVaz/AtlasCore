@@ -11,7 +11,7 @@ import { initializeDialogInterceptor } from './utils/dialog-interceptor'; // Imp
 import { isElectronEnv } from './utils/electron-detector';
 import pluginManager from './core/plugins/plugin-manager';
 import PluginPages from './components/plugin-extension/plugin-pages';
-import EventDebugger from './debug/event-debugger';
+import EventDebugger from './components/debug/event-debugger';
 
 // Iconos para los elementos del sidebar
 const APP_SECTIONS = {

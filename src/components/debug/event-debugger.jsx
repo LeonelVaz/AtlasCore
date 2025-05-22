@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import eventBus, { CalendarEvents, AppEvents, StorageEvents } from '../core/bus/event-bus';
+import eventBus, { CalendarEvents, AppEvents, StorageEvents } from '../../core/bus/event-bus';
 
 function EventDebugger() {
   const [isMinimized, setIsMinimized] = useState(false);
