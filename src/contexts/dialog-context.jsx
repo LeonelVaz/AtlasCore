@@ -1,6 +1,6 @@
-// src/contexts/DialogContext.jsx
+
 import React, { createContext, useState, useContext, useCallback } from 'react';
-import CustomDialog from '../components/ui/dialog-system/CustomDialog';
+import CustomDialog from '../components/ui/dialog-system/custom-dialog';
 
 const DialogContext = createContext();
 

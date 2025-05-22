@@ -6,12 +6,12 @@ import Sidebar from './components/ui/sidebar/Sidebar';
 import SidebarItem from './components/ui/sidebar/sidebar-item';
 import WindowControls from './components/ui/window-controls';
 import ConfigProvider from './contexts/config-provider';
-import { DialogProvider, useDialog } from './contexts/DialogContext'; // Importar el proveedor de diálogos
+import { DialogProvider, useDialog } from './contexts/dialog-context'; // Importar el proveedor de diálogos
 import { initializeDialogInterceptor } from './utils/dialog-interceptor'; // Importar el interceptor
 import { isElectronEnv } from './utils/electron-detector';
 import pluginManager from './core/plugins/plugin-manager';
 import PluginPages from './components/plugin-extension/plugin-pages';
-import EventDebugger from './debug/EventDebugger';
+import EventDebugger from './debug/event-debugger';
 
 // Iconos para los elementos del sidebar
 const APP_SECTIONS = {

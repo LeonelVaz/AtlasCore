@@ -1,7 +1,7 @@
-// src/components/ui/dialog-system/CustomDialog.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import './CustomDialog.css';
+import './custom-dialog.css';
 
 /**
  * Componente de diálogo personalizado que reemplaza alert(), confirm() y prompt()
