@@ -6,8 +6,8 @@ export default {
   // Metadatos del plugin
   id: 'simple-notes',
   name: 'Notas Simples',
-  version: '1.0.0',
-  description: 'Plugin simple para gestionar notas personales',
+  version: '1.1.0', // Incrementado por la integración con RichText
+  description: 'Plugin simple para gestionar notas personales con editor de texto enriquecido',
   author: 'Atlas Plugin Developer',
   
   // Restricciones de compatibilidad
@@ -32,6 +32,10 @@ export default {
         // Guardar referencia al core
         self._core = core;
         
+        // Verificar que los componentes de RichText estén disponibles
+        const hasRichText = !!(core?.ui?.components?.RichTextEditor && core?.ui?.components?.RichTextViewer);
+        console.log('[Notas Simples] RichText disponible:', hasRichText);
+        
         // Cargar notas existentes
         self._loadNotes()
           .then(function() {
@@ -41,7 +45,7 @@ export default {
             // Registrar página
             self._registerPage();
             
-            console.log('[Notas Simples] Plugin inicializado correctamente');
+            console.log('[Notas Simples] Plugin inicializado correctamente con soporte para RichText');
             resolve(true);
           })
           .catch(function(error) {
@@ -108,11 +112,12 @@ export default {
   _registerNavigation: function() {
     const self = this;
     
-    // Crear componente de navegación con referencia al plugin
+    // Crear componente de navegación con referencia al plugin Y al core
     function NavigationWrapper(props) {
       return React.createElement(NotesNavigationItem, {
         ...props,
-        plugin: self
+        plugin: self,
+        core: self._core
       });
     }
     
@@ -130,11 +135,12 @@ export default {
   _registerPage: function() {
     const self = this;
     
-    // Crear componente de página con referencia al plugin
+    // Crear componente de página con referencia al plugin Y al core
     function PageWrapper(props) {
       return React.createElement(NotesPage, {
         ...props,
-        plugin: self
+        plugin: self,
+        core: self._core
       });
     }
     
@@ -205,5 +211,52 @@ export default {
   
   getNote: function(noteId) {
     return this._notes.find(note => note.id === noteId) || null;
+  },
+  
+  // Nuevos métodos para estadísticas y utilidades
+  getNotesStats: function() {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisWeek = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+    
+    return {
+      total: this._notes.length,
+      createdToday: this._notes.filter(note => new Date(note.createdAt) >= today).length,
+      createdThisWeek: this._notes.filter(note => new Date(note.createdAt) >= thisWeek).length,
+      withRichContent: this._notes.filter(note => note.content && note.content.includes('<')).length,
+      averageLength: this._notes.length > 0 ? 
+        Math.round(this._notes.reduce((sum, note) => sum + (note.content?.length || 0), 0) / this._notes.length) : 0
+    };
+  },
+  
+  searchNotes: function(query) {
+    if (!query || !query.trim()) return this._notes;
+    
+    const searchTerm = query.toLowerCase().trim();
+    return this._notes.filter(note => {
+      try {
+        const titleMatch = note.title && note.title.toLowerCase().includes(searchTerm);
+        
+        // Para contenido HTML, extraer texto plano para búsqueda
+        let contentText = note.content || '';
+        if (contentText && contentText.includes('<')) {
+          try {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = contentText;
+            contentText = tempDiv.textContent || tempDiv.innerText || '';
+          } catch (error) {
+            console.warn('Error al extraer texto para búsqueda:', error);
+            // Usar el contenido original como fallback
+          }
+        }
+        const contentMatch = contentText && contentText.toLowerCase().includes(searchTerm);
+        
+        return titleMatch || contentMatch;
+      } catch (error) {
+        console.error('Error en búsqueda de nota:', error);
+        // En caso de error, incluir la nota si el título coincide básicamente
+        return note.title && note.title.toLowerCase().includes(searchTerm);
+      }
+    });
   }
 };

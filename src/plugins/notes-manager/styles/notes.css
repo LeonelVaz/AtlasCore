@@ -1,23 +1,20 @@
 /* ================================================
-   SIMPLE NOTES PLUGIN STYLES
+   SIMPLE NOTES PLUGIN STYLES - UPDATED WITH RICHTEXT
    ================================================ */
 
 /* Variables específicas del plugin */
 :root {
   --notes-card-hover-transform: translateY(-2px);
   --notes-animation-duration: 0.3s;
-  --notes-grid-min-width: 300px;
-  --notes-card-max-height: 400px;
+  --notes-grid-min-width: 320px;
+  --notes-card-max-height: 450px;
+  --notes-rich-editor-border: 2px solid var(--border-color);
+  --notes-rich-editor-focus: 2px solid var(--primary-color);
 }
 
 /* ================================================
    NAVEGACIÓN
-   ================================================ 
-
-.notes-navigation-item 
-
- Los estilos están definidos inline para mayor control */
-
+   ================================================ */
 
 .notes-navigation-item:hover {
   background-color: var(--hover-color) !important;
@@ -33,13 +30,13 @@
 }
 
 .notes-header {
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 2px solid var(--border-color);
   margin-bottom: var(--spacing-xl);
 }
 
 .notes-header h1 {
   color: var(--text-color);
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
 }
 
@@ -50,16 +47,54 @@
 
 .create-note-button {
   background-color: var(--primary-color);
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .create-note-button:hover {
   background-color: var(--primary-hover);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .create-note-button:active {
   transform: translateY(0);
+}
+
+/* ================================================
+   BUSCADOR
+   ================================================ */
+
+.notes-search-container {
+  position: relative;
+  min-width: 250px;
+}
+
+.notes-search-input {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xs) var(--spacing-md);
+  padding-left: 40px;
+  font-size: 14px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  transition: border-color var(--transition-fast);
+  outline: none;
+}
+
+.notes-search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+}
+
+.notes-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-color-secondary);
+  font-size: 18px;
 }
 
 /* ================================================
@@ -69,27 +104,44 @@
 .notes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--notes-grid-min-width), 1fr));
-  gap: var(--spacing-md);
+  gap: var(--spacing-lg);
   width: 100%;
 }
 
-/* Estado vacío */
+/* Estado vacío mejorado */
 .notes-grid .empty-state {
   grid-column: 1 / -1;
   text-align: center;
   padding: var(--spacing-xl) var(--spacing-md);
   color: var(--text-color-secondary);
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  border: 2px dashed var(--border-color);
 }
 
 .notes-grid .empty-state .material-icons {
-  font-size: 48px;
+  font-size: 64px;
   opacity: 0.5;
   margin-bottom: var(--spacing-md);
   display: block;
+  color: var(--primary-color);
+}
+
+.notes-grid .empty-state h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.notes-grid .empty-state p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-color-secondary);
 }
 
 /* ================================================
-   TARJETAS DE NOTAS
+   TARJETAS DE NOTAS MEJORADAS
    ================================================ */
 
 .note-card {
@@ -101,20 +153,25 @@
   position: relative;
   max-height: var(--notes-card-max-height);
   overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
 }
 
 .note-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   transform: var(--notes-card-hover-transform);
+  border-color: var(--primary-color);
 }
 
 .note-card.editing {
   border: 2px solid var(--primary-color);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   transform: none;
+  min-height: 300px;
 }
 
-/* Acciones de las tarjetas */
+/* Acciones de las tarjetas mejoradas */
 .note-actions {
   position: absolute;
   top: var(--spacing-sm);
@@ -131,8 +188,8 @@
 }
 
 .note-actions button {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -140,22 +197,23 @@
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 12px;
 }
 
 .note-actions button:hover {
   transform: scale(1.1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .note-actions button:active {
   transform: scale(0.95);
 }
 
-/* Título de la nota */
+/* Títulos de notas mejorados */
 .note-card h3 {
-  margin: 0 0 var(--spacing-sm) 0;
-  font-size: 16px;
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-color);
   line-height: 1.4;
@@ -164,26 +222,26 @@
   overflow-wrap: break-word;
 }
 
-/* Contenido de la nota */
+/* Contenido de las notas */
+.note-card .note-content,
 .note-card p {
+  flex: 1;
   margin: 0 0 var(--spacing-md) 0;
   font-size: 14px;
   color: var(--text-color-secondary);
   line-height: 1.5;
   overflow: hidden;
-  display: -webkit-box;
-  line-clamp: 5;
-  -webkit-box-orient: vertical;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
-/* Metadatos */
+/* Metadatos mejorados */
 .note-card .metadata {
   font-size: 11px;
   color: var(--text-color-secondary);
   border-top: 1px solid var(--border-color);
   padding-top: var(--spacing-xs);
+  margin-top: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -192,7 +250,128 @@
 }
 
 /* ================================================
-   FORMULARIO DE CREACIÓN
+   RICH TEXT EDITOR INTEGRATION
+   ================================================ */
+
+/* Estilos específicos para RichTextEditor en notas */
+.note-rich-editor .rich-text-editor {
+  border: var(--notes-rich-editor-border);
+  border-radius: var(--border-radius-md);
+  background-color: var(--input-bg);
+}
+
+.note-rich-editor .rich-text-editor:focus-within {
+  border: var(--notes-rich-editor-focus);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+}
+
+.note-rich-editor-edit .rich-text-editor {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Barra de herramientas del editor en notas */
+.note-rich-editor .rich-editor-toolbar {
+  background-color: var(--bg-color-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-xs);
+}
+
+.note-rich-editor .rich-editor-toolbar button {
+  color: var(--text-color);
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.note-rich-editor .rich-editor-toolbar button:hover {
+  background-color: var(--hover-color);
+}
+
+/* Contenido del editor */
+.note-rich-editor .rich-editor-content {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  padding: var(--spacing-sm);
+  min-height: 120px;
+  border: none;
+  outline: none;
+}
+
+/* ================================================
+   RICH TEXT VIEWER IN NOTES
+   ================================================ */
+
+/* Estilos específicos para el visualizador en tarjetas de notas */
+.note-content-viewer {
+  font-size: 14px;
+  line-height: 1.5;
+  max-height: 150px;
+  overflow: hidden;
+  color: var(--text-color-secondary);
+}
+
+.note-content-viewer h1,
+.note-content-viewer h2,
+.note-content-viewer h3,
+.note-content-viewer h4,
+.note-content-viewer h5,
+.note-content-viewer h6 {
+  margin-top: 0.5em;
+  margin-bottom: 0.3em;
+  font-size: 1.1em !important;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.note-content-viewer p {
+  margin-bottom: 0.8em;
+  color: var(--text-color-secondary);
+}
+
+.note-content-viewer ul,
+.note-content-viewer ol {
+  margin-bottom: 0.8em;
+  padding-left: 1.5em;
+}
+
+.note-content-viewer li {
+  margin-bottom: 0.3em;
+}
+
+.note-content-viewer blockquote {
+  margin: 0.5em 0;
+  padding: 0.5em 0.8em;
+  border-left: 3px solid var(--primary-color);
+  background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.05);
+  font-style: italic;
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+}
+
+.note-content-viewer strong,
+.note-content-viewer b {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.note-content-viewer em,
+.note-content-viewer i {
+  font-style: italic;
+}
+
+.note-content-viewer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.note-content-viewer a:hover {
+  text-decoration: underline;
+}
+
+/* ================================================
+   FORMULARIO DE CREACIÓN MEJORADO
    ================================================ */
 
 .create-note-form {
@@ -200,17 +379,18 @@
   border: 2px solid var(--primary-color);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-lg);
-  animation: slideDown var(--notes-animation-duration) ease-out;
+  animation: slideDownImproved var(--notes-animation-duration) ease-out;
+  margin-bottom: var(--spacing-xl);
 }
 
-@keyframes slideDown {
+@keyframes slideDownImproved {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-30px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -221,7 +401,7 @@
   font-weight: 600;
 }
 
-/* Campos de entrada */
+/* Campos de entrada mejorados */
 .create-note-form input,
 .create-note-form textarea,
 .note-card.editing input,
@@ -230,7 +410,7 @@
   color: var(--text-color);
   border: 2px solid var(--border-color);
   border-radius: var(--border-radius-md);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
   outline: none;
   font-family: inherit;
 }
@@ -240,7 +420,8 @@
 .note-card.editing input:focus,
 .note-card.editing textarea:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+  transform: translateY(-1px);
 }
 
 .create-note-form textarea,
@@ -250,7 +431,7 @@
   min-height: 120px;
 }
 
-/* Botones */
+/* Botones mejorados */
 .create-note-form button,
 .note-card.editing button {
   display: flex;
@@ -263,18 +444,20 @@
   transition: all var(--transition-fast);
   border: none;
   font-weight: 500;
+  box-shadow: var(--shadow-sm);
 }
 
 .create-note-form button:disabled,
 .note-card.editing button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+  transform: none !important;
 }
 
 .create-note-form button:not(:disabled):hover,
 .note-card.editing button:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .create-note-form button:not(:disabled):active,
@@ -282,33 +465,41 @@
   transform: translateY(0);
 }
 
-/* Botón primario */
-.create-note-form button[style*="var(--primary-color)"],
-.note-card.editing button[style*="var(--primary-color)"] {
-  background-color: var(--primary-color);
-  color: white;
+/* Información de RichText */
+.richtext-info {
+  background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 13px;
+  color: var(--text-color);
 }
 
-/* Botón secundario */
-.create-note-form button[style*="transparent"],
-.note-card.editing button[style*="transparent"] {
-  background-color: transparent;
-  color: var(--text-color-secondary);
+/* Resultados de búsqueda */
+.search-results-info {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: var(--card-bg);
   border: 1px solid var(--border-color);
-}
-
-/* Texto de ayuda */
-.create-note-form .help-text,
-.note-card.editing .help-text {
-  font-size: 11px;
+  border-radius: var(--border-radius-md);
+  font-size: 14px;
   color: var(--text-color-secondary);
-  font-style: italic;
-  margin-top: var(--spacing-xs);
 }
 
 /* ================================================
-   RESPONSIVE DESIGN
+   RESPONSIVE DESIGN MEJORADO
    ================================================ */
+
+@media (max-width: 1024px) {
+  .notes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+  }
+}
 
 @media (max-width: 768px) {
   .notes-page {
@@ -321,9 +512,13 @@
     align-items: flex-start;
   }
   
+  .notes-header h1 {
+    font-size: 24px;
+  }
+  
   .notes-grid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
   }
   
   .create-note-form {
@@ -335,10 +530,14 @@
     opacity: 1;
     justify-content: flex-end;
     margin-bottom: var(--spacing-sm);
+    background-color: rgba(var(--card-bg), 0.9);
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-sm);
   }
   
   .note-card h3 {
     padding-right: 0;
+    margin-bottom: var(--spacing-sm);
   }
 }
 
@@ -348,7 +547,10 @@
   }
   
   .notes-header h1 {
-    font-size: 24px;
+    font-size: 22px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
   }
   
   .create-note-form,
@@ -361,36 +563,70 @@
     align-items: flex-start;
     gap: var(--spacing-xs);
   }
+  
+  /* RichText toolbar responsive */
+  .note-rich-editor .rich-editor-toolbar {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  
+  .note-rich-editor .rich-editor-toolbar button {
+    min-width: 32px;
+    min-height: 32px;
+  }
 }
 
 /* ================================================
-   ACCESIBILIDAD
+   ACCESIBILIDAD MEJORADA
    ================================================ */
 
-/* Mejoras para teclado */
+/* Mejoras para navegación por teclado */
 .notes-navigation-item:focus,
 .create-note-button:focus,
 .note-card:focus,
 .create-note-form button:focus,
-.note-card.editing button:focus {
+.note-card.editing button:focus,
+.notes-search-input:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Indicadores de carga */
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
+/* Mejorar contraste en modo alto contraste */
+@media (prefers-contrast: high) {
+  .note-card {
+    border: 2px solid var(--text-color);
+  }
+  
+  .note-actions button {
+    border: 1px solid var(--text-color);
+  }
+  
+  .richtext-info {
+    border: 2px solid var(--primary-color);
+  }
 }
 
-/* Estados de error */
-.error {
-  border-color: var(--danger-color) !important;
-  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1) !important;
+/* Reducir animaciones para usuarios que las prefieren reducidas */
+@media (prefers-reduced-motion: reduce) {
+  .note-card,
+  .create-note-form,
+  .create-note-button,
+  .note-actions button {
+    transition: none;
+    animation: none;
+  }
+  
+  .note-card:hover {
+    transform: none;
+  }
+  
+  .create-note-form {
+    animation: none;
+  }
 }
 
 /* ================================================
-   UTILIDADES
+   UTILIDADES Y HELPERS
    ================================================ */
 
 .sr-only {
@@ -416,4 +652,44 @@
   display: -webkit-box;
   line-clamp: 3;
   -webkit-box-orient: vertical;
+}
+
+.notes-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Estados de carga y error */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  position: relative;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--border-color);
+  border-top: 2px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error {
+  border-color: var(--danger-color) !important;
+  box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1) !important;
 }

@@ -12,78 +12,119 @@ function RichTextViewer({
   maxHeight = null, 
   sanitize = true
 }) {
-  // Sanitizar HTML si es necesario
+  // Sanitizar HTML usando un enfoque más seguro sin DOMParser
   const sanitizeHtml = (html) => {
-    if (!html) return '';
+    if (!html || typeof html !== 'string') return '';
     if (!sanitize) return html;
     
-    // Implementación básica de sanitización
-    // Para una implementación robusta en producción, usar bibliotecas como DOMPurify
     try {
+      // Lista de etiquetas permitidas
       const allowedTags = [
         'p', 'br', 'b', 'i', 'u', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'pre', 'code', 'hr', 'span', 'div'
       ];
       
-      const doc = new DOMParser().parseFromString(html, 'text/html');
+      // Crear un elemento temporal en el DOM real
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
       
       // Función recursiva para sanitizar nodos
       const processNode = (node) => {
+        if (!node) return;
+        
         // Si es un elemento
         if (node.nodeType === 1) {
-          // Verificar si es una etiqueta permitida
-          if (!allowedTags.includes(node.tagName.toLowerCase())) {
-            // Reemplazar con un span
+          const tagName = node.tagName.toLowerCase();
+          
+          // Si no es una etiqueta permitida, reemplazar con span
+          if (!allowedTags.includes(tagName)) {
             const span = document.createElement('span');
+            // Mover todos los hijos al nuevo span
             while (node.firstChild) {
               span.appendChild(node.firstChild);
             }
-            node.parentNode.replaceChild(span, node);
-            return span;
+            // Reemplazar el nodo original
+            if (node.parentNode) {
+              node.parentNode.replaceChild(span, node);
+            }
+            // Procesar el nuevo span
+            processNode(span);
+            return;
           }
           
           // Sanitizar atributos
-          const attributes = [...node.attributes];
+          const attributes = Array.from(node.attributes || []);
           attributes.forEach(attr => {
-            // Conservar solo atributos seguros
             const name = attr.name.toLowerCase();
-            if (name === 'href' || name === 'src' || name === 'alt' || name === 'title' || 
-                name === 'class' || name === 'id' || name === 'style') {
-              // Para enlaces, asegurar que son seguros
-              if (name === 'href' && attr.value.toLowerCase().startsWith('javascript:')) {
+            const value = attr.value;
+            
+            // Lista de atributos permitidos
+            const allowedAttributes = ['href', 'src', 'alt', 'title', 'class', 'id', 'style'];
+            
+            if (!allowedAttributes.includes(name)) {
+              node.removeAttribute(name);
+            } else {
+              // Validaciones específicas
+              if (name === 'href' && value.toLowerCase().startsWith('javascript:')) {
                 node.removeAttribute(name);
-              }
-              // Para estilos, permitir solo propiedades básicas
-              else if (name === 'style') {
-                const cleanStyle = attr.value
+              } else if (name === 'style') {
+                // Limpiar estilos peligrosos
+                const cleanStyle = value
                   .split(';')
                   .filter(style => {
                     const prop = style.split(':')[0]?.trim().toLowerCase();
-                    return prop && !prop.includes('expression') && !prop.includes('import');
+                    return prop && 
+                           !prop.includes('expression') && 
+                           !prop.includes('import') &&
+                           !prop.includes('javascript');
                   })
                   .join(';');
                 node.setAttribute(name, cleanStyle);
               }
-            } else {
-              node.removeAttribute(name);
             }
           });
-          
-          // Procesar hijos recursivamente
-          [...node.childNodes].forEach(processNode);
         }
         
-        return node;
+        // Procesar hijos recursivamente
+        const children = Array.from(node.childNodes || []);
+        children.forEach(processNode);
       };
       
-      // Procesar el cuerpo del documento
-      processNode(doc.body);
+      // Procesar todos los nodos hijos
+      const children = Array.from(tempDiv.childNodes);
+      children.forEach(processNode);
       
-      return doc.body.innerHTML;
+      // Devolver el HTML sanitizado
+      const result = tempDiv.innerHTML;
+      
+      // Limpiar el elemento temporal
+      tempDiv.remove();
+      
+      return result;
+      
     } catch (error) {
       console.error('Error al sanitizar HTML:', error);
-      return html; // En caso de error, devolver el HTML original
+      // En caso de error, aplicar sanitización básica por regex
+      return basicSanitize(html);
     }
+  };
+
+  // Sanitización básica de respaldo usando regex
+  const basicSanitize = (html) => {
+    if (!html) return '';
+    
+    // Remover scripts y eventos peligrosos
+    let cleaned = html
+      .replace(/<script[^>]*>.*?<\/script>/gis, '')
+      .replace(/on\w+="[^"]*"/gi, '')
+      .replace(/on\w+='[^']*'/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<iframe[^>]*>.*?<\/iframe>/gis, '')
+      .replace(/<object[^>]*>.*?<\/object>/gis, '')
+      .replace(/<embed[^>]*>/gi, '')
+      .replace(/<form[^>]*>.*?<\/form>/gis, '');
+    
+    return cleaned;
   };
 
   const sanitizedContent = sanitizeHtml(content);

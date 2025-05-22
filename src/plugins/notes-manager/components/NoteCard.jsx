@@ -1,9 +1,13 @@
 import React from 'react';
 
 function NoteCard(props) {
-  const { note, isEditing, onEdit, onSave, onDelete, onCancel } = props;
+  const { note, isEditing, onEdit, onSave, onDelete, onCancel, core } = props;
   const [editTitle, setEditTitle] = React.useState(note.title);
   const [editContent, setEditContent] = React.useState(note.content);
+  
+  // Obtener los componentes de texto enriquecido del core
+  const RichTextEditor = core?.ui?.components?.RichTextEditor;
+  const RichTextViewer = core?.ui?.components?.RichTextViewer;
   
   // Resetear valores de edición cuando cambia isEditing
   React.useEffect(() => {
@@ -17,7 +21,7 @@ function NoteCard(props) {
     if (editTitle.trim()) {
       onSave({
         title: editTitle.trim(),
-        content: editContent.trim()
+        content: editContent
       });
     }
   };
@@ -28,6 +32,10 @@ function NoteCard(props) {
     } else if (e.key === 'Escape') {
       onCancel();
     }
+  };
+  
+  const handleContentChange = (htmlContent) => {
+    setEditContent(htmlContent);
   };
   
   const formatDate = (dateString) => {
@@ -41,6 +49,30 @@ function NoteCard(props) {
     });
   };
   
+  // Función para extraer texto plano del HTML para preview - mejorada
+  const getTextPreview = (htmlContent) => {
+    if (!htmlContent || typeof htmlContent !== 'string') return 'Sin contenido';
+    
+    try {
+      // Crear un elemento temporal para extraer el texto
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      const textContent = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Limitar a 200 caracteres para el preview
+      return textContent.length > 200 ? textContent.substring(0, 200) + '...' : textContent || 'Sin contenido';
+    } catch (error) {
+      console.error('Error al extraer texto del HTML:', error);
+      return htmlContent.substring(0, 200) + '...' || 'Sin contenido';
+    }
+  };
+  
+  // Función mejorada para verificar si el contenido es HTML
+  const isHtmlContent = (content) => {
+    if (!content || typeof content !== 'string') return false;
+    return content.includes('<') && content.includes('>');
+  };
+  
   if (isEditing) {
     return React.createElement(
       'div',
@@ -52,7 +84,8 @@ function NoteCard(props) {
           borderRadius: 'var(--border-radius-md)',
           padding: 'var(--spacing-md)',
           boxShadow: 'var(--shadow-md)',
-          transition: 'all var(--transition-normal)'
+          transition: 'all var(--transition-normal)',
+          minHeight: '300px'
         }
       },
       [
@@ -74,33 +107,48 @@ function NoteCard(props) {
               fontWeight: '600',
               marginBottom: 'var(--spacing-sm)',
               backgroundColor: 'var(--input-bg)',
-              color: 'var(--text-color)'
-            }
-          }
-        ),
-        React.createElement(
-          'textarea',
-          {
-            key: 'content-textarea',
-            value: editContent,
-            onChange: (e) => setEditContent(e.target.value),
-            onKeyDown: handleKeyPress,
-            placeholder: 'Contenido de la nota...',
-            rows: 6,
-            style: {
-              width: '100%',
-              border: '1px solid var(--border-color)',
-              borderRadius: 'var(--border-radius-sm)',
-              padding: 'var(--spacing-sm)',
-              fontSize: '14px',
-              marginBottom: 'var(--spacing-md)',
-              backgroundColor: 'var(--input-bg)',
               color: 'var(--text-color)',
-              resize: 'vertical',
-              fontFamily: 'inherit'
+              outline: 'none'
             }
           }
         ),
+        
+        // Usar RichTextEditor si está disponible, sino fallback al textarea
+        RichTextEditor ? 
+          React.createElement(RichTextEditor, {
+            key: 'content-rich-editor',
+            value: editContent,
+            onChange: handleContentChange,
+            placeholder: 'Edita el contenido de tu nota...',
+            height: '180px',
+            toolbar: 'full',
+            className: 'note-rich-editor-edit'
+          }) :
+          React.createElement(
+            'textarea',
+            {
+              key: 'content-textarea-fallback',
+              value: editContent,
+              onChange: (e) => setEditContent(e.target.value),
+              onKeyDown: handleKeyPress,
+              placeholder: 'Contenido de la nota...',
+              rows: 6,
+              style: {
+                width: '100%',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--border-radius-sm)',
+                padding: 'var(--spacing-sm)',
+                fontSize: '14px',
+                marginBottom: 'var(--spacing-md)',
+                backgroundColor: 'var(--input-bg)',
+                color: 'var(--text-color)',
+                resize: 'vertical',
+                fontFamily: 'inherit',
+                outline: 'none'
+              }
+            }
+          ),
+        
         React.createElement(
           'div',
           {
@@ -108,7 +156,10 @@ function NoteCard(props) {
             style: {
               display: 'flex',
               gap: 'var(--spacing-sm)',
-              justifyContent: 'flex-end'
+              justifyContent: 'flex-end',
+              marginTop: 'var(--spacing-md)',
+              paddingTop: 'var(--spacing-sm)',
+              borderTop: '1px solid var(--border-color)'
             }
           },
           [
@@ -125,10 +176,16 @@ function NoteCard(props) {
                   padding: 'var(--spacing-xs) var(--spacing-sm)',
                   fontSize: '12px',
                   cursor: 'pointer',
-                  transition: 'all var(--transition-fast)'
+                  transition: 'all var(--transition-fast)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--spacing-xs)'
                 }
               },
-              'Cancelar'
+              [
+                React.createElement('span', { key: 'close-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'close'),
+                React.createElement('span', { key: 'close-text' }, 'Cancelar')
+              ]
             ),
             React.createElement(
               'button',
@@ -145,10 +202,16 @@ function NoteCard(props) {
                   fontSize: '12px',
                   cursor: editTitle.trim() ? 'pointer' : 'not-allowed',
                   opacity: editTitle.trim() ? 1 : 0.5,
-                  transition: 'all var(--transition-fast)'
+                  transition: 'all var(--transition-fast)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--spacing-xs)'
                 }
               },
-              'Guardar'
+              [
+                React.createElement('span', { key: 'save-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'save'),
+                React.createElement('span', { key: 'save-text' }, 'Guardar')
+              ]
             )
           ]
         ),
@@ -159,10 +222,13 @@ function NoteCard(props) {
             style: {
               fontSize: '11px',
               color: 'var(--text-color-secondary)',
-              marginTop: 'var(--spacing-xs)'
+              marginTop: 'var(--spacing-xs)',
+              textAlign: 'center'
             }
           },
-          'Ctrl+Enter para guardar • Esc para cancelar'
+          RichTextEditor ? 
+            'Usa la barra de herramientas para dar formato • Ctrl+Enter para guardar • Esc para cancelar' :
+            'Ctrl+Enter para guardar • Esc para cancelar'
         )
       ]
     );
@@ -180,7 +246,10 @@ function NoteCard(props) {
         boxShadow: 'var(--shadow-sm)',
         transition: 'all var(--transition-normal)',
         cursor: 'pointer',
-        position: 'relative'
+        position: 'relative',
+        minHeight: '200px',
+        display: 'flex',
+        flexDirection: 'column'
       },
       onMouseEnter: (e) => {
         e.target.style.boxShadow = 'var(--shadow-md)';
@@ -205,7 +274,8 @@ function NoteCard(props) {
             display: 'flex',
             gap: 'var(--spacing-xs)',
             opacity: 0,
-            transition: 'opacity var(--transition-fast)'
+            transition: 'opacity var(--transition-fast)',
+            zIndex: 10
           },
           onMouseEnter: (e) => {
             e.target.style.opacity = 1;
@@ -226,17 +296,18 @@ function NoteCard(props) {
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: '24px',
-                height: '24px',
+                width: '28px',
+                height: '28px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '12px',
-                transition: 'all var(--transition-fast)'
+                transition: 'all var(--transition-fast)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
               }
             },
-            React.createElement('span', { className: 'material-icons', style: { fontSize: '14px' } }, 'edit')
+            React.createElement('span', { className: 'material-icons', style: { fontSize: '16px' } }, 'edit')
           ),
           React.createElement(
             'button',
@@ -252,17 +323,18 @@ function NoteCard(props) {
                 color: 'white',
                 border: 'none',
                 borderRadius: '50%',
-                width: '24px',
-                height: '24px',
+                width: '28px',
+                height: '28px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '12px',
-                transition: 'all var(--transition-fast)'
+                transition: 'all var(--transition-fast)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
               }
             },
-            React.createElement('span', { className: 'material-icons', style: { fontSize: '14px' } }, 'delete')
+            React.createElement('span', { className: 'material-icons', style: { fontSize: '16px' } }, 'delete')
           )
         ]
       ),
@@ -273,8 +345,8 @@ function NoteCard(props) {
         {
           key: 'title',
           style: {
-            margin: '0 0 var(--spacing-sm) 0',
-            fontSize: '16px',
+            margin: '0 0 var(--spacing-md) 0',
+            fontSize: '18px',
             fontWeight: '600',
             color: 'var(--text-color)',
             paddingRight: 'var(--spacing-xl)', // Espacio para los botones
@@ -284,24 +356,43 @@ function NoteCard(props) {
         note.title
       ),
       
-      // Contenido
+      // Contenido - usar RichTextViewer si está disponible y hay contenido HTML
       React.createElement(
-        'p',
+        'div',
         {
           key: 'content',
           style: {
-            margin: '0 0 var(--spacing-md) 0',
-            fontSize: '14px',
-            color: 'var(--text-color-secondary)',
-            lineHeight: '1.5',
-            maxHeight: '120px',
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 5,
-            WebkitBoxOrient: 'vertical'
+            flex: 1,
+            marginBottom: 'var(--spacing-md)',
+            overflow: 'hidden'
           }
         },
-        note.content || 'Sin contenido'
+        RichTextViewer && note.content && isHtmlContent(note.content) ? 
+          // Mostrar contenido HTML con RichTextViewer
+          React.createElement(RichTextViewer, {
+            content: note.content,
+            maxHeight: '150px',
+            className: 'note-content-viewer',
+            sanitize: true
+          }) :
+          // Fallback para texto plano o si no hay RichTextViewer
+          React.createElement(
+            'p',
+            {
+              style: {
+                margin: 0,
+                fontSize: '14px',
+                color: 'var(--text-color-secondary)',
+                lineHeight: '1.5',
+                maxHeight: '150px',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: 6,
+                WebkitBoxOrient: 'vertical'
+              }
+            },
+            getTextPreview(note.content)
+          )
       ),
       
       // Metadatos
@@ -316,19 +407,22 @@ function NoteCard(props) {
             fontSize: '11px',
             color: 'var(--text-color-secondary)',
             borderTop: '1px solid var(--border-color)',
-            paddingTop: 'var(--spacing-xs)'
+            paddingTop: 'var(--spacing-xs)',
+            marginTop: 'auto',
+            flexWrap: 'wrap',
+            gap: 'var(--spacing-xs)'
           }
         },
         [
           React.createElement(
             'span',
             { key: 'created' },
-            'Creado: ' + formatDate(note.createdAt)
+            '📅 ' + formatDate(note.createdAt)
           ),
           note.modifiedAt !== note.createdAt && React.createElement(
             'span',
-            { key: 'modified' },
-            'Editado: ' + formatDate(note.modifiedAt)
+            { key: 'modified', style: { fontSize: '10px', fontStyle: 'italic' } },
+            '✏️ ' + formatDate(note.modifiedAt)
           )
         ]
       )
@@ -341,6 +435,40 @@ const styleElement = document.createElement('style');
 styleElement.textContent = `
   .note-card:hover .note-actions {
     opacity: 1 !important;
+  }
+  
+  /* Estilos específicos para el contenido del rich text viewer en notas */
+  .note-content-viewer {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .note-content-viewer h1,
+  .note-content-viewer h2,
+  .note-content-viewer h3,
+  .note-content-viewer h4,
+  .note-content-viewer h5,
+  .note-content-viewer h6 {
+    margin-top: 0.5em;
+    margin-bottom: 0.3em;
+    font-size: 1.1em !important;
+  }
+  
+  .note-content-viewer p {
+    margin-bottom: 0.8em;
+  }
+  
+  .note-content-viewer ul,
+  .note-content-viewer ol {
+    margin-bottom: 0.8em;
+    padding-left: 1.5em;
+  }
+  
+  .note-content-viewer blockquote {
+    margin: 0.5em 0;
+    padding: 0.5em;
+    border-left: 3px solid var(--primary-color);
+    background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.05);
   }
 `;
 document.head.appendChild(styleElement);

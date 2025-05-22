@@ -1,13 +1,16 @@
 import React from 'react';
 
 function CreateNoteForm(props) {
-  const { onSave, onCancel } = props;
+  const { onSave, onCancel, core } = props;
   const [title, setTitle] = React.useState('');
   const [content, setContent] = React.useState('');
   
+  // Obtener los componentes de texto enriquecido del core
+  const RichTextEditor = core?.ui?.components?.RichTextEditor;
+  
   const handleSave = () => {
     if (title.trim()) {
-      onSave(title.trim(), content.trim());
+      onSave(title.trim(), content);
       setTitle('');
       setContent('');
     }
@@ -19,6 +22,10 @@ function CreateNoteForm(props) {
     } else if (e.key === 'Escape') {
       onCancel();
     }
+  };
+  
+  const handleContentChange = (htmlContent) => {
+    setContent(htmlContent);
   };
   
   return React.createElement(
@@ -118,38 +125,49 @@ function CreateNoteForm(props) {
             }
           ),
           
-          React.createElement(
-            'textarea',
-            {
-              key: 'content-textarea',
+          // Usar RichTextEditor si está disponible, sino fallback al textarea
+          RichTextEditor ? 
+            React.createElement(RichTextEditor, {
+              key: 'content-rich-editor',
               value: content,
-              onChange: (e) => setContent(e.target.value),
-              onKeyDown: handleKeyPress,
-              placeholder: 'Escribe el contenido de tu nota aquí...',
-              rows: 8,
-              style: {
-                width: '100%',
-                border: '2px solid var(--border-color)',
-                borderRadius: 'var(--border-radius-md)',
-                padding: 'var(--spacing-sm) var(--spacing-md)',
-                fontSize: '14px',
-                backgroundColor: 'var(--input-bg)',
-                color: 'var(--text-color)',
-                resize: 'vertical',
-                fontFamily: 'inherit',
-                lineHeight: '1.5',
-                minHeight: '120px',
-                transition: 'border-color var(--transition-fast)',
-                outline: 'none'
-              },
-              onFocus: (e) => {
-                e.target.style.borderColor = 'var(--primary-color)';
-              },
-              onBlur: (e) => {
-                e.target.style.borderColor = 'var(--border-color)';
+              onChange: handleContentChange,
+              placeholder: 'Escribe el contenido de tu nota aquí... Usa las herramientas para dar formato al texto.',
+              height: '200px',
+              toolbar: 'full',
+              className: 'note-rich-editor'
+            }) :
+            React.createElement(
+              'textarea',
+              {
+                key: 'content-textarea-fallback',
+                value: content,
+                onChange: (e) => setContent(e.target.value),
+                onKeyDown: handleKeyPress,
+                placeholder: 'Escribe el contenido de tu nota aquí...',
+                rows: 8,
+                style: {
+                  width: '100%',
+                  border: '2px solid var(--border-color)',
+                  borderRadius: 'var(--border-radius-md)',
+                  padding: 'var(--spacing-sm) var(--spacing-md)',
+                  fontSize: '14px',
+                  backgroundColor: 'var(--input-bg)',
+                  color: 'var(--text-color)',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                  lineHeight: '1.5',
+                  minHeight: '120px',
+                  transition: 'border-color var(--transition-fast)',
+                  outline: 'none'
+                },
+                onFocus: (e) => {
+                  e.target.style.borderColor = 'var(--primary-color)';
+                },
+                onBlur: (e) => {
+                  e.target.style.borderColor = 'var(--border-color)';
+                }
               }
-            }
-          )
+            )
         ]
       ),
       
@@ -177,7 +195,9 @@ function CreateNoteForm(props) {
                 fontStyle: 'italic'
               }
             },
-            'Ctrl+Enter para guardar • Esc para cancelar'
+            RichTextEditor ? 
+              'Usa la barra de herramientas para dar formato • Ctrl+Enter para guardar • Esc para cancelar' :
+              'Ctrl+Enter para guardar • Esc para cancelar'
           ),
           
           React.createElement(
@@ -222,12 +242,12 @@ function CreateNoteForm(props) {
                     'span',
                     {
                       className: 'material-icons',
-                      key: 'icon',
+                      key: 'cancel-icon',
                       style: { fontSize: '16px' }
                     },
                     'close'
                   ),
-                  React.createElement('span', { key: 'text' }, 'Cancelar')
+                  React.createElement('span', { key: 'cancel-text' }, 'Cancelar')
                 ]
               ),
               
@@ -267,12 +287,12 @@ function CreateNoteForm(props) {
                     'span',
                     {
                       className: 'material-icons',
-                      key: 'icon',
+                      key: 'save-icon',
                       style: { fontSize: '16px' }
                     },
                     'save'
                   ),
-                  React.createElement('span', { key: 'text' }, 'Crear Nota')
+                  React.createElement('span', { key: 'save-text' }, 'Crear Nota')
                 ]
               )
             ]
