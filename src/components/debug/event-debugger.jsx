@@ -5,7 +5,7 @@ import storageService from '../../services/storage-service';
 
 function EventDebugger() {
   const [isEnabled, setIsEnabled] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
   const [logsEnabled, setLogsEnabled] = useState(false);
   const [performanceEnabled, setPerformanceEnabled] = useState(false);
   const [eventCount, setEventCount] = useState({
