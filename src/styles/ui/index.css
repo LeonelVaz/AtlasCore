@@ -4,6 +4,8 @@
 @import './sidebar.css';
 @import './scrollbar.css';
 @import './custom-dialog.css';
+@import './rich-text-editor.css';
+@import './rich-text-viewer.css';
 
 /* Animaciones compartidas */
 @keyframes fadeIn {

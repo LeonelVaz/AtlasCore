@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './rich-text-viewer.css';
 
 /**
  * Visualizador de texto enriquecido para plugins de Atlas

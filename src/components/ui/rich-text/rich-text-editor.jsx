@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import './rich-text-editor.css';
 
 /**
  * Editor de texto enriquecido para plugins de Atlas
