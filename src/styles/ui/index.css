@@ -3,6 +3,7 @@
 @import './dialog.css';
 @import './sidebar.css';
 @import './scrollbar.css';
+@import './custom-dialog.css';
 
 /* Animaciones compartidas */
 @keyframes fadeIn {

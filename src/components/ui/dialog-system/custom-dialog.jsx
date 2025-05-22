@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import './custom-dialog.css';
+
 
 /**
  * Componente de diálogo personalizado que reemplaza alert(), confirm() y prompt()
