@@ -19,16 +19,19 @@ function RichTextEditor({
   const [htmlContent, setHtmlContent] = useState(value || '');
   const editorRef = useRef(null);
   const toolbarRef = useRef(null);
+  const isInitialized = useRef(false);
   
-  // Sincronizar valor externo con interno
+  // Solo sincronizar valor externo al inicializar o cuando cambia externamente
   useEffect(() => {
-    if (value !== undefined && value !== htmlContent) {
-      setHtmlContent(value);
-      if (editorRef.current) {
+    if (editorRef.current && value !== undefined) {
+      // Solo actualizar si es la primera vez o si el valor cambió desde fuera
+      if (!isInitialized.current || (value !== htmlContent && value !== editorRef.current.innerHTML)) {
         editorRef.current.innerHTML = value;
+        setHtmlContent(value);
+        isInitialized.current = true;
       }
     }
-  }, [value]);
+  }, [value]); // Removemos htmlContent de las dependencias
 
   // Actualizar contenido cuando cambia el editor
   const handleInput = () => {
@@ -44,12 +47,18 @@ function RichTextEditor({
   // Ejecutar comando de formato
   const execCommand = (command, value = null) => {
     document.execCommand(command, false, value);
-    handleInput();
     editorRef.current.focus();
+    handleInput();
   };
 
   // Crear enlaces
   const createLink = () => {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0 || selection.toString().trim() === '') {
+      alert('Por favor, selecciona el texto que quieres convertir en enlace');
+      return;
+    }
+    
     const url = prompt('Ingresa la URL del enlace:', 'https://');
     if (url) {
       execCommand('createLink', url);
@@ -64,19 +73,41 @@ function RichTextEditor({
     }
   };
 
+  // Manejar eventos de teclado para atajos
+  const handleKeyDown = (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          e.preventDefault();
+          execCommand('bold');
+          break;
+        case 'i':
+          e.preventDefault();
+          execCommand('italic');
+          break;
+        case 'u':
+          e.preventDefault();
+          execCommand('underline');
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
   // Renderizar controles según el tipo de barra de herramientas
   const renderToolbar = () => {
     // Barra de herramientas mínima
     if (toolbar === 'minimal') {
       return (
         <div className="rich-editor-toolbar" ref={toolbarRef}>
-          <button type="button" onClick={() => execCommand('bold')} title="Negrita">
+          <button type="button" onClick={() => execCommand('bold')} title="Negrita (Ctrl+B)">
             <span className="material-icons">format_bold</span>
           </button>
-          <button type="button" onClick={() => execCommand('italic')} title="Cursiva">
+          <button type="button" onClick={() => execCommand('italic')} title="Cursiva (Ctrl+I)">
             <span className="material-icons">format_italic</span>
           </button>
-          <button type="button" onClick={() => execCommand('underline')} title="Subrayado">
+          <button type="button" onClick={() => execCommand('underline')} title="Subrayado (Ctrl+U)">
             <span className="material-icons">format_underlined</span>
           </button>
           <span className="toolbar-separator"></span>
@@ -92,13 +123,13 @@ function RichTextEditor({
       <div className="rich-editor-toolbar" ref={toolbarRef}>
         {/* Formato básico */}
         <div className="toolbar-group">
-          <button type="button" onClick={() => execCommand('bold')} title="Negrita">
+          <button type="button" onClick={() => execCommand('bold')} title="Negrita (Ctrl+B)">
             <span className="material-icons">format_bold</span>
           </button>
-          <button type="button" onClick={() => execCommand('italic')} title="Cursiva">
+          <button type="button" onClick={() => execCommand('italic')} title="Cursiva (Ctrl+I)">
             <span className="material-icons">format_italic</span>
           </button>
-          <button type="button" onClick={() => execCommand('underline')} title="Subrayado">
+          <button type="button" onClick={() => execCommand('underline')} title="Subrayado (Ctrl+U)">
             <span className="material-icons">format_underlined</span>
           </button>
         </div>
@@ -167,11 +198,13 @@ function RichTextEditor({
         ref={editorRef}
         className="rich-editor-content"
         contentEditable="true"
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
         onInput={handleInput}
+        onKeyDown={handleKeyDown}
         style={{ minHeight: height }}
-        placeholder={placeholder}
-      />
+        suppressContentEditableWarning={true}
+      >
+        {!isInitialized.current && (htmlContent || placeholder)}
+      </div>
     </div>
   );
 }
