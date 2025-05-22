@@ -60,38 +60,29 @@
 
 /* Botón de cerrar mejorado */
 .event-debugger-close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
+  background: none;
+  border: none;
   color: var(--color-button-primary-text);
-  padding: 4px 8px;
+  padding: 0;
   cursor: pointer;
-  font-size: 11px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+  opacity: 0.8;
+  margin-left: 15px;
 }
 
 .event-debugger-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.event-debugger-close-btn:active {
-  transform: scale(0.95);
+  transform: scale(1.1);
 }
 
 /* Botón de minimizar/expandir */
 .event-debugger-toggle {
   color: var(--color-button-primary-text);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: bold;
   transition: transform 0.2s ease;
+  opacity: 0.8;
 }
 
 .event-debugger-toggle:hover {
