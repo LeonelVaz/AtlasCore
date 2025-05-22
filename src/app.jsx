@@ -12,6 +12,9 @@ import { isElectronEnv } from './utils/electron-detector';
 import pluginManager from './core/plugins/plugin-manager';
 import PluginPages from './components/plugin-extension/plugin-pages';
 import EventDebugger from './components/debug/event-debugger';
+import { STORAGE_KEYS } from './core/config/constants';
+import storageService from './services/storage-service';
+import eventBus from './core/bus/event-bus';
 
 // Iconos para los elementos del sidebar
 const APP_SECTIONS = {
@@ -27,7 +30,38 @@ function AppContent() {
   const isElectron = isElectronEnv();
   const [activeSection, setActiveSection] = useState(APP_SECTIONS.CALENDAR.id);
   const [currentPluginPage, setCurrentPluginPage] = useState(null);
+  const [debuggerEnabled, setDebuggerEnabled] = useState(false);
   const dialogContext = useDialog(); // Obtener el contexto de diálogos
+  
+  // Cargar configuración del debugger al iniciar
+  useEffect(() => {
+    const loadDebuggerConfig = async () => {
+      try {
+        const enabled = await storageService.get(STORAGE_KEYS.DEV_EVENT_DEBUGGER_ENABLED, false);
+        setDebuggerEnabled(enabled);
+        
+        // También configurar logs detallados si están habilitados
+        const logsEnabled = await storageService.get(STORAGE_KEYS.DEV_CONSOLE_LOGS_ENABLED, false);
+        if (logsEnabled) {
+          eventBus.setDebugMode(true);
+          console.log('🔧 Modo debug activado para el sistema de eventos');
+        }
+      } catch (error) {
+        console.error('Error al cargar configuración de desarrollo:', error);
+      }
+    };
+    
+    loadDebuggerConfig();
+  }, []);
+  
+  // Escuchar cambios en la configuración del debugger
+  useEffect(() => {
+    const unsubscribe = eventBus.subscribe('developer.eventDebuggerToggled', (data) => {
+      setDebuggerEnabled(data.enabled);
+    });
+    
+    return () => unsubscribe && unsubscribe();
+  }, []);
   
   // Inicializar el interceptor de diálogos
   useEffect(() => {
@@ -127,6 +161,7 @@ function AppContent() {
         </main>
       </div>
       
+      {/* Renderizar Event Debugger solo si está habilitado */}
       <EventDebugger />
     </div>
   );

@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import eventBus, { CalendarEvents, AppEvents, StorageEvents } from '../../core/bus/event-bus';
+import { STORAGE_KEYS } from '../../core/config/constants';
+import storageService from '../../services/storage-service';
 
 function EventDebugger() {
+  const [isEnabled, setIsEnabled] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [logsEnabled, setLogsEnabled] = useState(false);
+  const [performanceEnabled, setPerformanceEnabled] = useState(false);
   const [eventCount, setEventCount] = useState({
     calendar: 0,
     app: 0,
@@ -10,7 +15,65 @@ function EventDebugger() {
     total: 0
   });
   
+  // Cargar configuración inicial
   useEffect(() => {
+    const loadDebuggerConfig = async () => {
+      try {
+        const enabled = await storageService.get(STORAGE_KEYS.DEV_EVENT_DEBUGGER_ENABLED, false);
+        setIsEnabled(enabled);
+        
+        const logs = await storageService.get(STORAGE_KEYS.DEV_CONSOLE_LOGS_ENABLED, false);
+        setLogsEnabled(logs);
+        
+        const perf = await storageService.get(STORAGE_KEYS.DEV_PERFORMANCE_MONITOR_ENABLED, false);
+        setPerformanceEnabled(perf);
+      } catch (error) {
+        console.error('Error al cargar configuración del Event Debugger:', error);
+      }
+    };
+    
+    loadDebuggerConfig();
+  }, []);
+  
+  // Escuchar cambios en la configuración
+  useEffect(() => {
+    const subscriptions = [];
+    
+    subscriptions.push(
+      eventBus.subscribe('developer.eventDebuggerToggled', (data) => {
+        setIsEnabled(data.enabled);
+        
+        if (data.enabled) {
+          console.log('🔍 Event Debugger activado desde configuración');
+        } else {
+          console.log('🔍 Event Debugger desactivado desde configuración');
+        }
+      })
+    );
+    
+    subscriptions.push(
+      eventBus.subscribe('developer.consoleLogsToggled', (data) => {
+        setLogsEnabled(data.enabled);
+      })
+    );
+    
+    subscriptions.push(
+      eventBus.subscribe('developer.performanceMonitorToggled', (data) => {
+        setPerformanceEnabled(data.enabled);
+      })
+    );
+    
+    return () => {
+      subscriptions.forEach(unsub => unsub && unsub());
+    };
+  }, []);
+  
+  // Configurar monitoreo de eventos solo si está habilitado
+  useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+    
     console.log('🔍 EventDebugger: Iniciando monitoreo completo del sistema...\n');
     
     // Verificar estado inicial del sistema
@@ -84,7 +147,6 @@ function EventDebugger() {
     // ========== EVENTOS DE LA APLICACIÓN ==========
     console.log('\n🔧 Suscribiéndose a eventos de la APLICACIÓN...');
     
-    // App inicializada
     subscriptions.push(
       eventBus.subscribe(AppEvents.INITIALIZED, (data) => {
         console.log('✅ app.initialized:', data);
@@ -92,7 +154,6 @@ function EventDebugger() {
       })
     );
     
-    // Cambio de tema
     subscriptions.push(
       eventBus.subscribe(AppEvents.THEME_CHANGED, (data) => {
         console.log('✅ app.themeChanged:', data);
@@ -100,7 +161,6 @@ function EventDebugger() {
       })
     );
     
-    // Módulo registrado
     subscriptions.push(
       eventBus.subscribe(AppEvents.MODULE_REGISTERED, (data) => {
         console.log('✅ app.moduleRegistered:', data);
@@ -108,7 +168,6 @@ function EventDebugger() {
       })
     );
     
-    // Cambio de configuración
     subscriptions.push(
       eventBus.subscribe(AppEvents.SETTINGS_CHANGED, (data) => {
         console.log('✅ app.settingsChanged:', data);
@@ -119,7 +178,6 @@ function EventDebugger() {
     // ========== EVENTOS DE ALMACENAMIENTO ==========
     console.log('\n💾 Suscribiéndose a eventos de ALMACENAMIENTO...');
     
-    // Datos cambiados
     subscriptions.push(
       eventBus.subscribe(StorageEvents.DATA_CHANGED, (data) => {
         console.log('✅ storage.dataChanged:', data);
@@ -127,11 +185,20 @@ function EventDebugger() {
       })
     );
     
-    // Eventos actualizados
     subscriptions.push(
       eventBus.subscribe(StorageEvents.EVENTS_UPDATED, (data) => {
         console.log(`✅ storage.eventsUpdated: ${Array.isArray(data) ? data.length + ' eventos' : data}`);
         updateCount('storage');
+      })
+    );
+    
+    // ========== EVENTOS DE DESARROLLO ==========
+    console.log('\n🛠️ Suscribiéndose a eventos de DESARROLLO...');
+    
+    subscriptions.push(
+      eventBus.subscribe('developer.test', (data) => {
+        console.log('✅ developer.test:', data);
+        updateCount('app');
       })
     );
     
@@ -140,7 +207,6 @@ function EventDebugger() {
       console.log('\n📊 RESUMEN DEL SISTEMA:');
       console.log('Eventos con suscriptores:', eventBus.getActiveEvents());
       
-      // Contar suscriptores por evento
       const eventStats = {};
       eventBus.getActiveEvents().forEach(event => {
         eventStats[event] = eventBus.getSubscriberCount(event);
@@ -161,7 +227,6 @@ function EventDebugger() {
     function verifySystemStatus() {
       console.log('🔍 VERIFICACIÓN DEL SISTEMA:');
       
-      // Verificar eventos principales
       const criticalEvents = [
         'calendar.eventCreated',
         'calendar.eventUpdated',
@@ -183,26 +248,22 @@ function EventDebugger() {
       console.log('🔍 EventDebugger: Deteniendo monitoreo...');
       subscriptions.forEach(unsub => unsub());
     };
-  }, []);
+  }, [isEnabled]);
   
-  // Función para ejecutar test manual
+  // Funciones de herramientas
   const runManualTest = () => {
     console.log('\n🧪 EJECUTANDO TEST MANUAL...');
     
-    // Test 1: Publicar evento de prueba
     console.log('1️⃣ Publicando evento de prueba...');
     eventBus.publish('test.manual', { mensaje: 'Test manual desde EventDebugger' });
     
-    // Test 2: Verificar módulo calendar
     console.log('2️⃣ Verificando acceso al módulo calendar...');
     try {
-      // Este test requeriría acceso al core, por ahora solo mostramos el intento
       console.log('   ⚠️  Para probar el módulo calendar, usa un plugin de prueba');
     } catch (e) {
       console.log('   ❌ Error:', e.message);
     }
     
-    // Test 3: Listar todos los eventos activos
     console.log('3️⃣ Eventos activos en el sistema:');
     const activeEvents = eventBus.getActiveEvents();
     activeEvents.forEach(event => {
@@ -212,128 +273,249 @@ function EventDebugger() {
     console.log('\n✅ Test manual completado\n');
   };
   
+  const clearConsole = () => {
+    try {
+      console.clear();
+      console.log('🧹 Logs de consola limpiados por el usuario');
+    } catch (error) {
+      console.error('Error al limpiar logs:', error);
+    }
+  };
+  
+  const showSystemInfo = () => {
+    const systemInfo = {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language,
+      cookieEnabled: navigator.cookieEnabled,
+      onLine: navigator.onLine,
+      screen: {
+        width: screen.width,
+        height: screen.height,
+        availWidth: screen.availWidth,
+        availHeight: screen.availHeight,
+        colorDepth: screen.colorDepth
+      },
+      window: {
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        outerWidth: window.outerWidth,
+        outerHeight: window.outerHeight
+      },
+      atlas: {
+        version: '0.3.0',
+        eventBusActive: eventBus.getActiveEvents().length,
+        isElectron: typeof window !== 'undefined' && typeof window.electronAPI !== 'undefined'
+      }
+    };
+
+    console.group('🖥️ INFORMACIÓN DEL SISTEMA');
+    console.table(systemInfo.atlas);
+    console.log('🌐 Navegador:', systemInfo.userAgent);
+    console.log('💻 Plataforma:', systemInfo.platform);
+    console.log('🗣️ Idioma:', systemInfo.language);
+    console.log('📊 Pantalla:', systemInfo.screen);
+    console.log('🪟 Ventana:', systemInfo.window);
+    console.groupEnd();
+  };
+  
+  // Funciones para cambiar configuración
+  const toggleDebugger = async () => {
+    try {
+      const newState = !isEnabled;
+      await storageService.set(STORAGE_KEYS.DEV_EVENT_DEBUGGER_ENABLED, newState);
+      setIsEnabled(newState);
+      
+      eventBus.publish('developer.eventDebuggerToggled', { enabled: newState });
+      
+      console.log(`🔍 Event Debugger ${newState ? 'activado' : 'desactivado'} desde el panel flotante`);
+    } catch (error) {
+      console.error('Error al cambiar configuración del Event Debugger:', error);
+    }
+  };
+  
+  const toggleLogs = async () => {
+    try {
+      const newState = !logsEnabled;
+      await storageService.set(STORAGE_KEYS.DEV_CONSOLE_LOGS_ENABLED, newState);
+      setLogsEnabled(newState);
+      
+      eventBus.setDebugMode(newState);
+      eventBus.publish('developer.consoleLogsToggled', { enabled: newState });
+      
+      console.log(`🔧 Logs detallados ${newState ? 'activados' : 'desactivados'}`);
+    } catch (error) {
+      console.error('Error al cambiar configuración de logs:', error);
+    }
+  };
+  
+  const togglePerformance = async () => {
+    try {
+      const newState = !performanceEnabled;
+      await storageService.set(STORAGE_KEYS.DEV_PERFORMANCE_MONITOR_ENABLED, newState);
+      setPerformanceEnabled(newState);
+      
+      eventBus.publish('developer.performanceMonitorToggled', { enabled: newState });
+      
+      console.log(`📊 Monitor de rendimiento ${newState ? 'activado' : 'desactivado'}`);
+    } catch (error) {
+      console.error('Error al cambiar configuración del monitor de rendimiento:', error);
+    }
+  };
+  
+  // No renderizar nada si está deshabilitado
+  if (!isEnabled) {
+    return null;
+  }
+  
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: 10,
-      right: 10,
-      background: '#1a1a1a',
-      color: '#fff',
-      borderRadius: '8px',
-      fontSize: '12px',
-      zIndex: 9999,
-      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-      minWidth: isMinimized ? '180px' : '320px',
-      transition: 'all 0.3s ease'
-    }}>
+    <div className={`event-debugger ${isMinimized ? 'minimized' : 'expanded'}`}>
       {/* Header */}
-      <div style={{
-        padding: '10px 12px',
-        borderBottom: '1px solid #333',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        cursor: 'pointer'
-      }} onClick={() => setIsMinimized(!isMinimized)}>
-        <span style={{ fontWeight: 'bold' }}>
-          📡 Event Debugger
-        </span>
-        <span style={{ fontSize: '14px' }}>
-          {isMinimized ? '▲' : '▼'}
-        </span>
+      <div 
+        className="event-debugger-header" 
+        onClick={() => setIsMinimized(!isMinimized)}
+      >
+        <div className="event-debugger-title">
+          <span className="emoji">📡</span>
+          Event Debugger
+        </div>
+        <div className="event-debugger-controls">
+          <button
+            className="event-debugger-close-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleDebugger();
+            }}
+            title="Desactivar Event Debugger"
+          >
+            ✕
+          </button>
+          <span className="event-debugger-toggle">
+            {isMinimized ? '▲' : '▼'}
+          </span>
+        </div>
       </div>
       
       {/* Content */}
       {!isMinimized && (
-        <>
-          <div style={{ padding: '12px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <strong>Eventos capturados:</strong>
-            </div>
+        <div className="event-debugger-content">
+          {/* Estadísticas de eventos */}
+          <div className="event-stats-section">
+            <div className="event-stats-title">Eventos capturados:</div>
             
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr',
-              gap: '8px',
-              marginBottom: '10px'
-            }}>
-              <div style={{ 
-                background: '#2a2a2a', 
-                padding: '8px', 
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
-                📅 Calendario<br/>
-                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                  {eventCount.calendar}
-                </span>
+            <div className="event-stats-grid">
+              <div className="event-stat-card">
+                <div className="event-stat-label">📅 Calendario</div>
+                <div className="event-stat-value">{eventCount.calendar}</div>
               </div>
               
-              <div style={{ 
-                background: '#2a2a2a', 
-                padding: '8px', 
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
-                🔧 Aplicación<br/>
-                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                  {eventCount.app}
-                </span>
+              <div className="event-stat-card">
+                <div className="event-stat-label">🔧 Aplicación</div>
+                <div className="event-stat-value">{eventCount.app}</div>
               </div>
               
-              <div style={{ 
-                background: '#2a2a2a', 
-                padding: '8px', 
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
-                💾 Storage<br/>
-                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                  {eventCount.storage}
-                </span>
+              <div className="event-stat-card">
+                <div className="event-stat-label">💾 Storage</div>
+                <div className="event-stat-value">{eventCount.storage}</div>
               </div>
               
-              <div style={{ 
-                background: '#2563eb', 
-                padding: '8px', 
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
-                📊 Total<br/>
-                <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                  {eventCount.total}
-                </span>
+              <div className="event-stat-card total">
+                <div className="event-stat-label">📊 Total</div>
+                <div className="event-stat-value">{eventCount.total}</div>
               </div>
-            </div>
-            
-            <button
-              onClick={runManualTest}
-              style={{
-                width: '100%',
-                padding: '8px',
-                background: '#4a4a4a',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: '12px'
-              }}
-              onMouseOver={(e) => e.target.style.background = '#5a5a5a'}
-              onMouseOut={(e) => e.target.style.background = '#4a4a4a'}
-            >
-              🧪 Ejecutar Test Manual
-            </button>
-            
-            <div style={{ 
-              marginTop: '10px', 
-              fontSize: '10px', 
-              color: '#888',
-              textAlign: 'center'
-            }}>
-              Ver consola para detalles completos
             </div>
           </div>
-        </>
+          
+          {/* Configuración rápida */}
+          <div className="debug-config-section">
+            <div className="debug-config-title">Configuración rápida:</div>
+            
+            <div className="debug-toggle">
+              <span className="debug-toggle-label">Logs detallados</span>
+              <label className="debug-toggle-switch">
+                <input
+                  type="checkbox"
+                  className="debug-toggle-input"
+                  checked={logsEnabled}
+                  onChange={toggleLogs}
+                />
+                <span className="debug-toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div className="debug-toggle">
+              <span className="debug-toggle-label">Monitor rendimiento</span>
+              <label className="debug-toggle-switch">
+                <input
+                  type="checkbox"
+                  className="debug-toggle-input"
+                  checked={performanceEnabled}
+                  onChange={togglePerformance}
+                />
+                <span className="debug-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          
+          {/* Herramientas de debug */}
+          <div className="debug-tools-section">
+            <div className="debug-tools-title">Herramientas:</div>
+            
+            <div className="debug-tools-grid">
+              <button
+                className="debug-tool-btn primary"
+                onClick={runManualTest}
+                title="Ejecutar test del sistema de eventos"
+              >
+                🧪 Test Manual
+              </button>
+              
+              <button
+                className="debug-tool-btn warning"
+                onClick={clearConsole}
+                title="Limpiar la consola del navegador"
+              >
+                🧹 Limpiar
+              </button>
+              
+              <button
+                className="debug-tool-btn success"
+                onClick={showSystemInfo}
+                title="Mostrar información del sistema"
+              >
+                🖥️ Info Sistema
+              </button>
+              
+              <button
+                className="debug-tool-btn"
+                onClick={() => {
+                  console.log('📋 Eventos activos:', eventBus.getActiveEvents());
+                  const stats = {};
+                  eventBus.getActiveEvents().forEach(event => {
+                    stats[event] = eventBus.getSubscriberCount(event);
+                  });
+                  console.table(stats);
+                }}
+                title="Mostrar estadísticas de eventos"
+              >
+                📊 Stats
+              </button>
+            </div>
+          </div>
+          
+          {/* Información del sistema */}
+          <div className="debug-info-section">
+            <div className="debug-info-main">
+              Ver consola para detalles completos
+            </div>
+            <div className="debug-info-secondary">
+              Se puede desactivar desde Configuración → Desarrolladores
+              <br />
+              Eventos activos: {eventBus.getActiveEvents().length} | 
+              Entorno: {typeof window !== 'undefined' && typeof window.electronAPI !== 'undefined' ? 'Electron' : 'Web'}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

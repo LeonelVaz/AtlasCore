@@ -67,6 +67,12 @@ export const STORAGE_KEYS = {
   TIME_SCALE: 'atlas_time_scale',
   CUSTOM_TIME_SLOTS: 'atlas_custom_time_slots',
   MAX_SIMULTANEOUS_EVENTS: 'atlas_max_simultaneous_events',
+  
+  // Claves para herramientas de desarrollo
+  DEV_EVENT_DEBUGGER_ENABLED: 'atlas_dev_event_debugger_enabled',
+  DEV_CONSOLE_LOGS_ENABLED: 'atlas_dev_console_logs_enabled',
+  DEV_PERFORMANCE_MONITOR_ENABLED: 'atlas_dev_performance_monitor_enabled',
+  
   // Claves para el sistema de plugins
   PLUGIN_STATES: 'atlas_plugin_states',
   PLUGIN_SETTINGS: 'atlas_plugin_settings',

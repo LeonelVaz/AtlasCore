@@ -8,6 +8,7 @@
 @import './variables.css';
 @import 'themes/index.css';
 @import './plugins/index.css';
+@import './debug/event-debugger.css';
 
 * {
   box-sizing: border-box;
