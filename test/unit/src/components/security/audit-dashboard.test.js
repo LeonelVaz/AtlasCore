@@ -1,3 +1,7 @@
+/**
+ * @jest-environment jsdom
+*/
+
 // audit-dashboard.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
@@ -59,14 +63,19 @@ describe('AuditDashboard Component', () => {
 
     // Mocks para la descarga de archivos
     clickSpy = jest.fn();
-    createElementSpy = jest.spyOn(document, 'createElement').mockImplementation(() => ({
-      href: '',
-      download: '',
-      click: clickSpy,
-      style: {},
-    }));
-    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(jest.fn());
-    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(jest.fn());
+    createElementSpy = jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
+      if (tagName === 'a') {
+        return {
+          href: '',
+          download: '',
+          click: clickSpy,
+          style: {},
+        };
+      }
+      return document.createElement(tagName);
+    });
+    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(() => {});
+    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(() => {});
 
     // Asegurarse de que URL.createObjectURL y URL.revokeObjectURL existan antes de espiarlos
     if (!URL.createObjectURL) {
@@ -76,7 +85,7 @@ describe('AuditDashboard Component', () => {
       URL.revokeObjectURL = jest.fn();
     }
     createObjectURLSpy = jest.spyOn(URL, 'createObjectURL').mockReturnValue('mock-url');
-    revokeObjectURLSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(jest.fn());
+    revokeObjectURLSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   });
 
   afterEach(() => {
