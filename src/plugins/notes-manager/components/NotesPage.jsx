@@ -9,6 +9,40 @@ function NotesPage(props) {
   const [editingNote, setEditingNote] = React.useState(null);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filteredNotes, setFilteredNotes] = React.useState([]);
+  const [selectedNoteId, setSelectedNoteId] = React.useState(null);
+  const [createFromEvent, setCreateFromEvent] = React.useState(null);
+  
+  // Manejar parámetros de navegación
+  React.useEffect(() => {
+    if (props.navigationParams) {
+      // Si viene de un evento para crear nota
+      if (props.navigationParams.action === 'create' && props.navigationParams.fromEvent) {
+        setCreateFromEvent(props.navigationParams.fromEvent);
+        setShowCreateForm(true);
+      }
+      
+      // Si viene para mostrar una nota específica
+      if (props.navigationParams.selectedNoteId) {
+        setSelectedNoteId(props.navigationParams.selectedNoteId);
+        // Hacer scroll a la nota seleccionada después de un breve delay
+        setTimeout(() => {
+          const noteElement = document.getElementById(`note-${props.navigationParams.selectedNoteId}`);
+          if (noteElement) {
+            noteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Efecto visual para destacar la nota
+            noteElement.style.transition = 'all 0.3s ease';
+            noteElement.style.transform = 'scale(1.05)';
+            noteElement.style.boxShadow = '0 8px 32px rgba(var(--primary-color-rgb, 45, 75, 148), 0.3)';
+            
+            setTimeout(() => {
+              noteElement.style.transform = 'scale(1)';
+              noteElement.style.boxShadow = '';
+            }, 1500);
+          }
+        }, 100);
+      }
+    }
+  }, [props.navigationParams]);
   
   // Cargar notas al montar el componente
   React.useEffect(() => {
@@ -30,12 +64,13 @@ function NotesPage(props) {
   }, [searchQuery, notes, plugin]);
   
   // Manejar creación de nueva nota
-  const handleCreateNote = (title, content) => {
+  const handleCreateNote = (title, content, linkedEventId, linkedEventTitle) => {
     if (plugin) {
-      const newNote = plugin.createNote(title, content);
+      const newNote = plugin.createNote(title, content, linkedEventId, linkedEventTitle);
       const updatedNotes = plugin.getNotes();
       setNotes(updatedNotes);
       setShowCreateForm(false);
+      setCreateFromEvent(null);
       
       // Mostrar notificación si está disponible el sistema de diálogos
       if (core?.dialogs?.alert) {
@@ -93,10 +128,11 @@ function NotesPage(props) {
   const handleCancelEdit = () => {
     setEditingNote(null);
     setShowCreateForm(false);
+    setCreateFromEvent(null);
   };
   
   // Obtener estadísticas
-  const stats = plugin ? plugin.getNotesStats() : { total: 0, withRichContent: 0 };
+  const stats = plugin ? plugin.getNotesStats() : { total: 0, withRichContent: 0, linkedToEvents: 0 };
   
   // Verificar si RichText está disponible
   const hasRichText = !!(core?.ui?.components?.RichTextEditor);
@@ -171,6 +207,7 @@ function NotesPage(props) {
                 [
                   React.createElement('span', { key: 'total' }, `📝 ${stats.total} nota${stats.total !== 1 ? 's' : ''}`),
                   hasRichText && React.createElement('span', { key: 'rich' }, `🎨 ${stats.withRichContent} con formato`),
+                  stats.linkedToEvents > 0 && React.createElement('span', { key: 'linked' }, `📅 ${stats.linkedToEvents} vinculadas a eventos`),
                   stats.createdToday > 0 && React.createElement('span', { key: 'today' }, `✨ ${stats.createdToday} creadas hoy`)
                 ].filter(Boolean)
               )
@@ -193,7 +230,10 @@ function NotesPage(props) {
                 {
                   key: 'create-button',
                   className: 'create-note-button',
-                  onClick: () => setShowCreateForm(!showCreateForm),
+                  onClick: () => {
+                    setShowCreateForm(!showCreateForm);
+                    setCreateFromEvent(null);
+                  },
                   style: {
                     backgroundColor: 'var(--primary-color)',
                     color: 'white',
@@ -325,7 +365,8 @@ function NotesPage(props) {
         key: 'create-form',
         onSave: handleCreateNote,
         onCancel: handleCancelEdit,
-        core: core
+        core: core,
+        fromEvent: createFromEvent
       }),
       
       // Resultados de búsqueda
@@ -420,13 +461,16 @@ function NotesPage(props) {
           filteredNotes.map(note => 
             React.createElement(NoteCard, {
               key: note.id,
+              id: `note-${note.id}`,
               note: note,
               isEditing: editingNote === note.id,
+              isSelected: selectedNoteId === note.id,
               onEdit: () => setEditingNote(note.id),
               onSave: (updates) => handleUpdateNote(note.id, updates),
               onDelete: () => handleDeleteNote(note.id),
               onCancel: handleCancelEdit,
-              core: core
+              core: core,
+              plugin: plugin
             })
           )
       )

@@ -1,16 +1,39 @@
 import React from 'react';
 
 function CreateNoteForm(props) {
-  const { onSave, onCancel, core } = props;
-  const [title, setTitle] = React.useState('');
+  const { onSave, onCancel, core, fromEvent } = props;
+  const [title, setTitle] = React.useState(fromEvent ? `Notas: ${fromEvent.title}` : '');
   const [content, setContent] = React.useState('');
   
   // Obtener los componentes de texto enriquecido del core
   const RichTextEditor = core?.ui?.components?.RichTextEditor;
   
+  // Si viene de un evento, incluir información del evento
+  React.useEffect(() => {
+    if (fromEvent) {
+      const eventDate = new Date(fromEvent.start).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      const eventInfo = `<p><strong>Evento:</strong> ${fromEvent.title}</p><p><strong>Fecha:</strong> ${eventDate}</p><hr><p></p>`;
+      
+      setContent(eventInfo);
+    }
+  }, [fromEvent]);
+  
   const handleSave = () => {
     if (title.trim()) {
-      onSave(title.trim(), content);
+      onSave(
+        title.trim(),
+        content,
+        fromEvent ? fromEvent.id : null,
+        fromEvent ? fromEvent.title : null
+      );
       setTitle('');
       setContent('');
     }
@@ -78,8 +101,32 @@ function CreateNoteForm(props) {
                 color: 'var(--text-color)'
               }
             },
-            'Nueva Nota'
+            fromEvent ? 'Nueva Nota desde Evento' : 'Nueva Nota'
           )
+        ]
+      ),
+      
+      // Mostrar información del evento si viene de uno
+      fromEvent && React.createElement(
+        'div',
+        {
+          key: 'event-info',
+          style: {
+            backgroundColor: 'rgba(var(--primary-color-rgb, 45, 75, 148), 0.1)',
+            border: '1px solid var(--primary-color)',
+            borderRadius: 'var(--border-radius-sm)',
+            padding: 'var(--spacing-sm)',
+            marginBottom: 'var(--spacing-md)',
+            fontSize: '13px',
+            color: 'var(--text-color)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-xs)'
+          }
+        },
+        [
+          React.createElement('span', { className: 'material-icons', key: 'icon', style: { fontSize: '16px' } }, 'event'),
+          React.createElement('span', { key: 'text' }, `Esta nota se vinculará automáticamente al evento: ${fromEvent.title}`)
         ]
       ),
       

@@ -693,3 +693,274 @@
   border-color: var(--danger-color) !important;
   box-shadow: 0 0 0 3px rgba(244, 67, 54, 0.1) !important;
 }
+
+/* ================================================
+   VINCULACIÓN CON EVENTOS - NUEVOS ESTILOS
+   ================================================ */
+
+/* Indicador de evento en tarjetas */
+.note-card .material-icons[title^="Vinculada a:"] {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Sección de notas en detalles de eventos */
+.event-notes-section {
+  background-color: var(--bg-color-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+}
+
+.event-notes-section:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.event-note-item {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.event-note-item:hover {
+  border-color: var(--primary-color);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Selector de eventos modal */
+.event-selector-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.event-selector-item {
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.event-selector-item:hover {
+  border-color: var(--primary-color) !important;
+  background-color: var(--hover-color) !important;
+}
+
+/* Información de vinculación en formularios */
+.create-note-form .event-info,
+.note-card.editing .current-link {
+  background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--border-radius-sm);
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Botón de vincular evento */
+button[key="link-event"] {
+  background-color: var(--info-color);
+  transition: all var(--transition-fast);
+}
+
+button[key="link-event"]:hover {
+  background-color: var(--info-hover, #1976D2);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Nota seleccionada con animación */
+.note-card.selected {
+  border: 2px solid var(--primary-color);
+  box-shadow: var(--shadow-lg);
+  animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* ================================================
+   MENÚ CONTEXTUAL DE EVENTOS
+   ================================================ */
+
+.calendar-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.calendar-context-menu-item:hover {
+  background-color: var(--hover-color);
+}
+
+/* ================================================
+   RESPONSIVE PARA VINCULACIÓN
+   ================================================ */
+
+@media (max-width: 768px) {
+  .event-selector-modal > div {
+    max-height: 90vh;
+    margin: var(--spacing-md);
+  }
+  
+  .event-selector-item {
+    font-size: 13px;
+  }
+  
+  .event-notes-section {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .event-selector-modal {
+    padding: var(--spacing-sm);
+  }
+  
+  .event-selector-modal > div {
+    max-height: 95vh;
+  }
+  
+  .note-card .material-icons[title^="Vinculada a:"] {
+    font-size: 16px;
+  }
+}
+
+/* ================================================
+   ANIMACIONES ADICIONALES
+   ================================================ */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.event-note-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ================================================
+   ESTADOS DE CARGA PARA EVENTOS
+   ================================================ */
+
+.event-selector-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  color: var(--text-color-secondary);
+}
+
+.event-selector-loading::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-left: var(--spacing-sm);
+  border: 2px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ================================================
+   TOOLTIPS MEJORADOS
+   ================================================ */
+
+[title] {
+  position: relative;
+}
+
+[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--text-color);
+  color: var(--bg-color);
+  font-size: 12px;
+  border-radius: var(--border-radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  animation: fadeIn 0.2s ease-in 0.5s forwards;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ================================================
+   UTILIDADES PARA EVENTOS
+   ================================================ */
+
+.event-color-indicator {
+  width: 4px;
+  height: 100%;
+  min-height: 40px;
+  border-radius: var(--border-radius-sm);
+  flex-shrink: 0;
+}
+
+.event-date-time {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* ================================================
+   MEJORAS DE ACCESIBILIDAD PARA VINCULACIÓN
+   ================================================ */
+
+.event-selector-item:focus,
+.event-note-item:focus,
+button[key="link-event"]:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Modo alto contraste */
+@media (prefers-contrast: high) {
+  .event-notes-section,
+  .event-selector-item {
+    border-width: 2px;
+  }
+  
+  .event-color-indicator {
+    outline: 1px solid var(--text-color);
+  }
+}
+
+/* Reducir movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .event-note-item,
+  .event-selector-modal,
+  .note-card.selected {
+    animation: none;
+  }
+  
+  .event-note-item:hover {
+    transform: none;
+  }
+}

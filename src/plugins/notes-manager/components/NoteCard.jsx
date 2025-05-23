@@ -1,9 +1,11 @@
 import React from 'react';
+import EventSelector from './EventSelector.jsx';
 
 function NoteCard(props) {
-  const { note, isEditing, onEdit, onSave, onDelete, onCancel, core } = props;
+  const { note, isEditing, isSelected, onEdit, onSave, onDelete, onCancel, core, plugin, id } = props;
   const [editTitle, setEditTitle] = React.useState(note.title);
   const [editContent, setEditContent] = React.useState(note.content);
+  const [showEventSelector, setShowEventSelector] = React.useState(false);
   
   // Obtener los componentes de texto enriquecido del core
   const RichTextEditor = core?.ui?.components?.RichTextEditor;
@@ -36,6 +38,17 @@ function NoteCard(props) {
   
   const handleContentChange = (htmlContent) => {
     setEditContent(htmlContent);
+  };
+  
+  const handleEventSelect = (event) => {
+    if (event) {
+      plugin.linkNoteToEvent(note.id, event.id, event.title);
+    } else {
+      plugin.unlinkNoteFromEvent(note.id);
+    }
+    setShowEventSelector(false);
+    // Forzar actualización
+    onSave({});
   };
   
   const formatDate = (dateString) => {
@@ -77,6 +90,7 @@ function NoteCard(props) {
     return React.createElement(
       'div',
       {
+        id: id,
         className: 'note-card editing',
         style: {
           backgroundColor: 'var(--card-bg)',
@@ -111,6 +125,30 @@ function NoteCard(props) {
               outline: 'none'
             }
           }
+        ),
+        
+        // Mostrar vinculación actual si existe
+        note.linkedEventId && React.createElement(
+          'div',
+          {
+            key: 'current-link',
+            style: {
+              backgroundColor: 'rgba(var(--primary-color-rgb, 45, 75, 148), 0.1)',
+              border: '1px solid var(--primary-color)',
+              borderRadius: 'var(--border-radius-sm)',
+              padding: 'var(--spacing-xs) var(--spacing-sm)',
+              marginBottom: 'var(--spacing-sm)',
+              fontSize: '12px',
+              color: 'var(--text-color)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-xs)'
+            }
+          },
+          [
+            React.createElement('span', { className: 'material-icons', key: 'icon', style: { fontSize: '14px' } }, 'event'),
+            React.createElement('span', { key: 'text' }, `Vinculada a: ${note.linkedEventTitle}`)
+          ]
         ),
         
         // Usar RichTextEditor si está disponible, sino fallback al textarea
@@ -156,7 +194,7 @@ function NoteCard(props) {
             style: {
               display: 'flex',
               gap: 'var(--spacing-sm)',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               marginTop: 'var(--spacing-md)',
               paddingTop: 'var(--spacing-sm)',
               borderTop: '1px solid var(--border-color)'
@@ -166,12 +204,12 @@ function NoteCard(props) {
             React.createElement(
               'button',
               {
-                key: 'cancel',
-                onClick: onCancel,
+                key: 'link-event',
+                onClick: () => setShowEventSelector(true),
                 style: {
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-color-secondary)',
-                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--info-color)',
+                  color: 'white',
+                  border: 'none',
                   borderRadius: 'var(--border-radius-sm)',
                   padding: 'var(--spacing-xs) var(--spacing-sm)',
                   fontSize: '12px',
@@ -183,34 +221,70 @@ function NoteCard(props) {
                 }
               },
               [
-                React.createElement('span', { key: 'close-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'close'),
-                React.createElement('span', { key: 'close-text' }, 'Cancelar')
+                React.createElement('span', { key: 'link-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'link'),
+                React.createElement('span', { key: 'link-text' }, note.linkedEventId ? 'Cambiar evento' : 'Vincular evento')
               ]
             ),
             React.createElement(
-              'button',
+              'div',
               {
-                key: 'save',
-                onClick: handleSave,
-                disabled: !editTitle.trim(),
+                key: 'save-cancel',
                 style: {
-                  backgroundColor: 'var(--primary-color)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 'var(--border-radius-sm)',
-                  padding: 'var(--spacing-xs) var(--spacing-sm)',
-                  fontSize: '12px',
-                  cursor: editTitle.trim() ? 'pointer' : 'not-allowed',
-                  opacity: editTitle.trim() ? 1 : 0.5,
-                  transition: 'all var(--transition-fast)',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--spacing-xs)'
+                  gap: 'var(--spacing-sm)'
                 }
               },
               [
-                React.createElement('span', { key: 'save-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'save'),
-                React.createElement('span', { key: 'save-text' }, 'Guardar')
+                React.createElement(
+                  'button',
+                  {
+                    key: 'cancel',
+                    onClick: onCancel,
+                    style: {
+                      backgroundColor: 'transparent',
+                      color: 'var(--text-color-secondary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--border-radius-sm)',
+                      padding: 'var(--spacing-xs) var(--spacing-sm)',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      transition: 'all var(--transition-fast)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-xs)'
+                    }
+                  },
+                  [
+                    React.createElement('span', { key: 'close-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'close'),
+                    React.createElement('span', { key: 'close-text' }, 'Cancelar')
+                  ]
+                ),
+                React.createElement(
+                  'button',
+                  {
+                    key: 'save',
+                    onClick: handleSave,
+                    disabled: !editTitle.trim(),
+                    style: {
+                      backgroundColor: 'var(--primary-color)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 'var(--border-radius-sm)',
+                      padding: 'var(--spacing-xs) var(--spacing-sm)',
+                      fontSize: '12px',
+                      cursor: editTitle.trim() ? 'pointer' : 'not-allowed',
+                      opacity: editTitle.trim() ? 1 : 0.5,
+                      transition: 'all var(--transition-fast)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-xs)'
+                    }
+                  },
+                  [
+                    React.createElement('span', { key: 'save-icon', className: 'material-icons', style: { fontSize: '14px' } }, 'save'),
+                    React.createElement('span', { key: 'save-text' }, 'Guardar')
+                  ]
+                )
               ]
             )
           ]
@@ -229,7 +303,16 @@ function NoteCard(props) {
           RichTextEditor ? 
             'Usa la barra de herramientas para dar formato • Ctrl+Enter para guardar • Esc para cancelar' :
             'Ctrl+Enter para guardar • Esc para cancelar'
-        )
+        ),
+        
+        // Selector de eventos
+        showEventSelector && React.createElement(EventSelector, {
+          key: 'event-selector',
+          onSelect: handleEventSelect,
+          onCancel: () => setShowEventSelector(false),
+          currentEventId: note.linkedEventId,
+          core: core
+        })
       ]
     );
   }
@@ -237,13 +320,14 @@ function NoteCard(props) {
   return React.createElement(
     'div',
     {
-      className: 'note-card',
+      id: id,
+      className: `note-card ${isSelected ? 'selected' : ''}`,
       style: {
         backgroundColor: 'var(--card-bg)',
-        border: '1px solid var(--border-color)',
+        border: isSelected ? '2px solid var(--primary-color)' : '1px solid var(--border-color)',
         borderRadius: 'var(--border-radius-md)',
         padding: 'var(--spacing-md)',
-        boxShadow: 'var(--shadow-sm)',
+        boxShadow: isSelected ? 'var(--shadow-lg)' : 'var(--shadow-sm)',
         transition: 'all var(--transition-normal)',
         cursor: 'pointer',
         position: 'relative',
@@ -252,12 +336,16 @@ function NoteCard(props) {
         flexDirection: 'column'
       },
       onMouseEnter: (e) => {
-        e.target.style.boxShadow = 'var(--shadow-md)';
-        e.target.style.transform = 'translateY(-2px)';
+        if (!isSelected) {
+          e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+        }
       },
       onMouseLeave: (e) => {
-        e.target.style.boxShadow = 'var(--shadow-sm)';
-        e.target.style.transform = 'translateY(0)';
+        if (!isSelected) {
+          e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+          e.currentTarget.style.transform = 'translateY(0)';
+        }
       }
     },
     [
@@ -339,21 +427,50 @@ function NoteCard(props) {
         ]
       ),
       
-      // Título
+      // Título con indicador de vinculación
       React.createElement(
-        'h3',
+        'div',
         {
-          key: 'title',
+          key: 'title-section',
           style: {
-            margin: '0 0 var(--spacing-md) 0',
-            fontSize: '18px',
-            fontWeight: '600',
-            color: 'var(--text-color)',
-            paddingRight: 'var(--spacing-xl)', // Espacio para los botones
-            lineHeight: '1.4'
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 'var(--spacing-xs)',
+            marginBottom: 'var(--spacing-md)'
           }
         },
-        note.title
+        [
+          React.createElement(
+            'h3',
+            {
+              key: 'title',
+              style: {
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: '600',
+                color: 'var(--text-color)',
+                paddingRight: 'var(--spacing-xl)', // Espacio para los botones
+                lineHeight: '1.4',
+                flex: 1
+              }
+            },
+            note.title
+          ),
+          note.linkedEventId && React.createElement(
+            'span',
+            {
+              key: 'event-indicator',
+              className: 'material-icons',
+              title: `Vinculada a: ${note.linkedEventTitle}`,
+              style: {
+                fontSize: '18px',
+                color: 'var(--primary-color)',
+                marginTop: '2px'
+              }
+            },
+            'event'
+          )
+        ]
       ),
       
       // Contenido - usar RichTextViewer si está disponible y hay contenido HTML
@@ -435,6 +552,16 @@ const styleElement = document.createElement('style');
 styleElement.textContent = `
   .note-card:hover .note-actions {
     opacity: 1 !important;
+  }
+  
+  .note-card.selected {
+    animation: pulse 0.3s ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
   }
   
   /* Estilos específicos para el contenido del rich text viewer en notas */

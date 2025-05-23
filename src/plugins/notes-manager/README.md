@@ -1,8 +1,16 @@
-# 📝 Plugin de Notas Simples con Editor de Texto Enriquecido
+# 📝 Plugin de Notas Simples con Editor de Texto Enriquecido y Vinculación de Eventos
 
-Plugin mejorado para Atlas que permite crear y gestionar notas personales con soporte completo para formato de texto enriquecido.
+Plugin mejorado para Atlas que permite crear y gestionar notas personales con soporte completo para formato de texto enriquecido y vinculación con eventos del calendario.
 
 ## ✨ Características Principales
+
+### 📅 Nueva: Vinculación con Eventos del Calendario
+- **Crear notas desde eventos**: Click derecho en cualquier evento → "📝 Crear nota para este evento"
+- **Vinculación automática**: Las notas creadas desde eventos se vinculan automáticamente
+- **Gestión de vínculos**: Vincular/desvincular notas con eventos en cualquier momento
+- **Vista integrada**: Ver todas las notas de un evento directamente desde sus detalles
+- **Navegación rápida**: Click en una nota del evento para ir directamente a ella
+- **Sincronización**: Los cambios en eventos se reflejan automáticamente en las notas vinculadas
 
 ### 🎨 Editor de Texto Enriquecido
 - **Formato completo**: Negrita, cursiva, subrayado, encabezados
@@ -15,15 +23,15 @@ Plugin mejorado para Atlas que permite crear y gestionar notas personales con so
 ### 📊 Funcionalidades Avanzadas
 - **Navegación integrada**: Botón "Notes" en la barra de navegación principal
 - **Gestión completa**: Crear, editar, eliminar y visualizar notas
-- **Búsqueda inteligente**: Busca en títulos y contenido (incluyendo texto dentro de HTML)
-- **Estadísticas**: Contador de notas totales, con formato, creadas hoy
+- **Búsqueda inteligente**: Busca en títulos, contenido y eventos vinculados
+- **Estadísticas**: Contador de notas totales, con formato, creadas hoy, vinculadas a eventos
 - **Vista previa rica**: Visualización del contenido HTML formateado
 - **Interfaz adaptativa**: Diseño responsive que se adapta a diferentes tamaños de pantalla
 
 ### 💾 Persistencia y Almacenamiento
 - **Almacenamiento automático**: Las notas se guardan automáticamente
 - **Formato HTML**: Contenido rico guardado en formato HTML
-- **Metadatos completos**: Fechas de creación y modificación
+- **Metadatos completos**: Fechas de creación, modificación y vinculación de eventos
 - **Compatibilidad hacia atrás**: Funciona con notas de texto plano existentes
 
 ### ⌨️ Atajos de Teclado
@@ -43,18 +51,49 @@ Plugin mejorado para Atlas que permite crear y gestionar notas personales con so
 
 ```
 notes-manager/
-├── index.js                      # Plugin principal (v1.1.0)
+├── index.js                      # Plugin principal (v1.2.0)
 ├── components/                   # Componentes React
 │   ├── NotesNavigationItem.jsx   # Botón de navegación
 │   ├── NotesPage.jsx             # Página principal mejorada
-│   ├── NoteCard.jsx              # Tarjeta con RichTextViewer
-│   └── CreateNoteForm.jsx        # Formulario con RichTextEditor
+│   ├── NoteCard.jsx              # Tarjeta con vinculación de eventos
+│   ├── CreateNoteForm.jsx        # Formulario con soporte para eventos
+│   ├── EventNotesExtension.jsx   # Vista de notas en eventos (NUEVO)
+│   └── EventSelector.jsx         # Selector de eventos (NUEVO)
 ├── styles/                       # Estilos CSS
-│   └── notes.css                 # Estilos actualizados para RichText
+│   └── notes.css                 # Estilos actualizados con eventos
 └── README.md                     # Este archivo
 ```
 
 ## 🎯 Uso Detallado
+
+### Vincular Notas con Eventos
+
+#### Crear nota desde un evento:
+1. Haz **click derecho** sobre cualquier evento en el calendario
+2. Selecciona **"📝 Crear nota para este evento"** del menú contextual
+3. Se abrirá el formulario con:
+   - Título sugerido: "Notas: [Nombre del Evento]"
+   - Información del evento prellenada
+   - Vinculación automática configurada
+4. Completa tu nota y guárdala
+
+#### Ver notas de un evento:
+1. Haz **click** en cualquier evento del calendario
+2. En el panel de detalles, busca la sección **"📝 Notas (X)"**
+3. Verás todas las notas vinculadas con:
+   - Título de la nota
+   - Vista previa del contenido
+   - Fecha de creación
+4. Haz click en cualquier nota para abrirla
+
+#### Gestionar vinculación:
+1. En cualquier nota, busca el ícono 📅 que indica vinculación
+2. Al editar una nota, usa el botón **"🔗 Vincular evento"**
+3. Se abrirá un selector con todos tus eventos
+4. Puedes:
+   - Seleccionar un evento para vincular
+   - Cambiar el evento vinculado
+   - Desvincular usando el botón "Desvincular"
 
 ### Navegación
 - Haz clic en el botón **"Notes"** (📝) en la barra de navegación izquierda
@@ -86,6 +125,7 @@ notes-manager/
 3. La búsqueda funciona en:
    - Títulos de notas
    - Contenido de texto (extrae texto de HTML automáticamente)
+   - Títulos de eventos vinculados
 4. Los resultados se filtran en tiempo real
 
 ### Visualización de contenido rico
@@ -97,10 +137,11 @@ notes-manager/
 ## 🛠️ Requisitos Técnicos
 
 - **Atlas versión**: 0.3.0 - 1.0.0
-- **Permisos**: `storage`, `ui`
+- **Permisos**: `storage`, `ui`, `events`
 - **Dependencias**: 
   - React (disponible en Atlas)
   - RichTextEditor y RichTextViewer (componentes de Atlas Core)
+  - Módulo de calendario de Atlas
 
 ## 📋 Propiedades de las Notas Actualizadas
 
@@ -110,7 +151,10 @@ notes-manager/
   title: "Mi Nota",                    // Título de la nota (obligatorio)
   content: "<p>Contenido <strong>con formato</strong></p>", // Contenido HTML o texto plano
   createdAt: "2025-05-22T...",         // Fecha de creación (ISO string)
-  modifiedAt: "2025-05-22T..."         // Fecha de última modificación
+  modifiedAt: "2025-05-22T...",        // Fecha de última modificación
+  linkedEventId: "event-123",          // ID del evento vinculado (opcional)
+  linkedEventTitle: "Reunión equipo",  // Título del evento vinculado (opcional)
+  tags: ["calendario"]                 // Etiquetas automáticas
 }
 ```
 
@@ -118,7 +162,7 @@ notes-manager/
 
 ### Interfaz Renovada
 - **Header mejorado**: Título con icono, estadísticas en vivo
-- **Tarjetas mejoradas**: Hover effects, mejor organización visual
+- **Tarjetas mejoradas**: Hover effects, indicadores de vinculación, mejor organización visual
 - **Botones de acción**: Iconos más grandes, mejor visibilidad
 - **Animaciones suaves**: Transiciones fluidas y naturales
 
@@ -131,14 +175,16 @@ notes-manager/
 - 📝 Contador total de notas
 - 🎨 Contador de notas con formato rico
 - ✨ Contador de notas creadas hoy
+- 📅 Contador de notas vinculadas a eventos
 - 🔍 Indicador de resultados de búsqueda
+- 📅 Ícono de calendario en notas vinculadas
 
 ## 🔧 API del Plugin Expandida
 
 ### Métodos Principales
 ```javascript
 // Crear nota (acepta HTML o texto plano)
-createNote(title, content)
+createNote(title, content, linkedEventId, linkedEventTitle)
 
 // Actualizar nota (preserva formato)
 updateNote(noteId, updates)
@@ -153,15 +199,27 @@ getNotes()
 getNote(noteId)
 ```
 
+### Métodos para Vinculación de Eventos
+```javascript
+// Obtener notas de un evento específico
+getNotesForEvent(eventId)
+
+// Vincular nota con evento
+linkNoteToEvent(noteId, eventId, eventTitle)
+
+// Desvincular nota de evento
+unlinkNoteFromEvent(noteId)
+```
+
 ### Nuevos Métodos
 ```javascript
 // Obtener estadísticas detalladas
 getNotesStats()
-// Retorna: { total, createdToday, createdThisWeek, withRichContent, averageLength }
+// Retorna: { total, createdToday, createdThisWeek, withRichContent, linkedToEvents, averageLength }
 
 // Buscar en notas
 searchNotes(query)
-// Busca en títulos y contenido (extrae texto de HTML)
+// Busca en títulos, contenido y eventos vinculados
 ```
 
 ## 🚨 Compatibilidad y Migración
@@ -170,6 +228,16 @@ searchNotes(query)
 - **Compatibilidad 100%**: Las notas de texto plano existentes siguen funcionando
 - **Migración automática**: No se requiere migración manual
 - **Detección inteligente**: El sistema detecta automáticamente si el contenido es HTML o texto plano
+
+### Sincronización con Eventos
+- **Actualización automática**: Si cambias el título de un evento, se actualiza en las notas
+- **Eliminación segura**: Si eliminas un evento, las notas se mantienen pero se desvinculan
+- **Persistencia**: Los vínculos se guardan permanentemente
+
+### Navegación Inteligente
+- Desde evento → notas: Un click para ver todas las notas relacionadas
+- Desde notas → evento: Indicador visual del evento vinculado
+- Búsqueda cruzada: Encuentra notas buscando por evento
 
 ### Fallbacks
 - Si RichTextEditor no está disponible, usa textarea normal
@@ -188,6 +256,21 @@ searchNotes(query)
 2. Verifica que el contenido tenga etiquetas HTML en la consola
 3. Comprueba que el almacenamiento funcione correctamente
 
+### El menú contextual no aparece
+1. Verifica que Atlas soporte menús contextuales (`core.ui.registerContextMenuItem`)
+2. Asegúrate de hacer click derecho sobre el evento
+3. Revisa la consola para mensajes de error
+
+### Las notas no se muestran en el evento
+1. Verifica que la extensión esté registrada correctamente
+2. Comprueba que las notas tengan el `linkedEventId` correcto
+3. Actualiza la página si es necesario
+
+### La vinculación no se guarda
+1. Asegúrate de que el almacenamiento funcione correctamente
+2. Verifica los permisos del plugin
+3. Revisa la consola para errores de guardado
+
 ### Problemas de visualización
 1. Actualiza el archivo `styles/notes.css` con la versión más reciente
 2. Verifica que las variables CSS de Atlas estén disponibles
@@ -198,18 +281,30 @@ searchNotes(query)
 ```
 [Notas Simples] RichText disponible: true
 [Notas Simples] Plugin inicializado correctamente con soporte para RichText
+[Notas Simples] Plugin inicializado correctamente con soporte para vinculación de eventos
+[Notas Simples] Extensión de detalles de evento registrada
+[Notas Simples] Menú contextual de eventos registrado
 [Notas Simples] Cargadas 5 notas
 [Notas Simples] Navegación registrada con ID: nav-123
 [Notas Simples] Página registrada con ID: page-456
-[Notas Simples] Nota creada: 1234567890
+[Notas Simples] Nota creada: 1234567890 (vinculada a evento)
 [Notas Simples] Nota actualizada: 1234567890
 [Notas Simples] Nota eliminada: 1234567890
+[Notas Simples] Removidas vinculaciones de evento eliminado: event-123
 [Notas Simples] Notas guardadas correctamente
 ```
 
-## 🚀 Nuevas Funcionalidades en v1.1.0
+## 🚀 Nuevas Funcionalidades en v1.2.0
 
-### Editor de Texto Enriquecido
+### Vinculación con Eventos
+- ✅ Crear notas desde menú contextual de eventos
+- ✅ Vista de notas en detalles de eventos
+- ✅ Selector visual de eventos para vincular
+- ✅ Sincronización automática de cambios
+- ✅ Búsqueda mejorada incluyendo eventos
+- ✅ Indicadores visuales de vinculación
+
+### Editor de Texto Enriquecido (v1.1.0)
 - ✅ Integración completa con RichTextEditor de Atlas
 - ✅ Barra de herramientas completa (negrita, cursiva, listas, enlaces, etc.)
 - ✅ Vista previa con RichTextViewer
@@ -239,7 +334,7 @@ searchNotes(query)
 - **Sincronización**: Backup automático en la nube
 
 ### Integraciones Planificadas
-- **Calendario**: Vincular notas a eventos específicos
+- **Calendario**: Vincular notas a eventos específicos ✅ (Completado en v1.2.0)
 - **Recordatorios**: Notificaciones basadas en fechas
 - **Enlaces inteligentes**: Referencias automáticas entre notas
 - **Búsqueda semántica**: Búsqueda por conceptos, no solo palabras
@@ -271,18 +366,19 @@ components/
 
 ---
 
-**Versión**: 1.1.0  
+**Versión**: 1.2.0  
 **Compatibilidad**: Atlas 0.3.0 - 1.0.0  
 **Última actualización**: Mayo 2025  
-**Características principales**: Editor de texto enriquecido, búsqueda inteligente, interfaz renovada
+**Nueva característica principal**: Vinculación completa con eventos del calendario
 
 ---
 
 ### 🎯 ¡Prueba las Nuevas Funcionalidades!
 
-1. **Crea una nota nueva** y experimenta con el editor de texto enriquecido
-2. **Usa negritas, cursivas y listas** para organizar tu contenido
-3. **Busca en tus notas** usando el campo de búsqueda
+1. **Crea una nota desde un evento** haciendo click derecho en el calendario
+2. **Explora el editor de texto enriquecido** con negritas, cursivas y listas
+3. **Busca en tus notas** usando tanto contenido como eventos vinculados
 4. **Observa las estadísticas** en tiempo real en el header
+5. **Gestiona la vinculación** de eventos desde cualquier nota
 
-¡El plugin ahora es mucho más potente y fácil de usar! 🚀
+¡El plugin ahora ofrece una integración completa con el calendario de Atlas! 🚀
