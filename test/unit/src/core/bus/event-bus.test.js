@@ -1,4 +1,3 @@
-// test/unit/event-bus.test.js
 import eventBus, { EventCategories } from '../../../../../src/core/bus/event-bus';
 
 describe('EventBus', () => {

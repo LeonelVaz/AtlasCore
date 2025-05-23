@@ -1,4 +1,3 @@
-// test/unit/events.test.js
 import {
   EventCategories,
   CalendarEvents,
