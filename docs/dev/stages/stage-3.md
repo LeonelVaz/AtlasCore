@@ -48,6 +48,22 @@
    - Interfaz limpia integrada con el estilo de Atlas
    - Visualización de badges en los headers de días con eventos
 
+7. **Panel de Desarrolladores**
+   - Implementación de panel de configuración para desarrolladores
+   - Sistema de depuración con Event Debugger
+   - Monitoreo de eventos del sistema en tiempo real
+   - Herramientas para pruebas y diagnóstico
+   - Logs detallados en consola configurables
+   - Visualización de estadísticas de eventos
+
+8. **Sistema de Seguridad para Plugins**
+   - Implementación de sandbox para ejecución aislada de plugins
+   - Sistema de permisos granular para plugins
+   - Detección y prevención de código malicioso
+   - Monitoreo de recursos utilizados por plugins
+   - Niveles de seguridad configurables (bajo, normal, alto)
+   - Auditoría de actividades de plugins
+
 **Criterios de finalización:**
 - Sistema de temas completamente funcional
 - Personalización de escalas temporales y franjas horarias
