@@ -63,6 +63,29 @@ function NotesPage(props) {
     }
   }, [searchQuery, notes, plugin]);
   
+
+  // Escuchar evento para crear nota desde evento
+  React.useEffect(() => {
+    if (!core || !plugin) return;
+    
+    const handleCreateFromEvent = (data) => {
+      if (data && data.fromEvent) {
+        setCreateFromEvent(data.fromEvent);
+        setShowCreateForm(true);
+      }
+    };
+    
+    const unsub = core.events.subscribe(
+      plugin.id,
+      'createNoteFromEvent',
+      handleCreateFromEvent
+    );
+    
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, [core, plugin]);
+
   // Manejar creación de nueva nota
   const handleCreateNote = (title, content, linkedEventId, linkedEventTitle) => {
     if (plugin) {

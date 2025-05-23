@@ -7,7 +7,7 @@ export default {
   // Metadatos del plugin
   id: 'simple-notes',
   name: 'Notas Simples',
-  version: '1.2.0', // Incrementado por la vinculación con eventos
+  version: '1.2.1', // Actualizado
   description: 'Plugin simple para gestionar notas personales con editor de texto enriquecido y vinculación con eventos',
   author: 'Atlas Plugin Developer',
   
@@ -24,7 +24,6 @@ export default {
   _navigationExtensionId: null,
   _pageExtensionId: null,
   _eventDetailExtensionId: null,
-  _eventMenuExtensionId: null,
   _subscriptions: [],
   
   // Método de inicialización
@@ -54,9 +53,6 @@ export default {
             
             // Registrar extensión para detalles de eventos
             self._registerEventDetailExtension();
-            
-            // Registrar menú contextual para eventos
-            self._registerEventContextMenu();
             
             // Suscribirse a eventos del calendario
             self._setupEventListeners();
@@ -97,10 +93,6 @@ export default {
       
       if (this._eventDetailExtensionId && this._core) {
         this._core.ui.removeExtension(this.id, this._eventDetailExtensionId);
-      }
-      
-      if (this._eventMenuExtensionId && this._core) {
-        this._core.ui.removeExtension(this.id, this._eventMenuExtensionId);
       }
       
       console.log('[Notas Simples] Limpieza completada');
@@ -299,36 +291,14 @@ export default {
     
     console.log('[Notas Simples] Extensión de detalles de evento registrada');
   },
-  
-  // Registrar menú contextual para eventos
-  _registerEventContextMenu: function() {
-    const self = this;
     
-    // Si el sistema tiene soporte para menús contextuales
-    if (self._core.ui.registerContextMenuItem) {
-      self._eventMenuExtensionId = self._core.ui.registerContextMenuItem(
-        self.id,
-        'calendar-event',
-        {
-          label: '📝 Crear nota para este evento',
-          onClick: function(event) {
-            self._createNoteFromEvent(event);
-          },
-          order: 100
-        }
-      );
-      
-      console.log('[Notas Simples] Menú contextual de eventos registrado');
-    }
-  },
-  
   // Crear nota desde un evento
-  _createNoteFromEvent: function(event) {
+  createNoteFromEvent: function(event) {
     if (!event) return;
     
-    // Navegar a la página de notas con parámetros para crear nota
-    if (this._core.navigation && this._core.navigation.navigateToPlugin) {
-      this._core.navigation.navigateToPlugin(this.id, 'notes', {
+    // Intentar navegar a la página de notas para crear
+    const navigateToCreateNote = () => {
+      const params = {
         action: 'create',
         fromEvent: {
           id: event.id,
@@ -336,7 +306,39 @@ export default {
           start: event.start,
           end: event.end
         }
-      });
+      };
+      
+      // Intentar diferentes métodos de navegación
+      if (this._core.navigation && this._core.navigation.navigateToPlugin) {
+        return this._core.navigation.navigateToPlugin(this.id, 'notes', params);
+      } else if (this._core.ui && this._core.ui.navigateToPlugin) {
+        return this._core.ui.navigateToPlugin(this.id, 'notes', params);
+      } else if (this._core.ui && this._core.ui.setActivePlugin) {
+        // Método alternativo: activar el plugin y luego publicar evento
+        this._core.ui.setActivePlugin(this.id, 'notes');
+        // Publicar evento para que NotesPage lo capture
+        setTimeout(() => {
+          this._core.events.publish(this.id, 'createNoteFromEvent', params);
+        }, 100);
+        return true;
+      }
+      
+      return false;
+    };
+    
+    // Intentar navegar
+    const navigated = navigateToCreateNote();
+    
+    if (!navigated) {
+      // Si no se pudo navegar, mostrar mensaje
+      console.error('[Notas Simples] No se pudo abrir el formulario de creación');
+      if (this._core.dialogs && this._core.dialogs.alert) {
+        this._core.dialogs.alert(
+          this.id,
+          'No se pudo abrir el formulario de notas. Por favor, ve a la sección de Notas manualmente.',
+          'Atención'
+        );
+      }
     }
   },
   
@@ -360,6 +362,11 @@ export default {
     
     this._notes.push(newNote);
     this._saveNotes();
+    
+    // Publicar evento para actualizar UI
+    if (this._core && this._core.events) {
+      this._core.events.publish(this.id, 'noteCreated', { note: newNote });
+    }
     
     console.log('[Notas Simples] Nota creada:', newNote.id, linkedEventId ? '(vinculada a evento)' : '');
     return newNote;
@@ -397,6 +404,12 @@ export default {
       }
       
       this._saveNotes();
+      
+      // Publicar evento para actualizar UI
+      if (this._core && this._core.events) {
+        this._core.events.publish(this.id, 'noteUpdated', { note: this._notes[noteIndex] });
+      }
+      
       console.log('[Notas Simples] Nota actualizada:', noteId);
       return this._notes[noteIndex];
     }
@@ -410,6 +423,12 @@ export default {
     
     if (this._notes.length < initialLength) {
       this._saveNotes();
+      
+      // Publicar evento para actualizar UI
+      if (this._core && this._core.events) {
+        this._core.events.publish(this.id, 'noteDeleted', { noteId: noteId });
+      }
+      
       console.log('[Notas Simples] Nota eliminada:', noteId);
       return true;
     }
@@ -458,6 +477,11 @@ export default {
       
       this._notes[noteIndex].modifiedAt = new Date().toISOString();
       this._saveNotes();
+      
+      // Publicar evento para actualizar UI
+      if (this._core && this._core.events) {
+        this._core.events.publish(this.id, 'noteUpdated', { note: this._notes[noteIndex] });
+      }
       
       return this._notes[noteIndex];
     }

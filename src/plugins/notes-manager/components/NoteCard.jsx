@@ -6,6 +6,7 @@ function NoteCard(props) {
   const [editTitle, setEditTitle] = React.useState(note.title);
   const [editContent, setEditContent] = React.useState(note.content);
   const [showEventSelector, setShowEventSelector] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   
   // Obtener los componentes de texto enriquecido del core
   const RichTextEditor = core?.ui?.components?.RichTextEditor;
@@ -335,21 +336,15 @@ function NoteCard(props) {
         display: 'flex',
         flexDirection: 'column'
       },
-      onMouseEnter: (e) => {
-        if (!isSelected) {
-          e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-          e.currentTarget.style.transform = 'translateY(-2px)';
-        }
+      onMouseEnter: () => {
+        setIsHovered(true);
       },
-      onMouseLeave: (e) => {
-        if (!isSelected) {
-          e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-          e.currentTarget.style.transform = 'translateY(0)';
-        }
+      onMouseLeave: () => {
+        setIsHovered(false);
       }
     },
     [
-      // Acciones (botones)
+      // Acciones (botones) - CORREGIDO: Ahora usa el estado isHovered
       React.createElement(
         'div',
         {
@@ -361,12 +356,9 @@ function NoteCard(props) {
             right: 'var(--spacing-sm)',
             display: 'flex',
             gap: 'var(--spacing-xs)',
-            opacity: 0,
+            opacity: isHovered ? 1 : 0,
             transition: 'opacity var(--transition-fast)',
             zIndex: 10
-          },
-          onMouseEnter: (e) => {
-            e.target.style.opacity = 1;
           }
         },
         [
@@ -427,7 +419,7 @@ function NoteCard(props) {
         ]
       ),
       
-      // Título con indicador de vinculación
+      // Título - SIN el indicador de evento (lo movemos abajo)
       React.createElement(
         'div',
         {
@@ -455,20 +447,6 @@ function NoteCard(props) {
               }
             },
             note.title
-          ),
-          note.linkedEventId && React.createElement(
-            'span',
-            {
-              key: 'event-indicator',
-              className: 'material-icons',
-              title: `Vinculada a: ${note.linkedEventTitle}`,
-              style: {
-                fontSize: '18px',
-                color: 'var(--primary-color)',
-                marginTop: '2px'
-              }
-            },
-            'event'
           )
         ]
       ),
@@ -512,7 +490,7 @@ function NoteCard(props) {
           )
       ),
       
-      // Metadatos
+      // Metadatos - MOVIDO: El icono del evento ahora está aquí
       React.createElement(
         'div',
         {
@@ -527,19 +505,59 @@ function NoteCard(props) {
             paddingTop: 'var(--spacing-xs)',
             marginTop: 'auto',
             flexWrap: 'wrap',
-            gap: 'var(--spacing-xs)'
+            gap: 'var(--spacing-xs)',
+            position: 'relative'
           }
         },
         [
+          // Fechas (lado izquierdo)
           React.createElement(
-            'span',
-            { key: 'created' },
-            '📅 ' + formatDate(note.createdAt)
+            'div',
+            {
+              key: 'dates',
+              style: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px'
+              }
+            },
+            [
+              React.createElement(
+                'span',
+                { key: 'created' },
+                '📅 ' + formatDate(note.createdAt)
+              ),
+              note.modifiedAt !== note.createdAt && React.createElement(
+                'span',
+                { key: 'modified', style: { fontSize: '10px', fontStyle: 'italic' } },
+                '✏️ ' + formatDate(note.modifiedAt)
+              )
+            ]
           ),
-          note.modifiedAt !== note.createdAt && React.createElement(
+          
+          // Icono del evento (lado derecho) - REUBICADO AQUÍ
+          note.linkedEventId && React.createElement(
             'span',
-            { key: 'modified', style: { fontSize: '10px', fontStyle: 'italic' } },
-            '✏️ ' + formatDate(note.modifiedAt)
+            {
+              key: 'event-indicator',
+              className: 'material-icons',
+              title: `Vinculada a: ${note.linkedEventTitle}`,
+              style: {
+                fontSize: '20px',
+                color: 'var(--primary-color)',
+                cursor: 'help',
+                transition: 'all var(--transition-fast)'
+              },
+              onMouseEnter: (e) => {
+                e.target.style.transform = 'scale(1.1)';
+                e.target.style.color = 'var(--primary-hover)';
+              },
+              onMouseLeave: (e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.color = 'var(--primary-color)';
+              }
+            },
+            'event'
           )
         ]
       )
@@ -547,13 +565,9 @@ function NoteCard(props) {
   );
 }
 
-// CSS para hacer visible las acciones al hacer hover en la tarjeta
+// CSS actualizado - ya no necesitamos el hover CSS porque usamos estado
 const styleElement = document.createElement('style');
 styleElement.textContent = `
-  .note-card:hover .note-actions {
-    opacity: 1 !important;
-  }
-  
   .note-card.selected {
     animation: pulse 0.3s ease-in-out;
   }

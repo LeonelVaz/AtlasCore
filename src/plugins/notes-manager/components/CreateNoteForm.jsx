@@ -8,9 +8,9 @@ function CreateNoteForm(props) {
   // Obtener los componentes de texto enriquecido del core
   const RichTextEditor = core?.ui?.components?.RichTextEditor;
   
-  // Si viene de un evento, incluir información del evento
+  // Si viene de un evento, preparar el contenido inicial
   React.useEffect(() => {
-    if (fromEvent) {
+    if (fromEvent && RichTextEditor) {
       const eventDate = new Date(fromEvent.start).toLocaleDateString('es-ES', {
         weekday: 'long',
         year: 'numeric',
@@ -20,17 +20,41 @@ function CreateNoteForm(props) {
         minute: '2-digit'
       });
       
-      const eventInfo = `<p><strong>Evento:</strong> ${fromEvent.title}</p><p><strong>Fecha:</strong> ${eventDate}</p><hr><p></p>`;
+      // Contenido inicial con la información del evento
+      const eventInfo = `
+      <p><strong>Evento:</strong> ${fromEvent.title}</p>
+      <p><strong>Fecha:</strong> ${eventDate}</p>
+      <hr>
+      <p><br></p>
+      <p><br></p>
+    `;
+    
       
       setContent(eventInfo);
     }
-  }, [fromEvent]);
+  }, [fromEvent, RichTextEditor]);
   
   const handleSave = () => {
     if (title.trim()) {
+      // Si viene de un evento pero el editor no soporta HTML, crear contenido plano
+      let finalContent = content;
+      
+      if (fromEvent && !RichTextEditor && !content) {
+        const eventDate = new Date(fromEvent.start).toLocaleDateString('es-ES', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        finalContent = `Evento: ${fromEvent.title}\nFecha: ${eventDate}\n\n---\n\n`;
+      }
+      
       onSave(
         title.trim(),
-        content,
+        finalContent,
         fromEvent ? fromEvent.id : null,
         fromEvent ? fromEvent.title : null
       );
@@ -60,7 +84,6 @@ function CreateNoteForm(props) {
         border: '2px solid var(--primary-color)',
         borderRadius: 'var(--border-radius-lg)',
         padding: 'var(--spacing-lg)',
-        marginBottom: 'var(--spacing-lg)',
         boxShadow: 'var(--shadow-lg)',
         animation: 'slideDown 0.3s ease-out'
       }
@@ -178,10 +201,11 @@ function CreateNoteForm(props) {
               key: 'content-rich-editor',
               value: content,
               onChange: handleContentChange,
-              placeholder: 'Escribe el contenido de tu nota aquí... Usa las herramientas para dar formato al texto.',
+              placeholder: 'Escribe el contenido de tu nota aquí...',
               height: '200px',
               toolbar: 'full',
-              className: 'note-rich-editor'
+              className: 'note-rich-editor',
+              initialFocus: !fromEvent // Solo enfocar si no viene de evento
             }) :
             React.createElement(
               'textarea',
@@ -190,7 +214,9 @@ function CreateNoteForm(props) {
                 value: content,
                 onChange: (e) => setContent(e.target.value),
                 onKeyDown: handleKeyPress,
-                placeholder: 'Escribe el contenido de tu nota aquí...',
+                placeholder: fromEvent ? 
+                  'Escribe tus notas sobre el evento aquí...' : 
+                  'Escribe el contenido de tu nota aquí...',
                 rows: 8,
                 style: {
                   width: '100%',
