@@ -4,10 +4,10 @@
 
 **Componentes a desarrollar:**
 1. **Sistema de temas**
-   - Implementación de los tres temas base (Claro, Oscuro, Púrpura Nocturno)
+   - Implementación de temas base (Claro, Oscuro)
    - Sistema de variables CSS para personalización
    - Panel de configuración de apariencia básico
-   - Implementación de temas adicionales (Atlas Dark Blue, Deep Ocean)
+   - Implementación de temas adicionales (Púrpura Nocturno, Atlas Dark Blue, Deep Ocean)
    - Aplicación dinámica de temas sin recarga de página
    - Persistencia de preferencias de tema
 

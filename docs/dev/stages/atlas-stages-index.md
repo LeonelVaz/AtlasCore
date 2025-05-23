@@ -73,30 +73,72 @@ Este documento establece un plan de desarrollo por Stages para la aplicación At
 **Enfoque**: Implementar el sistema de temas y los primeros plugins básicos
 
 **Componentes a desarrollar:**
-1. **Sistema de temas**
-   - Implementación de los tres temas base (Claro, Oscuro, Púrpura Nocturno)
-   - Sistema de variables CSS para personalización
-   - Panel de configuración de apariencia básico
+1.  **Sistema de temas**
+    - Implementación de temas base (Claro, Oscuro)
+    - Sistema de variables CSS para personalización
+    - Panel de configuración de apariencia básico
+    - Implementación de temas adicionales (Púrpura Nocturno, Atlas Dark Blue, Deep Ocean)
+    - Aplicación dinámica de temas sin recarga de página
+    - Persistencia de preferencias de tema
 
-2. **Sistema de escalas de tiempo**
-   - Configuración de densidad visual (píxeles por minuto)
-   - Interfaz para gestionar escala con previsualización
-   - Cálculo automático de tamaños y posiciones según escala
+2.  **Sistema de escalas de tiempo**
+    - Configuración de densidad visual (píxeles por minuto)
+    - Interfaz para gestionar escala con previsualización
+    - Cálculo automático de tamaños y posiciones según escala
+    - Escalas predefinidas (Compacta, Estándar, Cómoda, Espaciosa)
+    - Creación de escalas personalizadas con altura configurable
+    - Persistencia de preferencias de escala
 
-3. **Personalización de franjas horarias**
-   - Implementación de franjas horarias personalizadas
-   - Editor de franjas temporales
-   - Visualización diferenciada por tipo de franja
+3.  **Personalización de horarios**
+    - Implementación de franjas horarias personalizadas
+    - Editor de franjas temporales
+    - Visualización diferenciada por tipo de franja
+    - Creación de tiempos intermedios con botón + entre franjas
+    - Diferenciación visual por tipo y duración de franja
+    - Validación inteligente de tiempos según escala actual
 
-4. **Primer plugin: Notas**
-   - Estructura de plugins básica
-   - Implementación del plugin de notas vinculadas a fechas/eventos
-   - Integración completa con el calendario principal
+4.  **Sistema de plugins**
+    - Estructura de plugins básica
+    - Sistema de carga dinámica de plugins
+    - Registro de plugins y gestión de dependencias
+    - API para extensiones de interfaz de usuario
+    - Sistema de eventos para comunicación entre plugins
+    - Gestión de permisos y seguridad de plugins
+
+5.  **Primer plugin: Notas**
+    - Implementación del plugin de notas vinculadas a fechas/eventos
+    - Integración completa con el calendario principal
+    - Editor de texto enriquecido para notas
+    - Vinculación de notas con eventos específicos
+    - Visualización de notas en la vista de eventos
+
+6.  **Segundo plugin: Contador de Eventos**
+    - Implementación de contador visual de eventos por día
+    - Actualización en tiempo real al crear, mover o eliminar eventos
+    - Interfaz limpia integrada con el estilo de Atlas
+    - Visualización de badges en los headers de días con eventos
+
+7.  **Panel de Desarrolladores**
+    - Implementación de panel de configuración para desarrolladores
+    - Sistema de depuración con Event Debugger
+    - Monitoreo de eventos del sistema en tiempo real
+    - Herramientas para pruebas y diagnóstico
+    - Logs detallados en consola configurables
+    - Visualización de estadísticas de eventos
+
+8.  **Sistema de Seguridad para Plugins**
+    - Implementación de sandbox para ejecución aislada de plugins
+    - Sistema de permisos granular para plugins
+    - Detección y prevención de código malicioso
+    - Monitoreo de recursos utilizados por plugins
+    - Niveles de seguridad configurables (bajo, normal, alto)
+    - Auditoría de actividades de plugins
 
 **Criterios de finalización:**
 - Sistema de temas completamente funcional
 - Personalización de escalas temporales y franjas horarias
-- Primer plugin (Notas) funcional e integrado
+- Sistema de plugins funcional con API documentada
+- Plugins de Notas y Contador de Eventos integrados y funcionales
 - Panel de configuración para gestionar las nuevas opciones
 
 *Para la estructura de archivos detallada, consulte [stage-3.md](stage-3.md)*
