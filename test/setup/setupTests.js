@@ -1,41 +1,44 @@
 // test/setup/setupTests.js
 import '@testing-library/jest-dom';
 
-// Configuración adicional para Jest
-// Esto añade los matchers personalizados como toBeInTheDocument, toHaveClass, etc.
+console.log('--- [setupTests.js] Archivo de setup global INICIADO ---');
 
-// Mock para window.electronAPI 
-// Necesario para probar componentes que verifican window.electronAPI
-Object.defineProperty(window, 'electronAPI', {
-  value: undefined,
-  writable: true
-});
-
-// Mock para window.__appModules
-// Necesario para el registro de módulos
-if (!window.__appModules) {
-  window.__appModules = {};
+if (typeof window.electronAPI === 'undefined') {
+  Object.defineProperty(window, 'electronAPI', {
+    value: undefined, 
+    writable: true,
+    configurable: true, 
+  });
+  // console.log('--- [setupTests.js] window.electronAPI mockeado/asegurado ---');
 }
 
-// Mock para funciones de storage que devuelven Promises
-jest.mock('../../src/services/storage-service', () => ({
-  __esModule: true,
-  default: {
-    get: jest.fn().mockImplementation(() => Promise.resolve([])),
-    set: jest.fn().mockImplementation(() => Promise.resolve(true))
-  }
-}));
+if (!window.__appModules) {
+  window.__appModules = {};
+  // console.log('--- [setupTests.js] window.__appModules mockeado/asegurado ---');
+}
 
-// Suprimir errores de consola durante las pruebas
 const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn; 
+
+const IGNORED_MESSAGES = [
+  'Warning: An update to %s inside a test was not wrapped in act(...)',
+];
+
 console.error = (...args) => {
-  // No mostrar ciertos errores esperados durante las pruebas
-  if (
-    args[0]?.includes?.('Warning:') ||
-    args[0]?.includes?.('Error:') ||
-    args[0]?.includes?.('act(...)')
-  ) {
+  const message = (args.length > 0 && typeof args[0] === 'string') ? args[0] : '';
+  if (IGNORED_MESSAGES.some(ignoredMessage => message.includes(ignoredMessage))) {
     return;
   }
+  // No suprimir errores de RTL por defecto, son importantes para la depuración
   originalConsoleError(...args);
 };
+
+console.warn = (...args) => {
+  const message = (args.length > 0 && typeof args[0] === 'string') ? args[0] : '';
+  if (IGNORED_MESSAGES.some(ignoredMessage => message.includes(ignoredMessage))) {
+    return;
+  }
+  originalConsoleWarn(...args);
+};
+
+console.log('--- [setupTests.js] Archivo de setup global COMPLETADO ---');
