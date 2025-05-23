@@ -3,7 +3,7 @@
  */
 
 // test/unit/electron-detector.test.js
-import { isElectronEnv } from '../../src/utils/electron-detector';
+import { isElectronEnv } from '../../../../src/utils/electron-detector';
 
 describe('Electron Detector', () => {
   // Guardar el window original para restaurarlo después de las pruebas

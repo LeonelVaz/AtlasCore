@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { registerModule, unregisterModule } from '../../core/module/module-registry';
+import { registerModule, unregisterModule } from '../../core/modules/module-registry';
 import WeekView from './week-view';
 import DayView from './day-view';
 import EventForm from './event-form';

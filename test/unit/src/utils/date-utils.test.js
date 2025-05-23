@@ -1,5 +1,5 @@
 // test/unit/date-utils.test.js
-import * as dateUtils from '../../src/utils/date-utils';
+import * as dateUtils from '../../../../src/utils/date-utils';
 
 describe('Date Utils', () => {
   // Fechas para pruebas - Usar formato año, mes (0-11), día para evitar problemas de zona horaria

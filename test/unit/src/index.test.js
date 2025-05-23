@@ -50,7 +50,7 @@ describe('Index', () => {
     
     // No debería lanzar error
     expect(() => {
-      require('../../src/index.jsx');
+      require('../../../src/index.jsx');
     }).not.toThrow();
     
     expect(document.getElementById).toHaveBeenCalledWith('root');
@@ -62,7 +62,7 @@ describe('Index', () => {
     
     // No debería lanzar error
     expect(() => {
-      require('../../src/index.jsx');
+      require('../../../src/index.jsx');
     }).not.toThrow();
     
     expect(document.getElementById).toHaveBeenCalledWith('root');

@@ -97,9 +97,9 @@ atlas-core/
 │   │   │   ├── event-bus.js      # Implementación mejorada
 │   │   │   └── events.js         # Más eventos definidos
 │   │   │
-│   │   ├── module/               # Sistema de registro de módulos
+│   │   ├── modules/               # Sistema de registro de módulos
 │   │   │   ├── module-registry.js # Registro de módulos
-│   │   │   └── module-utils.js   # Utilidades para módulos
+│   │   │   └── calendar-module.js
 │   │   │
 │   │   └── config/               # Configuración global
 │   │       ├── app-config.js     # Configuración de la app

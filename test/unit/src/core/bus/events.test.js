@@ -6,7 +6,7 @@ import {
   StorageEvents,
   UIEvents,
   default as Events
-} from '../../src/core/bus/events';
+} from '../../../../../src/core/bus/events';
 
 describe('Event Definitions', () => {
   test('EventCategories define las categorías correctas', () => {
