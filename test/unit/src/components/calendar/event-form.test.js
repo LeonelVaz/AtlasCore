@@ -241,7 +241,7 @@ describe('EventForm Component', () => {
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
   });
 
-  test('renders extensions and passes props correctly', async () => {
+  test('renderiza extensiones y pasa las props correctamente', async () => {
     // Copia profunda para el estado de este test
     let currentEventInTestExt = JSON.parse(JSON.stringify({ title: 'For Extension', startFormatted: '', endFormatted: '', color: '#2d4b94', start: '', end: '' }));
 

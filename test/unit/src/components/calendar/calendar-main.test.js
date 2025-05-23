@@ -1,4 +1,3 @@
-// test/unit/components/calendar/calendar-main.test.js
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -13,6 +12,9 @@ jest.mock('../../../../../src/services/storage-service', () => ({
 jest.mock('../../../../../src/core/bus/event-bus', () => ({
   subscribe: jest.fn().mockReturnValue(jest.fn()),
   publish: jest.fn(),
+  setDebugMode: jest.fn(), // Añadido por si es usado
+  getActiveEvents: jest.fn().mockReturnValue([]), // Añadido por si es usado
+  getSubscriberCount: jest.fn().mockReturnValue(0), // Añadido por si es usado
 }));
 
 jest.mock('../../../../../src/core/modules/calendar-module', () => ({
@@ -57,9 +59,9 @@ jest.mock('../../../../../src/components/calendar/event-form', () => jest.fn(({ 
     <button data-testid="form-save" onClick={onSave}>Save</button>
     <button data-testid="form-close" onClick={onClose}>Close</button>
     {isEditing && <button data-testid="form-delete" onClick={onDelete}>Delete</button>}
-    <input data-testid="form-title-input" type="text" name="title" defaultValue={event?.title} onChange={onChange} />
-    <input data-testid="form-start-input" type="datetime-local" name="start" defaultValue={event?.startFormatted} onChange={onChange} />
-    <input data-testid="form-end-input" type="datetime-local" name="end" defaultValue={event?.endFormatted} onChange={onChange} />
+    <input data-testid="form-title-input" type="text" name="title" defaultValue={event?.title || ''} onChange={onChange} />
+    <input data-testid="form-start-input" type="datetime-local" name="start" defaultValue={event?.startFormatted || ''} onChange={onChange} />
+    <input data-testid="form-end-input" type="datetime-local" name="end" defaultValue={event?.endFormatted || ''} onChange={onChange} />
   </div>
 )));
 
@@ -73,16 +75,13 @@ jest.mock('../../../../../src/components/calendar/snap-control', () => {
   ));
 });
 
-jest.mock('../../../../../src/components/ui/button', () => jest.fn(({ children, onClick, variant, isActive, 'aria-label': ariaLabel }) => (
-  <button onClick={onClick} data-variant={variant} data-active={isActive} aria-label={ariaLabel}>
+jest.mock('../../../../../src/components/ui/button', () => jest.fn(({ children, onClick, variant, isActive, 'aria-label': ariaLabel, size, disabled, title }) => (
+  <button onClick={onClick} data-variant={variant} data-active={isActive} aria-label={ariaLabel} data-size={size} disabled={disabled} title={title}>
     {children}
   </button>
 )));
 
 // --- MOCKS DE HOOKS ---
-// Estas funciones mockeadas se pueden definir globalmente porque no se usan directamente
-// dentro de los factories de jest.mock, sino que se usan para definir el *retorno*
-// de los hooks mockeados.
 const mockCreateEvent = jest.fn().mockResolvedValue({ id: 'newEventId' });
 const mockUpdateEvent = jest.fn().mockResolvedValue({ id: 'updatedEventId' });
 const mockDeleteEvent = jest.fn().mockResolvedValue(true);
@@ -105,9 +104,8 @@ const mockGoToNextDay = jest.fn();
 const mockGoToToday = jest.fn();
 
 jest.mock('../../../../../src/hooks/use-calendar-events', () => {
-  // Definir el array de eventos aquí dentro, si es necesario que sea constante para el mock
   const internalInitialMockEvents = [{ id: 'ev1', title: 'Initial Event Factory', start: new Date().toISOString(), end: new Date(Date.now() + 3600000).toISOString() }];
-  return () => ({ // La función que devuelve el hook mockeado
+  return () => ({
     events: internalInitialMockEvents,
     getEvents: mockGetEvents,
     createEvent: mockCreateEvent,
@@ -138,9 +136,10 @@ jest.mock('../../../../../src/hooks/use-event-form', () => jest.fn((createEvent,
   handleDeleteEvent: mockHandleDeleteEvent,
 })));
 
+const MOCK_CURRENT_DATE = new Date(2023, 10, 15); // 15 de Noviembre de 2023
 jest.mock('../../../../../src/hooks/use-calendar-navigation', () => () => ({
-  currentDate: new Date(2023, 10, 15),
-  selectedDay: new Date(2023, 10, 15),
+  currentDate: MOCK_CURRENT_DATE,
+  selectedDay: MOCK_CURRENT_DATE,
   setSelectedDay: mockSetSelectedDay,
   goToPreviousWeek: mockGoToPreviousWeek,
   goToNextWeek: mockGoToNextWeek,
@@ -159,7 +158,7 @@ import { setupDebugTools } from '../../../../../src/utils/debug-utils';
 import calendarModule from '../../../../../src/core/modules/calendar-module';
 
 
-describe('CalendarMain Component', () => {
+describe('Componente CalendarMain', () => {
   const originalConsoleError = console.error;
 
   beforeEach(() => {
@@ -173,20 +172,20 @@ describe('CalendarMain Component', () => {
     mockSelectedEventState = null;
     mockShowEventFormState = false;
     mockFormErrorState = '';
-    storageService.get.mockResolvedValue(3);
+    storageService.get.mockResolvedValue(3); // Default maxSimultaneousEvents
   });
 
   afterEach(() => {
     console.error = originalConsoleError;
   });
 
-  test('renders default week view and initializes correctly', async () => {
+  test('renderiza la vista de semana por defecto y se inicializa correctamente', async () => {
     render(<CalendarMain />);
     expect(screen.getByTestId('week-view-mock')).toBeInTheDocument();
     expect(screen.getByText('Semana')).toBeInTheDocument();
     expect(screen.getByText('Día')).toBeInTheDocument();
     expect(screen.getByTestId('snap-control-mock')).toBeInTheDocument();
-    expect(screen.getByText(/Noviembre de 2023/i)).toBeInTheDocument();
+    expect(screen.getByText(/Noviembre de 2023/i)).toBeInTheDocument(); // Ajustado para mock de fecha
 
     await waitFor(() => {
       expect(storageService.get).toHaveBeenCalledWith(STORAGE_KEYS.MAX_SIMULTANEOUS_EVENTS, 3);
@@ -195,14 +194,14 @@ describe('CalendarMain Component', () => {
     expect(calendarModule.init).toHaveBeenCalledTimes(1);
     expect(registerModule).toHaveBeenCalledWith('calendar', expect.any(Object));
     expect(setupDebugTools).toHaveBeenCalledWith(
-      expect.any(Array), // Para events, ya que su referencia exacta puede variar del mock
+      expect.any(Array), 
       mockCreateEvent,
       mockUpdateEvent,
       mockSaveEvents
     );
   });
 
-  test('switches to day view, updates title and navigation', () => {
+  test('cambia a la vista de día, actualiza el título y la navegación', () => {
     render(<CalendarMain />);
     calendarModule.init.mockClear();
     const dayViewButton = screen.getAllByText('Día').find(btn => btn.closest('.calendar-view-toggle'));
@@ -211,8 +210,8 @@ describe('CalendarMain Component', () => {
 
     expect(screen.getByTestId('day-view-mock')).toBeInTheDocument();
     expect(screen.queryByTestId('week-view-mock')).not.toBeInTheDocument();
-    expect(screen.getByText(/15 de noviembre de 2023/i)).toBeInTheDocument();
-    expect(mockSetSelectedDay).toHaveBeenCalledWith(new Date(2023, 10, 15));
+    expect(screen.getByText(/15 de noviembre de 2023/i)).toBeInTheDocument(); // Ajustado para mock de fecha
+    expect(mockSetSelectedDay).toHaveBeenCalledWith(MOCK_CURRENT_DATE);
     expect(calendarModule.init).toHaveBeenCalledTimes(1);
 
     const prevDayButton = screen.getAllByLabelText('Día anterior')[0];
@@ -228,7 +227,7 @@ describe('CalendarMain Component', () => {
     expect(mockGoToNextDay).toHaveBeenCalled();
   });
 
-  test('navigation buttons for week view work correctly', () => {
+  test('los botones de navegación para la vista de semana funcionan correctamente', () => {
     render(<CalendarMain />);
     const prevWeekButton = screen.getAllByLabelText('Semana anterior')[0];
     fireEvent.click(prevWeekButton);
@@ -243,7 +242,7 @@ describe('CalendarMain Component', () => {
     expect(mockGoToNextWeek).toHaveBeenCalled();
   });
 
-  test('handles snap change', () => {
+  test('maneja el cambio de precisión (snap)', () => {
     render(<CalendarMain />);
     calendarModule.init.mockClear();
     fireEvent.click(screen.getByTestId('snap-change-button'));
@@ -251,13 +250,13 @@ describe('CalendarMain Component', () => {
     expect(screen.getByText(`Snap: ${SNAP_VALUES.MEDIUM}`)).toBeInTheDocument();
   });
 
-  describe('Event Form interactions', () => {
+  describe('Interacciones del Formulario de Eventos', () => {
     beforeEach(() => {
-      mockShowEventFormState = true;
+      mockShowEventFormState = true; // Hacemos que el formulario sea visible para estos tests
     });
 
-    test('shows event form for new event and handles save', () => {
-      mockSelectedEventState = null;
+    test('muestra el formulario para un nuevo evento y maneja el guardado', () => {
+      mockSelectedEventState = null; // Aseguramos que es un evento nuevo
       render(<CalendarMain />);
       expect(screen.getByTestId('event-form-mock')).toBeInTheDocument();
       expect(screen.getByText(/Event Form: New/)).toBeInTheDocument();
@@ -266,9 +265,9 @@ describe('CalendarMain Component', () => {
       expect(mockHandleSaveEvent).toHaveBeenCalled();
     });
 
-    test('shows event form for editing event, handles save and delete', () => {
+    test('muestra el formulario para editar un evento, maneja guardado y eliminación', () => {
       mockSelectedEventState = { id: 'event123', title: 'Evento Existente' };
-      mockNewEventState = {
+      mockNewEventState = { // El estado del formulario se actualiza para reflejar el evento seleccionado
           id: 'event123', title: 'Evento Existente', start: new Date().toISOString(), end: new Date(Date.now() + 3600000).toISOString(),
           startFormatted: '2023-01-02T10:00', endFormatted: '2023-01-02T11:00', color: '#ff0000'
       };
@@ -285,7 +284,7 @@ describe('CalendarMain Component', () => {
       expect(mockHandleDeleteEvent).toHaveBeenCalled();
     });
 
-    test('handles form input change and close', () => {
+    test('maneja el cambio de input del formulario y el cierre', () => {
       render(<CalendarMain />);
       const titleInput = screen.getByTestId('form-title-input');
       fireEvent.change(titleInput, { target: { name: 'title', value: 'Nuevo Título Ingresado' } });
@@ -297,14 +296,14 @@ describe('CalendarMain Component', () => {
       expect(mockHandleCloseForm).toHaveBeenCalled();
     });
 
-    test('displays form error if present', () => {
+    test('muestra el error del formulario si está presente', () => {
         mockFormErrorState = 'Este es un error de prueba';
         render(<CalendarMain />);
         expect(screen.getByText(/Error: Este es un error de prueba/)).toBeInTheDocument();
     });
   });
 
-  test('handles cell click from WeekView and DayView', () => {
+  test('maneja el clic en celda desde WeekView y DayView', () => {
     render(<CalendarMain />);
     fireEvent.click(screen.getByTestId('week-cell-click'));
     expect(mockHandleCellClick).toHaveBeenCalledTimes(1);
@@ -318,7 +317,7 @@ describe('CalendarMain Component', () => {
     expect(mockHandleCellClick).toHaveBeenLastCalledWith(expect.any(Date), 10, 30, 30);
   });
 
-  test('handles event click from WeekView and DayView', () => {
+  test('maneja el clic en evento desde WeekView y DayView', () => {
     render(<CalendarMain />);
     fireEvent.click(screen.getByTestId('week-event-click'));
     expect(mockHandleEventClick).toHaveBeenCalledTimes(1);
@@ -332,7 +331,7 @@ describe('CalendarMain Component', () => {
     expect(mockHandleEventClick).toHaveBeenLastCalledWith(expect.objectContaining({ title: 'Test Event Day' }));
   });
 
-  test('handles event update from WeekView and DayView (direct update prop)', () => {
+  test('maneja la actualización de evento desde WeekView y DayView (prop de actualización directa)', () => {
     render(<CalendarMain />);
     fireEvent.click(screen.getByTestId('week-update-event'));
     expect(mockUpdateEvent).toHaveBeenCalledWith('event1-id', { title: 'Updated Week Event' });
@@ -344,7 +343,7 @@ describe('CalendarMain Component', () => {
     expect(mockUpdateEvent).toHaveBeenCalledWith('event2-id', { title: 'Updated Day Event' });
   });
 
-  test('module API setMaxSimultaneousEvents updates state', () => {
+  test('la API del módulo setMaxSimultaneousEvents actualiza el estado', () => {
     render(<CalendarMain />);
     const moduleApi = registerModule.mock.calls[0][1];
     calendarModule.init.mockClear();
@@ -352,11 +351,11 @@ describe('CalendarMain Component', () => {
     act(() => {
       moduleApi.setMaxSimultaneousEvents(5);
     });
-    expect(screen.getByText(/MaxSim: 5/)).toBeInTheDocument();
+    expect(screen.getByText(/MaxSim: 5/)).toBeInTheDocument(); // Asumiendo que el mock de WeekView/DayView renderiza esto
     expect(calendarModule.init).toHaveBeenCalledTimes(1);
   });
 
-  test('module API getters call underlying module functions or return state', () => {
+  test('los getters de la API del módulo llaman a las funciones del módulo subyacente o devuelven el estado', () => {
     render(<CalendarMain />);
     const moduleApi = registerModule.mock.calls[0][1];
 
@@ -366,24 +365,26 @@ describe('CalendarMain Component', () => {
     expect(calendarModule.getEventsForDateRange).toHaveBeenCalled();
     moduleApi.getUpcomingEvents(5);
     expect(calendarModule.getUpcomingEvents).toHaveBeenCalled();
-    moduleApi.getMonthMetadata(10);
+    moduleApi.getMonthMetadata(10); // Mes de Noviembre (0-indexed)
     expect(calendarModule.getMonthMetadata).toHaveBeenCalled();
 
     expect(moduleApi.getCurrentView()).toBe(CALENDAR_VIEWS.WEEK);
-    expect(moduleApi.getSelectedDate()).toEqual(new Date(2023, 10, 15));
+    expect(moduleApi.getSelectedDate()).toEqual(MOCK_CURRENT_DATE);
     moduleApi.getEvents();
     expect(mockGetEvents).toHaveBeenCalled();
   });
   
-  test('handles error when loading maxSimultaneousEvents from storage', async () => {
+  test('maneja errores al cargar maxSimultaneousEvents desde el almacenamiento', async () => {
     storageService.get.mockRejectedValueOnce(new Error('Storage Failed'));
     render(<CalendarMain />);
     await waitFor(() => {
       expect(console.error).toHaveBeenCalledWith('Error al cargar configuración de eventos simultáneos:', expect.any(Error));
     });
+    // Verifica que el valor por defecto (3) se usa
+    expect(screen.getByText(/MaxSim: 3/)).toBeInTheDocument();
   });
 
-  test('eventBus subscription for maxSimultaneousEventsChanged works', async () => {
+  test('la suscripción de eventBus para maxSimultaneousEventsChanged funciona', async () => {
     render(<CalendarMain />);
     expect(calendarModule.init).toHaveBeenCalledTimes(1); 
     calendarModule.init.mockClear(); 
@@ -400,44 +401,48 @@ describe('CalendarMain Component', () => {
     expect(calendarModule.init).toHaveBeenCalledTimes(1); 
   });
 
-  test('unsubscribes from eventBus and unregisters module on unmount', () => {
+  test('se desuscribe de eventBus y desregistra el módulo al desmontar', () => {
     const { unmount } = render(<CalendarMain />);
+    const unsubscribeEventBusMock = eventBus.subscribe.mock.results[0].value; // La función de desuscripción
+    const unsubscribeDebugToolsMock = setupDebugTools.mock.results[0].value; // La función de limpieza de debug tools
+
     unmount();
-    expect(eventBus.subscribe.mock.results[0].value).toHaveBeenCalledTimes(1);
+    expect(unsubscribeEventBusMock).toHaveBeenCalledTimes(1);
     expect(unregisterModule).toHaveBeenCalledWith('calendar');
-    expect(setupDebugTools.mock.results[0].value).toHaveBeenCalledTimes(1);
+    expect(unsubscribeDebugToolsMock).toHaveBeenCalledTimes(1);
   });
 
-   test('toggleView with date argument calls setSelectedDay', () => {
+   test('toggleView con argumento de fecha llama a setSelectedDay', () => {
     render(<CalendarMain />);
     const dayViewButton = screen.getAllByText('Día').find(btn => btn.closest('.calendar-view-toggle'));
-    fireEvent.click(dayViewButton);
-    expect(mockSetSelectedDay).toHaveBeenCalledWith(new Date(2023, 10, 15));
+    fireEvent.click(dayViewButton); // Esto ya llama a toggleView con la currentDate
+    expect(mockSetSelectedDay).toHaveBeenCalledWith(MOCK_CURRENT_DATE);
   });
 
-  test('covers console.error in useEffect for maxSimultaneousEvents (parseInt NaN case)', async () => {
+  test('cubre console.error en useEffect para maxSimultaneousEvents (caso parseInt NaN)', async () => {
     storageService.get.mockResolvedValue("not-a-number");
     render(<CalendarMain />);
     await waitFor(() => {
         expect(storageService.get).toHaveBeenCalled();
     });
+    // Debe usar el valor por defecto de 3 si el valor almacenado no es un número válido
     expect(screen.getByText(/MaxSim: 3/)).toBeInTheDocument(); 
   });
 
-  test('covers moduleAPI.setMaxSimultaneousEvents with invalid values', () => {
+  test('cubre moduleAPI.setMaxSimultaneousEvents con valores inválidos', () => {
     render(<CalendarMain />);
     const moduleApi = registerModule.mock.calls[0][1];
     calendarModule.init.mockClear();
     
     act(() => {
-      expect(moduleApi.setMaxSimultaneousEvents(0)).toBe(1);
+      expect(moduleApi.setMaxSimultaneousEvents(0)).toBe(1); // Debe ser clampado a 1
     });
     expect(screen.getByText(/MaxSim: 1/)).toBeInTheDocument();
     expect(calendarModule.init).toHaveBeenCalledTimes(1);
     calendarModule.init.mockClear();
 
     act(() => {
-      expect(moduleApi.setMaxSimultaneousEvents(20)).toBe(10);
+      expect(moduleApi.setMaxSimultaneousEvents(20)).toBe(10); // Debe ser clampado a 10
     });
     expect(screen.getByText(/MaxSim: 10/)).toBeInTheDocument();
     expect(calendarModule.init).toHaveBeenCalledTimes(1);
