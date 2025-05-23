@@ -3,15 +3,15 @@
  */
 
 // Desactivar el mock global para poder probar la implementación real
-jest.unmock('../../src/services/storage-service');
+jest.unmock('../../../../src/services/storage-service');
 
 // Importar la implementación real
-import storageService from '../../src/services/storage-service';
-import * as eventBus from '../../src/core/bus/event-bus';
-import { STORAGE_KEYS } from '../../src/core/config/constants';
+import storageService from '../../../../src/services/storage-service';
+import * as eventBus from '../../../../src/core/bus/event-bus';
+import { STORAGE_KEYS } from '../../../../src/core/config/constants';
 
 // Mock de eventBus
-jest.mock('../../src/core/bus/event-bus', () => ({
+jest.mock('../../../../src/core/bus/event-bus', () => ({
   publish: jest.fn(),
   default: {
     publish: jest.fn()

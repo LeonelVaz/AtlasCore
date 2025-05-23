@@ -5,7 +5,7 @@
 import React from 'react';
 
 // Mock para la importación de CSS
-jest.mock('../../src/styles/index.css', () => ({}));
+jest.mock('../../../src/styles/index.css', () => ({}));
 
 // Mock para react-dom/client
 jest.mock('react-dom/client', () => ({
@@ -15,7 +15,7 @@ jest.mock('react-dom/client', () => ({
 }));
 
 // Mock para el componente App
-jest.mock('../../src/app', () => ({
+jest.mock('../../../src/app', () => ({
   __esModule: true,
   default: () => <div>Mock App</div>
 }));

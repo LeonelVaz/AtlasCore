@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Importar el componente a probar
-import WindowControls from '../../src/components/ui/window-controls';
+import WindowControls from '../../../../../src/components/ui/window-controls';
 
 describe('WindowControls Component', () => {
   // Configuración para cada prueba
