@@ -226,7 +226,7 @@ Para detalles completos sobre el sistema de internacionalización, consulte la [
 
 ---
 
-# Estructura de Carpetas y Archivos
+# Estructura de Carpetas y Archivos (Puede cambiarse dinámicamente en función de la complejidad del proyecto y su evolución, no representa el estado actual de la aplicación actual)
 
 ```
 atlas-core/
