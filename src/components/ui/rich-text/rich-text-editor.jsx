@@ -201,6 +201,7 @@ function RichTextEditor({
         onKeyDown={handleKeyDown}
         style={{ minHeight: height }}
         suppressContentEditableWarning={true}
+        data-testid="rich-editor-content-div"
       >
         {!isInitialized.current && (htmlContent || placeholder)}
       </div>

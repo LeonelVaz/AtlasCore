@@ -138,6 +138,7 @@ function RichTextViewer({
       className={`rich-text-viewer ${className}`} 
       style={viewerStyle}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+      data-testid="rich-text-viewer-container" 
     />
   );
 }
