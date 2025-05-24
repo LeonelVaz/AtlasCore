@@ -355,12 +355,17 @@ class CalendarModule {
     const year = targetDate.getFullYear();
     const monthIndex = targetDate.getMonth();
     
-    // Obtener el primer y último día del mes
     const firstDay = new Date(year, monthIndex, 1);
-    const lastDay = new Date(year, monthIndex + 1, 0);
+    const lastDay = new Date(year, monthIndex + 1, 0); 
     const daysInMonth = lastDay.getDate();
     
-    // Inicializar array de metadatos
+    // DEBUGGING:
+    console.log(`getMonthMetadata - Input month: ${month}`);
+    console.log(`TargetDate: ${targetDate.toISOString()}, Year: ${year}, MonthIndex: ${monthIndex}`);
+    console.log(`LastDay object: ${lastDay.toISOString()}`);
+    console.log(`Calculated daysInMonth: ${daysInMonth}`);
+    // FIN DEBUGGING
+    
     const metadata = [];
     
     // Para cada día del mes
