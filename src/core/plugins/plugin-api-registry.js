@@ -79,14 +79,13 @@ class PluginAPIRegistry {
     const self = this;
     
     return function(...args) {
+      let callerPluginId; // Declarar aquí para que esté disponible en try y catch
       try {
         const callerInfo = self._getCallerInfo();
-        const callerPluginId = callerInfo.pluginId;
+        callerPluginId = callerInfo.pluginId; // Asignar valor
         
         if (!self._checkAPIAccess(callerPluginId, pluginId, methodName)) {
           const errorMsg = `Acceso denegado: ${callerPluginId} no tiene permiso para acceder a ${pluginId}.${methodName}`;
-          console.error(errorMsg);
-          
           self._logAPIAccess(callerPluginId, pluginId, methodName, false, errorMsg);
           
           eventBus.publish('pluginSystem.unauthorizedAPIAccess', {
@@ -95,20 +94,21 @@ class PluginAPIRegistry {
             method: methodName
           });
           
-          throw new Error(errorMsg);
+          throw new Error(errorMsg); // Este es el error que el test espera
         }
         
         self._logAPIAccess(callerPluginId, pluginId, methodName, true);
         return originalMethod.apply(this, args);
       } catch (error) {
+        // Ahora callerPluginId está disponible aquí
         pluginErrorHandler.handleError(
           pluginId,
           `apiMethod.${methodName}`,
-          error,
-          { caller: callerPluginId || 'unknown' }
+          error, 
+          { caller: callerPluginId || 'app' } // Usar 'app' como fallback si callerPluginId fuera undefined por otra razón
         );
         
-        throw error;
+        throw error; // Re-lanzar el error original
       }
     };
   }
