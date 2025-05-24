@@ -302,7 +302,7 @@ const PermissionsManager = ({ onPluginClick, compact = false }) => {
         <div className="permissions-content">
           {activeTab === 'pending' && (
             <>
-              {pendingPermissions.length > 0 ? (
+              {filterPermissions(pendingPermissions).length > 0 ? ( 
                 <>
                   <div className="permissions-filter">
                     <input 
