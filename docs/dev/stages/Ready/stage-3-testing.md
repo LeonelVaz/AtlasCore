@@ -1,0 +1,1 @@
+Se crearán pruebras para cada script que se cree en el proyecto.
