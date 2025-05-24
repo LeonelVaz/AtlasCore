@@ -3,22 +3,54 @@ import '@testing-library/jest-dom';
 
 console.log('--- [setupTests.js] Archivo de setup global INICIADO ---');
 
+// --- INICIO: Mocks para características de bundler (Vite/Webpack) ---
+
+// Mock para import() dinámico y import.meta.glob
+if (typeof global.import !== 'function') {
+  // @ts-ignore
+  global.import = jest.fn(); // Hacer que global.import sea una función mock
+}
+// @ts-ignore
+if (!global.import.meta) {
+  // @ts-ignore
+  global.import.meta = { glob: jest.fn() };
+// @ts-ignore
+} else if (typeof global.import.meta.glob !== 'function') {
+  // @ts-ignore
+  global.import.meta.glob = jest.fn();
+}
+
+
+// Mock para require.context (Webpack)
+if (typeof global.require === 'undefined') {
+  // @ts-ignore
+  global.require = {};
+}
+if (typeof global.require.context === 'undefined') {
+  // @ts-ignore
+  global.require.context = jest.fn(() => ({
+    keys: jest.fn(() => []),
+    call: jest.fn(),
+    resolve: jest.fn(),
+  }));
+}
+// --- FIN: Mocks para características de bundler ---
+
+
 if (typeof window.electronAPI === 'undefined') {
   Object.defineProperty(window, 'electronAPI', {
-    value: undefined, 
+    value: undefined,
     writable: true,
-    configurable: true, 
+    configurable: true,
   });
-  // console.log('--- [setupTests.js] window.electronAPI mockeado/asegurado ---');
 }
 
 if (!window.__appModules) {
   window.__appModules = {};
-  // console.log('--- [setupTests.js] window.__appModules mockeado/asegurado ---');
 }
 
 const originalConsoleError = console.error;
-const originalConsoleWarn = console.warn; 
+const originalConsoleWarn = console.warn;
 
 const IGNORED_MESSAGES = [
   'Warning: An update to %s inside a test was not wrapped in act(...)',
@@ -29,7 +61,6 @@ console.error = (...args) => {
   if (IGNORED_MESSAGES.some(ignoredMessage => message.includes(ignoredMessage))) {
     return;
   }
-  // No suprimir errores de RTL por defecto, son importantes para la depuración
   originalConsoleError(...args);
 };
 
