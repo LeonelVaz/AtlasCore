@@ -1,1 +1,1 @@
-Se crearán pruebras para cada script que se cree en el proyecto.
+Se crearán pruebras para cada script que se cree en el proyecto. Hasta un coverage que sea de 70%.
