@@ -1,3 +1,5 @@
+// src\core\plugins\plugin-security-manager.js
+
 /**
  * Gestor de Seguridad para el Sistema de Plugins de Atlas
  */

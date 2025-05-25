@@ -1,3 +1,5 @@
+// plugin-security-manager.test.js
+
 /**
  * @jest-environment jsdom
  */
