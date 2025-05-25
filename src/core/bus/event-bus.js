@@ -1,3 +1,5 @@
+// src\core\bus\event-bus.js
+
 /**
  * EventBus - Sistema centralizado de comunicación entre módulos
  * 

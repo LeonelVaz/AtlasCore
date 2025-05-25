@@ -1,3 +1,5 @@
+// src\components\ui\sidebar\sidebar.jsx
+
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import SidebarExtensions from '../../plugin-extension/sidebar-extensions';
