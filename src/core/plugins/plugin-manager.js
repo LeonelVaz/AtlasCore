@@ -116,6 +116,8 @@ class PluginManager {
     return count;
   }
 
+
+  
   async _initializeSecuritySystem(options = {}) {
     try {
       // console.log('[PM] Inicializando sistema de seguridad para plugins...');
@@ -156,6 +158,41 @@ class PluginManager {
       return false;
     }
   }
+
+  async rejectPluginPermissions(pluginId, permissions) {
+    if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
+        console.error('[PM] Argumentos inválidos para rejectPluginPermissions', { pluginId, permissions });
+        return false;
+    }
+    if (!this.initialized) {
+        console.warn("[PM] PluginManager no inicializado. No se pueden rechazar permisos.");
+        return false;
+    }
+    if (!this.securityInitialized) {
+        console.warn("[PM] Sistema de seguridad no inicializado. No se pueden rechazar permisos.");
+        return false;
+    }
+
+    try {
+        const success = pluginPermissionChecker.rejectPermissions(pluginId, permissions);
+        if (success) {
+            // Opcional: Guardar el estado o realizar otras acciones si es necesario
+            // Por ejemplo, si el estado de los permisos afecta algo que pluginManager rastrea directamente.
+            // await this._savePluginStates(); // Si el estado de los permisos afecta `pluginRegistry.pluginStates`
+
+            eventBus.publish('pluginSystem.permissionsRejectedByManager', { pluginId, permissions });
+            console.log(`[PM] Permisos ${permissions.join(', ')} rechazados para ${pluginId}`);
+        } else {
+            console.warn(`[PM] Falló el rechazo de permisos para ${pluginId} desde el permissionChecker.`);
+        }
+        return success;
+    } catch (error) {
+        console.error(`[PM] Error al rechazar permisos para ${pluginId}:`, error);
+        this._publishEvent('error', { pluginId, operation: 'rejectPermissions', error: error.message });
+        return false;
+    }
+  }
+
 
   async _loadSecuritySettings() {
     try {
