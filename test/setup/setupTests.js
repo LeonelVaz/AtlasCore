@@ -6,9 +6,12 @@ console.log('--- [setupTests.js] Archivo de setup global INICIADO ---');
 // --- INICIO: Mocks para características de bundler (Vite/Webpack) ---
 
 // Mock para import() dinámico y import.meta.glob
+// Dado que babel-plugin-transform-vite-meta-glob elimina import.meta.glob,
+// este mock para import.meta.glob no será usado por el código transformado.
+// Se mantiene por si acaso o para otros módulos.
 if (typeof global.import !== 'function') {
   // @ts-ignore
-  global.import = jest.fn(); // Hacer que global.import sea una función mock
+  global.import = jest.fn();
 }
 // @ts-ignore
 if (!global.import.meta) {
@@ -26,11 +29,12 @@ if (typeof global.require === 'undefined') {
   // @ts-ignore
   global.require = {};
 }
-if (typeof global.require.context === 'undefined') {
+// @ts-ignore
+if (typeof global.require.context !== 'function') { // Asegurar que solo se defina si no existe
   // @ts-ignore
-  global.require.context = jest.fn(() => ({
+  global.require.context = jest.fn(() => ({ // Esta es la función que se llamará
     keys: jest.fn(() => []),
-    call: jest.fn(),
+    call: jest.fn((self, key) => ({ default: null })), // Simula context(key)
     resolve: jest.fn(),
   }));
 }
