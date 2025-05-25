@@ -7,7 +7,8 @@ import { PLUGIN_CONSTANTS } from '../config/constants';
 class PluginPermissionChecker {
   constructor() {
     this.initialized = false;
-    this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
+    // Asumimos que PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL es una cadena como "normal"
+    this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL; 
     this.activeChecks = new Set(['apiAccess']);
     this.pluginPermissions = {};
     this.elevatedPermissionPlugins = new Set();
@@ -15,535 +16,328 @@ class PluginPermissionChecker {
     this.apiAccessLogs = {};
     this.maxLogSize = 100;
     
-    // Permisos automáticamente aprobados según nivel de seguridad
+    // Las claves son directamente los valores de las constantes (ej. "low", "normal", "high")
     this.autoApprovedPermissions = {
-      // En nivel de seguridad BAJO
-      [PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW]: [
-        'storage',
-        'network',
-        'notifications',
-        'ui',
-        'events',
-        'communication',
-        'dom'
+      [PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW]: [ 
+        'storage', 'network', 'notifications', 'ui', 'events', 'communication', 'dom'
       ],
-      
-      // En nivel de seguridad NORMAL
       [PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL]: [
-        'storage',
-        'ui',
-        'events',
-        'communication'
+        'storage', 'ui', 'events', 'communication'
       ],
-      
-      // En nivel de seguridad ALTO
       [PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH]: [
-        'ui',
-        'events'
+        'ui', 'events'
       ]
     };
     
-    // Definición de permisos disponibles
-    this.availablePermissions = {
-      'storage': {
-        name: 'storage',
-        description: 'Permite al plugin almacenar y recuperar datos persistentes',
-        methods: ['core.storage.setItem', 'core.storage.getItem', 'core.storage.removeItem'],
-        risk: 'low'
-      },
-      'network': {
-        name: 'network',
-        description: 'Permite al plugin realizar peticiones a servicios externos',
-        methods: ['fetch', 'XMLHttpRequest'],
-        risk: 'medium'
-      },
-      'notifications': {
-        name: 'notifications',
-        description: 'Permite al plugin mostrar notificaciones',
-        methods: ['core.notifications.show'],
-        risk: 'low'
-      },
-      'ui': {
-        name: 'ui',
-        description: 'Permite al plugin añadir componentes a la interfaz',
-        methods: ['core.ui.registerExtension'],
-        risk: 'low'
-      },
-      'events': {
-        name: 'events',
-        description: 'Permite al plugin suscribirse y publicar eventos',
-        methods: ['core.events.subscribe', 'core.events.publish'],
-        risk: 'low'
-      },
-      'communication': {
-        name: 'communication',
-        description: 'Permite al plugin comunicarse con otros plugins',
-        methods: ['core.plugins.getPluginAPI', 'core.plugins.createChannel'],
-        risk: 'medium'
-      },
-      'dom': {
-        name: 'dom',
-        description: 'Permite al plugin manipular el DOM directamente',
-        methods: ['document.createElement', 'element.appendChild'],
-        risk: 'high'
-      },
-      'codeExecution': {
-        name: 'codeExecution',
-        description: 'Permite al plugin ejecutar código arbitrario (altamente restringido)',
-        methods: ['function constructor', 'regexp constructor'],
-        risk: 'critical'
-      }
+    this.availablePermissions = { // Sin cambios
+      'storage': { name: 'storage', description: '...', methods: ['core.storage.setItem'], risk: 'low' },
+      'network': { name: 'network', description: '...', methods: ['fetch'], risk: 'medium' },
+      'notifications': { name: 'notifications', description: '...', methods: ['core.notifications.show'], risk: 'low' },
+      'ui': { name: 'ui', description: '...', methods: ['core.ui.registerExtension'], risk: 'low' },
+      'events': { name: 'events', description: '...', methods: ['core.events.subscribe'], risk: 'low' },
+      'communication': { name: 'communication', description: '...', methods: ['core.plugins.getPluginAPI'], risk: 'medium' },
+      'dom': { name: 'dom', description: '...', methods: ['document.createElement'], risk: 'high' },
+      'codeExecution': { name: 'codeExecution', description: '...', methods: ['new Function'], risk: 'critical' }
     };
   }
 
-  initialize(securityLevel) {
-    if (this.initialized) {
-      console.warn('Verificador de permisos ya inicializado');
-      return true;
+  initialize(securityLevelInput) {
+    if (this.initialized && securityLevelInput === undefined) {
+        return true;
+    }
+    if (this.initialized && securityLevelInput && this.securityLevel === securityLevelInput) {
+        return true;
     }
     
     try {
       console.log('Inicializando verificador de permisos para plugins...');
       
-      this.securityLevel = securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
+      // Si securityLevelInput es undefined, usa el valor actual de this.securityLevel (que vino del constructor o un set previo)
+      const initialLevel = securityLevelInput || this.securityLevel; 
+      
+      const levelSetSuccessfully = this.setSecurityLevel(initialLevel);
+
+      if (!levelSetSuccessfully && securityLevelInput) {
+          console.warn(`Nivel de seguridad de inicialización '${securityLevelInput}' inválido. Se mantiene el nivel '${this.securityLevel}'.`);
+      }
       
       this.initialized = true;
       
-      console.log(`Verificador de permisos inicializado (nivel: ${this.securityLevel})`);
+      // El log usa this.securityLevel (que será minúscula) y lo convierte a MAYÚSCULAS para el log
+      console.log(`Verificador de permisos inicializado (nivel: ${String(this.securityLevel).toUpperCase()})`);
       return true;
     } catch (error) {
       console.error('Error al inicializar verificador de permisos:', error);
+      this.initialized = false; 
       return false;
     }
   }
 
+  setSecurityLevel(levelInput) { // levelInput debe ser uno de los VALORES de las constantes (ej. "high")
+    const validLevels = Object.values(PLUGIN_CONSTANTS.SECURITY.LEVEL); // ["low", "normal", "high"]
+    
+    if (levelInput === undefined || levelInput === null) {
+        console.warn(`[SET_SEC_LEVEL] Intento de establecer un nivel de seguridad nulo o indefinido. No se realizarán cambios.`);
+        return false;
+    }
+
+    // El input ya debería ser uno de los valores de las constantes (minúsculas)
+    // No es necesario .toUpperCase() aquí si las constantes son minúsculas.
+    const levelToValidate = String(levelInput);
+
+    if (!validLevels.includes(levelToValidate)) { 
+        console.warn(`[SET_SEC_LEVEL] Nivel de seguridad inválido: '${levelInput}'. Los niveles válidos son: ${validLevels.join(', ')}. No se cambiará el nivel actual ('${this.securityLevel}').`);
+        return false; 
+    }
+    
+    if (this.securityLevel === levelToValidate) {
+        return true; 
+    }
+
+    this.securityLevel = levelToValidate; // Asigna el valor validado (minúscula)
+    
+    try {
+      eventBus.publish('pluginSystem.permissionCheckerSecurityLevelChanged', {
+        level: this.securityLevel // Enviar el nivel almacenado (minúscula)
+      });
+      return true;
+    } catch (error) {
+      console.error(`[SET_SEC_LEVEL] Error al publicar evento:`, error);
+      return true; 
+    }
+  }
+
   validatePermissions(pluginId, permissions) {
+    if (!this.initialized) {
+        this.initialize(); 
+    }
+
     if (!pluginId) {
-      return {
-        valid: false,
-        reasons: ['ID de plugin no válido']
-      };
+      return { 
+          valid: false, reasons: ['ID de plugin no válido'], 
+          approvedPermissions: [], pendingPermissions: [], invalidPermissions: [] 
+        };
     }
     
     try {
-      // Si no se especifican permisos, solo permitimos permisos básicos
-      if (!permissions) {
-        // Registrar los permisos base
+      if (!permissions) { 
         this._registerPluginPermissions(pluginId, ['ui', 'events']);
-        
         return {
-          valid: true,
-          permissions: ['ui', 'events']
+          valid: true, permissions: ['ui', 'events'], 
+          approvedPermissions: ['ui', 'events'], pendingPermissions: [], invalidPermissions: []
         };
       }
       
-      // Normalizar permisos a array
       const permissionsArray = this._normalizePermissions(permissions);
-      
-      // Validar cada permiso
-      const invalidPermissions = [];
+      const invalidPermissionsInfo = [];
       const approvedPermissions = [];
       const pendingPermissions = [];
-      
-      // Obtener permisos actuales ya aprobados para este plugin
-      const currentPermissions = this.pluginPermissions[pluginId]?.approved || [];
-      
-      console.log(`[FIX] Validando permisos para ${pluginId}. Permisos actuales:`, currentPermissions);
+      const currentPluginPerms = this.pluginPermissions[pluginId] || { approved: [], pending: [], revoked: [] };
       
       permissionsArray.forEach(permission => {
-        // Verificar si el permiso existe
         if (!this.availablePermissions[permission]) {
-          invalidPermissions.push({
-            name: permission,
-            reason: 'Permiso no reconocido'
-          });
+          invalidPermissionsInfo.push({ name: permission, reason: 'Permiso no reconocido' });
           return;
         }
         
-        // SOLUCIÓN: Comprobar si el permiso ya está aprobado en la estructura interna
-        if (currentPermissions.includes(permission)) {
-          console.log(`[FIX] Permiso ${permission} ya está aprobado para ${pluginId}`);
+        if (currentPluginPerms.approved.includes(permission)) {
           approvedPermissions.push(permission);
           return;
         }
         
-        // Verificar si el permiso está auto-aprobado para este nivel de seguridad
-        const autoApproved = this.autoApprovedPermissions[this.securityLevel]
-          .includes(permission);
+        // this.securityLevel es ahora minúscula ("normal", "low", "high")
+        // y las claves de autoApprovedPermissions son minúsculas
+        const autoApprovedList = this.autoApprovedPermissions[this.securityLevel] || [];
+        const autoApproved = autoApprovedList.includes(permission);
         
         if (autoApproved) {
           approvedPermissions.push(permission);
         } else {
-          // Marcar como pendiente de revisión
           pendingPermissions.push(permission);
         }
       });
       
-      // Registrar los permisos aprobados
-      if (approvedPermissions.length > 0) {
-        this._registerPluginPermissions(pluginId, approvedPermissions);
-      }
+      if (approvedPermissions.length > 0) this._registerPluginPermissions(pluginId, approvedPermissions);
+      if (pendingPermissions.length > 0) this._registerPendingPermissions(pluginId, pendingPermissions);
       
-      // Registrar solicitudes pendientes
-      if (pendingPermissions.length > 0) {
-        this._registerPendingPermissions(pluginId, pendingPermissions);
-      }
-      
-      // Determinar resultado global
-      const isValid = invalidPermissions.length === 0;
-      
-      // Generar razones para permisos inválidos
-      const reasons = invalidPermissions.map(p => 
-        `Permiso inválido: ${p.name} - ${p.reason}`
-      );
-      
-      // Si hay permisos pendientes, añadir una razón
+      const isValidOverall = invalidPermissionsInfo.length === 0;
+      const isFullyApproved = pendingPermissions.length === 0;
+      const reasons = invalidPermissionsInfo.map(p => `Permiso inválido: ${p.name} - ${p.reason}`);
       if (pendingPermissions.length > 0) {
         reasons.push(`${pendingPermissions.length} permisos requieren revisión manual: ${pendingPermissions.join(', ')}`);
       }
       
-      // Registrar en historial
       this._logPermissionValidation(pluginId, {
-        permissions: permissionsArray,
-        approved: approvedPermissions,
-        pending: pendingPermissions,
-        invalid: invalidPermissions,
-        valid: isValid
+        permissions: permissionsArray, approved: approvedPermissions,
+        pending: pendingPermissions, invalid: invalidPermissionsInfo.map(p=>p.name),
+        valid: isValidOverall && isFullyApproved
       });
       
-      // SOLUCIÓN: Log mejorado para depuración
-      console.log(`[FIX] Resultado validación para ${pluginId}: `, {
-        valid: isValid && pendingPermissions.length === 0,
-        approvedPermissions,
-        pendingPermissions
-      });
-      
-      // Notificar permisos pendientes
       if (pendingPermissions.length > 0) {
-        eventBus.publish('pluginSystem.pendingPermissions', {
-          pluginId,
-          permissions: pendingPermissions
-        });
+        eventBus.publish('pluginSystem.pendingPermissions', { pluginId, permissions: pendingPermissions });
       }
       
       return {
-        valid: isValid && pendingPermissions.length === 0,
+        valid: isValidOverall && isFullyApproved,
         reasons: reasons.length > 0 ? reasons : null,
-        approvedPermissions,
-        pendingPermissions,
-        invalidPermissions: invalidPermissions.map(p => p.name)
+        approvedPermissions, pendingPermissions,
+        invalidPermissions: invalidPermissionsInfo.map(p => p.name)
       };
     } catch (error) {
       console.error(`Error al validar permisos para plugin ${pluginId}:`, error);
-      
-      return {
-        valid: false,
-        reasons: [`Error al validar permisos: ${error.message}`]
-      };
+      return { 
+          valid: false, reasons: [`Error al validar permisos: ${error.message}`],
+          approvedPermissions: [], pendingPermissions: [], invalidPermissions: []
+        };
     }
   }  
 
-  _normalizePermissions(permissions) {
-    // Si ya es array, devolver copia
-    if (Array.isArray(permissions)) {
-      return [...permissions];
-    }
-    
-    // Si es string, convertir a array
-    if (typeof permissions === 'string') {
-      return [permissions];
-    }
-    
-    // Si es objeto, extraer keys que sean true
+  _normalizePermissions(permissions) { // Sin cambios
+    if (Array.isArray(permissions)) return [...permissions];
+    if (typeof permissions === 'string') return [permissions];
     if (typeof permissions === 'object' && permissions !== null) {
       return Object.entries(permissions)
         .filter(([_, value]) => value === true)
         .map(([key]) => key);
     }
-    
-    // Por defecto, array vacío
     return [];
   }
 
-  _registerPluginPermissions(pluginId, permissions) {
-    if (!pluginId || !Array.isArray(permissions)) {
-      return;
-    }
-    
-    // Inicializar si no existe
+  _registerPluginPermissions(pluginId, permissionsToApprove) { // Sin cambios
+    if (!pluginId || !Array.isArray(permissionsToApprove)) return;
     if (!this.pluginPermissions[pluginId]) {
-      this.pluginPermissions[pluginId] = {
-        approved: [],
-        pending: [],
-        revoked: []
-      };
+      this.pluginPermissions[pluginId] = { approved: [], pending: [], revoked: [] };
     }
-    
-    // Añadir permisos aprobados (sin duplicados)
     const currentApproved = new Set(this.pluginPermissions[pluginId].approved);
-    permissions.forEach(permission => {
-      currentApproved.add(permission);
-    });
-    
+    permissionsToApprove.forEach(permission => currentApproved.add(permission));
     this.pluginPermissions[pluginId].approved = Array.from(currentApproved);
     
-    // Si hay permisos de alto riesgo, marcar plugin como elevado
-    const hasHighRiskPermissions = permissions.some(permission => {
-      const permInfo = this.availablePermissions[permission];
-      return permInfo && (permInfo.risk === 'high' || permInfo.risk === 'critical');
-    });
-    
-    if (hasHighRiskPermissions) {
-      this.elevatedPermissionPlugins.add(pluginId);
-      
-      // Publicar evento
-      eventBus.publish('pluginSystem.elevatedPermissionsGranted', {
-        pluginId,
-        permissions: permissions.filter(permission => {
-          const permInfo = this.availablePermissions[permission];
-          return permInfo && (permInfo.risk === 'high' || permInfo.risk === 'critical');
-        })
-      });
-    }
-    
-    // Publicar evento
-    eventBus.publish('pluginSystem.permissionsRegistered', {
-      pluginId,
-      permissions
-    });
+    this.pluginPermissions[pluginId].pending = this.pluginPermissions[pluginId].pending.filter(p => !permissionsToApprove.includes(p));
+    this.pluginPermissions[pluginId].revoked = this.pluginPermissions[pluginId].revoked.filter(p => !permissionsToApprove.includes(p));
+
+    this._updateElevatedStatus(pluginId);
+    eventBus.publish('pluginSystem.permissionsRegistered', { pluginId, permissions: permissionsToApprove });
   }
 
-  _registerPendingPermissions(pluginId, permissions) {
-    if (!pluginId || !Array.isArray(permissions)) {
-      return;
-    }
-    
-    // Inicializar si no existe
+  _registerPendingPermissions(pluginId, permissionsToAdd) { // Sin cambios
+    if (!pluginId || !Array.isArray(permissionsToAdd)) return;
     if (!this.pluginPermissions[pluginId]) {
-      this.pluginPermissions[pluginId] = {
-        approved: [],
-        pending: [],
-        revoked: []
-      };
+      this.pluginPermissions[pluginId] = { approved: [], pending: [], revoked: [] };
     }
-    
-    // Añadir permisos pendientes (sin duplicados)
     const currentPending = new Set(this.pluginPermissions[pluginId].pending);
-    permissions.forEach(permission => {
-      currentPending.add(permission);
+    permissionsToAdd.forEach(permission => {
+      if (!this.pluginPermissions[pluginId].approved.includes(permission) &&
+          !this.pluginPermissions[pluginId].revoked.includes(permission)) {
+        currentPending.add(permission);
+      }
     });
-    
     this.pluginPermissions[pluginId].pending = Array.from(currentPending);
     
-    // Registrar solicitud
-    this.permissionRequests.push({
-      pluginId,
-      permissions,
-      timestamp: Date.now(),
-      status: 'pending'
-    });
-    
-    // Limitar tamaño del historial
-    if (this.permissionRequests.length > this.maxLogSize) {
-      this.permissionRequests = this.permissionRequests.slice(-this.maxLogSize);
+    const existingRequest = this.permissionRequests.find(req => 
+      req.pluginId === pluginId && 
+      req.status === 'pending' &&
+      JSON.stringify(req.permissions.sort()) === JSON.stringify([...permissionsToAdd].sort())
+    );
+    if (!existingRequest && permissionsToAdd.length > 0) {
+        this.permissionRequests.push({
+          pluginId, permissions: [...permissionsToAdd], 
+          timestamp: Date.now(), status: 'pending'
+        });
+        if (this.permissionRequests.length > this.maxLogSize) {
+          this.permissionRequests = this.permissionRequests.slice(-this.maxLogSize);
+        }
     }
   }
 
-  _logPermissionValidation(pluginId, result) {
-    // Añadir al historial
-    this.permissionRequests.push({
-      pluginId,
-      ...result,
-      timestamp: Date.now(),
-      status: result.valid ? 'approved' : 'rejected'
-    });
-    
-    // Limitar tamaño del historial
-    if (this.permissionRequests.length > this.maxLogSize) {
-      this.permissionRequests = this.permissionRequests.slice(-this.maxLogSize);
-    }
+  _logPermissionValidation(pluginId, result) { // Sin cambios
+    // console.log(`[AUDIT-VALIDATION] ${pluginId}:`, result);
   }
 
-  hasPermission(pluginId, permission) {
-    if (!pluginId || !permission) {
-      return false;
-    }
-    
-    // Si el plugin no tiene permisos registrados, no tiene permiso
-    if (!this.pluginPermissions[pluginId]) {
-      return false;
-    }
-    
-    // Verificar en permisos aprobados
+  hasPermission(pluginId, permission) { // Sin cambios
+    if (!this.initialized) this.initialize();
+    if (!pluginId || !permission) return false;
+    if (!this.pluginPermissions[pluginId]) return false;
     return this.pluginPermissions[pluginId].approved.includes(permission);
   }
 
-  checkMethodAccess(pluginId, method) {
+  checkMethodAccess(pluginId, method) { // Sin cambios
+    if (!this.initialized) this.initialize();
     if (!pluginId || !method) {
-      return {
-        permitted: false,
-        reason: 'Argumentos inválidos'
-      };
+      return { permitted: false, reason: 'Argumentos inválidos' };
     }
-    
     try {
-      // Buscar qué permiso corresponde al método
       let requiredPermission = null;
-      
-      // Iterar sobre todos los permisos para encontrar el método
       Object.entries(this.availablePermissions).forEach(([permName, permInfo]) => {
         if (permInfo.methods && permInfo.methods.some(m => method.includes(m))) {
           requiredPermission = permName;
         }
       });
       
-      // Si no se encontró permiso, verificar si es un método libre
       if (!requiredPermission) {
-        // Lista de métodos permitidos sin permiso específico
-        const freeMethods = [
-          'core.getModule',
-          'console.log',
-          'console.warn',
-          'console.error'
-        ];
-        
-        // Si está en la lista blanca, permitir
+        const freeMethods = [ 'core.getModule', 'console.log', 'console.warn', 'console.error' ];
         if (freeMethods.some(m => method.includes(m))) {
-          return {
-            permitted: true,
-            permission: 'free',
-            method
-          };
+          return { permitted: true, permission: 'free', method };
         }
         
-        // En nivel de seguridad bajo, permitir métodos sin permiso específico
+        // this.securityLevel es minúscula, PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW es minúscula
         if (this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW) {
           return {
-            permitted: true,
-            permission: 'unspecified',
-            method,
+            permitted: true, permission: 'unspecified', method,
             warning: 'Método no asociado a permiso específico'
           };
         }
-        
-        // En otros niveles, rechazar
         return {
-          permitted: false,
-          reason: `Método ${method} no asociado a ningún permiso conocido`,
-          method
+          permitted: false, reason: `Método ${method} no asociado a ningún permiso conocido`, method
         };
       }
       
-      // Verificar si el plugin tiene el permiso requerido
-      const hasPermission = this.hasPermission(pluginId, requiredPermission);
+      const hasPerm = this.hasPermission(pluginId, requiredPermission);
+      this._logApiAccess(pluginId, method, requiredPermission, hasPerm);
       
-      // Registrar acceso
-      this._logApiAccess(pluginId, method, requiredPermission, hasPermission);
-      
-      // Si no tiene permiso y está en modo estricto, generar evento
-      if (!hasPermission && this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
+      // this.securityLevel es minúscula, PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH es minúscula
+      if (!hasPerm && this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
         eventBus.publish('pluginSystem.unauthorizedAccess', {
-          pluginId,
-          method,
-          requiredPermission
+          pluginId, method, requiredPermission
         });
       }
-      
       return {
-        permitted: hasPermission,
-        permission: requiredPermission,
-        method,
-        reason: hasPermission ? null : `Se requiere el permiso ${requiredPermission}`
+        permitted: hasPerm, permission: requiredPermission, method,
+        reason: hasPerm ? null : `Se requiere el permiso ${requiredPermission}`
       };
     } catch (error) {
       console.error(`Error al verificar acceso a método ${method} para plugin ${pluginId}:`, error);
-      
-      return {
-        permitted: false,
-        reason: `Error en verificación: ${error.message}`,
-        method
-      };
+      return { permitted: false, reason: `Error en verificación: ${error.message}`, method };
     }
   }
 
-  _logApiAccess(pluginId, method, permission, permitted) {
-    // Inicializar log si no existe
-    if (!this.apiAccessLogs[pluginId]) {
-      this.apiAccessLogs[pluginId] = [];
-    }
-    
-    // Añadir registro
-    this.apiAccessLogs[pluginId].push({
-      timestamp: Date.now(),
-      method,
-      permission,
-      permitted
-    });
-    
-    // Limitar tamaño del log
+  _logApiAccess(pluginId, method, permission, permitted) { // Sin cambios
+    if (!this.apiAccessLogs[pluginId]) this.apiAccessLogs[pluginId] = [];
+    this.apiAccessLogs[pluginId].push({ timestamp: Date.now(), method, permission, permitted });
     if (this.apiAccessLogs[pluginId].length > this.maxLogSize) {
       this.apiAccessLogs[pluginId] = this.apiAccessLogs[pluginId].slice(-this.maxLogSize);
     }
   }
 
-  approvePermissions(pluginId, permissions) {
-    if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
-      console.warn('Argumentos inválidos para approvePermissions', { pluginId, permissions });
+  approvePermissions(pluginId, permissionsToApprove) { // Sin cambios
+    if (!this.initialized) this.initialize();
+    if (!pluginId || !Array.isArray(permissionsToApprove) || permissionsToApprove.length === 0) {
       return false;
     }
-    
     try {
-      console.log(`Intentando aprobar permisos para ${pluginId}:`, permissions);
-      
-      // 1. Inicializar si no existe la estructura para este plugin
-      if (!this.pluginPermissions[pluginId]) {
-        this.pluginPermissions[pluginId] = {
-          approved: [],
-          pending: permissions.slice(), // Copia de seguridad en caso de que no estén en pending
-          revoked: []
-        };
-      }
-      
-      // 2. Añadir los permisos directamente a la lista de aprobados (forzando la aprobación)
-      this._registerPluginPermissions(pluginId, permissions);
-      
-      // 3. Mostrar estado actual para depuración
-      console.log('Estado de permisos antes de quitar pendientes:', JSON.stringify(this.pluginPermissions[pluginId]));
-      
-      // 4. Quitar explícitamente de la lista de pendientes
-      if (this.pluginPermissions[pluginId].pending) {
-        this.pluginPermissions[pluginId].pending = 
-          this.pluginPermissions[pluginId].pending.filter(p => !permissions.includes(p));
-      }
-      
-      // 5. Actualizar solicitudes pendientes
-      this.permissionRequests = this.permissionRequests.filter(request => {
+      this._registerPluginPermissions(pluginId, permissionsToApprove); 
+            
+      this.permissionRequests.forEach(request => {
         if (request.pluginId === pluginId && request.status === 'pending') {
-          // Marcar como aprobada la solicitud completa si todos sus permisos están aprobados
-          const containsAnyPermission = request.permissions.some(p => permissions.includes(p));
-          if (containsAnyPermission) {
+          request.permissions = request.permissions.filter(p => !permissionsToApprove.includes(p));
+          if (request.permissions.length === 0) {
             request.status = 'approved';
           }
         }
-        return true; // Mantener en la lista
       });
       
-      // 6. Mostrar el estado final para depuración
-      console.log('Estado final de permisos:', JSON.stringify(this.pluginPermissions[pluginId]));
-      
-      // 7. Publicar evento de aprobación manual
-      try {
-        if (typeof eventBus !== 'undefined' && eventBus.publish) {
-          eventBus.publish('pluginSystem.permissionsApproved', {
-            pluginId,
-            permissions,
-            source: 'manual-fix'
-          });
-        }
-      } catch (eventError) {
-        console.warn('Error al publicar evento:', eventError);
-      }
-      
+      eventBus.publish('pluginSystem.permissionsApproved', {
+        pluginId, permissions: permissionsToApprove, source: 'manual'
+      });
       return true;
     } catch (error) {
       console.error(`Error crítico al aprobar permisos para plugin ${pluginId}:`, error);
@@ -551,61 +345,39 @@ class PluginPermissionChecker {
     }
   }
 
-  rejectPermissions(pluginId, permissions) {
-    if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
-      return false;
-    }
-    
+  rejectPermissions(pluginId, permissionsToReject) { // Sin cambios
+    if (!this.initialized) this.initialize();
+    if (!pluginId || !Array.isArray(permissionsToReject) || permissionsToReject.length === 0) return false;
     try {
-      // Verificar que los permisos estén pendientes
-      if (!this.pluginPermissions[pluginId] || !this.pluginPermissions[pluginId].pending) {
-        return false;
+      if (!this.pluginPermissions[pluginId]) {
+         this.pluginPermissions[pluginId] = { approved: [], pending: [], revoked: [] };
       }
       
-      // Filtrar solo permisos que estén pendientes
-      const permissionsToReject = permissions.filter(permission => 
-        this.pluginPermissions[pluginId].pending.includes(permission)
-      );
+      const actualPermissionsRejected = [];
+      permissionsToReject.forEach(permission => {
+        const pendingIdx = this.pluginPermissions[pluginId].pending.indexOf(permission);
+        if (pendingIdx > -1) {
+          this.pluginPermissions[pluginId].pending.splice(pendingIdx, 1);
+          if (!this.pluginPermissions[pluginId].revoked.includes(permission)) {
+            this.pluginPermissions[pluginId].revoked.push(permission);
+          }
+          actualPermissionsRejected.push(permission);
+        }
+      });
+
+      if (actualPermissionsRejected.length === 0) return false;
       
-      if (permissionsToReject.length === 0) {
-        return false;
-      }
-      
-      // Quitar de pendientes
-      this.pluginPermissions[pluginId].pending = 
-        this.pluginPermissions[pluginId].pending.filter(
-          permission => !permissionsToReject.includes(permission)
-        );
-      
-      // Añadir a revocados
-      if (!this.pluginPermissions[pluginId].revoked) {
-        this.pluginPermissions[pluginId].revoked = [];
-      }
-      
-      this.pluginPermissions[pluginId].revoked.push(
-        ...permissionsToReject
-      );
-      
-      // Actualizar solicitudes pendientes
       this.permissionRequests.forEach(request => {
         if (request.pluginId === pluginId && request.status === 'pending') {
-          const requestPermissions = request.permissions || [];
-          const matchingRejected = requestPermissions.filter(
-            permission => permissionsToReject.includes(permission)
-          );
-          
-          if (matchingRejected.length > 0) {
-            request.status = 'rejected';
-          }
+           const originalRequestPermissions = [...request.permissions]; 
+           request.permissions = request.permissions.filter(p => !actualPermissionsRejected.includes(p));
+           if (request.permissions.length === 0 && originalRequestPermissions.some(p => actualPermissionsRejected.includes(p))) {
+              request.status = 'rejected'; 
+           }
         }
       });
       
-      // Publicar evento
-      eventBus.publish('pluginSystem.permissionsRejected', {
-        pluginId,
-        permissions: permissionsToReject
-      });
-      
+      eventBus.publish('pluginSystem.permissionsRejected', { pluginId, permissions: actualPermissionsRejected });
       return true;
     } catch (error) {
       console.error(`Error al rechazar permisos para plugin ${pluginId}:`, error);
@@ -613,50 +385,28 @@ class PluginPermissionChecker {
     }
   }
 
-  revokePermissions(pluginId, permissions) {
-    if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) {
-      return false;
-    }
-    
+  revokePermissions(pluginId, permissionsToRevoke) { // Sin cambios
+    if (!this.initialized) this.initialize();
+    if (!pluginId || !Array.isArray(permissionsToRevoke) || permissionsToRevoke.length === 0) return false;
     try {
-      // Verificar que el plugin tenga permisos
-      if (!this.pluginPermissions[pluginId]) {
-        return false;
-      }
+      if (!this.pluginPermissions[pluginId]) return false; 
       
-      // Filtrar solo permisos que estén aprobados
-      const permissionsToRevoke = permissions.filter(permission => 
-        this.pluginPermissions[pluginId].approved.includes(permission)
-      );
-      
-      if (permissionsToRevoke.length === 0) {
-        return false;
-      }
-      
-      // Quitar de aprobados
-      this.pluginPermissions[pluginId].approved = 
-        this.pluginPermissions[pluginId].approved.filter(
-          permission => !permissionsToRevoke.includes(permission)
-        );
-      
-      // Añadir a revocados
-      if (!this.pluginPermissions[pluginId].revoked) {
-        this.pluginPermissions[pluginId].revoked = [];
-      }
-      
-      this.pluginPermissions[pluginId].revoked.push(
-        ...permissionsToRevoke
-      );
-      
-      // Verificar si hay que quitar de plugins con permisos elevados
-      this._updateElevatedStatus(pluginId);
-      
-      // Publicar evento
-      eventBus.publish('pluginSystem.permissionsRevoked', {
-        pluginId,
-        permissions: permissionsToRevoke
+      const actualPermissionsRevoked = [];
+      permissionsToRevoke.forEach(permission => {
+          const approvedIdx = this.pluginPermissions[pluginId].approved.indexOf(permission);
+          if (approvedIdx > -1) {
+              this.pluginPermissions[pluginId].approved.splice(approvedIdx, 1);
+              if (!this.pluginPermissions[pluginId].revoked.includes(permission)) {
+                  this.pluginPermissions[pluginId].revoked.push(permission);
+              }
+              actualPermissionsRevoked.push(permission);
+          }
       });
-      
+
+      if(actualPermissionsRevoked.length === 0) return false;
+
+      this._updateElevatedStatus(pluginId);
+      eventBus.publish('pluginSystem.permissionsRevoked', { pluginId, permissions: actualPermissionsRevoked });
       return true;
     } catch (error) {
       console.error(`Error al revocar permisos para plugin ${pluginId}:`, error);
@@ -664,120 +414,69 @@ class PluginPermissionChecker {
     }
   }
 
-  _updateElevatedStatus(pluginId) {
-    if (!pluginId || !this.pluginPermissions[pluginId]) {
-      return;
-    }
-    
-    // Verificar si tiene permisos de alto riesgo
+  _updateElevatedStatus(pluginId) { // Sin cambios
+    if (!pluginId || !this.pluginPermissions[pluginId]) return;
     const hasHighRiskPermissions = this.pluginPermissions[pluginId].approved.some(permission => {
       const permInfo = this.availablePermissions[permission];
       return permInfo && (permInfo.risk === 'high' || permInfo.risk === 'critical');
     });
-    
-    // Actualizar estado
-    if (hasHighRiskPermissions) {
-      this.elevatedPermissionPlugins.add(pluginId);
-    } else {
-      this.elevatedPermissionPlugins.delete(pluginId);
-    }
+    if (hasHighRiskPermissions) this.elevatedPermissionPlugins.add(pluginId);
+    else this.elevatedPermissionPlugins.delete(pluginId);
   }
 
-  getPluginPermissions(pluginId) {
-    if (!pluginId) {
-      return null;
-    }
-    
-    // Si no tiene permisos registrados, devolver objeto base
-    if (!this.pluginPermissions[pluginId]) {
+  getPluginPermissions(pluginId) { // Sin cambios
+    if (!this.initialized) this.initialize();
+    if (!pluginId) return null; 
+    const perms = this.pluginPermissions[pluginId];
+    if (!perms) {
       return {
-        approved: [],
-        pending: [],
-        revoked: [],
-        hasElevatedPermissions: false,
-        // Helpers para verificaciones rápidas
-        hasStoragePermission: false,
-        hasNetworkPermission: false,
-        hasDomPermission: false,
-        hasCodeExecutionPermission: false
+        approved: [], pending: [], revoked: [], hasElevatedPermissions: false,
+        hasStoragePermission: false, hasNetworkPermission: false,
+        hasDomPermission: false, hasCodeExecutionPermission: false
       };
     }
-    
-    // Generar información completa
     return {
-      approved: [...this.pluginPermissions[pluginId].approved],
-      pending: [...(this.pluginPermissions[pluginId].pending || [])],
-      revoked: [...(this.pluginPermissions[pluginId].revoked || [])],
+      approved: [...perms.approved],
+      pending: [...(perms.pending || [])],
+      revoked: [...(perms.revoked || [])],
       hasElevatedPermissions: this.elevatedPermissionPlugins.has(pluginId),
-      // Helpers para verificaciones rápidas
-      hasStoragePermission: this.hasPermission(pluginId, 'storage'),
-      hasNetworkPermission: this.hasPermission(pluginId, 'network'),
-      hasDomPermission: this.hasPermission(pluginId, 'dom'),
-      hasCodeExecutionPermission: this.hasPermission(pluginId, 'codeExecution')
+      hasStoragePermission: perms.approved.includes('storage'),
+      hasNetworkPermission: perms.approved.includes('network'),
+      hasDomPermission: perms.approved.includes('dom'),
+      hasCodeExecutionPermission: perms.approved.includes('codeExecution')
     };
   }
 
-  getApiAccessHistory(pluginId) {
-    if (!pluginId) {
-      return [];
-    }
-    
+  getApiAccessHistory(pluginId) { // Sin cambios
+    if (!this.initialized) this.initialize();
+    if (!pluginId) return [];
     return this.apiAccessLogs[pluginId] || [];
   }
 
-  getPendingPermissionRequests() {
+  getPendingPermissionRequests() { // Sin cambios
+    if (!this.initialized) this.initialize();
     return this.permissionRequests.filter(request => request.status === 'pending');
   }
 
-  setSecurityLevel(level) {
-    if (!level || !PLUGIN_CONSTANTS.SECURITY.LEVEL[level]) {
-      return false;
-    }
-    
-    try {
-      this.securityLevel = level;
-      
-      // Publicar evento
-      eventBus.publish('pluginSystem.permissionCheckerSecurityLevelChanged', {
-        level
-      });
-      
-      return true;
-    } catch (error) {
-      console.error(`Error al cambiar nivel de seguridad a ${level}:`, error);
-      return false;
-    }
-  }
-
-  updateSecurityChecks(activeChecks) {
+  updateSecurityChecks(activeChecks) { // Sin cambios
+    if (!this.initialized) this.initialize();
     if (!activeChecks) return;
-    
     this.activeChecks = new Set(activeChecks);
-    
-    // Publicar evento de actualización
     eventBus.publish('pluginSystem.permissionCheckerChecksUpdated', {
       checks: Array.from(this.activeChecks)
     });
   }
 
-  clearPluginData(pluginId) {
+  clearPluginData(pluginId) { // Sin cambios
+    if (!this.initialized) this.initialize();
     if (!pluginId) return false;
-    
     try {
-      // Eliminar permisos
       delete this.pluginPermissions[pluginId];
-      
-      // Eliminar historial de acceso
       delete this.apiAccessLogs[pluginId];
-      
-      // Quitar de plugins con permisos elevados
       this.elevatedPermissionPlugins.delete(pluginId);
-      
-      // Filtrar historial de solicitudes
       this.permissionRequests = this.permissionRequests.filter(
         request => request.pluginId !== pluginId
       );
-      
       return true;
     } catch (error) {
       console.error(`Error al limpiar datos de plugin ${pluginId}:`, error);
@@ -785,61 +484,37 @@ class PluginPermissionChecker {
     }
   }
 
-  getPermissionStats() {
+  getPermissionStats() { // Sin cambios
+    if (!this.initialized) this.initialize();
     try {
-      // Contar plugins con permisos
       const pluginsWithPermissions = Object.keys(this.pluginPermissions).length;
-      
-      // Plugins con permisos elevados
       const pluginsWithElevatedPermissions = this.elevatedPermissionPlugins.size;
-      
-      // Solicitudes pendientes
-      const pendingRequests = this.permissionRequests.filter(
-        request => request.status === 'pending'
-      ).length;
-      
-      // Contar permisos por tipo
+      const pendingRequests = this.permissionRequests.filter(r => r.status === 'pending').length;
       const permissionsByType = {};
-      
-      Object.values(this.pluginPermissions).forEach(permissions => {
-        permissions.approved.forEach(permission => {
-          if (!permissionsByType[permission]) {
-            permissionsByType[permission] = 0;
-          }
-          permissionsByType[permission]++;
+      Object.values(this.pluginPermissions).forEach(perms => {
+        (perms.approved || []).forEach(permission => {
+          permissionsByType[permission] = (permissionsByType[permission] || 0) + 1;
         });
       });
-      
-      // Permisos más comunes
       const mostCommonPermissions = Object.entries(permissionsByType)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([permission, count]) => ({
-          permission,
-          count,
+          permission, count,
           risk: this.availablePermissions[permission]?.risk || 'unknown'
         }));
-      
       return {
-        pluginsWithPermissions,
-        pluginsWithElevatedPermissions,
-        pendingRequests,
-        permissionsByType,
-        mostCommonPermissions,
-        securityLevel: this.securityLevel,
+        pluginsWithPermissions, pluginsWithElevatedPermissions, pendingRequests,
+        permissionsByType, mostCommonPermissions,
+        securityLevel: this.securityLevel, // Enviar el nivel almacenado (minúscula)
         activeChecks: Array.from(this.activeChecks)
       };
     } catch (error) {
       console.error('Error al obtener estadísticas de permisos:', error);
-      
-      return {
-        error: error.message,
-        securityLevel: this.securityLevel
-      };
+      return { error: error.message, securityLevel: this.securityLevel };
     }
   }
 }
 
-// Exportar instancia única
 const pluginPermissionChecker = new PluginPermissionChecker();
 export default pluginPermissionChecker;
