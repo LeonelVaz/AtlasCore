@@ -1,3 +1,5 @@
+// src\components\ui\rich-text\index.js
+
 import RichTextEditor from './rich-text-editor';
 import RichTextViewer from './rich-text-viewer';
 
