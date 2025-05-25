@@ -256,17 +256,18 @@ class PluginSecurityManager {
 
   validatePlugin(pluginId) {
     try {
-      if (!this.initialized) {
-        console.warn('Sistema de seguridad no inicializado');
-        return { valid: true, reasons: [] };
-      }
-      
-      // Verificar si está en lista negra
+      // PRIMERO: Verificar si está en lista negra
       if (this.blacklistedPlugins.has(pluginId)) {
         return {
           valid: false,
           reasons: ['Plugin en lista negra por violaciones de seguridad previas']
         };
+      }
+      
+      // SEGUNDO: Verificar inicialización
+      if (!this.initialized) {
+        console.warn('Sistema de seguridad no inicializado');
+        return { valid: true, reasons: [] };
       }
       
       const plugin = pluginRegistry.getPlugin(pluginId);
@@ -370,16 +371,13 @@ class PluginSecurityManager {
     if (!pluginId) return false;
     
     try {
-      // Añadir a la lista negra en memoria
       this.blacklistedPlugins.add(pluginId);
       
-      // Registrar en auditoría
       pluginSecurityAudit.recordBlacklistAction(pluginId, {
         timestamp: Date.now(),
         action: 'add'
       });
       
-      // Publicar evento
       eventBus.publish('pluginSystem.pluginBlacklisted', { pluginId });
       
       console.warn(`Plugin ${pluginId} añadido a lista negra de seguridad`);
@@ -400,7 +398,7 @@ class PluginSecurityManager {
       this.blacklistedPlugins.delete(pluginId);
       
       if (wasBlacklisted) {
-        // Registrar en auditoría
+        // Registrar en auditoría SOLO si estaba en lista negra
         pluginSecurityAudit.recordBlacklistAction(pluginId, {
           timestamp: Date.now(),
           action: 'remove'
