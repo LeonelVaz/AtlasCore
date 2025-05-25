@@ -1,3 +1,5 @@
+// src\core\plugins\plugin-manager.js
+
 /**
  * Gestor de plugins para Atlas - Versión optimizada y corregida
  */

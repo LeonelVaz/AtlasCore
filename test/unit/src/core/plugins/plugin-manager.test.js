@@ -1,3 +1,5 @@
+// test\unit\src\core\plugins\plugin-manager.test.js
+
 /**
  * @jest-environment jsdom
  */
