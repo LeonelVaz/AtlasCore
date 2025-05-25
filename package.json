@@ -1,6 +1,6 @@
 {
   "name": "atlas-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Aplicación modular de gestión del tiempo con arquitectura basada en eventos",
   "main": "electron/main.js",
   "scripts": {
