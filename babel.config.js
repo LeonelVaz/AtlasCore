@@ -20,9 +20,10 @@ module.exports = function (api) {
     "babel-plugin-transform-vite-meta-glob"
   ];
 
-  if (isTestEnv) {
-    plugins.push("istanbul"); 
-  }
+  // ELIMINAR ESTA SECCIÓN - Ya usas coverageProvider: "v8"
+  // if (isTestEnv) {
+  //   plugins.push("istanbul"); 
+  // }
 
   return {
     presets,
