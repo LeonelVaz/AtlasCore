@@ -162,68 +162,69 @@ atlas-core/
 │   │   ├── theme-utils.js        # Utilidades para temas
 │   │   └── storage-utils.js      # Utilidades de almacenamiento
 │   │
-│   ├── styles/                   # Estilos
-│   │   ├── index.css             # Estilos globales
-│   │   ├── app.css               # Estilos para app.jsx
-│   │   ├── variables.css         # Variables CSS globales
-│   │   ├── themes/               # Archivos de temas
-│   │   │   ├── light.css         # Tema claro
-│   │   │   ├── dark.css          # Tema oscuro
-│   │   │   ├── atlas-dark-blue.css # Tema Atlas azul oscuro
-│   │   │   ├── deep-ocean.css    # Tema océano profundo
-│   │   │   └── purple-night.css  # Tema púrpura nocturno
-│   │   │
-│   │   ├── components/           # Estilos de componentes
-│   │   │   ├── calendar.css      # Estilos del calendario
-│   │   │   ├── events.css        # Estilos de eventos
-│   │   │   └── settings.css      # Estilos de configuración
-│   │   │
-│   │   └── calendar/             # Estilos específicos del calendario
-│   │       ├── calendar-main.css # Estilos para calendar-main.jsx
-│   │       └── time-slots.css    # Estilos para franjas horarias
-│   │
-│   └── plugins/                  # Sistema de plugins
-│       ├── plugin-loader.js      # Cargador de plugins
-│       ├── plugin-registry.js    # Registro de plugins
-│       ├── plugin-api-registry.js # Registro de APIs para plugins
-│       ├── plugin-events.js      # Sistema de eventos para plugins
+│   └── styles/                   # Estilos
+│       ├── index.css             # Estilos globales
+│       ├── app.css               # Estilos para app.jsx
+│       ├── variables.css         # Variables CSS globales
+│       ├── themes/               # Archivos de temas
+│       │   ├── light.css         # Tema claro
+│       │   ├── dark.css          # Tema oscuro
+│       │   ├── atlas-dark-blue.css # Tema Atlas azul oscuro
+│       │   ├── deep-ocean.css    # Tema océano profundo
+│       │   └── purple-night.css  # Tema púrpura nocturno
 │       │
-│       ├── notes-manager/        # Plugin de notas
-│       │   ├── index.js          # Punto de entrada del plugin
-│       │   ├── components/       # Componentes del plugin
-│       │   │   ├── notes-list.jsx # Lista de notas
-│       │   │   ├── note-editor.jsx # Editor de notas
-│       │   │   ├── notes-panel.jsx # Panel principal
-│       │   │   ├── event-notes-extension.jsx # Vista de notas en eventos
-│       │   │   └── event-selector.jsx # Selector de eventos
-│       │   ├── contexts/
-│       │   │   └── notes-context.jsx # Contexto de notas
-│       │   ├── utils/
-│       │   │   └── notes-utils.js # Utilidades específicas
-│       │   ├── styles/
-│       │   │   └── notes.css     # Estilos específicos del plugin
-│       │   └── README.md         # Documentación del plugin
+│       ├── components/           # Estilos de componentes
+│       │   ├── calendar.css      # Estilos del calendario
+│       │   ├── events.css        # Estilos de eventos
+│       │   └── settings.css      # Estilos de configuración
 │       │
-│       └── event-counter/        # Plugin de contador de eventos
-│           ├── index.js          # Punto de entrada del plugin
-│           └── README.md         # Documentación del plugin
+│       └── calendar/             # Estilos específicos del calendario
+│           ├── calendar-main.css # Estilos para calendar-main.jsx
+│           └── time-slots.css    # Estilos para franjas horarias
+│    
 │
-└── docs/                         # Documentación del proyecto
-    ├── dev/                      # Documentación para desarrolladores
-    │   ├── atlas-overview.md     # Visión general de Atlas
-    │   ├── atlas-stages.md       # Stages de desarrollo
-    │   ├── commands.md           # Comandos útiles
-    │   ├── plugins/              # Documentación detallada de plugins
-    │   │   ├── notes-manager.md  # Documentación del plugin de notas
-    │   │   └── event-counter.md  # Documentación del plugin de contador
-    │   └── stages/               # Documentación detallada por Stages
-    │       ├── stage-1.md        # Documentación de la Stage 1
-    │       ├── stage-2.md        # Documentación de la Stage 2
-    │       └── stage-3.md        # Documentación de la Stage 3
+├── docs/                         # Documentación del proyecto
+│   ├── dev/                      # Documentación para desarrolladores
+│   │   ├── atlas-overview.md     # Visión general de Atlas
+│   │   ├── atlas-stages.md       # Stages de desarrollo
+│   │   ├── commands.md           # Comandos útiles
+│   │   ├── plugins/              # Documentación detallada de plugins
+│   │   │   ├── notes-manager.md  # Documentación del plugin de notas
+│   │   │   └── event-counter.md  # Documentación del plugin de contador
+│   │   └── stages/               # Documentación detallada por Stages
+│   │       ├── stage-1.md        # Documentación de la Stage 1
+│   │       ├── stage-2.md        # Documentación de la Stage 2
+│   │       └── stage-3.md        # Documentación de la Stage 3
+│   │
+│   └── brand-assets/             # Recursos de marca
+│       ├── logos/                # Logos de la aplicación
+│       │   └── atlas-logo.svg    # Logo SVG principal
+│       │
+│        └── documentation/        # Documentación de marca
+│           └── atlas-brand-guide.md # Guía de identidad de marca
+│
+└── plugins/                  # Sistema de plugins
+    ├── plugin-loader.js      # Cargador de plugins
+    ├── plugin-registry.js    # Registro de plugins
+    ├── plugin-api-registry.js # Registro de APIs para plugins
+    ├── plugin-events.js      # Sistema de eventos para plugins
     │
-    └── brand-assets/             # Recursos de marca
-        ├── logos/                # Logos de la aplicación
-        │   └── atlas-logo.svg    # Logo SVG principal
-        │
-        └── documentation/        # Documentación de marca
-            └── atlas-brand-guide.md # Guía de identidad de marca
+    ├── notes-manager/        # Plugin de notas
+    │   ├── index.js          # Punto de entrada del plugin
+    │   ├── components/       # Componentes del plugin
+    │   │   ├── notes-list.jsx # Lista de notas
+    │   │   ├── note-editor.jsx # Editor de notas
+    │   │   ├── notes-panel.jsx # Panel principal
+    │   │   ├── event-notes-extension.jsx # Vista de notas en eventos
+    │   │   └── event-selector.jsx # Selector de eventos
+    │   ├── contexts/
+    │   │   └── notes-context.jsx # Contexto de notas
+    │   ├── utils/
+    │   │   └── notes-utils.js # Utilidades específicas
+    │   ├── styles/
+    │   │   └── notes.css     # Estilos específicos del plugin
+    │   └── README.md         # Documentación del plugin
+    │
+    └── event-counter/        # Plugin de contador de eventos
+        ├── index.js          # Punto de entrada del plugin
+        └── README.md         # Documentación del plugin
