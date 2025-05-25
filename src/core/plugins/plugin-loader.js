@@ -1,3 +1,5 @@
+// plugin-loader.js
+
 /**
  * Cargador de plugins para Atlas
  */
