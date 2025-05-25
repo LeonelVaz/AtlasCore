@@ -1,9 +1,8 @@
 # Mejoras del Sistema de Gestión de Permisos de Plugins para Atlas Core v0.4.0
 
-**Versión del Documento:** 1.0  
-**Fecha:** 2024-11-16  
+**Versión del Documento:** 1.0
 **Autor:** Asistente AI (basado en requerimientos)  
-**Dirigido a:** Equipo de Desarrollo de Atlas Core v0.4.0  
+**Dirigido a:** Equipo de Desarrollo de Atlas Core v0.4.0
 
 ## 1. Introducción
 
