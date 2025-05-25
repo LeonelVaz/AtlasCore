@@ -1,3 +1,5 @@
+// src\core\plugins\plugin-communication.js
+
 /**
  * Sistema de comunicación entre plugins de Atlas
  */
