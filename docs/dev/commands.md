@@ -244,7 +244,7 @@ Si los plugins no aparecen correctamente:
 
 ```bash
 # Verificar la estructura de carpetas
-ls -la src/plugins/
+ls -la plugins/
 
 # Reconstruir el sistema de plugins
 npm run rebuild-plugins

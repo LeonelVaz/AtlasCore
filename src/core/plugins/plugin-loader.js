@@ -11,7 +11,7 @@ import eventBus from '../bus/event-bus';
 function importAllPlugins() {
   try {
     // Usar import.meta.glob para cargar dinámicamente todos los archivos index.js en subdirectorios de plugins
-    const pluginModules = import.meta.glob('/src/plugins/*/index.js', { eager: true });
+    const pluginModules = import.meta.glob('/plugins/*/index.js', { eager: true });
     
     const plugins = [];
     for (const path in pluginModules) {
@@ -34,7 +34,8 @@ function requireAllPlugins() {
   try {
     if (typeof require !== 'undefined' && typeof require.context === 'function') {
       // Este código sólo se ejecuta en entornos webpack
-      const context = require.context('/src/plugins', true, /\/index\.js$/);
+      // Cambiado para buscar en el directorio raíz en vez de src/plugins
+      const context = require.context('/plugins', true, /\/index\.js$/);
       const plugins = [];
       
       context.keys().forEach(key => {
@@ -94,7 +95,7 @@ export async function loadPlugins() {
           try {
             // Usar dynamic import para cargar cada plugin
             // Añadimos @vite-ignore para evitar las advertencias de análisis estático
-            const module = await import(/* @vite-ignore */ `/src/plugins/${dir}/index.js`);
+            const module = await import(/* @vite-ignore */ `/plugins/${dir}/index.js`);
             if (module && module.default) {
               console.log(`Plugin cargado dinámicamente: ${dir}`);
               plugins.push(module.default);
@@ -139,7 +140,7 @@ export async function loadPluginById(pluginId) {
     // Si no se encontró, intentar cargar directamente
     try {
       // Añadimos @vite-ignore para evitar las advertencias de análisis estático
-      const module = await import(/* @vite-ignore */ `/src/plugins/${pluginId}/index.js`);
+      const module = await import(/* @vite-ignore */ `/plugins/${pluginId}/index.js`);
       if (module && module.default) {
         console.log(`Plugin ${pluginId} cargado directamente`);
         return module.default;

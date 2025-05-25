@@ -599,7 +599,7 @@ const PluginsPanel = () => {
               <div className="plugins-empty">
                 <p>No se encontraron plugins instalados.</p>
                 <p className="plugin-help-text">
-                  Los plugins deben instalarse en la carpeta <code>src/plugins/</code> de la aplicación.
+                  Los plugins deben instalarse en la carpeta <code>plugins/</code> de la aplicación.
                   Cada plugin debe estar en su propia carpeta con un archivo <code>index.js</code>.
                 </p>
                 <div className="marketplace-cta">

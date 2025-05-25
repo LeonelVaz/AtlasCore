@@ -30,7 +30,7 @@ El sistema de plugins consta de los siguientes componentes:
 Todo plugin debe seguir esta estructura de directorios:
 
 ```
-/src/plugins/nombre-plugin/
+/plugins/nombre-plugin/
 ├── index.js                 # Punto de entrada (OBLIGATORIO)
 ├── components/              # Componentes UI (OBLIGATORIO)
 ├── utils/                   # Utilidades (OBLIGATORIO)
@@ -176,7 +176,7 @@ En el futuro, Atlas podría soportar la distribución de plugins mediante:
 
 Para probar un plugin durante su desarrollo:
 
-1. Colocar los archivos en la ubicación correcta (`src/plugins/nombre-plugin/`)
+1. Colocar los archivos en la ubicación correcta (`plugins/nombre-plugin/`)
 2. Reiniciar la aplicación o usar "Recargar Plugins" desde Configuración
 3. Activar el plugin desde el panel de Plugins en Configuración
 4. Verificar mensajes y comportamiento en la consola del desarrollador
@@ -298,7 +298,7 @@ La primera fase de implementación se ha completado, estableciendo la infraestru
 - `src/core/plugins/plugin-registry.js`: Registro centralizado de plugins y su estado
 - `src/core/plugins/plugin-validator.js`: Validador de estructura y compatibilidad de plugins
 - `src/core/plugins/core-api.js`: API base para interacción con plugins
-- `src/plugins/.gitkeep`: Directorio base para instalación de plugins
+- `plugins/.gitkeep`: Directorio base para instalación de plugins
 
 **Interfaz de usuario:**
 - `src/components/settings/plugins-panel.jsx`: Panel para administración de plugins
@@ -345,8 +345,8 @@ La segunda fase ha sido completada, desarrollando un sistema robusto de comunica
 - `src/core/config/constants.js`: (Actualizado) Añadidas constantes para el sistema de plugins
 
 **Ejemplos y pruebas:**
-- `src/plugins/example-plugin/index.js`: Plugin de ejemplo funcional
-- `src/plugins/README.md`: Documentación para desarrolladores de plugins
+- `plugins/example-plugin/index.js`: Plugin de ejemplo funcional
+- `plugins/README.md`: Documentación para desarrolladores de plugins
 
 **Interfaz de usuario:**
 - `src/components/settings/plugins-panel.jsx`: (Mejorado) Panel avanzado con manejo de errores
@@ -410,7 +410,7 @@ La tercera fase ha sido completada, implementando un sistema robusto de integrac
 - `src/components/settings/settings-panel.jsx`: Añadida sección para extensiones de plugins
 - `src/core/config/constants.js`: Actualizado con definiciones de zonas de extensión
 - `src/styles/index.css`: Actualizado para incluir estilos de extensiones
-- `src/plugins/example-plugin/index.js`: Mejorado para demostrar el uso de extensiones UI
+- `plugins/example-plugin/index.js`: Mejorado para demostrar el uso de extensiones UI
 
 ### Funcionalidades implementadas:
 
@@ -473,7 +473,7 @@ La cuarta fase ha sido completada, implementando un sistema robusto para gestion
 **Interfaz de usuario:**
 - `src/components/settings/plugins-panel.jsx`: Ampliado para mostrar información de compatibilidad, dependencias y ciclos
 - `src/styles/plugins/plugins-panel.css`: Nuevos estilos para visualizar información de compatibilidad
-- `src/plugins/example-plugin/index.js`: Actualizado para demostrar las nuevas funcionalidades
+- `plugins/example-plugin/index.js`: Actualizado para demostrar las nuevas funcionalidades
 
 ### Funcionalidades implementadas:
 
@@ -528,7 +528,7 @@ La quinta fase ha sido completada, implementando un sistema completo de comunica
 **Integración con el sistema existente:**
 - `src/core/plugins/core-api.js`: Ampliado con nuevas funcionalidades para facilitar la comunicación entre plugins y exposición de APIs
 - `src/core/plugins/plugin-manager.js`: Actualizado para gestionar el registro y acceso a APIs públicas y canales de comunicación
-- `src/plugins/example-plugin/index.js`: Mejorado para demostrar las nuevas capacidades de comunicación entre plugins
+- `plugins/example-plugin/index.js`: Mejorado para demostrar las nuevas capacidades de comunicación entre plugins
 - `src/components/settings/plugins-panel.jsx`: Extendido para visualizar información de APIs públicas y canales de comunicación
 
 ### Funcionalidades implementadas:
@@ -599,7 +599,7 @@ La sexta fase ha sido completada, implementando un sistema integral de seguridad
 - `src/core/plugins/plugin-manager.js`: Actualizado para integrar el sistema de seguridad en los procesos de gestión de plugins, incluyendo activación, desactivación y validación.
 - `src/core/config/constants.js`: Ampliado con nuevas constantes para niveles de seguridad, tipos de permisos, tipos de eventos, modos de auditoría y más.
 - `src/components/settings/settings-panel.jsx`: Actualizado para incluir una nueva sección de seguridad que integra el componente security-panel.jsx.
-- `src/plugins/example-plugin/index.js`: Mejorado para demostrar las nuevas funcionalidades de seguridad.
+- `plugins/example-plugin/index.js`: Mejorado para demostrar las nuevas funcionalidades de seguridad.
 
 ### Funcionalidades implementadas:
 

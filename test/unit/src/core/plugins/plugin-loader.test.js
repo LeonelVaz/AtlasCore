@@ -81,7 +81,7 @@ jest.doMock('../../../../../src/core/plugins/plugin-loader', () => {
       
       try {
         // @ts-ignore
-        const module = await global.import(`/src/plugins/${pluginId}/index.js`);
+        const module = await global.import(`/plugins/${pluginId}/index.js`);
         if (module && module.default) return module.default;
       } catch (e) { /* ignore */ }
       return null;
@@ -232,7 +232,7 @@ describe('PluginLoader', () => {
   describe('loadPluginById (usando la implementación mockeada por jest.doMock)', () => {
     test('debe intentar cargar dinámicamente usando global.import (mockeado)', async () => {
       mockGlobalImportFn.mockImplementation(async (path) => {
-        if (path === `/src/plugins/plugin3/index.js`) {
+        if (path === `/plugins/plugin3/index.js`) {
           return { default: mockPlugin3 };
         }
         throw new Error('Cannot find module');
@@ -243,7 +243,7 @@ describe('PluginLoader', () => {
       const plugin = await loadPluginById('plugin3');
       
       expect(plugin).toBe(mockPlugin3);
-      expect(mockGlobalImportFn).toHaveBeenCalledWith('/src/plugins/plugin3/index.js');
+      expect(mockGlobalImportFn).toHaveBeenCalledWith('/plugins/plugin3/index.js');
     });
 
     test('debe devolver null si el plugin no se encuentra (mockeado)', async () => {
