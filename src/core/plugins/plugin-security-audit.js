@@ -1,7 +1,9 @@
+// src/core/plugins/plugin-security-audit.js
+
 /**
  * Sistema de Auditoría de Seguridad para Plugins de Atlas
  */
-import { PLUGIN_CONSTANTS } from '../config/constants';
+import { PLUGIN_CONSTANTS, STORAGE_KEYS } from '../config/constants';
 import storageService from '../../services/storage-service';
 import eventBus from '../bus/event-bus';
 
@@ -9,67 +11,75 @@ class PluginSecurityAudit {
   constructor() {
     this.initialized = false;
     this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
-    this.auditMode = 'immediate';
+    this.auditMode = 'immediate'; 
     this.auditLog = [];
     this.pluginAuditLogs = {};
     this.auditQueue = [];
     this.maxLogSize = 1000;
     this.batchIntervalId = null;
-    this.batchInterval = 60000; // 1 minuto
+    this.batchInterval = 60000; 
     
     this.auditEventTypes = [
-      'securityEvent',
-      'permissionRequest',
-      'permissionChange',
-      'validation',
-      'suspiciousActivity',
-      'resourceOveruse',
-      'blacklistAction',
-      'pluginActivation',
-      'pluginDeactivation',
-      'codeExecution'
+      'securityEvent', 'permissionRequest', 'permissionChange', 'validation',
+      'suspiciousActivity', 'resourceOveruse', 'blacklistAction',
+      'pluginActivation', 'pluginDeactivation', 'codeExecution',
+      'other' 
     ];
     
-    this.storageKey = 'plugin_security_audit_log';
+    this.storageKey = STORAGE_KEYS.PLUGIN_DATA_PREFIX + 'security_audit_log';
   }
 
-  initialize(securityLevel) {
+  initialize(securityLevelInput) {
     if (this.initialized) {
-      console.warn('Sistema de auditoría ya inicializado');
+      const currentInputLevel = securityLevelInput ? String(securityLevelInput).toLowerCase() : undefined;
+      if (currentInputLevel === undefined || this.securityLevel === currentInputLevel) {
+        console.warn('[SecurityAudit] Sistema de auditoría ya inicializado.');
+      } else {
+        this.setSecurityLevel(securityLevelInput);
+      }
       return true;
     }
     
     try {
-      console.log('Inicializando sistema de auditoría para plugins...');
+      console.log('[SecurityAudit] [DEBUG_INIT] Inicializando sistema de auditoría para plugins...');
       
-      this.securityLevel = securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
+      const initialLevel = securityLevelInput ? String(securityLevelInput).toLowerCase() : this.securityLevel;
+      console.log('[SecurityAudit] [DEBUG_INIT] Nivel de seguridad inicial para initialize:', initialLevel);
       
-      this._configureAuditMode();
-      this._loadAuditLog();
+      this.setSecurityLevel(initialLevel); 
+      console.log('[SecurityAudit] [DEBUG_INIT] Después de setSecurityLevel, this.securityLevel:', this.securityLevel, 'this.auditMode:', this.auditMode);
+                                       
+      this._loadAuditLog(); 
       
       if (this.auditMode === 'batch') {
+        console.log('[SecurityAudit] [DEBUG_INIT] Configurando modo batch, llamando a _startBatchProcessing.');
         this._startBatchProcessing();
       }
       
+      console.log('[SecurityAudit] [DEBUG_INIT] Llamando a _setupEventListeners.');
       this._setupEventListeners();
       
       this.initialized = true;
       
-      console.log(`Sistema de auditoría inicializado (nivel: ${this.securityLevel}, modo: ${this.auditMode})`);
+      console.log(`[SecurityAudit] Sistema de auditoría inicializado (nivel: ${this.securityLevel}, modo: ${this.auditMode})`);
       return true;
     } catch (error) {
-      console.error('Error al inicializar sistema de auditoría:', error);
+      console.error('[SecurityAudit] Error al inicializar sistema de auditoría:', error);
+      this.initialized = false;
       return false;
     }
   }
 
   _configureAuditMode() {
+    console.log('[SecurityAudit] [DEBUG_CONFIGURE_MODE] Configurando modo de auditoría para nivel:', this.securityLevel);
     switch (this.securityLevel) {
       case PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW:
         this.auditMode = 'batch';
+        this.maxLogSize = 500;
         break;
       case PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL:
         this.auditMode = 'immediate';
+        this.maxLogSize = 1000;
         break;
       case PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH:
         this.auditMode = 'immediate';
@@ -77,33 +87,36 @@ class PluginSecurityAudit {
         break;
       default:
         this.auditMode = 'immediate';
+        this.maxLogSize = 1000;
     }
+    console.log('[SecurityAudit] [DEBUG_CONFIGURE_MODE] Modo de auditoría configurado a:', this.auditMode);
   }
 
   async _loadAuditLog() {
     try {
+      console.log('[SecurityAudit] [DEBUG_LOAD_LOG] Cargando log desde storage, clave:', this.storageKey);
       const savedLog = await storageService.get(this.storageKey, []);
-      
       if (Array.isArray(savedLog) && savedLog.length > 0) {
         this.auditLog = savedLog;
         this._rebuildPluginIndices();
-        console.log(`Log de auditoría cargado: ${savedLog.length} entradas`);
+        console.log(`[SecurityAudit] Log de auditoría cargado: ${savedLog.length} entradas`);
+      } else {
+        this.auditLog = [];
+        console.log('[SecurityAudit] [DEBUG_LOAD_LOG] No se encontró log guardado o estaba vacío.');
       }
     } catch (error) {
-      console.error('Error al cargar log de auditoría:', error);
+      console.error('[SecurityAudit] Error al cargar log de auditoría:', error);
       this.auditLog = [];
     }
   }
 
   _rebuildPluginIndices() {
     this.pluginAuditLogs = {};
-    
     this.auditLog.forEach(entry => {
       if (entry.pluginId) {
         if (!this.pluginAuditLogs[entry.pluginId]) {
           this.pluginAuditLogs[entry.pluginId] = [];
         }
-        
         this.pluginAuditLogs[entry.pluginId].push(entry);
       }
     });
@@ -111,14 +124,16 @@ class PluginSecurityAudit {
 
   async _saveAuditLog() {
     try {
+      console.log('[SecurityAudit] [DEBUG_SAVE_LOG] Intentando guardar log. Nivel de seguridad:', this.securityLevel);
       if (this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW) {
-        return;
+        console.log('[SecurityAudit] [DEBUG_SAVE_LOG] No se guarda el log en nivel LOW.');
+        return; 
       }
-      
       const logToSave = this.auditLog.slice(-this.maxLogSize);
+      console.log('[SecurityAudit] [DEBUG_SAVE_LOG] Guardando', logToSave.length, 'entradas.');
       await storageService.set(this.storageKey, logToSave);
     } catch (error) {
-      console.error('Error al guardar log de auditoría:', error);
+      console.error('[SecurityAudit] Error al guardar log de auditoría:', error);
     }
   }
 
@@ -126,306 +141,218 @@ class PluginSecurityAudit {
     if (this.batchIntervalId) {
       clearInterval(this.batchIntervalId);
     }
-    
+    console.log('[SecurityAudit] [DEBUG_BATCH] Iniciando procesamiento por lotes, intervalo:', this.batchInterval);
     this.batchIntervalId = setInterval(() => {
+      console.log('[SecurityAudit] [DEBUG_BATCH] Intervalo de batch disparado.');
       this._processBatch();
     }, this.batchInterval);
   }
 
   async _processBatch() {
-    try {
-      if (this.auditQueue.length === 0) {
-        return;
-      }
-      
-      const batch = [...this.auditQueue];
-      this.auditQueue = [];
-      
-      this._addEventsToLog(batch);
-      await this._saveAuditLog();
-    } catch (error) {
-      console.error('Error al procesar lote de auditoría:', error);
+    console.log('[SecurityAudit] [DEBUG_BATCH] _processBatch llamado. Longitud de cola:', this.auditQueue.length);
+    if (this.auditQueue.length === 0) {
+      return;
     }
+    const batch = [...this.auditQueue];
+    this.auditQueue = [];
+    console.log('[SecurityAudit] [DEBUG_BATCH] Procesando lote de', batch.length, 'eventos.');
+    this._addEventsToLog(batch);
+    await this._saveAuditLog();
   }
 
   _addEventsToLog(events) {
-    if (!Array.isArray(events) || events.length === 0) {
-      return;
-    }
-    
-    // Añadir al log principal
+    console.log('[SecurityAudit] [DEBUG_ADD_LOG] _addEventsToLog, eventos a añadir:', JSON.stringify(events));
+    if (!Array.isArray(events) || events.length === 0) return;
     this.auditLog.push(...events);
-    
-    // Limitar tamaño
+    console.log('[SecurityAudit] [DEBUG_ADD_LOG] this.auditLog DESPUÉS de push, longitud:', this.auditLog.length);
     if (this.auditLog.length > this.maxLogSize) {
       this.auditLog = this.auditLog.slice(-this.maxLogSize);
     }
-    
-    // Actualizar índices por plugin
     events.forEach(entry => {
       if (entry.pluginId) {
-        if (!this.pluginAuditLogs[entry.pluginId]) {
-          this.pluginAuditLogs[entry.pluginId] = [];
-        }
-        
+        if (!this.pluginAuditLogs[entry.pluginId]) this.pluginAuditLogs[entry.pluginId] = [];
         this.pluginAuditLogs[entry.pluginId].push(entry);
-        
-        // Limitar tamaño por plugin
-        const maxPluginLogSize = Math.min(500, this.maxLogSize / 2);
-        
+        const maxPluginLogSize = Math.min(500, Math.floor(this.maxLogSize / 2));
         if (this.pluginAuditLogs[entry.pluginId].length > maxPluginLogSize) {
-          this.pluginAuditLogs[entry.pluginId] = 
-            this.pluginAuditLogs[entry.pluginId].slice(-maxPluginLogSize);
+          this.pluginAuditLogs[entry.pluginId] = this.pluginAuditLogs[entry.pluginId].slice(-maxPluginLogSize);
         }
       }
     });
   }
 
   _setupEventListeners() {
-    // Lista de eventos a escuchar automáticamente
+    console.log('[SecurityAudit] [DEBUG_SETUP_LISTENERS] Configurando escuchadores de eventos...');
     const eventsToAudit = [
-      'pluginSystem.securityEvent',
-      'pluginSystem.pendingPermissions',
-      'pluginSystem.permissionsRegistered',
-      'pluginSystem.permissionsApproved',
-      'pluginSystem.permissionsRejected',
-      'pluginSystem.permissionsRevoked',
-      'pluginSystem.pluginActivated',
-      'pluginSystem.pluginDeactivated',
-      'pluginSystem.suspiciousOperation',
-      'pluginSystem.resourceOveruse',
-      'pluginSystem.pluginBlacklisted',
-      'pluginSystem.pluginWhitelisted',
-      'pluginSystem.sandboxError',
-      'pluginSystem.unsafeCodeExecution'
+      'pluginSystem.securityEvent', 'pluginSystem.pendingPermissions',
+      'pluginSystem.permissionsRegistered', 'pluginSystem.permissionsApproved',
+      'pluginSystem.permissionsRejected', 'pluginSystem.permissionsRevoked',
+      'pluginSystem.pluginActivated', 'pluginSystem.pluginDeactivated',
+      'pluginSystem.suspiciousOperation', 'pluginSystem.resourceOveruse',
+      'pluginSystem.pluginBlacklisted', 'pluginSystem.pluginWhitelisted',
+      'pluginSystem.sandboxError', 'pluginSystem.unsafeCodeExecution'
     ];
-    
-    // Suscribirse a cada evento
     eventsToAudit.forEach(eventType => {
-      eventBus.subscribe(eventType, (data) => {
-        // Determinar tipo de auditoría basado en el evento
-        let auditType;
+      const handler = (data) => {
+        console.log(`[SecurityAudit] [DEBUG_EVENT_HANDLER] Evento '${eventType}' recibido por handler:`, JSON.stringify(data));
+        let auditType = 'other';
+        const simpleEventType = eventType.replace('pluginSystem.', '');
+
+        if (simpleEventType.includes('permission')) auditType = 'permissionChange';
+        else if (simpleEventType.includes('securityEvent')) auditType = 'securityEvent';
+        else if (simpleEventType.includes('suspicious') || simpleEventType.includes('sandboxError')) auditType = 'suspiciousActivity';
+        else if (simpleEventType.includes('resource')) auditType = 'resourceOveruse';
+        else if (simpleEventType.includes('blacklist') || simpleEventType.includes('whitelist')) auditType = 'blacklistAction';
+        else if (simpleEventType === 'pluginActivated') auditType = 'pluginActivation';
+        else if (simpleEventType === 'pluginDeactivated') auditType = 'pluginDeactivation';
+        else if (simpleEventType.includes('codeExecution')) auditType = 'codeExecution';
         
-        if (eventType.includes('permission')) {
-          auditType = 'permissionChange';
-        } else if (eventType.includes('security')) {
-          auditType = 'securityEvent';
-        } else if (eventType.includes('suspicious') || eventType.includes('sandbox')) {
-          auditType = 'suspiciousActivity';
-        } else if (eventType.includes('resource')) {
-          auditType = 'resourceOveruse';
-        } else if (eventType.includes('blacklist')) {
-          auditType = 'blacklistAction';
-        } else if (eventType.includes('Activated')) {
-          auditType = 'pluginActivation';
-        } else if (eventType.includes('Deactivated')) {
-          auditType = 'pluginDeactivation';
-        } else if (eventType.includes('codeExecution')) {
-          auditType = 'codeExecution';
-        } else {
-          auditType = 'other';
-        }
-        
-        // Crear entrada de auditoría
+        console.log('[SecurityAudit] [DEBUG_EVENT_HANDLER] auditType determinado:', auditType);
         const auditEntry = {
           id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: Date.now(),
-          eventType: eventType.replace('pluginSystem.', ''),
+          eventType: simpleEventType,
           auditType,
           pluginId: data.pluginId || null,
           details: data
         };
-        
-        // Procesar entrada
+        console.log('[SecurityAudit] [DEBUG_EVENT_HANDLER] Llamando a _processAuditEntry con:', JSON.stringify(auditEntry));
         this._processAuditEntry(auditEntry);
-      });
+      };
+      try {
+        if (!eventBus || typeof eventBus.subscribe !== 'function') {
+            console.error('[SecurityAudit] [DEBUG_SETUP_LISTENERS] FATAL: eventBus o eventBus.subscribe no está definido ANTES de la suscripción para', eventType);
+            throw new Error('eventBus.subscribe no es una función');
+        }
+        console.log('[SecurityAudit] [DEBUG_SETUP_LISTENERS] Intentando suscribir a:', eventType);
+        eventBus.subscribe(eventType, handler);
+        console.log('[SecurityAudit] [DEBUG_SETUP_LISTENERS] Suscrito exitosamente a:', eventType);
+      } catch (e) {
+          console.error(`[SecurityAudit] [DEBUG_SETUP_LISTENERS] Error al suscribir a ${eventType}:`, e);
+      }
     });
+    console.log('[SecurityAudit] [DEBUG_SETUP_LISTENERS] Configuración de escuchadores completada.');
   }
 
   _processAuditEntry(entry) {
-    // Verificar si el tipo debe ser auditado
+    console.log('[SecurityAudit] [DEBUG_PROCESS_ENTRY] _processAuditEntry, auditType a verificar:', entry.auditType);
+    console.log('[SecurityAudit] [DEBUG_PROCESS_ENTRY] this.auditEventTypes incluye entry.auditType?:', this.auditEventTypes.includes(entry.auditType));
     if (!this.auditEventTypes.includes(entry.auditType)) {
       return;
     }
-    
-    // Según el modo, procesar la entrada
+    console.log('[SecurityAudit] [DEBUG_PROCESS_ENTRY] _processAuditEntry, auditMode:', this.auditMode);
     switch (this.auditMode) {
       case 'immediate':
-        // Añadir al log principal
+        console.log('[SecurityAudit] [DEBUG_PROCESS_ENTRY] Modo immediate, llamando a _addEventsToLog');
         this._addEventsToLog([entry]);
-        // Guardar de inmediato
         this._saveAuditLog();
         break;
-        
       case 'batch':
-        // Añadir a la cola de procesamiento
+        console.log('[SecurityAudit] [DEBUG_PROCESS_ENTRY] Modo batch, añadiendo a cola.');
         this.auditQueue.push(entry);
         break;
-        
       case 'disabled':
-        // No hacer nada
+        console.log('[SecurityAudit] [DEBUG_PROCESS_ENTRY] Modo disabled, no se hace nada.');
         break;
     }
   }
 
   recordSecurityEvent(event) {
-    if (!this.initialized || !event) {
-      return;
-    }
-    
+    if (!this.initialized || !event) return;
+    console.log('[SecurityAudit] [DEBUG_RECORD_EVENT] recordSecurityEvent llamado con:', JSON.stringify(event));
     const auditEntry = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      eventType: 'securityEvent',
-      auditType: 'securityEvent',
-      pluginId: event.pluginId || null,
-      details: event
+      eventType: 'securityEvent', auditType: 'securityEvent',
+      pluginId: event.pluginId || null, details: event
     };
-    
     this._processAuditEntry(auditEntry);
   }
 
   recordValidationResult(pluginId, result) {
-    if (!this.initialized || !pluginId) {
-      return;
-    }
-    
+    if (!this.initialized || !pluginId) return;
     const auditEntry = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      eventType: 'validation',
-      auditType: 'validation',
-      pluginId,
-      details: result
+      eventType: 'validation', auditType: 'validation',
+      pluginId, details: result
     };
-    
     this._processAuditEntry(auditEntry);
   }
 
   recordBlacklistAction(pluginId, action) {
-    if (!this.initialized || !pluginId) {
-      return;
-    }
-    
+    if (!this.initialized || !pluginId) return;
     const auditEntry = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      eventType: 'blacklistAction',
-      auditType: 'blacklistAction',
-      pluginId,
-      details: action
+      eventType: 'blacklistAction', auditType: 'blacklistAction',
+      pluginId, details: action
     };
-    
     this._processAuditEntry(auditEntry);
   }
 
   recordPluginDeactivation(pluginId, details) {
-    if (!this.initialized || !pluginId) {
-      return;
-    }
-    
+    if (!this.initialized || !pluginId) return;
     const auditEntry = {
       id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      eventType: 'pluginDeactivation',
-      auditType: 'pluginDeactivation',
-      pluginId,
-      details
+      eventType: 'pluginDeactivation', auditType: 'pluginDeactivation',
+      pluginId, details: details
     };
-    
     this._processAuditEntry(auditEntry);
   }
 
   getPluginAuditHistory(pluginId) {
-    if (!pluginId) {
-      return [];
-    }
-    
-    // Devolver copia del historial para ese plugin
+    if (!pluginId) return [];
     return [...(this.pluginAuditLogs[pluginId] || [])];
   }
 
   getAuditLog(filters = {}) {
     try {
       let filteredLog = [...this.auditLog];
-      
-      // Aplicar filtros si existen
-      if (filters.pluginId) {
-        filteredLog = filteredLog.filter(entry => entry.pluginId === filters.pluginId);
-      }
-      
-      if (filters.auditType) {
-        filteredLog = filteredLog.filter(entry => entry.auditType === filters.auditType);
-      }
-      
-      if (filters.startDate) {
-        filteredLog = filteredLog.filter(entry => entry.timestamp >= filters.startDate);
-      }
-      
-      if (filters.endDate) {
-        filteredLog = filteredLog.filter(entry => entry.timestamp <= filters.endDate);
-      }
-      
-      if (filters.limit) {
-        filteredLog = filteredLog.slice(-filters.limit);
-      }
-      
+      if (filters.pluginId) filteredLog = filteredLog.filter(entry => entry.pluginId === filters.pluginId);
+      if (filters.auditType) filteredLog = filteredLog.filter(entry => entry.auditType === filters.auditType);
+      if (filters.startDate) filteredLog = filteredLog.filter(entry => entry.timestamp >= filters.startDate);
+      if (filters.endDate) filteredLog = filteredLog.filter(entry => entry.timestamp <= filters.endDate);
+      if (filters.limit) filteredLog = filteredLog.slice(-filters.limit);
       return filteredLog;
     } catch (error) {
-      console.error('Error al obtener log de auditoría:', error);
+      console.error('[SecurityAudit] Error al obtener log de auditoría:', error);
       return [];
     }
   }
 
   getAuditLogByType(type, limit = 50) {
     try {
-      if (!type) {
-        return [];
-      }
-      
-      // Filtrar por tipo
+      if (!type) return [];
       const filteredLog = this.auditLog.filter(entry => entry.auditType === type);
-      
-      // Aplicar límite
       return filteredLog.slice(-limit);
     } catch (error) {
-      console.error(`Error al obtener log de auditoría por tipo ${type}:`, error);
+      console.error(`[SecurityAudit] Error al obtener log de auditoría por tipo ${type}:`, error);
       return [];
     }
   }
 
   clearPluginData(pluginId) {
     if (!pluginId) return false;
-    
     try {
-      // Eliminar del historial por plugin
       delete this.pluginAuditLogs[pluginId];
-      
-      // Filtrar del log principal
       this.auditLog = this.auditLog.filter(entry => entry.pluginId !== pluginId);
-      
-      // Guardar cambios
       this._saveAuditLog();
-      
       return true;
     } catch (error) {
-      console.error(`Error al limpiar datos de plugin ${pluginId}:`, error);
+      console.error(`[SecurityAudit] Error al limpiar datos de plugin ${pluginId}:`, error);
       return false;
     }
   }
 
   clearAllAuditLogs() {
     try {
-      // Reiniciar logs
       this.auditLog = [];
       this.pluginAuditLogs = {};
-      
-      // Eliminar de almacenamiento
       storageService.remove(this.storageKey);
-      
       return true;
     } catch (error) {
-      console.error('Error al limpiar logs de auditoría:', error);
+      console.error('[SecurityAudit] Error al limpiar logs de auditoría:', error);
       return false;
     }
   }
@@ -433,118 +360,101 @@ class PluginSecurityAudit {
   exportAuditData() {
     try {
       return {
-        version: '1.0',
-        timestamp: Date.now(),
-        securityLevel: this.securityLevel,
-        auditMode: this.auditMode,
-        logs: this.auditLog
+        version: '1.0', timestamp: Date.now(),
+        securityLevel: this.securityLevel, auditMode: this.auditMode,
+        logs: [...this.auditLog]
       };
     } catch (error) {
-      console.error('Error al exportar datos de auditoría:', error);
+      console.error('[SecurityAudit] Error al exportar datos de auditoría:', error);
       return null;
     }
   }
 
-  setSecurityLevel(level) {
-    if (!level || !PLUGIN_CONSTANTS.SECURITY.LEVEL[level]) {
-      return false;
+  setSecurityLevel(levelInput) {
+    const validLevels = Object.values(PLUGIN_CONSTANTS.SECURITY.LEVEL);
+    const level = String(levelInput || '').toLowerCase();
+
+    if (!levelInput || !validLevels.includes(level)) {
+        console.warn(`[SecurityAudit] Nivel de seguridad inválido: '${levelInput}'. Los válidos son ${validLevels.join(', ')}.`);
+        return false;
     }
     
     try {
+      if (this.securityLevel === level && this.initialized) {
+          return true; 
+      }
+      console.log('[SecurityAudit] [DEBUG_SET_LEVEL] Cambiando nivel de seguridad a:', level);
       this.securityLevel = level;
-      
-      // Reconfigurar modo de auditoría
       this._configureAuditMode();
       
-      // Reiniciar procesamiento por lotes si es necesario
-      if (this.auditMode === 'batch') {
+      if (this.auditMode === 'batch' && this.initialized) {
+        console.log('[SecurityAudit] [DEBUG_SET_LEVEL] Iniciando batch processing por cambio de nivel.');
         this._startBatchProcessing();
       } else if (this.batchIntervalId) {
+        console.log('[SecurityAudit] [DEBUG_SET_LEVEL] Limpiando intervalo de batch por cambio de nivel/modo.');
         clearInterval(this.batchIntervalId);
         this.batchIntervalId = null;
       }
-      
       return true;
     } catch (error) {
-      console.error(`Error al cambiar nivel de seguridad a ${level}:`, error);
+      console.error(`[SecurityAudit] Error al cambiar nivel de seguridad a ${levelInput}:`, error);
       return false;
     }
   }
 
   setAuditMode(mode) {
     const validModes = ['immediate', 'batch', 'disabled'];
-    
     if (!mode || !validModes.includes(mode)) {
-      return false;
+        console.warn(`[SecurityAudit] Modo de auditoría inválido: ${mode}.`);
+        return false;
     }
-    
     try {
+      if (this.auditMode === mode) return true;
+      console.log('[SecurityAudit] [DEBUG_SET_MODE] Cambiando modo de auditoría a:', mode);
       this.auditMode = mode;
-      
-      // Actualizar procesamiento por lotes
-      if (mode === 'batch') {
+      if (mode === 'batch' && this.initialized) {
+        console.log('[SecurityAudit] [DEBUG_SET_MODE] Iniciando batch processing por cambio de modo.');
         this._startBatchProcessing();
       } else if (this.batchIntervalId) {
+        console.log('[SecurityAudit] [DEBUG_SET_MODE] Limpiando intervalo de batch por cambio de modo.');
         clearInterval(this.batchIntervalId);
         this.batchIntervalId = null;
       }
-      
       return true;
     } catch (error) {
-      console.error(`Error al cambiar modo de auditoría a ${mode}:`, error);
+      console.error(`[SecurityAudit] Error al cambiar modo de auditoría a ${mode}:`, error);
       return false;
     }
   }
 
   getAuditStats() {
     try {
-      // Total de entradas
       const totalEntries = this.auditLog.length;
-      
-      // Contar por tipo
       const countByType = {};
       this.auditEventTypes.forEach(type => {
         countByType[type] = this.auditLog.filter(entry => entry.auditType === type).length;
       });
-      
-      // Plugins con más eventos
       const pluginCounts = {};
       this.auditLog.forEach(entry => {
         if (entry.pluginId) {
-          if (!pluginCounts[entry.pluginId]) {
-            pluginCounts[entry.pluginId] = 0;
-          }
-          pluginCounts[entry.pluginId]++;
+          pluginCounts[entry.pluginId] = (pluginCounts[entry.pluginId] || 0) + 1;
         }
       });
-      
       const topPlugins = Object.entries(pluginCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
         .map(([pluginId, count]) => ({ pluginId, count }));
-      
-      // Eventos recientes
       const recentEvents = this.auditLog.slice(-10);
-      
       return {
-        totalEntries,
-        countByType,
-        topPlugins,
-        recentEvents,
-        auditMode: this.auditMode,
-        securityLevel: this.securityLevel
+        totalEntries, countByType, topPlugins, recentEvents,
+        auditMode: this.auditMode, securityLevel: this.securityLevel
       };
     } catch (error) {
-      console.error('Error al obtener estadísticas de auditoría:', error);
-      
-      return {
-        error: error.message,
-        securityLevel: this.securityLevel
-      };
+      console.error('[SecurityAudit] Error al obtener estadísticas de auditoría:', error);
+      return { error: error.message, securityLevel: this.securityLevel, auditMode: this.auditMode, totalEntries: 0, countByType:{}, topPlugins:[], recentEvents:[] };
     }
   }
 }
 
-// Exportar instancia única
 const pluginSecurityAudit = new PluginSecurityAudit();
 export default pluginSecurityAudit;
