@@ -1,3 +1,5 @@
+// src/core/plugins/plugin-sandbox.js
+
 /**
  * Sistema de Sandbox para Plugins
  */
@@ -13,44 +15,44 @@ class PluginSandbox {
     this.cachedNatives = {};
     this.sandboxedPlugins = new Set();
     this.sandboxErrors = {};
-    this.maxSandboxErrors = 5;
+    this.maxSandboxErrors = 5; 
     
-    // Reglas de análisis estático simplificadas
     this.staticAnalysisRules = [
-      {name: 'preventEval', pattern: /\beval\s*\(/g, severity: 'critical'},
-      {name: 'preventDocumentWrite', pattern: /document\.write\s*\(/g, severity: 'high'},
-      {name: 'preventInnerHTML', pattern: /\.innerHTML\s*=/g, severity: 'medium'},
-      {name: 'preventWindowOpen', pattern: /window\.open\s*\(/g, severity: 'medium'},
-      {name: 'preventNewFunction', pattern: /new\s+Function\s*\(/g, severity: 'critical'},
-      {name: 'preventSetTimeout', pattern: /setTimeout\s*\(\s*['"`]/g, severity: 'high'},
-      {name: 'preventSetInterval', pattern: /setInterval\s*\(\s*['"`]/g, severity: 'high'},
-      {name: 'preventAccessStorage', pattern: /(localStorage|sessionStorage|indexedDB)\./g, severity: 'medium'},
-      {name: 'preventDirectFetch', pattern: /\bfetch\s*\(/g, severity: 'medium'},
-      {name: 'preventXHR', pattern: /new\s+XMLHttpRequest\s*\(/g, severity: 'medium'},
-      {name: 'preventObjectDefineProperty', pattern: /Object\.defineProperty\s*\(\s*(Object|Array|String|Number|Function|Boolean|Symbol|Math|JSON|Date|RegExp)\./g, severity: 'critical'}
+      {name: 'preventEval', pattern: /\beval\s*\(/g, severity: 'critical', message: 'Uso de eval() detectado.'},
+      {name: 'preventDocumentWrite', pattern: /document\.write\s*\(/g, severity: 'high', message: 'Uso de document.write() detectado.'},
+      {name: 'preventInnerHTML', pattern: /\.innerHTML\s*=/g, severity: 'medium', message: 'Asignación directa a innerHTML detectada.'},
+      {name: 'preventWindowOpen', pattern: /window\.open\s*\(/g, severity: 'medium', message: 'Uso de window.open() detectado.'},
+      {name: 'preventNewFunction', pattern: /new\s+Function\s*\(/g, severity: 'critical', message: 'Uso de new Function() detectado.'},
+      {name: 'preventSetTimeoutString', pattern: /setTimeout\s*\(\s*['"`]/g, severity: 'high', message: 'Uso de setTimeout con string detectado.'},
+      {name: 'preventSetIntervalString', pattern: /setInterval\s*\(\s*['"`]/g, severity: 'high', message: 'Uso de setInterval con string detectado.'},
+      {name: 'preventAccessStorage', pattern: /(localStorage|sessionStorage|indexedDB)\.(?!getItem|setItem|removeItem|clear|key|length)/g, severity: 'medium', message: 'Acceso directo a Web Storage API detectado. Usar coreAPI.storage.'},
+      {name: 'preventDirectFetch', pattern: /\bfetch\s*\(/g, severity: 'medium', message: 'Uso directo de fetch() detectado. Considerar API mediadora.'},
+      {name: 'preventXHR', pattern: /new\s+XMLHttpRequest\s*\(/g, severity: 'medium', message: 'Uso de XMLHttpRequest detectado. Considerar API mediadora.'},
+      {name: 'preventObjectDefinePropertyOnGlobals', pattern: /Object\.defineProperty\s*\(\s*(Object|Array|String|Number|Function|Boolean|Symbol|Math|JSON|Date|RegExp)\b/g, severity: 'critical', message: 'Intento de modificar propiedades de objetos globales de JavaScript.'}
     ];
   }
 
-  initialize(securityLevel) {
+  initialize(securityLevelInput) {
     if (this.initialized) {
-      console.warn('Sandbox ya inicializado');
-      return true;
+        if (securityLevelInput === undefined || this.securityLevel === securityLevelInput) {
+            console.warn('[Sandbox] Sandbox ya inicializado.');
+        } else {
+            this.setSecurityLevel(securityLevelInput); 
+        }
+        return true;
     }
     
     try {
-      console.log('Inicializando sistema de sandbox para plugins...');
-      
-      this.securityLevel = securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
-      
+      console.log('[Sandbox] Inicializando sistema de sandbox para plugins...');
+      this.securityLevel = securityLevelInput || this.securityLevel;
       this._cacheNativeMethods();
       this._installGlobalProtections();
-      
       this.initialized = true;
-      
-      console.log(`Sandbox inicializado (nivel: ${this.securityLevel})`);
+      console.log(`[Sandbox] Sandbox inicializado (nivel: ${this.securityLevel})`);
       return true;
     } catch (error) {
-      console.error('Error al inicializar sandbox:', error);
+      console.error('[Sandbox] Error al inicializar sandbox:', error);
+      this.initialized = false;
       return false;
     }
   }
@@ -75,7 +77,7 @@ class PluginSandbox {
         }
       };
     } catch (error) {
-      console.error('Error al cachear métodos nativos:', error);
+      console.error('[Sandbox] Error al cachear métodos nativos:', error);
     }
   }
 
@@ -83,8 +85,9 @@ class PluginSandbox {
     if (this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
       try {
         this._protectGlobalObjects();
+        console.log('[Sandbox] Protecciones globales instaladas para nivel HIGH.');
       } catch (error) {
-        console.error('Error al instalar protecciones globales:', error);
+        console.error('[Sandbox] Error al instalar protecciones globales:', error);
       }
     }
   }
@@ -92,58 +95,48 @@ class PluginSandbox {
   _protectGlobalObjects() {
     const protectedGlobals = [
       Object, Array, String, Number, Function,
-      Boolean, Symbol, Math, JSON, Date, RegExp
+      Boolean, Symbol, Math, JSON, Date, RegExp,
     ];
-    
     protectedGlobals.forEach(obj => {
       try {
-        Object.freeze(obj);
-        Object.freeze(obj.prototype);
-      } catch (e) { /* Algunos objetos no pueden congelarse */ }
+        if (obj && typeof Object.freeze === 'function') Object.freeze(obj); // Object.freeze es estático
+        if (obj && obj.prototype) Object.freeze(obj.prototype);
+      } catch (e) {
+        // console.warn(`[Sandbox] No se pudo congelar completamente ${obj?.name}: ${e.message}`);
+      }
     });
-    
-    console.log('Protecciones globales instaladas');
   }
 
   validatePluginCode(pluginId, plugin) {
     if (!pluginId || !plugin) {
-      return {valid: false, reasons: ['Plugin no válido para validación']};
+      return {valid: false, reasons: ['Plugin o ID de plugin no válido para validación de código.']};
     }
-    
     try {
-      const pluginString = JSON.stringify(plugin);
+      const pluginString = JSON.stringify(plugin); 
       const violations = [];
-      
-      for (const rule of this.staticAnalysisRules) {
+      this.staticAnalysisRules.forEach(rule => {
+        rule.pattern.lastIndex = 0;
         if (rule.pattern.test(pluginString)) {
           violations.push({
             rule: rule.name,
             severity: rule.severity,
-            message: rule.message
+            message: rule.message || `Patrón sospechoso '${rule.name}' encontrado.`
           });
-          
-          rule.pattern.lastIndex = 0;
         }
-      }
-      
+      });
       const filteredViolations = this._filterViolationsBySecurityLevel(violations);
-      const reasons = filteredViolations.map(v => `${v.message} (${v.severity})`);
-      
+      const reasons = filteredViolations.map(v => v.message || `${v.rule} (${v.severity})`);
       if (filteredViolations.length > 0) {
-        eventBus.publish('pluginSystem.codeValidationFailed', {
-          pluginId,
-          violations: filteredViolations
-        });
+        eventBus.publish('pluginSystem.codeValidationFailed', { pluginId, violations: filteredViolations });
       }
-      
       return {
         valid: reasons.length === 0,
-        reasons,
+        reasons: reasons.length > 0 ? reasons : [],
         violations: filteredViolations
       };
     } catch (error) {
-      console.error(`Error al validar código del plugin ${pluginId}:`, error);
-      return {valid: false, reasons: [`Error durante validación: ${error.message}`]};
+      console.error(`[Sandbox] Error al validar código del plugin ${pluginId}:`, error);
+      return {valid: false, reasons: [`Error durante validación de código: ${error.message}`], violations: []};
     }
   }
 
@@ -151,73 +144,76 @@ class PluginSandbox {
     if (this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW) {
       return violations.filter(v => v.severity === 'critical');
     }
-    
     if (this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL) {
       return violations.filter(v => v.severity === 'critical' || v.severity === 'high');
     }
-    
     return violations;
   }
 
   async executeSandboxed(pluginId, func, args = [], context = null) {
     if (!this.initialized) {
-      console.warn('Sandbox no inicializado');
-      return func.apply(context, args);
+      console.warn('[Sandbox] Sandbox no inicializado, ejecutando directamente.');
+      try {
+        return await Promise.resolve(func.apply(context, args));
+      } catch (directError) {
+        this._handleSandboxError(pluginId || 'unknown_direct_exec', directError);
+        throw directError;
+      }
     }
-    
     if (!pluginId || typeof func !== 'function') {
-      throw new Error('Argumentos inválidos para executeSandboxed');
+      const err = new Error('Argumentos inválidos para executeSandboxed: Se requiere pluginId y func.');
+      this._handleSandboxError(pluginId || 'unknown_invalid_args', err);
+      return Promise.reject(err);
     }
-    
     this.sandboxedPlugins.add(pluginId);
-    
-    try {
-      return await this._monitoredExecution(pluginId, func, args, context);
-    } catch (error) {
-      this._handleSandboxError(pluginId, error);
-      throw error;
-    }
+    return this._monitoredExecution(pluginId, func, args, context);
   }
 
   async _monitoredExecution(pluginId, func, args, context) {
-    try {
-      let timedOut = false;
-      let timeoutId = null;
+    let timeoutId = null;
+    let timedOut = false;
+    
+    const executionPromise = new Promise((resolve, reject) => {
+      const timeoutDuration = this._getExecutionTimeout();
+      timeoutId = this.cachedNatives.setTimeout(() => {
+        timedOut = true;
+        const timeoutError = new Error(`Ejecución del plugin ${pluginId} excedió el límite de tiempo (${timeoutDuration}ms)`);
+        this._handleSandboxError(pluginId, timeoutError); 
+        reject(timeoutError);
+      }, timeoutDuration);
       
-      const executionPromise = new Promise((resolve, reject) => {
-        const timeout = this._getExecutionTimeout();
-        
-        timeoutId = this.cachedNatives.setTimeout(() => {
-          timedOut = true;
-          reject(new Error(`Ejecución del plugin ${pluginId} excedió el límite de tiempo (${timeout}ms)`));
-        }, timeout);
-        
-        try {
-          const result = func.apply(context, args);
-          resolve(result);
-        } catch (error) {
-          reject(error);
+      try {
+        const result = func.apply(context, args);
+        Promise.resolve(result)
+          .then(resolvedResult => {
+            if (!timedOut) {
+              this.cachedNatives.clearTimeout(timeoutId);
+              resolve(resolvedResult);
+            }
+          })
+          .catch(executionError => {
+            if (!timedOut) {
+              this.cachedNatives.clearTimeout(timeoutId);
+              this._handleSandboxError(pluginId, executionError);
+              reject(executionError);
+            }
+          });
+      } catch (syncError) {
+        if (!timedOut) {
+            this.cachedNatives.clearTimeout(timeoutId);
+            this._handleSandboxError(pluginId, syncError);
+            reject(syncError);
         }
-      });
-      
-      executionPromise.finally(() => {
-        if (timeoutId !== null && !timedOut) {
-          this.cachedNatives.clearTimeout(timeoutId);
-        }
-      });
-      
-      return executionPromise;
-    } catch (error) {
-      this._handleSandboxError(pluginId, error);
-      throw error;
-    }
+      }
+    });
+    return executionPromise;
   }
 
   _getExecutionTimeout() {
     switch (this.securityLevel) {
-      case PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW: return 10000; // 10 segundos
-      case PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH: return 2000; // 2 segundos
-      default: return 5000; // 5 segundos
+      case PLUGIN_CONSTANTS.SECURITY.LEVEL.LOW: return 10000;
+      case PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH: return 2000;
+      default: return 5000;
     }
   }
 
@@ -225,78 +221,64 @@ class PluginSandbox {
     if (!this.sandboxErrors[pluginId]) {
       this.sandboxErrors[pluginId] = [];
     }
-    
-    this.sandboxErrors[pluginId].push({
-      timestamp: Date.now(),
-      message: error.message,
-      stack: error.stack
-    });
-    
+    const errorEntry = { timestamp: Date.now(), message: error.message, stack: error.stack };
+    this.sandboxErrors[pluginId].push(errorEntry);
     if (this.sandboxErrors[pluginId].length > 20) {
       this.sandboxErrors[pluginId] = this.sandboxErrors[pluginId].slice(-20);
     }
-    
-    pluginErrorHandler.handleError(
-      pluginId,
-      'sandbox',
-      error,
-      { securityLevel: this.securityLevel }
-    );
-    
+    pluginErrorHandler.handleError(pluginId, 'sandbox', error, { securityLevel: this.securityLevel });
     eventBus.publish('pluginSystem.sandboxError', {
-      pluginId,
-      error: error.message,
-      count: this.sandboxErrors[pluginId].length
+      pluginId, error: error.message, fullError: error, count: this.sandboxErrors[pluginId].length
     });
-    
     if (this.sandboxErrors[pluginId].length >= this.maxSandboxErrors) {
       eventBus.publish('pluginSystem.tooManySandboxErrors', {
-        pluginId,
-        count: this.sandboxErrors[pluginId].length,
-        errors: this.sandboxErrors[pluginId].slice(-3)
+        pluginId, count: this.sandboxErrors[pluginId].length, errors: this.sandboxErrors[pluginId].slice(-3)
       });
     }
   }
 
   createDOMProxy(element, pluginId) {
-    if (!element || !pluginId || !this.activeChecks.has('domManipulation')) {
-      return element;
+    if (!element || !pluginId || typeof element.setAttribute !== 'function') {
+        return element;
+    }
+    // Solo crear Proxy si el chequeo de manipulación del DOM está activo
+    if (!this.activeChecks.has('domManipulation')) {
+        return element;
     }
     
-    const sensitiveDOMProps = ['innerHTML', 'outerHTML', 'insertAdjacentHTML'];
-    
+    const sensitiveDOMProps = ['innerHTML', 'outerHTML', 'textContent', 'innerText', 'insertAdjacentHTML', 'srcdoc'];
+
     return new Proxy(element, {
-      get: (target, prop) => {
+      get: (target, propKey) => {
+        const prop = String(propKey);
         const value = target[prop];
-        
         if (sensitiveDOMProps.includes(prop)) {
-          this._logSensitiveAccess(pluginId, 'dom', `${element.tagName}.${prop}`);
+          this._logSensitiveAccess(pluginId, 'dom_get', `${element.tagName}.${prop}`);
         }
-        
         if (typeof value === 'function') {
           return (...args) => {
-            if (prop === 'setAttribute' && args[0] === 'srcdoc') {
+            if (prop === 'setAttribute' && args[0] && sensitiveDOMProps.includes(args[0])) {
               this._handlePotentiallyDangerousOperation(
-                pluginId, 'dom', `setAttribute('srcdoc')`, args
+                pluginId, 'dom_method_call', `setAttribute('${args[0]}')`, { attribute: args[0], value: args[1] }
               );
             }
-            
             return value.apply(target, args);
           };
         }
-        
         return value;
       },
-      
-      set: (target, prop, value) => {
+      set: (target, propKey, value) => {
+        const prop = String(propKey);
         if (sensitiveDOMProps.includes(prop)) {
           if (typeof value === 'string' && this._containsSuspiciousContent(value)) {
             this._handlePotentiallyDangerousOperation(
-              pluginId, 'dom', `${prop} = [sospechoso]`, { value }
+              pluginId, 'dom_set', `${prop} = [sospechoso]`, { value }
             );
+          } else {
+            // Si no es sospechoso, pero es una prop sensible, llamar a _logSensitiveAccess
+            this._logSensitiveAccess(pluginId, 'dom_set', `${element.tagName}.${prop}`);
           }
         }
-        
         target[prop] = value;
         return true;
       }
@@ -305,85 +287,84 @@ class PluginSandbox {
 
   _containsSuspiciousContent(content) {
     if (typeof content !== 'string') return false;
-    
     const suspiciousPatterns = [
-      /<\s*script/i,
-      /javascript\s*:/i,
-      /data\s*:\s*text\/html/i,
-      /on[a-z]+\s*=/i
+      /<\s*script/i, /javascript\s*:/i, /data\s*:\s*text\/html/i,
+      /\bon[a-z]+\s*=/i, /<\s*iframe[^>]+srcdoc\s*=/i
     ];
-    
     return suspiciousPatterns.some(pattern => pattern.test(content));
   }
 
   _logSensitiveAccess(pluginId, type, target) {
-    if (this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
-      console.warn(`[Sandbox] Plugin ${pluginId} accedió a ${type} sensible: ${target}`);
+    // Si el monitoreo de manipulación del DOM está activo, siempre publicar el intento de acceso.
+    if (this.activeChecks.has('domManipulation')) {
+      eventBus.publish('pluginSystem.sensitiveAccessAttempt', {
+          pluginId, 
+          type, 
+          target, 
+          securityLevel: this.securityLevel
+      });
     }
   }
 
   _handlePotentiallyDangerousOperation(pluginId, type, operation, details) {
     const isHighSecurity = this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH;
-    
     eventBus.publish('pluginSystem.suspiciousOperation', {
-      pluginId,
-      type,
-      operation,
-      details: isHighSecurity ? details : null,
+      pluginId, type, operation,
+      details: (isHighSecurity || this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL) ? details : null,
       blocked: isHighSecurity
     });
-    
     if (isHighSecurity) {
       throw new Error(`Operación potencialmente peligrosa bloqueada: ${type} ${operation}`);
     }
   }
 
-  // Métodos de configuración
-  updateSecurityChecks(activeChecks) {
-    if (!activeChecks) return;
-    
-    this.activeChecks = new Set(activeChecks);
-    
-    eventBus.publish('pluginSystem.sandboxSecurityChecksUpdated', {
-      checks: Array.from(this.activeChecks)
-    });
+  updateSecurityChecks(activeChecksInput) {
+    if (!activeChecksInput || !Array.isArray(activeChecksInput)) {
+        console.warn('[Sandbox] updateSecurityChecks: activeChecksInput debe ser un array.');
+        return;
+    }
+    try {
+      this.activeChecks = new Set(activeChecksInput);
+      eventBus.publish('pluginSystem.sandboxSecurityChecksUpdated', { checks: Array.from(this.activeChecks) });
+    } catch (error) {
+      console.error('[Sandbox] Error al actualizar verificaciones de seguridad:', error);
+    }
   }
 
   setSecurityLevel(level) {
-    if (!level || !PLUGIN_CONSTANTS.SECURITY.LEVEL[level]) {
-      return false;
+    const validLevels = Object.values(PLUGIN_CONSTANTS.SECURITY.LEVEL);
+    if (!level || !validLevels.includes(level)) {
+        console.warn(`[Sandbox] Nivel de seguridad inválido: ${level}. Los válidos son ${validLevels.join(', ')}`);
+        return false;
     }
-    
     try {
-      this.securityLevel = level;
-      
-      if (level === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
-        this._installGlobalProtections();
+      if (this.securityLevel === level && this.initialized) {
+          return true;
       }
-      
+      this.securityLevel = level;
+      if (this.initialized) {
+          this._installGlobalProtections();
+      }
       eventBus.publish('pluginSystem.sandboxSecurityLevelChanged', { level });
-      
       return true;
     } catch (error) {
-      console.error(`Error al cambiar nivel de seguridad a ${level}:`, error);
+      console.error(`[Sandbox] Error al cambiar nivel de seguridad a ${level}:`, error);
       return false;
     }
   }
 
   getSandboxErrors(pluginId) {
-    return !pluginId ? [] : (this.sandboxErrors[pluginId] || []);
+    return pluginId ? (this.sandboxErrors[pluginId] || []) : [];
   }
 
   clearPluginData(pluginId) {
     if (!pluginId) return false;
-    
     try {
       this.sandboxedPlugins.delete(pluginId);
       delete this.sandboxErrors[pluginId];
-      
       return true;
     } catch (error) {
-      console.error(`Error al limpiar datos de plugin ${pluginId}:`, error);
+      console.error(`[Sandbox] Error al limpiar datos de plugin ${pluginId}:`, error);
       return false;
     }
   }
@@ -392,19 +373,12 @@ class PluginSandbox {
     try {
       const sandboxedPluginsCount = this.sandboxedPlugins.size;
       const pluginsWithErrorsCount = Object.keys(this.sandboxErrors).length;
-      
       let totalErrors = 0;
-      Object.values(this.sandboxErrors).forEach(errors => {
-        totalErrors += errors.length;
-      });
-      
+      Object.values(this.sandboxErrors).forEach(errors => { totalErrors += errors.length; });
       const topErrorPlugins = Object.entries(this.sandboxErrors)
-        .sort((a, b) => b[1].length - a[1].length)
-        .slice(0, 3)
-        .map(([pluginId, errors]) => ({
-          pluginId, errorCount: errors.length
-        }));
-      
+        .map(([id, errors]) => ({ pluginId: id, errorCount: errors.length }))
+        .sort((a, b) => b.errorCount - a.errorCount)
+        .slice(0, 3);
       return {
         securityLevel: this.securityLevel,
         activeChecks: Array.from(this.activeChecks),
@@ -414,8 +388,8 @@ class PluginSandbox {
         topErrorPlugins
       };
     } catch (error) {
-      console.error('Error al obtener estadísticas de sandbox:', error);
-      return { error: error.message };
+      console.error('[Sandbox] Error al obtener estadísticas de sandbox:', error);
+      return { error: error.message, securityLevel: this.securityLevel, activeChecks: [], sandboxedPlugins:0, pluginsWithErrors:0, totalErrors:0, topErrorPlugins:[] };
     }
   }
 }
