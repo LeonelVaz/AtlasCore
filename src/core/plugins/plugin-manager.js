@@ -29,11 +29,10 @@ class PluginManager {
     this._subscribers = {};
     this._lastSubscriberId = 0;
     this._compatibilityResults = {};
-    this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL; // Default inicial
+    this.securityLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
     this.securityInitialized = false;
     this._activatingPlugins = new Set();
-    this.activeSecurityChecks = new Set(); 
-    // console.log('[PM Constructor] Instancia creada, securityLevel default:', this.securityLevel);
+    this.activeSecurityChecks = new Set();
   }
 
   async initialize(services = {}, options = {}) {
@@ -42,47 +41,39 @@ class PluginManager {
       return true;
     }
     
-    // console.log('[PM] Iniciando inicialización de PluginManager...');
     this.loading = true;
     this.error = null;
     this.initialized = false; 
-    this.securityInitialized = false;
-    this._compatibilityResults = {}; 
+    this.securityInitialized = false; // Resetear en cada intento de inicialización
+    this._compatibilityResults = {};
     
     try {
-      // El nivel de seguridad se determinará y establecerá en _initializeSecuritySystem
-      // o si la seguridad está deshabilitada. No lo establecemos desde options aquí directamente.
-      // this.securityLevel = options.securityLevel || PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL;
-      // console.log(`[PM] Nivel de seguridad deseado para initialize: ${options.securityLevel || 'DEFAULT'}, enableSecurity: ${options.enableSecurity !== false}`);
-
       coreAPI.init(services);
       
       if (options.enableSecurity !== false) {
-        await this._initializeSecuritySystem(options); 
+        // _initializeSecuritySystem devolverá false si falla, lo que debería ser un error de inicialización
+        if (!await this._initializeSecuritySystem(options)) {
+            throw new Error('Falló la inicialización del sistema de seguridad.');
+        }
       } else {
-        // console.log('[PM] Sistema de seguridad explícitamente deshabilitado para esta inicialización.');
-        this.securityInitialized = false;
-        this.securityLevel = options.securityLevel || this.securityLevel; // Usar opción o default si seguridad está off
+        this.securityInitialized = false; // Explícitamente no inicializado
+        this.securityLevel = options.securityLevel || this.securityLevel;
         this._configureSecurityChecksByLevel(this.securityLevel); 
       }
       
-      await this._loadPluginStates();
+      // Estas funciones ahora lanzarán errores si fallan críticamente
+      await this._loadPluginStates(); 
       const plugins = await loadPlugins();
-      // console.log(`[PM] Plugins cargados por loadPlugins: ${plugins.length}, IDs: ${plugins.map(p=>p?.id).join(', ')}`);
       
       const registeredCount = this._registerPlugins(plugins);
-      // console.log(`[PM] Plugins registrados en pluginRegistry: ${registeredCount}`);
       
-      // console.log('[PM DEBUG INIT] ANTES de _verifyPluginCompatibility. _compatibilityResults:', JSON.stringify(this._compatibilityResults));
       await this._verifyPluginCompatibility();
-      // console.log('[PM DEBUG INIT] DESPUÉS de _verifyPluginCompatibility. _compatibilityResults:', JSON.stringify(this._compatibilityResults));
       
-      this.initialized = true; 
-      // console.log('[PM DEBUG INIT] this.initialized AHORA es true');
+      this.initialized = true; // Marcamos como inicializado ANTES de activar desde estado
+                              // porque activatePlugin chequea this.initialized
       
       await this._activatePluginsFromState();
       
-      // console.log(`[PM] Sistema de plugins inicializado. ${registeredCount} plugins registrados.`);
       this._publishEvent('initialized', { 
         pluginsCount: registeredCount,
         activePlugins: pluginRegistry.getActivePlugins().map(p => p.id),
@@ -96,8 +87,8 @@ class PluginManager {
       console.error('[PM] Error al inicializar el sistema de plugins:', error);
       this.error = error.message || 'Error desconocido al inicializar plugins';
       this.loading = false;
-      this.initialized = false;
-      this.securityInitialized = false;
+      this.initialized = false; // Asegurar que initialized es false en error
+      this.securityInitialized = false; // También resetear esto
       
       this._publishEvent('error', { error: this.error });
       return false;
@@ -117,20 +108,15 @@ class PluginManager {
     }
     return count;
   }
-
-
   
   async _initializeSecuritySystem(options = {}) {
     try {
-      // console.log('[PM] Inicializando sistema de seguridad para plugins...');
-      
-      const securitySettingsFromStorage = await this._loadSecuritySettings();
+      const securitySettingsFromStorage = await this._loadSecuritySettings(); // Ahora puede lanzar error
       const determinedSecurityLevel = options.securityLevel || 
                                     securitySettingsFromStorage?.securityLevel || 
                                     this.securityLevel; 
       
       this.securityLevel = determinedSecurityLevel;
-      // console.log(`[PM] Nivel de seguridad determinado para subsistemas: ${this.securityLevel}`);
       this._configureSecurityChecksByLevel(this.securityLevel);
 
       const securityConfig = { securityLevel: this.securityLevel };
@@ -143,7 +129,6 @@ class PluginManager {
       
       eventBus.subscribe('pluginSystem.securityDeactivateRequest', async (data) => {
         if (data?.pluginId) {
-          // console.warn(`[PM] Solicitud de desactivación de seguridad: ${data.pluginId} - ${data.reason}`);
           await this.deactivatePlugin(data.pluginId, true);
           pluginSecurityAudit.recordPluginDeactivation(data.pluginId, {
             reason: data.reason, timestamp: Date.now(), source: 'security'
@@ -152,12 +137,12 @@ class PluginManager {
       });
       
       this.securityInitialized = true;
-      // console.log(`[PM] Sistema de seguridad inicializado (nivel: ${this.securityLevel})`);
       return true;
     } catch (error) {
       console.error('[PM] Error al inicializar sistema de seguridad:', error);
       this.securityInitialized = false;
-      return false;
+      // Devolver false para que initialize() sepa que falló
+      return false; 
     }
   }
 
@@ -167,25 +152,21 @@ class PluginManager {
         return false;
     }
     if (!this.initialized) {
-        console.warn("[PM] PluginManager no inicializado. No se pueden rechazar permisos.");
+        // console.warn("[PM] PluginManager no inicializado. No se pueden rechazar permisos.");
         return false;
     }
     if (!this.securityInitialized) {
-        console.warn("[PM] Sistema de seguridad no inicializado. No se pueden rechazar permisos.");
+        // console.warn("[PM] Sistema de seguridad no inicializado. No se pueden rechazar permisos.");
         return false;
     }
 
     try {
         const success = pluginPermissionChecker.rejectPermissions(pluginId, permissions);
         if (success) {
-            // Opcional: Guardar el estado o realizar otras acciones si es necesario
-            // Por ejemplo, si el estado de los permisos afecta algo que pluginManager rastrea directamente.
-            // await this._savePluginStates(); // Si el estado de los permisos afecta `pluginRegistry.pluginStates`
-
             eventBus.publish('pluginSystem.permissionsRejectedByManager', { pluginId, permissions });
-            console.log(`[PM] Permisos ${permissions.join(', ')} rechazados para ${pluginId}`);
+            // console.log(`[PM] Permisos ${permissions.join(', ')} rechazados para ${pluginId}`);
         } else {
-            console.warn(`[PM] Falló el rechazo de permisos para ${pluginId} desde el permissionChecker.`);
+            // console.warn(`[PM] Falló el rechazo de permisos para ${pluginId} desde el permissionChecker.`);
         }
         return success;
     } catch (error) {
@@ -195,44 +176,42 @@ class PluginManager {
     }
   }
 
-
   async _loadSecuritySettings() {
     try {
       const settings = await storageService.get(STORAGE_KEYS.PLUGIN_SECURITY_SETTINGS_KEY, {
         securityLevel: PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL,
         activeChecks: ['resourceUsage', 'apiAccess', 'storageUsage', 'domManipulation']
       });
-      // console.log('[PM] Configuración de seguridad cargada:', settings);
       return settings;
     } catch (error) {
       console.error('[PM] Error al cargar configuración de seguridad:', error);
-      return {
-        securityLevel: PLUGIN_CONSTANTS.SECURITY.LEVEL.NORMAL,
-        activeChecks: ['resourceUsage', 'apiAccess', 'storageUsage', 'domManipulation']
-      };
+      // Lanzar error para que _initializeSecuritySystem lo maneje y devuelva false
+      throw new Error(`Error al cargar configuración de seguridad: ${error.message}`);
     }
   }
 
   async _saveSecuritySettings(settings = {}) {
     try {
-      const currentSettings = await this._loadSecuritySettings();
+      const currentSettings = await this._loadSecuritySettings(); // Podría fallar aquí si _loadSecuritySettings lanza error
       const newSettings = { ...currentSettings, ...settings, lastUpdated: Date.now() };
       await storageService.set(STORAGE_KEYS.PLUGIN_SECURITY_SETTINGS_KEY, newSettings);
-      // console.log('[PM] Configuración de seguridad guardada:', newSettings);
     } catch (error) {
       console.error('[PM] Error al guardar configuración de seguridad:', error);
+      // No relanzar aquí para no romper setSecurityLevel si solo el guardado falla,
+      // pero setSecurityLevel debería manejar que _saveSecuritySettings pueda fallar.
+      // O, si es crítico, relanzar. Por ahora, solo log.
     }
   }
 
   async _loadPluginStates() {
     try {
       const pluginStatesFromStorage = await storageService.get(PLUGIN_STATE_KEY, {});
-      // console.log('[PM DEBUG LPS] pluginStates leídos de storageService:', JSON.stringify(pluginStatesFromStorage));
       pluginRegistry.setPluginStates(pluginStatesFromStorage);
-      return true;
+      // No devolvemos true aquí, si falla, el catch lanzará el error
     } catch (error) {
       console.error('[PM] Error al cargar estados de plugins:', error);
-      return false;
+      // Lanzar error para que initialize() lo capture
+      throw new Error(`Error al cargar estados de plugins: ${error.message}`);
     }
   }
 
@@ -240,47 +219,35 @@ class PluginManager {
     try {
       const pluginStates = pluginRegistry.getPluginStates();
       await storageService.set(PLUGIN_STATE_KEY, pluginStates);
-      return true;
+      return true; // Indicar éxito
     } catch (error) {
       console.error('[PM] Error al guardar estados de plugins:', error);
-      return false;
+      return false; // Indicar fallo
     }
   }
 
   async _activatePluginsFromState() {
-    // console.log('[PM DEBUG APS] Iniciando _activatePluginsFromState.');
-    // console.log('[PM DEBUG APS] this.initialized:', this.initialized);
-    // console.log('[PM DEBUG APS] this._compatibilityResults al inicio de APS:', JSON.stringify(this._compatibilityResults));
-    
     try {
       const pluginStates = pluginRegistry.getPluginStates();
       const allPlugins = pluginRegistry.getAllPlugins(); 
       const sortedPluginIds = pluginDependencyResolver.calculateLoadOrder(); 
-
-      // console.log('[PM DEBUG APS] sortedPluginIds:', sortedPluginIds.join(', '));
-      // console.log('[PM DEBUG APS] pluginStates (desde pluginRegistry):', JSON.stringify(pluginStates));
-      // console.log('[PM DEBUG APS] allPlugins (desde pluginRegistry):', allPlugins.map(p=>p?.id).join(', '));
 
       const pluginsMap = {};
       allPlugins.forEach(plugin => {
         if (plugin?.id) pluginsMap[plugin.id] = plugin;
       });
       
-      let activatedCount = 0;
+      // let activatedCount = 0; // No usado
       for (const pluginId of sortedPluginIds) {
         const state = pluginStates[pluginId];
-        // console.log(`[PM DEBUG APS] Procesando ${pluginId}. Estado:`, JSON.stringify(state), `En pluginsMap: ${!!pluginsMap[pluginId]}`);
         
         if (state?.active && pluginsMap[pluginId]) {
           const compatResult = this._compatibilityResults[pluginId];
-          // console.log(`[PM DEBUG APS] Compatibilidad para ${pluginId} (desde _compatibilityResults):`, JSON.stringify(compatResult));
-          
           const isBlacklisted = this.securityInitialized && 
                                pluginSecurityManager.isPluginBlacklisted(pluginId);
-          // console.log(`[PM DEBUG APS] ${pluginId} - isBlacklisted: ${isBlacklisted}`);
           
           if (!compatResult || compatResult?.compatible === false) {
-            // console.warn(`[PM] Plugin ${pluginId} no se activará (desde APS): Incompatible o sin resultado. Razón: ${compatResult?.reason}`);
+            // console.warn(`[PM] Plugin ${pluginId} no se activará (desde APS): Incompatible. Razón: ${compatResult?.reason}`);
             continue;
           }
           if (isBlacklisted) {
@@ -288,33 +255,26 @@ class PluginManager {
             continue;
           }
           
-          // console.log(`[PM DEBUG APS] Intentando activar ${pluginId} vía this.activatePlugin`);
-          if (await this.activatePlugin(pluginId)) {
-             activatedCount++;
-             // console.log(`[PM DEBUG APS] ${pluginId} activado exitosamente desde APS.`);
-          } else {
-             // console.warn(`[PM DEBUG APS] Falló la activación de ${pluginId} desde APS.`);
-          }
+          // No es necesario contar, activatePlugin ya emite eventos y maneja su estado
+          await this.activatePlugin(pluginId); // activatePlugin maneja sus propios errores y devuelve booleano
         }
       }
-      // console.log(`[PM] ${activatedCount} plugins activados automáticamente desde el estado.`);
-      return true;
+      // No devolvemos true aquí, si falla una activación, activatePlugin ya lo habrá manejado.
+      // Si ocurre un error inesperado en este bucle, el catch lo tomará.
     } catch (error) {
       console.error('[PM] Error al activar plugins desde estado previo:', error);
-      return false;
+      // Lanzar para que initialize() lo capture
+      throw new Error(`Error al activar plugins desde estado previo: ${error.message}`);
     }
   }
 
   async _verifyPluginCompatibility() {
-    // console.log('[PM] Iniciando _verifyPluginCompatibility...');
     try {
       this._compatibilityResults = {};
       const allPlugins = pluginRegistry.getAllPlugins();
-      // console.log(`[PM] _verifyPluginCompatibility - Verificando ${allPlugins.length} plugins: ${allPlugins.map(p=>p?.id).join(', ')}`);
       
       for (const plugin of allPlugins) {
         if (!plugin || !plugin.id) {
-            // console.warn('[PM] _verifyPluginCompatibility - Encontrado plugin inválido o sin ID:', plugin);
             continue;
         }
         try {
@@ -325,18 +285,20 @@ class PluginManager {
             incompatibilityReason: result.compatible ? null : result.reason,
             lastCompatibilityCheck: Date.now()
           });
-          if (!result.compatible) {
-            console.warn(`[PM] Plugin ${plugin.id} incompatible: ${result.reason}`);
-          }
+          // if (!result.compatible) {
+          //   console.warn(`[PM] Plugin ${plugin.id} incompatible: ${result.reason}`);
+          // }
         } catch (error) {
           console.error(`[PM] Error al verificar compatibilidad para ${plugin.id}:`, error);
           this._compatibilityResults[plugin.id] = { compatible: false, reason: `Error en verificación: ${error.message}` };
+          // Considerar si este error individual debe detener toda la verificación o la inicialización
         }
       }
-      return true;
+      // No devolvemos true, si hay un error grave en el bucle, el catch exterior lo toma.
     } catch (error) {
       console.error('[PM] Error general en _verifyPluginCompatibility:', error);
-      return false;
+      // Lanzar para que initialize() lo capture
+      throw new Error(`Error general en _verifyPluginCompatibility: ${error.message}`);
     }
   }
 
@@ -351,15 +313,13 @@ class PluginManager {
 
   async activatePlugin(pluginId) {
     if (!this.initialized) {
-      console.error(`[PM] El gestor de plugins no está inicializado, no se puede activar plugin: ${pluginId}`);
+      // console.error(`[PM] El gestor de plugins no está inicializado, no se puede activar plugin: ${pluginId}`);
       return false;
     }
     if (this._activatingPlugins.has(pluginId)) {
-      // console.warn(`[PM] Activación de ${pluginId} ya en progreso o ciclo detectado.`);
-      return true; // Si ya está en proceso, consideramos que eventualmente se activará (o fallará)
+      return true; 
     }
     
-    // console.log(`[PM] Iniciando activación de plugin: ${pluginId}`);
     this._activatingPlugins.add(pluginId);
     
     try {
@@ -367,28 +327,25 @@ class PluginManager {
       if (!plugin) {
         plugin = await this._loadAndRegisterPlugin(pluginId);
         if (!plugin) {
-          console.error(`[PM] Plugin ${pluginId} no encontrado o no se pudo cargar/registrar para activación.`);
+          // console.error(`[PM] Plugin ${pluginId} no encontrado o no se pudo cargar/registrar para activación.`);
           this._activatingPlugins.delete(pluginId);
           return false;
         }
       }
       
       if (pluginRegistry.isPluginActive(pluginId)) {
-        // console.log(`[PM] Plugin ${pluginId} ya está activo.`);
         this._activatingPlugins.delete(pluginId);
         return true;
       }
 
       let compatResult = this._compatibilityResults[pluginId];
-      if (!compatResult && plugin) { // Solo recalcular si no existe Y tenemos la definición del plugin
-          // console.log(`[PM] (activatePlugin) Compatibilidad no encontrada en caché para ${pluginId}, verificando...`);
+      if (!compatResult && plugin) {
           compatResult = pluginCompatibility.runFullCompatibilityCheck(plugin);
           this._compatibilityResults[pluginId] = compatResult;
       }
 
-      // Si incluso después de re-verificar (o si no había plugin), no es compatible
       if (!compatResult || !compatResult.compatible) {
-        console.warn(`[PM] No se puede activar ${pluginId}: Incompatible. Razón: ${compatResult?.reason}`);
+        // console.warn(`[PM] No se puede activar ${pluginId}: Incompatible. Razón: ${compatResult?.reason}`);
         this._publishEvent('compatibilityError', { pluginId, reason: compatResult?.reason, details: compatResult });
         this._activatingPlugins.delete(pluginId);
         return false;
@@ -396,7 +353,7 @@ class PluginManager {
       
       const isBlacklisted = this.securityInitialized && pluginSecurityManager.isPluginBlacklisted(pluginId);
       if (isBlacklisted) {
-        console.warn(`[PM] No se puede activar ${pluginId}: Está en lista negra.`);
+        // console.warn(`[PM] No se puede activar ${pluginId}: Está en lista negra.`);
         this._publishEvent('securityViolation', { pluginId, reason: 'Intento de activar plugin en lista negra', severity: 'high' });
         this._activatingPlugins.delete(pluginId);
         return false;
@@ -405,7 +362,7 @@ class PluginManager {
       if (this.securityInitialized) {
         const securityValidation = pluginSecurityManager.validatePlugin(pluginId);
         if (!securityValidation.valid) {
-          console.warn(`[PM] No se puede activar ${pluginId}: Validación de seguridad fallida. Razón: ${securityValidation.reason}`);
+          // console.warn(`[PM] No se puede activar ${pluginId}: Validación de seguridad fallida. Razón: ${securityValidation.reason}`);
           this._publishEvent('securityViolation', { pluginId, reason: 'Validación de seguridad fallida', details: securityValidation, severity: 'medium' });
           this._activatingPlugins.delete(pluginId);
           return false;
@@ -413,7 +370,7 @@ class PluginManager {
         if (plugin.permissions && this.securityLevel === PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH) {
           const permValidation = pluginPermissionChecker.validatePermissions(pluginId, plugin.permissions);
           if (permValidation.pendingPermissions.length > 0) {
-            console.warn(`[PM] No se puede activar ${pluginId}: Permisos pendientes en nivel HIGH.`);
+            // console.warn(`[PM] No se puede activar ${pluginId}: Permisos pendientes en nivel HIGH.`);
             this._publishEvent('permissionDenied', { pluginId, permissions: permValidation.pendingPermissions, reason: 'Nivel de seguridad alto no permite aprobación manual' });
             this._activatingPlugins.delete(pluginId);
             return false;
@@ -421,29 +378,28 @@ class PluginManager {
         }
       }
       
-      await this._activateDependencies(plugin);
+      await this._activateDependencies(plugin); // Puede lanzar error, que será capturado por el catch de abajo
       
       let activated = false;
-      // console.log(`[PM] Ejecutando init para ${pluginId}`);
       try {
         if (this.securityInitialized) {
           const finishOperation = pluginResourceMonitor.trackOperation(pluginId, 'activation');
           activated = await pluginSandbox.executeSandboxed(pluginId, () => pluginRegistry.activatePlugin(pluginId, coreAPI), [], null);
           finishOperation();
         } else {
-          activated = pluginRegistry.activatePlugin(pluginId, coreAPI);
+          activated = await pluginRegistry.activatePlugin(pluginId, coreAPI); // activatePlugin es async
         }
-      } catch (activationError) {
+      } catch (activationError) { // Error específico de la ejecución de init
         console.error(`[PM] Error durante la ejecución de init de ${pluginId}:`, activationError);
         if (this.securityInitialized) {
           pluginSecurityAudit.recordPluginDeactivation(pluginId, { action: 'activation_failed', error: activationError.message, timestamp: Date.now() });
         }
+        // Este error debe hacer que activatePlugin devuelva false
         this._activatingPlugins.delete(pluginId);
         return false;
       }
       
       if (activated) {
-        // console.log(`[PM] ${pluginId} activado, registrando API y estado.`);
         if (plugin.publicAPI) {
           pluginAPIRegistry.registerAPI(pluginId, plugin.publicAPI);
         }
@@ -454,12 +410,15 @@ class PluginManager {
           pluginSecurityAudit.recordValidationResult(pluginId, { event: 'plugin_activated', success: true, timestamp: Date.now() });
         }
       } else {
-        console.warn(`[PM] La activación de ${pluginId} (llamada a init del registro) devolvió false.`);
+        // console.warn(`[PM] La activación de ${pluginId} (llamada a init del registro) devolvió false.`);
+        // Si 'activated' es false aquí, el método debería devolver false.
+        this._activatingPlugins.delete(pluginId);
+        return false;
       }
       
       this._activatingPlugins.delete(pluginId);
-      return activated;
-    } catch (error) {
+      return true; // Solo si 'activated' fue true
+    } catch (error) { // Catch para errores generales en activatePlugin (ej. de _activateDependencies)
       console.error(`[PM] Error general al activar plugin [${pluginId}]:`, error);
       this._activatingPlugins.delete(pluginId);
       this._publishEvent('error', { pluginId, operation: 'activate', error: error.message || 'Error desconocido' });
@@ -468,20 +427,16 @@ class PluginManager {
   }
 
   async _loadAndRegisterPlugin(pluginId) {
-    // console.log(`[PM] _loadAndRegisterPlugin: Intentando cargar ${pluginId}`);
     try {
       let plugin = pluginRegistry.getPlugin(pluginId);
       if (plugin) {
-        // console.log(`[PM] _loadAndRegisterPlugin: ${pluginId} ya estaba en el registro.`);
         if (!this._compatibilityResults[pluginId]) {
             const compatResult = pluginCompatibility.runFullCompatibilityCheck(plugin);
             this._compatibilityResults[pluginId] = compatResult;
             if (!compatResult.compatible) {
-                 // console.warn(`[PM] _loadAndRegisterPlugin: Plugin ${pluginId} pre-registrado es incompatible. Razón: ${compatResult.reason}`);
                  return null;
             }
         } else if (!this._compatibilityResults[pluginId].compatible) {
-            // console.warn(`[PM] _loadAndRegisterPlugin: Plugin ${pluginId} pre-registrado es incompatible (cacheado). Razón: ${this._compatibilityResults[pluginId].reason}`);
             return null;
         }
         return plugin;
@@ -489,25 +444,20 @@ class PluginManager {
 
       plugin = await loadPluginById(pluginId);
       if (!plugin) {
-        console.error(`[PM] _loadAndRegisterPlugin: No se pudo cargar el plugin: ${pluginId} desde loadPluginById.`);
         return null;
       }
-      // console.log(`[PM] _loadAndRegisterPlugin: ${pluginId} cargado desde loadPluginById.`);
       
-      const validationResult = validatePluginCompatibility(plugin);
+      const validationResult = validatePluginCompatibility(plugin); // Usa la importada
       this._compatibilityResults[plugin.id] = { compatible: validationResult.valid, reason: validationResult.reason, details: validationResult.details };
       
       if (!validationResult.valid) {
-        // console.warn(`[PM] _loadAndRegisterPlugin: ${pluginId} cargado pero no es compatible. Razón: ${validationResult.reason}`);
         this._publishEvent('compatibilityError', { pluginId, reason: validationResult.reason, details: validationResult.details });
         return null;
       }
 
       if (!pluginRegistry.registerPlugin(plugin)) {
-        console.error(`[PM] _loadAndRegisterPlugin: No se pudo registrar el plugin cargado: ${pluginId}`);
         return null;
       }
-      // console.log(`[PM] _loadAndRegisterPlugin: ${pluginId} registrado exitosamente.`);
       return plugin;
     } catch (error) {
       console.error(`[PM] Error en _loadAndRegisterPlugin para ${pluginId}:`, error);
@@ -517,49 +467,47 @@ class PluginManager {
 
   async _activateDependencies(pluginDefinition) {
     if (!pluginDefinition || !pluginDefinition.dependencies || pluginDefinition.dependencies.length === 0) {
-      return true;
+      return; // No devuelve valor explícito de éxito/fallo, se asume éxito si no lanza error
     }
-    // console.log(`[PM] Activando dependencias para ${pluginDefinition.id}:`, pluginDefinition.dependencies.map(d => (typeof d === 'string' ? d : d.id)));
     for (const dependency of pluginDefinition.dependencies) {
       const depId = typeof dependency === 'string' ? dependency : dependency.id;
       if (!depId) continue;
       
       if (pluginRegistry.isPluginActive(depId)) {
-        // console.log(`[PM] Dependencia ${depId} ya está activa.`);
         continue;
       }
       
-      // console.log(`[PM] Activando dependencia requerida ${depId} para el plugin ${pluginDefinition.id}`);
       const depActivated = await this.activatePlugin(depId);
       if (!depActivated) {
         const errorMsg = `Dependencia ${depId} de ${pluginDefinition.id} no pudo ser activada.`;
-        console.error(`[PM] ${errorMsg}`);
+        // console.error(`[PM] ${errorMsg}`); // activatePlugin ya logueará el error
         this._publishEvent('dependencyError', { pluginId: pluginDefinition.id, dependencyId: depId, reason: 'No se pudo activar la dependencia' });
-        throw new Error(errorMsg);
+        throw new Error(errorMsg); // Esto será capturado por el try/catch de quien llame a _activateDependencies (activatePlugin)
       }
     }
-    return true;
+    // No es necesario devolver true explícitamente si el éxito es la ausencia de error.
   }
 
   async deactivatePlugin(pluginId, force = false) {
     if (!this.initialized) {
-        // console.warn("[PM] PluginManager no inicializado, no se puede desactivar plugin.");
         return true; 
     }
     if (!pluginRegistry.isPluginActive(pluginId)) {
-      // console.log(`[PM] Plugin ${pluginId} ya está inactivo o no existe como activo.`);
       return true; 
     }
     
-    // console.log(`[PM] Iniciando desactivación de ${pluginId}, force: ${force}`);
     try {
-      const plugin = pluginRegistry.getPlugin(pluginId);
+      const plugin = pluginRegistry.getPlugin(pluginId); // Mover getPlugin aquí para tenerlo disponible
+      if (!plugin && pluginId) { // Si getPlugin devuelve null pero tenemos un ID
+          // console.warn(`[PM] Intento de desactivar plugin ${pluginId} no encontrado en registro, pero marcado como activo? Limpiando estado.`);
+          // Esto es un estado inconsistente, pero procedemos con la limpieza de estado si es posible.
+      }
       
       if (!force) {
         const dependentPlugins = pluginDependencyResolver.getDependentPlugins(pluginId)
           .filter(depId => pluginRegistry.isPluginActive(depId));
         if (dependentPlugins.length > 0) {
-          console.warn(`[PM] No se puede desactivar ${pluginId}: Plugins dependientes activos: ${dependentPlugins.join(', ')}`);
+          // console.warn(`[PM] No se puede desactivar ${pluginId}: Plugins dependientes activos: ${dependentPlugins.join(', ')}`);
           this._publishEvent('dependencyError', { pluginId, dependent: dependentPlugins, reason: 'Otros plugins activos dependen de este' });
           return false;
         }
@@ -570,37 +518,37 @@ class PluginManager {
       
       let registryCallSuccessful = false;
       try {
-        // console.log(`[PM] Ejecutando cleanup para ${pluginId}`);
         if (this.securityInitialized) {
           const finishOperation = pluginResourceMonitor.trackOperation(pluginId, 'deactivation');
           registryCallSuccessful = await pluginSandbox.executeSandboxed(pluginId, () => pluginRegistry.deactivatePlugin(pluginId), [], null);
           finishOperation();
         } else {
-          registryCallSuccessful = pluginRegistry.deactivatePlugin(pluginId);
+          registryCallSuccessful = await pluginRegistry.deactivatePlugin(pluginId); // deactivatePlugin es async
         }
       } catch (error) {
         console.error(`[PM] Error durante la ejecución de cleanup de ${pluginId}:`, error);
         if (!force) return false; 
+        // Si es forzado, continuamos a pesar del error en el cleanup del plugin.
+        registryCallSuccessful = true; // Consideramos que el registro se "forzó" a desactivar
       }
       
+      // Si el cleanup del plugin falló (devolvió false o lanzó error) y no forzamos, la desactivación falla.
       if (!registryCallSuccessful && !force) {
-          console.error(`[PM] Cleanup de ${pluginId} devolvió false y no se forzó la desactivación. La desactivación completa falló.`);
+          // console.error(`[PM] Cleanup de ${pluginId} devolvió false y no se forzó la desactivación. La desactivación completa falló.`);
           return false;
       }
 
-      // console.log(`[PM] Plugin ${pluginId} considerado desactivado (registryCallSuccessful: ${registryCallSuccessful}, force: ${force}). Procediendo con limpieza de manager.`);
       await coreAPI.cleanupPluginResources(pluginId);
       if (this.securityInitialized) {
         pluginResourceMonitor.decreaseMonitoring(pluginId);
         pluginResourceMonitor.removeRestrictions(pluginId);
       }
       pluginRegistry.setPluginState(pluginId, { active: false, lastDeactivated: Date.now() });
-      await this._savePluginStates();
-      this._publishEvent('pluginDeactivated', { pluginId, plugin }); 
+      await this._savePluginStates(); // Esto puede devolver false, pero no afecta el resultado de deactivatePlugin
+      this._publishEvent('pluginDeactivated', { pluginId, plugin }); // 'plugin' puede ser null si no se encontró
       if (this.securityInitialized) {
         pluginSecurityAudit.recordPluginDeactivation(pluginId, { forced: force, reason: force ? 'Desactivación forzada' : 'Desactivación normal', timestamp: Date.now() });
       }
-      // console.log(`[PM] Plugin ${pluginId} desactivado exitosamente por el manager.`);
       return true; 
     } catch (error) {
       console.error(`[PM] Error general al desactivar plugin [${pluginId}]:`, error);
@@ -618,7 +566,12 @@ class PluginManager {
         const pluginInfo = { ...plugin, compatible: compatInfo.compatible, incompatibilityReason: !compatInfo.compatible ? compatInfo.reason : null };
         if (this.securityInitialized) {
             const securityInfo = pluginSecurityManager.getPluginSecurityInfo(plugin.id);
-            Object.assign(pluginInfo, { securityScore: securityInfo?.securityScore || 0, blacklisted: securityInfo?.blacklisted || false, securityWarnings: securityInfo?.warnings?.length || 0, permissions: pluginPermissionChecker.getPluginPermissions(plugin.id) });
+            Object.assign(pluginInfo, { 
+                securityScore: securityInfo?.securityScore || 0, 
+                blacklisted: securityInfo?.blacklisted || false, 
+                securityWarnings: securityInfo?.warnings?.length || 0, 
+                permissions: pluginPermissionChecker.getPluginPermissions(plugin.id) 
+            });
         }
         return pluginInfo;
     }).filter(Boolean);
@@ -630,14 +583,31 @@ class PluginManager {
     const compatResult = this._compatibilityResults[pluginId];
     return compatResult ? compatResult.compatible : true; 
   }
-  subscribe(eventName, callback) { /* ... (sin cambios) ... */ return () => {}; }
+  
+  subscribe(eventName, callback) {
+    if (!eventName || typeof callback !== 'function') {
+        // console.error('[PM] Intento de suscribir con eventName inválido o callback no es función.');
+        return () => {}; // Devuelve una función no-op
+    }
+    const id = `sub_${++this._lastSubscriberId}`;
+    if (!this._subscribers[eventName]) {
+        this._subscribers[eventName] = {};
+    }
+    this._subscribers[eventName][id] = callback;
+    return () => {
+        if (this._subscribers[eventName] && this._subscribers[eventName][id]) {
+            delete this._subscribers[eventName][id];
+            if (Object.keys(this._subscribers[eventName]).length === 0) {
+                delete this._subscribers[eventName];
+            }
+        }
+    };
+  }
 
   async reloadPlugins(preserveState = true) {
     if (!this.initialized) {
-        // console.warn("[PM] PluginManager no inicializado. No se pueden recargar plugins.");
         return false;
     }
-    // console.log("[PM] Iniciando recarga de plugins...");
     this.loading = true;
     let overallSuccess = true;
 
@@ -649,6 +619,7 @@ class PluginManager {
       for (const pluginId of currentActivePluginsForDeactivation) {
         if(!await this.deactivatePlugin(pluginId, true)) {
             // console.warn(`[PM] No se pudo desactivar completamente ${pluginId} durante la recarga. Continuando...`);
+            // No marcamos overallSuccess como false aquí, la recarga puede continuar.
         }
       }
       
@@ -658,32 +629,29 @@ class PluginManager {
       
       const plugins = await loadPlugins();
       const registeredCount = this._registerPlugins(plugins);
-      await this._verifyPluginCompatibility();
-      
-      // console.log(`[PM] Plugins recargados en registro: ${registeredCount}.`);
+      await this._verifyPluginCompatibility(); // Puede lanzar error
       
       let reactivatedCount = 0;
       if (preserveState && activePluginIdsBeforeReload.length > 0) {
         const loadOrder = pluginDependencyResolver.calculateLoadOrder(); 
         const pluginsToReactivate = loadOrder.filter(id => 
             activePluginIdsBeforeReload.includes(id) &&
-            this.isPluginCompatible(id) &&
+            this.isPluginCompatible(id) && // Usa el método del manager
             (!this.securityInitialized || !pluginSecurityManager.isPluginBlacklisted(id))
         );
 
         for (const pluginId of pluginsToReactivate) {
-          if (await this.activatePlugin(pluginId)) {
+          if (await this.activatePlugin(pluginId)) { // activatePlugin devuelve booleano
             reactivatedCount++;
           } else {
             // console.warn(`[PM] No se pudo reactivar ${pluginId} después de la recarga.`);
-            overallSuccess = false; 
+            overallSuccess = false; // Si una reactivación falla, la recarga general no fue 100% exitosa
           }
         }
-        // console.log(`[PM] ${reactivatedCount}/${pluginsToReactivate.length} plugins reactivados.`);
       }
       
       this._publishEvent('pluginsReloaded', { count: registeredCount, reactivatedCount, reactivatedPluginIds: pluginRegistry.getActivePlugins().map(p=>p.id) });
-    } catch (error) {
+    } catch (error) { // Errores críticos como fallo en loadPlugins o _verifyPluginCompatibility
       console.error('[PM] Error crítico al recargar plugins:', error);
       this._publishEvent('error', { operation: 'reload', error: error.message });
       overallSuccess = false;
@@ -722,8 +690,7 @@ class PluginManager {
     return status;
   }
 
-  setSecurityLevel(level) {
-    // console.log(`[PM DEBUG] setSecurityLevel CALLED. Current this.securityLevel: ${this.securityLevel}, Target level: ${level}, securityInitialized: ${this.securityInitialized}`);
+  async setSecurityLevel(level) { // Marcado como async
     const normalizedLevelParam = level?.toUpperCase();
     const newLevel = PLUGIN_CONSTANTS.SECURITY.LEVEL[normalizedLevelParam];
 
@@ -735,14 +702,12 @@ class PluginManager {
     const oldLevel = this.securityLevel;
     
     if (oldLevel === newLevel && this.securityInitialized) {
-        // console.log(`[PM] Nivel de seguridad ya es ${newLevel} y la seguridad está inicializada. No se realizan cambios.`);
         return true; 
     }
     
     this.securityLevel = newLevel; 
 
     if (this.securityInitialized) {
-        // console.log(`[PM] Aplicando cambio de nivel de seguridad de ${oldLevel} a ${newLevel} a subsistemas.`);
         try {
             pluginSecurityManager.setSecurityLevel(newLevel);
             pluginSandbox.setSecurityLevel(newLevel);
@@ -751,17 +716,15 @@ class PluginManager {
             pluginSecurityAudit.setSecurityLevel(newLevel);
             
             this._configureSecurityChecksByLevel(newLevel);
-            this._saveSecuritySettings({ securityLevel: newLevel }); // Guardar inmediatamente
+            await this._saveSecuritySettings({ securityLevel: newLevel }); // AWAIT
             this._publishEvent('securityLevelChanged', { level: newLevel, previousLevel: oldLevel });
-            // console.log(`[PM] Nivel de seguridad del sistema de plugins establecido a ${newLevel}.`);
         } catch (error) {
             console.error(`[PM] Error al aplicar nuevo nivel de seguridad ${newLevel} a subsistemas:`, error);
-            this.securityLevel = oldLevel; 
+            this.securityLevel = oldLevel; // Revertir
             return false;
         }
     } else {
-        // console.log(`[PM] Nivel de seguridad pre-configurado a ${newLevel}. Se aplicará en la inicialización del sistema de seguridad.`);
-        // No guardar en storage aquí, initialize lo hará si es necesario.
+        // Solo preconfigurar, no guardar ni notificar a subsistemas hasta que se inicialice la seguridad
     }
     return true;
   }
@@ -769,9 +732,11 @@ class PluginManager {
   async approvePluginPermissions(pluginId, permissions) {
     if (!pluginId || !Array.isArray(permissions) || permissions.length === 0) return false;
     if (!this.initialized) {
-        // console.warn("[PM] PluginManager no inicializado. No se pueden aprobar permisos.");
         return false;
     }
+    // No es necesario chequear securityInitialized aquí, ya que la aprobación de permisos
+    // podría querer hacerse incluso si el sistema de seguridad completo no está listo,
+    // pero el permissionChecker sí debe estarlo (lo cual se asume si initialized es true).
     try {
       const permissionsInfo = pluginPermissionChecker.getPluginPermissions(pluginId);
       const success = pluginPermissionChecker.approvePermissions(pluginId, permissions);
@@ -780,7 +745,9 @@ class PluginManager {
           permissionsApproved: [...new Set([...(permissionsInfo?.approved || []), ...permissions])],
           permissionsPending: (permissionsInfo?.pending || []).filter(p => !permissions.includes(p))
         });
-        await this._savePluginStates();
+        if(!await this._savePluginStates()){ // Guardar y verificar si falló
+            // console.warn(`[PM] Fallo al guardar estados tras aprobar permisos para ${pluginId}`);
+        }
         eventBus.publish('pluginSystem.permissionsApproved', { pluginId, permissions });
       }
       return success;
@@ -792,15 +759,17 @@ class PluginManager {
   
   async blacklistPlugin(pluginId, reason) {
     if (!this.securityInitialized) {
-        // console.warn("[PM] Sistema de seguridad no inicializado. No se puede añadir a lista negra.");
         return false;
     }
     if (!pluginId) return false;
     try {
       if(pluginRegistry.isPluginActive(pluginId)) {
-          await this.deactivatePlugin(pluginId, true);
+          if(!await this.deactivatePlugin(pluginId, true)) { // Verificar si la desactivación falló
+            // console.warn(`[PM] No se pudo desactivar ${pluginId} antes de añadir a lista negra. Continuando con blacklisting.`);
+            // No retornar false aquí necesariamente, el blacklisting es la acción principal.
+          }
       }
-      const result = pluginSecurityManager.blacklistPlugin(pluginId);
+      const result = pluginSecurityManager.blacklistPlugin(pluginId); // Asumiendo que esto es síncrono o no necesita await
       if (result) {
         pluginSecurityAudit.recordBlacklistAction(pluginId, { action: 'add', reason, timestamp: Date.now() });
         this._publishEvent('pluginBlacklisted', { pluginId, reason });
@@ -833,10 +802,10 @@ class PluginManager {
     try { 
       const apiInfo = pluginAPIRegistry.getAPIInfo();
       const result = {};
-      Object.entries(apiInfo).forEach(([pluginId, info]) => {
+      Object.entries(apiInfo).forEach(([pluginId, infoEntry]) => {
         const plugin = pluginRegistry.getPlugin(pluginId);
-        if (plugin) {
-          result[pluginId] = { ...info, pluginName: plugin.name, pluginVersion: plugin.version, isActive: pluginRegistry.isPluginActive(pluginId) };
+        if (plugin) { // Solo añadir si el plugin existe en el registro
+          result[pluginId] = { ...infoEntry, pluginName: plugin.name, pluginVersion: plugin.version, isActive: pluginRegistry.isPluginActive(pluginId) };
         }
       });
       return result;
@@ -897,8 +866,8 @@ class PluginManager {
       case PLUGIN_CONSTANTS.SECURITY.LEVEL.HIGH:
         highChecks.forEach(check => this.activeSecurityChecks.add(check));
         break;
+      // No default case needed if levels are exhaustive and validated
     }
-    // console.log(`[PM] Verificaciones de seguridad activas para nivel ${level}:`, Array.from(this.activeSecurityChecks));
   }
 }
 
