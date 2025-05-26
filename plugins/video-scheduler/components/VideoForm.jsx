@@ -1,14 +1,17 @@
+// video-scheduler/components/VideoForm.jsx
 import React from 'react';
-import { VIDEO_STATUS } from '../utils/constants.js';
+// Importar constantes de estado si es necesario para el selector de estado
+import { VIDEO_MAIN_STATUS } from '../utils/constants.js'; // Solo necesitamos VIDEO_MAIN_STATUS aquí
 
 function VideoForm(props) {
   const { plugin, core, existingVideo, onSave, onCancel } = props;
   
   const [title, setTitle] = React.useState(existingVideo ? existingVideo.title : '');
   const [description, setDescription] = React.useState(existingVideo ? existingVideo.description : '');
-  const [status, setStatus] = React.useState(existingVideo ? existingVideo.status : VIDEO_STATUS.PLANNED);
+  // El estado inicial para un nuevo video se establece aquí
+  const [status, setStatus] = React.useState(existingVideo ? existingVideo.status : VIDEO_MAIN_STATUS.PLANNED);
 
-  const pluginId = plugin ? plugin.id : 'video-scheduler-form';
+  const pluginId = plugin ? plugin.id : 'video-scheduler-form'; 
 
   React.useEffect(() => {
     if (existingVideo) {
@@ -18,23 +21,27 @@ function VideoForm(props) {
     } else {
       setTitle('');
       setDescription('');
-      setStatus(VIDEO_STATUS.PLANNED);
+      setStatus(VIDEO_MAIN_STATUS.PLANNED); // Estado por defecto para nuevo video
     }
-  }, [existingVideo]);
+  }, [existingVideo]); 
 
   const handleSubmit = (event) => {
-    event.preventDefault();
+    event.preventDefault(); 
     if (!title.trim()) {
-      alert('El título es obligatorio.');
+      alert('El título es obligatorio.'); 
       console.warn(`[${pluginId}] Intento de guardar video sin título.`);
       return;
     }
+
     const videoData = {
       title: title.trim(),
       description: description.trim(),
-      status: status,
+      status: status, // El estado principal se envía desde aquí
+      // subStatus se manejará a través del StatusSelector dedicado
     };
-    onSave(videoData);
+    
+    console.log(`[${pluginId}] VideoForm handleSubmit. Datos:`, videoData);
+    onSave(videoData); 
   };
 
   return React.createElement(
@@ -50,21 +57,22 @@ function VideoForm(props) {
       }
     },
     [
-      React.createElement('h3', { key: 'form-title-h3' }, existingVideo ? 'Editar Video' : 'Crear Nuevo Video'), // Añadida key
+      React.createElement('h3', { key: 'form-title-h3' }, existingVideo ? 'Editar Video' : 'Crear Nuevo Video'),
       React.createElement(
         'form',
-        { key: 'video-form-element', onSubmit: handleSubmit }, // Añadida key
+        { key: 'video-form-element', onSubmit: handleSubmit },
         [
+          // Campo Título
           React.createElement(
             'div', { key: 'title-group', style: { marginBottom: '15px' } },
             [
               React.createElement(
                 'label',
-                { key: 'title-label', htmlFor: 'video-title', style: { display: 'block', marginBottom: '5px' } }, // Añadida key
+                { key: 'title-label', htmlFor: 'video-title', style: { display: 'block', marginBottom: '5px' } },
                 'Título:'
               ),
               React.createElement('input', {
-                key: 'title-input', // Añadida key
+                key: 'title-input',
                 type: 'text',
                 id: 'video-title',
                 value: title,
@@ -74,16 +82,17 @@ function VideoForm(props) {
               })
             ]
           ),
+          // Campo Descripción
           React.createElement(
             'div', { key: 'desc-group', style: { marginBottom: '15px' } },
             [
               React.createElement(
                 'label',
-                { key: 'desc-label', htmlFor: 'video-description', style: { display: 'block', marginBottom: '5px' } }, // Añadida key
+                { key: 'desc-label', htmlFor: 'video-description', style: { display: 'block', marginBottom: '5px' } },
                 'Descripción:'
               ),
               React.createElement('textarea', {
-                key: 'desc-input', // Añadida key
+                key: 'desc-input',
                 id: 'video-description',
                 value: description,
                 onChange: (e) => setDescription(e.target.value),
@@ -92,48 +101,50 @@ function VideoForm(props) {
               })
             ]
           ),
+          // Campo Estado (Selector simple para el estado principal en el formulario)
+          // El StatusSelector más complejo se usará desde la lista/calendario
           React.createElement(
             'div', { key: 'status-group', style: { marginBottom: '15px' } },
             [
               React.createElement(
                 'label',
-                { key: 'status-label', htmlFor: 'video-status', style: { display: 'block', marginBottom: '5px' } }, // Añadida key
-                'Estado:'
+                { key: 'status-label', htmlFor: 'video-status', style: { display: 'block', marginBottom: '5px' } },
+                'Estado Principal:'
               ),
               React.createElement(
                 'select',
                 {
-                  key: 'status-select', // Añadida key
+                  key: 'status-select',
                   id: 'video-status',
-                  value: status,
+                  value: status, // Este es el estado principal
                   onChange: (e) => setStatus(e.target.value),
                   style: { width: '100%', padding: '8px' }
                 },
-                Object.keys(VIDEO_STATUS).map(statusKey => // Renombrada la variable del map para claridad
+                Object.values(VIDEO_MAIN_STATUS).map(mainStatusValue => 
                   React.createElement(
                     'option',
                     { 
-                      // --- CORRECCIÓN AQUÍ ---
-                      key: VIDEO_STATUS[statusKey], // Usar el valor del estado (ej. "planned") como key
-                      value: VIDEO_STATUS[statusKey]
+                      key: mainStatusValue, 
+                      value: mainStatusValue
                     },
-                    VIDEO_STATUS[statusKey].charAt(0).toUpperCase() + VIDEO_STATUS[statusKey].slice(1)
+                    mainStatusValue.charAt(0).toUpperCase() + mainStatusValue.slice(1)
                   )
                 )
               )
             ]
           ),
+          // Botones
           React.createElement(
             'div', { key: 'actions-group', style: { marginTop: '20px'} },
             [
               React.createElement(
                 'button',
-                { key: 'submit-btn', type: 'submit', style: { padding: '10px 15px', marginRight: '10px', cursor: 'pointer' } }, // Añadida key
+                { key: 'submit-btn', type: 'submit', style: { padding: '10px 15px', marginRight: '10px', cursor: 'pointer' } },
                 existingVideo ? 'Guardar Cambios' : 'Crear Video'
               ),
               React.createElement(
                 'button',
-                { key: 'cancel-btn', type: 'button', onClick: onCancel, style: { padding: '10px 15px', cursor: 'pointer' } }, // Añadida key
+                { key: 'cancel-btn', type: 'button', onClick: onCancel, style: { padding: '10px 15px', cursor: 'pointer' } },
                 'Cancelar'
               )
             ]

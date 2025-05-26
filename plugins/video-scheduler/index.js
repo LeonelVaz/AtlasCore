@@ -3,16 +3,16 @@
 import React from 'react';
 import VideoSchedulerNavItemComponent from './components/VideoSchedulerNavItem.jsx';
 import VideoSchedulerMainPageComponent from './components/VideoSchedulerMainPage.jsx';
-// Importar constantes
-import { DEFAULT_VIDEO_STRUCTURE, VIDEO_STATUS } from './utils/constants.js';
+// Importar todas las constantes necesarias
+import { DEFAULT_VIDEO_STRUCTURE, VIDEO_MAIN_STATUS } from './utils/constants.js'; // VIDEO_SUB_STATUS y STATUS_EMOJIS se usan en componentes
 
 const PLUGIN_PAGE_ID = 'videoscheduler';
-const STORAGE_KEY_VIDEOS = 'videos_data'; // Clave para el almacenamiento
+const STORAGE_KEY_VIDEOS = 'videos_data';
 
 export default {
   id: 'video-scheduler',
   name: 'Video Scheduler',
-  version: '0.3.0', // Incrementamos versión para Etapa 3
+  version: '0.3.2', // Incremento menor para esta revisión de Etapa 3
   description: 'Plugin para planificar y organizar la producción de videos.',
   author: 'Tu Nombre/Equipo (Desarrollador: AtlasAI)',
   minAppVersion: '0.3.0',
@@ -45,7 +45,6 @@ export default {
         self._core.plugins.registerAPI(self.id, self.publicAPI);
         console.log(`[${self.id}] API pública registrada.`);
 
-        // --- Registrar UI ---
         function NavigationWrapper(propsFromAtlas) {
           return React.createElement(VideoSchedulerNavItemComponent, {
             ...propsFromAtlas, plugin: self, core: self._core, pluginId: self.id, pageIdToNavigate: PLUGIN_PAGE_ID
@@ -79,7 +78,7 @@ export default {
     const self = this;
     console.log(`[${self.id}] Limpiando plugin...`);
     try {
-      await self._saveVideosToStorage(); // Guardar datos al limpiar
+      await self._saveVideosToStorage();
 
       if (self._core.ui.removeAllExtensions) {
         self._core.ui.removeAllExtensions(self.id);
@@ -95,20 +94,18 @@ export default {
     }
   },
   
-  // --- API Pública del Plugin ---
   publicAPI: { /* Se define mediante _createPublicAPI */ },
 
   _createPublicAPI: function(pluginInstance) {
     return {
       getAllVideos: () => pluginInstance._internalGetAllVideos(),
       createVideo: async (videoData) => await pluginInstance._internalCreateVideo(videoData),
-      // Exponer updateVideo
       updateVideo: async (videoId, updates) => await pluginInstance._internalUpdateVideo(videoId, updates),
-      // deleteVideo se añadirá en una etapa futura
+      updateVideoStatus: async (videoId, newStatus, newSubStatus) => 
+        await pluginInstance._internalUpdateVideoStatus(videoId, newStatus, newSubStatus),
     };
   },
 
-  // --- Métodos Internos del Plugin (Lógica de Negocio) ---
   _loadVideosFromStorage: async function() {
     const self = this;
     try {
@@ -136,26 +133,23 @@ export default {
   },
 
   _internalGetAllVideos: function() {
-    // console.log(`[${this.id}] _internalGetAllVideos llamado. Devolviendo ${this._videos.length} videos.`); // Comentado para reducir ruido
     return [...this._videos]; 
   },
 
   _internalCreateVideo: async function(videoData) {
     const self = this;
     const newVideo = {
-      ...DEFAULT_VIDEO_STRUCTURE,
-      ...videoData, // Los datos del formulario (título, descripción, estado)
+      ...DEFAULT_VIDEO_STRUCTURE, // Usa la estructura con el estado PENDING/PLANNED por defecto
+      ...videoData,              // Sobrescribir con los datos del formulario
       id: `vid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      // status ya viene en videoData desde el formulario
+      // El 'status' del formulario (un VIDEO_MAIN_STATUS) ya está en videoData.
+      // 'subStatus' será null inicialmente desde el formulario.
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(), // Mismo que createdAt para nuevo video
+      updatedAt: new Date().toISOString(),
     };
     self._videos.push(newVideo);
-    console.log(`[${self.id}] _internalCreateVideo: Video añadido a memoria. Total: ${self._videos.length}`, newVideo);
-    
+    console.log(`[${self.id}] _internalCreateVideo: Video añadido.`, newVideo);
     await self._saveVideosToStorage();
-    
-    // self._core.events.publish(self.id, `${self.id}.videoCreated`, { video: newVideo });
     return newVideo;
   },
 
@@ -165,17 +159,33 @@ export default {
     if (videoIndex > -1) {
       self._videos[videoIndex] = { 
         ...self._videos[videoIndex],
-        ...updates, // Aplicar cambios del formulario (título, descripción, estado)
+        ...updates,
         updatedAt: new Date().toISOString()
       };
       console.log(`[${self.id}] _internalUpdateVideo: Video actualizado. ID: ${videoId}`, self._videos[videoIndex]);
       await self._saveVideosToStorage();
-      // self._core.events.publish(self.id, `${self.id}.videoUpdated`, { video: self._videos[videoIndex] });
       return self._videos[videoIndex];
     }
     console.warn(`[${self.id}] _internalUpdateVideo: Video no encontrado con ID: ${videoId}`);
     return null;
   },
 
-  // _internalDeleteVideo: async function(videoId) { /* ... se implementará después ... */ }
+  _internalUpdateVideoStatus: async function(videoId, newMainStatus, newSubStatus) {
+    const self = this;
+    const videoIndex = self._videos.findIndex(v => v.id === videoId);
+    if (videoIndex > -1) {
+      const oldStatus = self._videos[videoIndex].status;
+      const oldSubStatus = self._videos[videoIndex].subStatus;
+
+      self._videos[videoIndex].status = newMainStatus;
+      self._videos[videoIndex].subStatus = newSubStatus; 
+      self._videos[videoIndex].updatedAt = new Date().toISOString();
+      
+      console.log(`[${self.id}] _internalUpdateVideoStatus: Video ID ${videoId} estado cambiado de ${oldStatus}/${oldSubStatus || 'ninguno'} a ${newMainStatus}/${newSubStatus || 'ninguno'}`);
+      await self._saveVideosToStorage();
+      return self._videos[videoIndex];
+    }
+    console.warn(`[${self.id}] _internalUpdateVideoStatus: Video no encontrado con ID: ${videoId}`);
+    return null;
+  },
 };

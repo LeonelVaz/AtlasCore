@@ -314,3 +314,42 @@ video-scheduler/
 └── index.js
 ```
 
+### Etapa 3 (Continuación): Selector de Estado Básico y Constantes Detalladas
+
+#### Objetivos Cumplidos (Revisión 2):
+1.  **Constantes de Estado Detalladas (`utils/constants.js`):**
+    *   Definidos `VIDEO_MAIN_STATUS` (Pending, Empty, Development, Production, Published).
+    *   Definidos `VIDEO_SUB_STATUS` (Rec, Editing, Thumbnail, Scheduling Post, Scheduled).
+    *   Creado `SUB_STATUS_MAIN_MAP` para mapear sub-estados a su estado principal.
+    *   Creado `VALID_SUB_STATUSES_FOR_MAIN` para definir qué sub-estados son aplicables a cada estado principal.
+    *   Actualizado `STATUS_EMOJIS` para incluir todos los nuevos estados y sub-estados.
+2.  **Componente `StatusSelector.jsx` (Básico):**
+    *   Creado para permitir al usuario cambiar el estado principal y el sub-estado de un video.
+    *   Muestra opciones para estados principales.
+    *   Muestra dinámicamente opciones para sub-estados basadas en el estado principal actual del video y `VALID_SUB_STATUSES_FOR_MAIN`.
+    *   Llama a un callback `onStatusChange(newMainStatus, newSubStatus)` al seleccionar.
+3.  **Integración del `StatusSelector` en `VideoSchedulerMainPage.jsx`:**
+    *   Un indicador de estado clickeable en cada ítem de la lista de videos ahora abre el `StatusSelector`.
+    *   El `StatusSelector` se posiciona (de forma básica) cerca del elemento clickeado.
+    *   Los cambios de estado realizados a través del selector se guardan y actualizan la UI.
+4.  **Plugin (`index.js`) Actualizado:**
+    *   Añadido método `_internalUpdateVideoStatus` (y expuesto en `publicAPI` como `updateVideoStatus`) para manejar específicamente los cambios de estado y sub-estado, guardándolos persistentemente.
+    *   Ajustado `_internalCreateVideo` para usar las nuevas constantes de estado si es necesario (aunque `VideoForm.jsx` ya asigna un estado principal inicial).
+
+#### Descubrimientos y Patrones Clave (Revisión 2):
+
+*   **Manejo de Jerarquía de Estados:** La constante `VALID_SUB_STATUSES_FOR_MAIN` es crucial para controlar qué sub-estados se pueden seleccionar para un estado principal dado. Esto se usa en `StatusSelector.jsx` para renderizar las opciones correctas.
+*   **Lógica de Selección en `StatusSelector.jsx`:**
+    *   Al seleccionar un estado principal diferente, el sub-estado actual se resetea (a `null`) para evitar combinaciones inválidas. El usuario debe luego seleccionar un nuevo sub-estado si es aplicable.
+    *   Al seleccionar un sub-estado, se verifica que sea válido para el estado principal actual del video. Hacer clic de nuevo en un sub-estado activo lo deselecciona.
+*   **Componente Pop-up Simulado:** El `StatusSelector` se renderiza condicionalmente en `VideoSchedulerMainPage.jsx` y se le aplican estilos para que aparezca como un pop-up. El posicionamiento se maneja de forma básica pasando `styleProps`.
+*   **Corrección de Errores Comunes de React:**
+    *   Asegurar que las `key` props sean únicas en elementos generados por `.map()`.
+    *   Verificar que las variables/constantes se usen con sus nombres exactos (ej. `VALID_SUB_STATUSES_FOR_MAIN` vs `VALID_SUB_STATUS_FOR_MAIN`).
+    *   Validar que las propiedades de un objeto existan antes de acceder a sus métodos (ej. `video.status && video.status.charAt(0)`).
+
+#### Observaciones de Funcionamiento (Revisión 2):
+*   El selector de estado permite cambiar estados principales y sub-estados válidos.
+*   Los cambios se reflejan en la UI y persisten correctamente.
+*   El indicador de estado en la lista muestra los emojis del estado principal y del sub-estado (si existe).
+
