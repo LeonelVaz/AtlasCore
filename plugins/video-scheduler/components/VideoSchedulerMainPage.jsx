@@ -186,42 +186,54 @@ function VideoSchedulerMainPage(props) {
     const cellRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
     
-    // Calcular posición relativa al wrapper
+    // Posición de la celda relativa al wrapper
     const cellLeft = cellRect.left - wrapperRect.left;
     const cellRight = cellRect.right - wrapperRect.left;
     const cellTop = cellRect.top - wrapperRect.top;
+    const cellBottom = cellRect.bottom - wrapperRect.top;
     
-    // Dimensiones del popup y wrapper
+    // Dimensiones del popup y márgenes
     const popupWidth = 320;
-    const popupHeight = 320; // Aumenté la altura estimada
-    const wrapperWidth = wrapper.clientWidth;
-    const wrapperHeight = wrapper.clientHeight;
-    const margin = 20; // Margen más grande
+    const popupHeight = 300;
+    const margin = 10;
     
-    // Posición horizontal (derecha de la celda, izquierda si se sale)
-    let finalLeft = cellRight + 10;
-    if (finalLeft + popupWidth > wrapperWidth - margin) {
-      finalLeft = cellLeft - popupWidth - 10;
+    // Obtener la altura del header para calcular el límite inferior correcto
+    const header = wrapper.querySelector('.page-header-controls');
+    const headerHeight = header ? header.offsetHeight : 0;
+    
+    // El límite inferior es la altura del wrapper menos el área del panel de estadísticas
+    const availableHeight = wrapper.clientHeight - 60; // 60px para el panel de estadísticas
+    
+    console.log('=== SIMPLE CALC ===');
+    console.log('Cell position:', { cellTop, cellBottom, cellLeft, cellRight });
+    console.log('Wrapper client height:', wrapper.clientHeight);
+    console.log('Available height (minus stats panel):', availableHeight);
+    console.log('Header height:', headerHeight);
+    
+    // Posición horizontal: derecha de la celda, izquierda si no cabe
+    let finalLeft = cellRight + margin;
+    if (finalLeft + popupWidth > wrapper.clientWidth - margin) {
+      finalLeft = cellLeft - popupWidth - margin;
     }
     if (finalLeft < margin) finalLeft = margin;
     
-    // Posición vertical - más agresivo para evitar que se salga
+    // Posición vertical: alineado con la celda por defecto
     let finalTop = cellTop;
     
-    // Si se sale por abajo, posicionarlo arriba de la celda
-    if (finalTop + popupHeight > wrapperHeight - margin) {
-      finalTop = cellTop - popupHeight - 10;
+    // Si se sale por abajo del área disponible, ponerlo ARRIBA de la celda
+    if (finalTop + popupHeight > availableHeight - margin) {
+      finalTop = cellTop - popupHeight - margin; // ARRIBA de la celda, no abajo
+      console.log('Reposicionando ARRIBA de la celda');
     }
     
-    // Si tampoco cabe arriba, ponerlo en la parte superior disponible
-    if (finalTop < margin) {
-      finalTop = margin;
+    // Si tampoco cabe arriba, ajustar al máximo posible
+    if (finalTop < headerHeight + margin) {
+      finalTop = headerHeight + margin;
     }
     
-    // Verificación final: si aún se sale, ajustar desde abajo
-    if (finalTop + popupHeight > wrapperHeight - margin) {
-      finalTop = wrapperHeight - popupHeight - margin;
-    }
+    console.log('Final position:', { top: finalTop, left: finalLeft });
+    console.log('Popup will end at:', finalTop + popupHeight);
+    console.log('Available space ends at:', availableHeight);
 
     setIncomeFormContext({ 
         day, incomeData, 
