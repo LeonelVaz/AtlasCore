@@ -56,6 +56,12 @@ function VideoSchedulerMainPage(props) {
     refreshCalendarData(); 
   };
 
+  const handleVideoDescriptionChange = async (day, slotIndex, newDescription) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    await plugin.publicAPI.updateVideoDescription(dateStr, slotIndex, newDescription);
+    refreshCalendarData(); 
+  };
+
   const handleStatusIconClick = (day, slotIndex, event) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const videoKey = `${dateStr}-${slotIndex}`;
@@ -157,6 +163,7 @@ function VideoSchedulerMainPage(props) {
             React.createElement(VideoSlotCell, {
               key: `videoslot-${day}-${slotIndex}`, day, slotIndex, videoData: video,
               onNameChange: handleVideoNameChange,
+              onDescriptionChange: handleVideoDescriptionChange,
               onStatusIconClick: (d,s,e) => handleStatusIconClick(d,s,e)
             })
           ),
@@ -188,7 +195,9 @@ function VideoSchedulerMainPage(props) {
             /* Futuros botones globales */
           ])
         ]),
-        React.createElement('table', {key: 'calendar-grid', className: 'calendar-grid'}, [tableHeader, tableBody]),
+        React.createElement('div', {key: 'calendar-container', className: 'calendar-container'}, [
+          React.createElement('table', {key: 'calendar-grid', className: 'calendar-grid'}, [tableHeader, tableBody])
+        ]),
         
         showStatusSelector && statusSelectorContext && React.createElement(StatusSelector, {
           key: 'status-selector-instance',

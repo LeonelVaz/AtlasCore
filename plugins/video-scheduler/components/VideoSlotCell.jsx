@@ -3,12 +3,14 @@ import React from 'react';
 import { STATUS_EMOJIS, VIDEO_MAIN_STATUS } from '../utils/constants.js';
 
 function VideoSlotCell(props) {
-  const { day, slotIndex, videoData, onNameChange, onStatusIconClick } = props;
+  const { day, slotIndex, videoData, onNameChange, onStatusIconClick, onDescriptionChange } = props;
   const [currentName, setCurrentName] = React.useState(videoData.name || '');
+  const [currentDescription, setCurrentDescription] = React.useState(videoData.description || '');
 
   React.useEffect(() => {
     setCurrentName(videoData.name || '');
-  }, [videoData.name]);
+    setCurrentDescription(videoData.description || '');
+  }, [videoData.name, videoData.description]);
 
   const handleNameInputChange = (e) => {
     setCurrentName(e.target.value);
@@ -17,6 +19,16 @@ function VideoSlotCell(props) {
   const handleNameInputBlur = () => {
     if (currentName !== videoData.name || (videoData.status === VIDEO_MAIN_STATUS.PENDING && currentName.trim() !== '')) {
       onNameChange(day, slotIndex, currentName.trim());
+    }
+  };
+
+  const handleDescriptionInputChange = (e) => {
+    setCurrentDescription(e.target.value);
+  };
+
+  const handleDescriptionInputBlur = () => {
+    if (currentDescription !== videoData.description) {
+      onDescriptionChange(day, slotIndex, currentDescription.trim());
     }
   };
 
@@ -29,9 +41,20 @@ function VideoSlotCell(props) {
       e.target.blur();
     }
   };
+
+  const handleDescriptionInputKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.target.blur(); 
+    } else if (e.key === 'Escape') {
+      setCurrentDescription(videoData.description || ''); 
+      e.target.blur();
+    }
+  };
   
   const nameInputId = `video-name-${day}-${slotIndex}`;
-  const placeholderText = videoData.status === VIDEO_MAIN_STATUS.PENDING ? 'Pend...' : (videoData.status === VIDEO_MAIN_STATUS.EMPTY ? 'Vacío (No programar)' : 'Nombre del Video...');
+  const descriptionInputId = `video-description-${day}-${slotIndex}`;
+  const placeholderText = videoData.status === VIDEO_MAIN_STATUS.EMPTY ? 'Vacío (No programar)' : '';
 
   return React.createElement(
     'td',
@@ -56,18 +79,40 @@ function VideoSlotCell(props) {
         React.createElement(
           'div',
           { 
-            key: `status-icons-${day}-${slotIndex}`,
-            className: 'status-container', 
-            onClick: (videoData.status !== VIDEO_MAIN_STATUS.EMPTY && videoData.status !== VIDEO_MAIN_STATUS.PENDING) 
-                      ? (e) => { e.stopPropagation(); onStatusIconClick(day, slotIndex, e); }
-                      : (e) => { e.stopPropagation(); }, 
-            style: { 
-                cursor: (videoData.status !== VIDEO_MAIN_STATUS.EMPTY && videoData.status !== VIDEO_MAIN_STATUS.PENDING) ? 'pointer' : 'default',
-            }
+            key: `description-status-container-${day}-${slotIndex}`,
+            className: 'description-status-container'
           },
           [
-            STATUS_EMOJIS[videoData.status] || '',
-            videoData.subStatus ? ` ${STATUS_EMOJIS[videoData.subStatus] || ''}` : ''
+            React.createElement('input', {
+              key: descriptionInputId,
+              id: descriptionInputId,
+              type: 'text',
+              className: 'video-description-input', 
+              value: currentDescription,
+              placeholder: '',
+              onChange: handleDescriptionInputChange,
+              onBlur: handleDescriptionInputBlur,
+              onKeyDown: handleDescriptionInputKeyDown,
+              disabled: videoData.status === VIDEO_MAIN_STATUS.EMPTY,
+              onClick: (e) => e.stopPropagation() 
+            }),
+            React.createElement(
+              'div',
+              { 
+                key: `status-icons-${day}-${slotIndex}`,
+                className: 'status-container', 
+                onClick: (videoData.status !== VIDEO_MAIN_STATUS.EMPTY && videoData.status !== VIDEO_MAIN_STATUS.PENDING) 
+                          ? (e) => { e.stopPropagation(); onStatusIconClick(day, slotIndex, e); }
+                          : (e) => { e.stopPropagation(); }, 
+                style: { 
+                    cursor: (videoData.status !== VIDEO_MAIN_STATUS.EMPTY && videoData.status !== VIDEO_MAIN_STATUS.PENDING) ? 'pointer' : 'default',
+                }
+              },
+              [
+                STATUS_EMOJIS[videoData.status] || '',
+                videoData.subStatus ? ` ${STATUS_EMOJIS[videoData.subStatus] || ''}` : ''
+              ]
+            )
           ]
         )
       ]

@@ -14,7 +14,7 @@
   line-height: 1.5;
 }
 
-/* Wrapper principal limpio */
+/* Wrapper principal limpio - SIN SCROLL */
 .video-scheduler-main-content-wrapper {
   width: 100%;
   height: 100vh;
@@ -34,10 +34,7 @@
   padding: 24px 32px;
   background: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(8px);
+  flex-shrink: 0;
 }
 
 .month-navigation {
@@ -76,44 +73,36 @@
   border-color: var(--primary-color);
 }
 
+/* Contenedor del calendario - SIN SCROLL, PÁGINA COMPLETA */
+.calendar-container {
+  flex: 1;
+  overflow: visible;
+  height: auto;
+}
+
 /* Tabla principal - diseño ultra limpio */
 .calendar-grid {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
   table-layout: fixed;
   background: var(--bg-color);
+  height: 100%;
 }
 
 .calendar-grid thead {
   background: var(--bg-color);
-  display: table;
-  width: calc(100% - 6px); /* Compensar scrollbar */
-  table-layout: fixed;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  display: table-header-group;
 }
 
 .calendar-grid tbody {
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-grow: 1;
-  width: 100%;
-  height: calc(100vh - 80px);
+  display: table-row-group;
 }
 
-/* Distribución de columnas elegante */
-.calendar-grid th:nth-child(1), .calendar-grid td:nth-child(1) { width: 8%; }
-.calendar-grid th:nth-child(2), .calendar-grid td:nth-child(2) { width: 23%; }
-.calendar-grid th:nth-child(3), .calendar-grid td:nth-child(3) { width: 23%; }
-.calendar-grid th:nth-child(4), .calendar-grid td:nth-child(4) { width: 23%; }
-.calendar-grid th:nth-child(5), .calendar-grid td:nth-child(5) { width: 11%; }
-.calendar-grid th:nth-child(6), .calendar-grid td:nth-child(6) { width: 12%; }
+.calendar-grid tr {
+  display: table-row;
+  width: 100%;
+}
 
 /* Headers ultra minimalistas */
 .calendar-grid th {
@@ -130,21 +119,23 @@
   box-sizing: border-box;
 }
 
+/* Distribución de columnas elegante */
+.calendar-grid th:nth-child(1), .calendar-grid td:nth-child(1) { width: 8%; }
+.calendar-grid th:nth-child(2), .calendar-grid td:nth-child(2) { width: 23%; }
+.calendar-grid th:nth-child(3), .calendar-grid td:nth-child(3) { width: 23%; }
+.calendar-grid th:nth-child(4), .calendar-grid td:nth-child(4) { width: 23%; }
+.calendar-grid th:nth-child(5), .calendar-grid td:nth-child(5) { width: 11%; }
+.calendar-grid th:nth-child(6), .calendar-grid td:nth-child(6) { width: 12%; }
+
 .calendar-grid td {
   padding: 0;
   border: none;
   border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.06);
   text-align: center;
   vertical-align: top;
-  min-height: 72px;
+  height: 80px;
   background: var(--bg-color);
   box-sizing: border-box;
-}
-
-.calendar-grid tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
 }
 
 .calendar-grid tbody tr:hover {
@@ -185,10 +176,19 @@
 .video-scheduler-slot-cell .video-slot {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   height: 100%;
-  min-height: 48px;
+  min-height: 68px;
   transition: all 0.2s ease;
+}
+
+/* Estados de video - SIN COLORES DE FONDO */
+.video-slot.status-pending,
+.video-slot.status-empty,
+.video-slot.status-development,
+.video-slot.status-production,
+.video-slot.status-published {
+  background: transparent;
 }
 
 .video-scheduler-slot-cell .video-name-input {
@@ -197,18 +197,20 @@
   border-bottom: 1px solid transparent;
   padding: 6px 0;
   font-size: 0.8125rem;
-  background: transparent;
+  background: color-mix(in srgb, var(--bg-color-secondary) 20%, transparent);
   color: var(--text-color);
   outline: none;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   transition: all 0.2s ease;
-  font-weight: 400;
+  font-weight: 500;
+
 }
 
 .video-scheduler-slot-cell .video-name-input::placeholder {
   color: var(--text-color-secondary);
   opacity: 0.6;
   font-style: italic;
+  font-weight: 400;
 }
 
 .video-scheduler-slot-cell .video-name-input:focus {
@@ -218,6 +220,7 @@
 
 .video-scheduler-slot-cell .video-name-input:not(:placeholder-shown) {
   border-bottom-color: rgba(var(--primary-color-rgb), 0.2);
+  background: none;
 }
 
 .video-scheduler-slot-cell .video-name-input:disabled {
@@ -225,19 +228,61 @@
   font-style: italic;
 }
 
+/* CONTENEDOR DESCRIPCIÓN Y EMOJI EN LÍNEA HORIZONTAL */
+.description-status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+/* CAMPO DE DESCRIPCIÓN - A LA IZQUIERDA */
+.video-scheduler-slot-cell .video-description-input {
+  flex: 1;
+  border: none;
+  padding: 2px 4px;
+  font-size: 0.6875rem;
+  background: transparent;
+  color: var(--text-color-secondary);
+  outline: none;
+  transition: all 0.2s ease;
+  font-weight: 400;
+  opacity: 0.7;
+  min-width: 0;
+}
+
+.video-scheduler-slot-cell .video-description-input:focus {
+  color: var(--text-color);
+  opacity: 1;
+  background: rgba(var(--primary-color-rgb), 0.05);
+  border-radius: 2px;
+}
+
+.video-scheduler-slot-cell .video-description-input:disabled {
+  color: var(--text-color-secondary);
+  font-style: italic;
+  opacity: 0.4;
+}
+
+/* EMOJI A LA DERECHA */
 .video-scheduler-slot-cell .status-container {
   cursor: pointer;
-  text-align: right;
   font-size: 0.875rem;
-  padding: 2px 0;
+  padding: 2px 4px;
   color: var(--text-color-secondary);
   transition: all 0.2s ease;
   opacity: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .video-scheduler-slot-cell .status-container:hover {
   opacity: 1;
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
 /* Celda resumen - minimalista */
@@ -508,6 +553,7 @@
   text-align: center;
   font-size: 0.8125rem;
   font-style: italic;
+  flex-shrink: 0;
 }
 
 /* Mensaje de carga */
@@ -517,24 +563,6 @@
   color: var(--text-color-secondary);
   font-style: italic;
   font-size: 0.875rem;
-}
-
-/* Scrollbar minimalista */
-.calendar-grid tbody::-webkit-scrollbar {
-  width: 6px;
-}
-
-.calendar-grid tbody::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.calendar-grid tbody::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 3px;
-}
-
-.calendar-grid tbody::-webkit-scrollbar-thumb:hover {
-  background: var(--text-color-secondary);
 }
 
 /* Responsive */
@@ -553,6 +581,16 @@
   }
   
   .calendar-grid td {
+    height: 70px;
+  }
+  
+  .video-scheduler-slot-cell .video-slot {
     min-height: 60px;
   }
+}
+
+.calendar-grid tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
 }

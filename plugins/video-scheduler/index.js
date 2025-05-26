@@ -11,7 +11,7 @@ const STORAGE_KEY_DATA = 'video_scheduler_plugin_data';
 export default {
   id: 'video-scheduler',
   name: 'Video Scheduler',
-  version: '0.4.1', 
+  version: '0.4.2', 
   description: 'Planificador visual de videos estilo calendario vanilla.',
   author: 'Tu Nombre/Equipo',
   minAppVersion: '0.3.0',
@@ -87,6 +87,7 @@ export default {
     return {
       getMonthViewData: async (year, month) => self._internalGetMonthViewData(year, month),
       updateVideoName: async (dateStr, slotIndex, newName) => self._internalUpdateVideoName(dateStr, slotIndex, newName),
+      updateVideoDescription: async (dateStr, slotIndex, newDescription) => self._internalUpdateVideoDescription(dateStr, slotIndex, newDescription),
       updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus),
       setDailyIncome: async (dateStr, incomeData) => self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
@@ -146,7 +147,7 @@ export default {
             const [videoYear, videoMonth, videoDay] = key.split('-').slice(0,3).map(Number);
             const videoDate = new Date(videoYear, videoMonth - 1, videoDay);
             if (videoDate < today) {
-                video.status = VIDEO_MAIN_STATUS.EMPTY; video.name = '';
+                video.status = VIDEO_MAIN_STATUS.EMPTY; video.name = ''; video.description = '';
                 changedByTransition = true;
             }
         }
@@ -170,6 +171,15 @@ export default {
     } else if (newName.trim() === '' && oldName.trim() !== '' && video.status !== VIDEO_MAIN_STATUS.EMPTY) {
       video.status = VIDEO_MAIN_STATUS.PENDING; video.subStatus = null;
     }
+    video.updatedAt = new Date().toISOString();
+    await self._savePluginData();
+    return video;
+  },
+
+  _internalUpdateVideoDescription: async function(dateStr, slotIndex, newDescription) {
+    const self = this;
+    const video = self._ensureVideoSlotExists(dateStr, slotIndex);
+    video.description = newDescription;
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;

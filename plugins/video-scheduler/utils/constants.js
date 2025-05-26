@@ -49,6 +49,7 @@ export const STATUS_EMOJIS = {
 export const DEFAULT_SLOT_VIDEO_STRUCTURE = {
   id: null, // Se generará como 'day-slotIndex'
   name: '',
+  description: '',
   status: VIDEO_MAIN_STATUS.PENDING,
   subStatus: null,
 };
