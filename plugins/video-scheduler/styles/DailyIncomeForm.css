@@ -2,7 +2,7 @@
 
 /* Formulario de ingresos - diseño refinado con position fixed */
 .daily-income-form-popup {
-  position: fixed; /* Cambio de absolute a fixed */
+  position: absolute; 
   background: var(--modal-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);
