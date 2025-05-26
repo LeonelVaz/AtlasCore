@@ -1,8 +1,8 @@
 /* video-scheduler/styles/DailyIncomeForm.css */
 
-/* Formulario de ingresos - diseño refinado con position fixed */
+/* Formulario de ingresos - diseño refinado con position absolute */
 .daily-income-form-popup {
-  position: absolute; 
+  position: absolute; /* Vuelto a absolute para que se mueva con el scroll */
   background: var(--modal-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);

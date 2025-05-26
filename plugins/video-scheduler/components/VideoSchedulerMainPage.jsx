@@ -26,6 +26,72 @@ function VideoSchedulerMainPage(props) {
   const [showIncomeForm, setShowIncomeForm] = React.useState(false);
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
 
+  // Función para encontrar el contenedor con scroll real (app-main)
+  const findScrollContainer = (element) => {
+    // Buscar específicamente en el orden de jerarquía que mencionaste
+    const appMain = document.querySelector('.app-main');
+    if (appMain) {
+      console.log('Found app-main container');
+      return appMain;
+    }
+    
+    const appContent = document.querySelector('.app-content');
+    if (appContent) {
+      console.log('Found app-content container');
+      return appContent;
+    }
+    
+    // Fallback: buscar por overflow como antes
+    let current = element;
+    while (current && current !== document.body) {
+      const overflow = window.getComputedStyle(current).overflow;
+      const overflowY = window.getComputedStyle(current).overflowY;
+      
+      if ((overflow === 'auto' || overflow === 'scroll' || 
+           overflowY === 'auto' || overflowY === 'scroll') && 
+          current.scrollHeight > current.clientHeight) {
+        console.log('Found overflow container:', current.className || current.tagName);
+        return current;
+      }
+      
+      current = current.parentElement;
+    }
+    
+    console.log('No scroll container found, using document.documentElement');
+    return document.documentElement;
+  };
+
+  // Effect para cerrar popups cuando se hace scroll
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (showIncomeForm || showStatusSelector) {
+        setShowIncomeForm(false);
+        setIncomeFormContext(null);
+        setShowStatusSelector(false);
+        setStatusSelectorContext(null);
+      }
+    };
+
+    // Agregar listener de scroll al contenedor principal y a window
+    const scrollContainer = document.querySelector('.app-main') || 
+                           document.querySelector('.app-content') || 
+                           window;
+    
+    if (scrollContainer === window) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    } else {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    return () => {
+      if (scrollContainer === window) {
+        window.removeEventListener('scroll', handleScroll);
+      } else {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [showIncomeForm, showStatusSelector]);
+
   // Función para cargar datos sin mostrar loading (para actualizaciones)
   const refreshCalendarDataSilently = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
@@ -140,49 +206,84 @@ function VideoSchedulerMainPage(props) {
   const handleIncomeCellClick = (day, event) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const incomeData = monthData.dailyIncomes[dateStr] || null;
-    const cellRect = event.currentTarget.getBoundingClientRect(); 
+    const cellRect = event.currentTarget.getBoundingClientRect();
+    
+    // Encontrar el contenedor de referencia para position absolute
     const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
     const wrapperRect = mainContentWrapper.getBoundingClientRect();
-
-    // Buscar el contenedor con scroll real (el contenedor padre del plugin)
-    let scrollContainer = mainContentWrapper.parentElement;
-    while (scrollContainer && scrollContainer !== document.body) {
-      const overflow = window.getComputedStyle(scrollContainer).overflow;
-      if (overflow === 'auto' || overflow === 'scroll' || scrollContainer.scrollTop > 0) {
-        break;
-      }
-      scrollContainer = scrollContainer.parentElement;
-    }
-
-    const containerScrollTop = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.scrollTop 
-      : window.scrollY;
     
-    const containerScrollLeft = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.scrollLeft 
-      : window.scrollX;
-
-    // Ancho estimado del popup de ingresos (ajustar si es necesario)
-    const incomeFormWidth = 320; // Estimado en px
-    let leftPosition = cellRect.right - wrapperRect.left + containerScrollLeft + 10; // Por defecto a la derecha
-
-    // Determinar el ancho disponible del contenedor
-    const availableWidth = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.clientWidth 
-      : window.innerWidth;
-
-    // Si no hay suficiente espacio a la derecha, ponerlo a la izquierda
-    if (cellRect.right + incomeFormWidth > availableWidth - wrapperRect.left) {
-        leftPosition = cellRect.left - wrapperRect.left + containerScrollLeft - incomeFormWidth - 10;
+    // Encontrar el contenedor con scroll real
+    const scrollContainer = findScrollContainer(event.currentTarget);
+    
+    // Obtener el scroll actual
+    const scrollTop = scrollContainer.scrollTop || 0;
+    const scrollLeft = scrollContainer.scrollLeft || 0;
+    
+    console.log('=== DEBUG INFO ===');
+    console.log('Scroll container:', scrollContainer.className || scrollContainer.tagName);
+    console.log('Scroll top:', scrollTop);
+    console.log('Cell rect (viewport):', cellRect);
+    console.log('Wrapper rect (viewport):', wrapperRect);
+    
+    // MÉTODO ALTERNATIVO: Usar las coordenadas de viewport y restar la posición del wrapper
+    // Esto debería ser más confiable
+    const cellTopInWrapper = cellRect.top - wrapperRect.top;
+    const cellLeftInWrapper = cellRect.left - wrapperRect.left;
+    const cellRightInWrapper = cellRect.right - wrapperRect.left;
+    
+    console.log('Cell position in wrapper (before scroll):', {
+      top: cellTopInWrapper,
+      left: cellLeftInWrapper,
+      right: cellRightInWrapper
+    });
+    
+    // Solo agregar el scroll si realmente hay scroll
+    const finalCellTop = cellTopInWrapper + scrollTop;
+    const finalCellLeft = cellLeftInWrapper + scrollLeft;
+    const finalCellRight = cellRightInWrapper + scrollLeft;
+    
+    console.log('Cell position in wrapper (after scroll):', {
+      top: finalCellTop,
+      left: finalCellLeft,
+      right: finalCellRight
+    });
+    
+    // Ancho estimado del popup de ingresos
+    const incomeFormWidth = 320;
+    
+    // Posición por defecto: a la derecha de la celda
+    let finalLeft = finalCellRight + 10;
+    
+    // Verificar si hay suficiente espacio a la derecha
+    const wrapperWidth = wrapperRect.width;
+    if (finalLeft + incomeFormWidth > wrapperWidth) {
+        // Si no hay espacio a la derecha, ponerlo a la izquierda
+        finalLeft = finalCellLeft - incomeFormWidth - 10;
     }
-    // Asegurar que no se salga por la izquierda del wrapper
-    if (leftPosition < 10) leftPosition = 10;
+    
+    // Asegurar que no se salga por la izquierda
+    if (finalLeft < 10) {
+        finalLeft = 10;
+    }
+    
+    // Para la posición vertical, usar la posición calculada
+    let finalTop = finalCellTop;
+    
+    // Asegurar que el popup esté visible (no muy arriba en la pantalla)
+    const minVisibleTop = scrollTop + 10;
+    if (finalTop < minVisibleTop) {
+        finalTop = minVisibleTop;
+    }
+
+    console.log('Final popup position:', { top: finalTop, left: finalLeft });
+    console.log('=== END DEBUG ===');
 
     setIncomeFormContext({ 
-        day, incomeData, 
+        day, 
+        incomeData, 
         position: { 
-            top: cellRect.top - wrapperRect.top + containerScrollTop, 
-            left: leftPosition
+            top: finalTop,
+            left: finalLeft
         } 
     });
     setShowIncomeForm(true);
