@@ -1,0 +1,230 @@
+{
+  "name": "video-scheduler-atlas-plugin",
+  "version": "1.0.0",
+  "description": "Plugin completo de gestión y programación de videos para Atlas",
+  "main": "index.js",
+  "keywords": [
+    "atlas",
+    "plugin",
+    "video",
+    "scheduler",
+    "calendar",
+    "production",
+    "content-creation",
+    "youtube",
+    "earnings"
+  ],
+  "author": "Atlas Plugin Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atlas-plugins/video-scheduler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atlas-plugins/video-scheduler/issues"
+  },
+  "homepage": "https://github.com/atlas-plugins/video-scheduler#readme",
+  "engines": {
+    "atlas": ">=0.3.0"
+  },
+  "atlas": {
+    "id": "video-scheduler",
+    "name": "Video Scheduler",
+    "version": "1.0.0",
+    "description": "Planifica, organiza y da seguimiento a la producción de videos.",
+    "author": "Atlas Plugin Team",
+    "minAppVersion": "0.3.0",
+    "permissions": [
+      "storage",
+      "events",
+      "ui"
+    ],
+    "category": "productivity",
+    "tags": [
+      "video",
+      "calendar",
+      "production",
+      "earnings",
+      "content"
+    ],
+    "screenshots": [
+      "screenshots/main-dashboard.png",
+      "screenshots/video-form.png",
+      "screenshots/calendar-view.png",
+      "screenshots/statistics.png"
+    ],
+    "documentation": "README.md",
+    "icon": "🎬"
+  },
+  "scripts": {
+    "lint": "eslint . --ext .js,.jsx",
+    "lint:fix": "eslint . --ext .js,.jsx --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "echo 'No build step required for Atlas plugins'",
+    "dev": "echo 'Development mode - watch for changes'",
+    "validate": "node scripts/validate-plugin.js",
+    "package": "node scripts/package-plugin.js",
+    "install-atlas": "node scripts/install-to-atlas.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "jest": "^29.0.0",
+    "@testing-library/react": "^13.0.0",
+    "@testing-library/jest-dom": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "files": [
+    "index.js",
+    "components/",
+    "utils/",
+    "styles/",
+    "locales/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/atlas-plugins"
+  },
+  "contributors": [
+    {
+      "name": "Atlas Plugin Team",
+      "email": "plugins@atlas.com",
+      "url": "https://atlas.com/plugins"
+    }
+  ],
+  "directories": {
+    "lib": "./",
+    "doc": "./docs",
+    "test": "./tests"
+  },
+  "config": {
+    "plugin": {
+      "development": {
+        "autoReload": true,
+        "debugMode": true,
+        "logLevel": "debug"
+      },
+      "production": {
+        "autoReload": false,
+        "debugMode": false,
+        "logLevel": "error"
+      }
+    }
+  },
+  "atlasPlugin": {
+    "structure": {
+      "components": [
+        "VideoSchedulerPage.jsx",
+        "VideoForm.jsx",
+        "VideoCard.jsx",
+        "BulkAddForm.jsx",
+        "EarningsForm.jsx",
+        "VideoStatsDisplay.jsx",
+        "SettingsPanelWidget.jsx",
+        "CalendarDayIndicator.jsx"
+      ],
+      "utils": [
+        "constants.js",
+        "videoUtils.js",
+        "i18n.js"
+      ],
+      "styles": [
+        "video-scheduler.css"
+      ],
+      "locales": [
+        "es.json",
+        "en.json"
+      ]
+    },
+    "features": [
+      "video-scheduling",
+      "production-tracking",
+      "earnings-management",
+      "bulk-operations",
+      "statistics",
+      "calendar-integration",
+      "multi-language",
+      "data-export"
+    ],
+    "compatibility": {
+      "atlas": ">=0.3.0",
+      "browsers": ["chrome", "firefox", "safari", "edge"],
+      "platforms": ["web", "desktop"]
+    },
+    "performance": {
+      "maxVideos": 1000,
+      "storageLimit": "1MB",
+      "memoryUsage": "low",
+      "cpuUsage": "low"
+    },
+    "security": {
+      "level": "standard",
+      "sandboxed": true,
+      "permissions": {
+        "storage": "required",
+        "events": "required",
+        "ui": "required",
+        "network": "optional"
+      }
+    }
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "moduleNameMapping": {
+      "\\.(css|less|scss)$": "identity-obj-proxy"
+    },
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.js",
+      "<rootDir>/tests/**/*.spec.js"
+    ],
+    "collectCoverageFrom": [
+      "**/*.{js,jsx}",
+      "!**/node_modules/**",
+      "!**/tests/**",
+      "!**/coverage/**"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:react-hooks/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2022,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "env": {
+      "browser": true,
+      "es6": true,
+      "jest": true
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "rules": {
+      "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      "no-console": ["warn", { "allow": ["warn", "error"] }],
+      "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off"
+    }
+  }
+}

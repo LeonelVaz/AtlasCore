@@ -1,0 +1,612 @@
+/* video-scheduler/styles/video-scheduler.css */
+
+/* Variables locales del plugin */
+:root {
+  --videoscheduler-spacing: var(--spacing-md);
+  --videoscheduler-border-radius: var(--border-radius-md);
+  --videoscheduler-transition: var(--transition-normal);
+}
+
+/* ===== PÁGINA PRINCIPAL ===== */
+.videoscheduler-page {
+  padding: var(--spacing-lg);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+}
+
+.videoscheduler-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.videoscheduler-header h1 {
+  margin: 0;
+  color: var(--text-color);
+  font-family: var(--font-family-heading);
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.videoscheduler-controls {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+/* ===== BOTONES ===== */
+.btn-primary {
+  background-color: var(--color-button-primary-bg);
+  color: var(--color-button-primary-text);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--videoscheduler-border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color var(--videoscheduler-transition);
+  font-family: var(--font-family-body);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--videoscheduler-border-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all var(--videoscheduler-transition);
+  font-family: var(--font-family-body);
+}
+
+.btn-secondary:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-color);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: var(--spacing-xs);
+  cursor: pointer;
+  color: var(--text-color-secondary);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--videoscheduler-transition);
+}
+
+.btn-icon:hover {
+  background-color: var(--hover-color);
+  color: var(--text-color);
+}
+
+/* ===== TARJETAS DE VIDEO ===== */
+.videoscheduler-videos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.video-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--videoscheduler-border-radius);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: all var(--videoscheduler-transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.video-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.video-card h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--text-color);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.video-card p {
+  margin: var(--spacing-xs) 0;
+  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.video-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--bg-color-secondary);
+  border-radius: var(--border-radius-lg);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: var(--spacing-sm);
+}
+
+.video-card-earnings {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+/* ===== FORMULARIOS ===== */
+.video-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  max-width: 600px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-family: var(--font-family-body);
+  font-size: 0.875rem;
+  transition: border-color var(--videoscheduler-transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+/* ===== MODALES ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--modal-bg);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+}
+
+.modal-content h2 {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--text-color);
+  font-family: var(--font-family-heading);
+}
+
+/* ===== CALENDARIO ===== */
+.videoscheduler-calendar {
+  background-color: var(--card-bg);
+  border-radius: var(--videoscheduler-border-radius);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-color);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.calendar-navigation {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.calendar-month-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 var(--spacing-md);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: var(--border-color);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.calendar-day-header {
+  background-color: var(--bg-color-secondary);
+  padding: var(--spacing-sm);
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  font-size: 0.75rem;
+}
+
+.calendar-day {
+  background-color: var(--card-bg);
+  min-height: 100px;
+  padding: var(--spacing-xs);
+  position: relative;
+  cursor: pointer;
+  transition: background-color var(--videoscheduler-transition);
+}
+
+.calendar-day:hover {
+  background-color: var(--hover-color);
+}
+
+.calendar-day-number {
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.calendar-day.other-month {
+  color: var(--text-color-secondary);
+  background-color: var(--bg-color-secondary);
+}
+
+.calendar-day.today {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* ===== INDICADORES ===== */
+.videoscheduler-day-indicator {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 11px;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.75rem;
+}
+
+.status-planned { color: var(--info-color); }
+.status-scripting { color: #8B5CF6; }
+.status-recording { color: #F59E0B; }
+.status-editing { color: #EF4444; }
+.status-review { color: #06B6D4; }
+.status-ready_to_publish { color: #10B981; }
+.status-published { color: var(--success-color); }
+.status-archived { color: var(--text-color-secondary); }
+
+/* ===== CONFIGURACIÓN ===== */
+.videoscheduler-settings {
+  background-color: var(--card-bg);
+  border-radius: var(--videoscheduler-border-radius);
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-color);
+}
+
+.videoscheduler-settings h3 {
+  margin: 0 0 var(--spacing-lg) 0;
+  color: var(--text-color);
+  font-family: var(--font-family-heading);
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.settings-group label {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.875rem;
+}
+
+.settings-group input,
+.settings-group select {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-family: var(--font-family-body);
+}
+
+/* ===== ESTADÍSTICAS ===== */
+.videoscheduler-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.stat-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--videoscheduler-border-radius);
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-card .stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.stat-card .stat-change {
+  font-size: 0.75rem;
+  margin-top: var(--spacing-xs);
+}
+
+.stat-change.positive {
+  color: var(--success-color);
+}
+
+.stat-change.negative {
+  color: var(--danger-color);
+}
+
+/* ===== NAVEGACIÓN ===== */
+.navigation-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm);
+  color: var(--text-color);
+  text-decoration: none;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--videoscheduler-transition);
+  cursor: pointer;
+}
+
+.navigation-item:hover {
+  background-color: var(--hover-color);
+  color: var(--primary-color);
+}
+
+.navigation-item .material-icons {
+  margin-right: var(--spacing-sm);
+  font-size: 1.25rem;
+}
+
+/* ===== TAGS ===== */
+.video-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.video-tag {
+  background-color: var(--bg-color-secondary);
+  color: var(--text-color-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-lg);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ===== EARNINGS ===== */
+.earnings-summary {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--videoscheduler-border-radius);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.earnings-total {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--success-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.earnings-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.earnings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xs);
+  background-color: var(--bg-color-secondary);
+  border-radius: var(--border-radius-sm);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .videoscheduler-page {
+    padding: var(--spacing-md);
+  }
+
+  .videoscheduler-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: stretch;
+  }
+
+  .videoscheduler-controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .videoscheduler-videos {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    padding: var(--spacing-lg);
+    margin: var(--spacing-md);
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+  }
+
+  .calendar-day {
+    min-height: 60px;
+    font-size: 0.75rem;
+  }
+
+  .videoscheduler-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .videoscheduler-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===== DARK MODE OPTIMIZATIONS ===== */
+@media (prefers-color-scheme: dark) {
+  .video-card:hover {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  .calendar-day.today {
+    background-color: var(--primary-color);
+    color: white;
+  }
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.video-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.videoscheduler-day-indicator {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* ===== UTILIDADES ===== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+
+.mt-0 { margin-top: 0; }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+.hidden { display: none; }
+.visible { display: block; }
+
+.flex { display: flex; }
+.flex-column { flex-direction: column; }
+.flex-center { justify-content: center; align-items: center; }
+.flex-between { justify-content: space-between; }
+.flex-end { justify-content: flex-end; }
+
+.w-full { width: 100%; }
+.h-full { height: 100%; }
