@@ -11,6 +11,7 @@
   padding: 20px;
   z-index: 1050;
   backdrop-filter: blur(12px);
+  min-height: fit-content;
 }
 
 /* video-scheduler/styles/StatusSelector.css */

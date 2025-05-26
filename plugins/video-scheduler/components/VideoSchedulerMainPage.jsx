@@ -26,7 +26,15 @@ function VideoSchedulerMainPage(props) {
   const [showIncomeForm, setShowIncomeForm] = React.useState(false);
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
 
-  // Función para encontrar el contenedor con scroll real (app-main)
+  // Configuración del popup de Ingresos (DailyIncomeForm)
+  const incomePopupConfig = {
+    width: 320,
+    height: 300,
+    margin: 10, // Margen general de seguridad respecto a los bordes del wrapper
+    gapToCell: 10 // Espacio deseado entre la celda y el popup cuando se posiciona a un lado
+  };
+
+  // Función para encontrar el contenedor con scroll real
   const findScrollContainer = () => {
     const appMain = document.querySelector('.app-main');
     if (appMain) return appMain;
@@ -71,7 +79,7 @@ function VideoSchedulerMainPage(props) {
       const month = currentDate.getMonth(); 
       const data = await plugin.publicAPI.getMonthViewData(year, month);
       setMonthData(data);
-      console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados silenciosamente.`);
+      // console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados silenciosamente.`);
     }
   }, [plugin, currentDate, pluginId]);
 
@@ -87,7 +95,7 @@ function VideoSchedulerMainPage(props) {
       setMonthData(data);
       setIsLoading(false);
       setIsInitialLoad(false);
-      console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados.`);
+      // console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados.`);
     }
   }, [plugin, currentDate, pluginId, isInitialLoad]);
 
@@ -127,30 +135,27 @@ function VideoSchedulerMainPage(props) {
     const iconRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
     
-    // Calcular posición relativa al wrapper
     const iconLeft = iconRect.left - wrapperRect.left;
     const iconTop = iconRect.top - wrapperRect.top;
     const iconBottom = iconRect.bottom - wrapperRect.top;
     
-    // Dimensiones del popup y wrapper
-    const popupWidth = 220;
-    const popupHeight = 250;
+    const popupWidth = 220; // StatusSelector popup
+    const popupHeight = 250; // StatusSelector popup
+    const margin = 10;
     const wrapperWidth = wrapper.clientWidth;
     const wrapperHeight = wrapper.clientHeight;
     
-    // Posición horizontal (alineado con icono, ajustado si se sale)
     let finalLeft = iconLeft;
-    if (finalLeft + popupWidth > wrapperWidth - 10) {
-      finalLeft = wrapperWidth - popupWidth - 10;
+    if (finalLeft + popupWidth > wrapperWidth - margin) {
+      finalLeft = wrapperWidth - popupWidth - margin;
     }
-    if (finalLeft < 10) finalLeft = 10;
+    if (finalLeft < margin) finalLeft = margin;
     
-    // Posición vertical (debajo del icono, arriba si se sale)
-    let finalTop = iconBottom + 5;
-    if (finalTop + popupHeight > wrapperHeight - 10) {
-      finalTop = iconTop - popupHeight - 5;
+    let finalTop = iconBottom + 5; // 5px below icon
+    if (finalTop + popupHeight > wrapperHeight - margin) {
+      finalTop = iconTop - popupHeight - 5; // 5px above icon
     }
-    if (finalTop < 10) finalTop = 10;
+    if (finalTop < margin) finalTop = margin;
 
     setStatusSelectorContext({ 
         day, slotIndex, video, 
@@ -186,73 +191,75 @@ function VideoSchedulerMainPage(props) {
     const cellRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
     
-    // Posición de la celda relativa al wrapper
     const cellLeft = cellRect.left - wrapperRect.left;
     const cellRight = cellRect.right - wrapperRect.left;
     const cellTop = cellRect.top - wrapperRect.top;
-    const cellBottom = cellRect.bottom - wrapperRect.top;
+    // const cellBottom = cellRect.bottom - wrapperRect.top; // No usado directamente con la lógica actual
+
+    const { width: popupWidth, height: popupHeight, margin, gapToCell } = incomePopupConfig;
     
-    // Dimensiones del popup y márgenes
-    const popupWidth = 320;
-    const popupHeight = 300;
-    const margin = 10;
-    
-    // Obtener la altura del header para calcular el límite inferior correcto
     const header = wrapper.querySelector('.page-header-controls');
     const headerHeight = header ? header.offsetHeight : 0;
     
-    // El límite inferior es la altura del wrapper menos el área del panel de estadísticas
-    const availableHeight = wrapper.clientHeight - 60; // 60px para el panel de estadísticas
-    
-    console.log('=== SIMPLE CALC ===');
-    console.log('Cell position:', { cellTop, cellBottom, cellLeft, cellRight });
-    console.log('Wrapper client height:', wrapper.clientHeight);
-    console.log('Available height (minus stats panel):', availableHeight);
-    console.log('Header height:', headerHeight);
-    
-    // Posición horizontal: izquierda de la celda por defecto, derecha si no cabe
-    let finalLeft = cellLeft - popupWidth;
-    console.log('=== HORIZONTAL DEBUG ===');
-    console.log('cellLeft:', cellLeft, 'cellRight:', cellRight);
-    console.log('popupWidth:', popupWidth, 'margin:', margin);
-    console.log('wrapper.clientWidth:', wrapper.clientWidth);
-    console.log('finalLeft inicial (izquierda):', finalLeft);
-    console.log('¿Cabe a la izquierda?', finalLeft >= margin);
-    
+    // El área disponible para el popup verticalmente.
+    // Considera el espacio debajo del header y encima del panel de estadísticas (si existe visiblemente).
+    const statsPanelPlaceholderHeight = 60; // Asumimos una altura fija o calculable
+    const availableHeightForPopup = wrapper.clientHeight - headerHeight - statsPanelPlaceholderHeight - (2 * margin) ;
+    const minTopPosition = headerHeight + margin;
+    const maxBottomEdgeOfPopup = wrapper.clientHeight - statsPanelPlaceholderHeight - margin;
+
+
+    // --- Posición Horizontal ---
+    // Intentar a la izquierda de la celda, con un gap
+    let finalLeft = cellLeft - popupWidth - gapToCell;
+
+    // Si no cabe a la izquierda (choca con el margen izquierdo del wrapper)
     if (finalLeft < margin) {
-      console.log('NO CABE A LA IZQUIERDA - Posicionando a la derecha');
-      finalLeft = cellRight + margin;
-      console.log('finalLeft (derecha):', finalLeft);
-      
-      // Si tampoco cabe a la derecha, ajustar al máximo posible
+      // Intentar a la derecha de la celda, con un gap
+      finalLeft = cellRight + gapToCell;
+      // Si tampoco cabe a la derecha (choca con el margen derecho del wrapper)
       if (finalLeft + popupWidth > wrapper.clientWidth - margin) {
-        console.log('Tampoco cabe a la derecha, ajustando al límite');
+        // Colocarlo pegado al margen derecho del wrapper
         finalLeft = wrapper.clientWidth - popupWidth - margin;
+        // Como último recurso, si ni así cabe (popup más ancho que el wrapper), pegarlo al margen izquierdo
+        if (finalLeft < margin) {
+            finalLeft = margin;
+        }
       }
     }
     
-    // Posición vertical: alineado con la celda por defecto
+    // --- Posición Vertical ---
+    // Por defecto, alinear la parte superior del popup con la parte superior de la celda
     let finalTop = cellTop;
     
-    // Si se sale por abajo del área disponible, ponerlo ARRIBA de la celda
-    if (finalTop + popupHeight > availableHeight - margin) {
-      finalTop = cellTop - popupHeight - margin; // ARRIBA de la celda, no abajo
-      console.log('Reposicionando ARRIBA de la celda');
+    // Si se sale por abajo del área disponible (maxBottomEdgeOfPopup)
+    if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
+        // Intentar alinear la parte inferior del popup con la parte inferior de la celda
+        finalTop = cellRect.bottom - wrapperRect.top - popupHeight;
+
+        // Si aun así se sale por abajo (o la celda es muy alta), ajustar al límite inferior
+        if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
+            finalTop = maxBottomEdgeOfPopup - popupHeight;
+        }
     }
     
-    // Si tampoco cabe arriba, ajustar al máximo posible
-    if (finalTop < headerHeight + margin) {
-      finalTop = headerHeight + margin;
+    // Asegurar que no se salga por arriba (debajo del header)
+    if (finalTop < minTopPosition) {
+      finalTop = minTopPosition;
     }
     
-    console.log('Final position:', { top: finalTop, left: finalLeft });
-    console.log('Popup will end at:', finalTop + popupHeight);
-    console.log('Available space ends at:', availableHeight);
-    console.log('=== SETTING CONTEXT ===');
+    // Si después de todos los ajustes, el popup es demasiado alto para el espacio vertical disponible,
+    // se podría considerar reducir su altura o mostrar un scroll, pero eso excede esta lógica.
+    // Por ahora, simplemente se pegará al `minTopPosition` o `maxBottomEdgeOfPopup - popupHeight`.
 
     setIncomeFormContext({ 
         day, incomeData, 
-        position: { top: finalTop, left: finalLeft }
+        position: { 
+            top: finalTop, 
+            left: finalLeft,
+            width: `${popupWidth}px`, // Pasar el ancho y alto al styleProps
+            height: `${popupHeight}px`
+        }
     });
     setShowIncomeForm(true);
     setShowStatusSelector(false); 
@@ -344,7 +351,7 @@ function VideoSchedulerMainPage(props) {
             setShowStatusSelector(false);
             setStatusSelectorContext(null);
           },
-          styleProps: statusSelectorContext.position 
+          styleProps: statusSelectorContext.position // StatusSelector usa sus propias dimensiones
         }),
         showIncomeForm && incomeFormContext && React.createElement(DailyIncomeForm, {
           key: 'income-form-instance',
@@ -355,7 +362,7 @@ function VideoSchedulerMainPage(props) {
             setShowIncomeForm(false);
             setIncomeFormContext(null);
           },
-          styleProps: incomeFormContext.position
+          styleProps: incomeFormContext.position // Ahora incluye width y height de incomePopupConfig
         })
       ]),
       React.createElement('div', {key: 'stats-panel', className: 'video-stats-panel-placeholder'}, 'Panel de Estadísticas (Próximamente)')
