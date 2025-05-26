@@ -1,52 +1,63 @@
 import React from 'react';
+// --- NUEVO: Importar VideoForm ---
+import VideoForm from './VideoForm.jsx';
 
 function VideoSchedulerMainPage(props) {
-  const { plugin, pluginId } = props;
+  const { plugin, core, pluginId } = props; // 'core' puede ser útil para dialogs, etc.
   const [videos, setVideos] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(true); // Para feedback de carga inicial
+  const [isLoading, setIsLoading] = React.useState(true);
+  
+  // --- NUEVO: Estado para mostrar/ocultar el formulario y para edición ---
+  const [showForm, setShowForm] = React.useState(false);
+  const [editingVideo, setEditingVideo] = React.useState(null); // null para nuevo, objeto video para editar
 
-  const refreshVideos = React.useCallback(async () => { // useCallback para estabilidad
+  const refreshVideos = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getAllVideos) {
-      console.log(`[${pluginId}] VideoSchedulerMainPage: Llamando a getAllVideos...`);
-      const currentVideos = plugin.publicAPI.getAllVideos(); // Sigue siendo síncrono para obtener la lista actual
+      const currentVideos = plugin.publicAPI.getAllVideos();
       setVideos(currentVideos);
-      console.log(`[${pluginId}] Videos refrescados en UI:`, currentVideos.length);
-    } else {
-      console.warn(`[${pluginId}] publicAPI.getAllVideos no está disponible en refreshVideos.`);
     }
-  }, [plugin, pluginId]);
-
+  }, [plugin]);
 
   React.useEffect(() => {
     setIsLoading(true);
-    // Asegurarse de que el plugin y su publicAPI estén listos
     if (plugin && plugin.publicAPI) {
-        refreshVideos();
+      refreshVideos();
     }
-    setIsLoading(false); // Asumimos que getAllVideos es rápido por ahora
-    // En una app real con carga asíncrona de datos inicial, esto sería más complejo
+    setIsLoading(false);
   }, [plugin, refreshVideos]);
 
+  const handleOpenCreateForm = () => {
+    setEditingVideo(null); // Asegurar que no hay video existente
+    setShowForm(true);
+    console.log(`[${pluginId}] Abriendo formulario para crear nuevo video.`);
+  };
+  
+  // const handleOpenEditForm = (videoToEdit) => {
+  //   setEditingVideo(videoToEdit);
+  //   setShowForm(true);
+  //   console.log(`[${pluginId}] Abriendo formulario para editar video:`, videoToEdit);
+  // };
 
-  const handleAddVideo = async () => { // Ahora es async
-    if (plugin && plugin.publicAPI && plugin.publicAPI.createVideo) {
-      const newVideoData = {
-        title: `Video Persistente #${videos.length + 1}`
-      };
-      try {
-        console.log(`[${pluginId}] VideoSchedulerMainPage: Llamando a createVideo...`);
-        await plugin.publicAPI.createVideo(newVideoData); // Esperar a que se cree y guarde
-        refreshVideos(); // Refrescar la lista
-      } catch (error) {
-        console.error(`[${pluginId}] Error al crear video:`, error);
-        // Aquí podrías mostrar un mensaje de error al usuario
-      }
+  const handleFormSave = async (videoData) => {
+    console.log(`[${pluginId}] VideoForm guardado. Datos:`, videoData);
+    if (editingVideo) {
+      // Lógica de actualización (Etapa futura)
+      // await plugin.publicAPI.updateVideo(editingVideo.id, videoData);
+      console.log(`[${pluginId}] (Simulado) Video actualizado: ${editingVideo.id}`);
     } else {
-      console.warn(`[${pluginId}] publicAPI.createVideo no está disponible en handleAddVideo.`);
+      // Lógica de creación
+      await plugin.publicAPI.createVideo(videoData);
     }
+    refreshVideos();
+    setShowForm(false); // Ocultar formulario después de guardar
+    setEditingVideo(null);
   };
 
-  console.log(`[${pluginId}] VideoSchedulerMainPage rendering. Videos: ${videos.length}, Loading: ${isLoading}`);
+  const handleFormCancel = () => {
+    setShowForm(false);
+    setEditingVideo(null);
+    console.log(`[${pluginId}] Formulario cancelado.`);
+  };
   
   if (isLoading) {
     return React.createElement('p', {key: 'loading-msg'}, 'Cargando videos...');
@@ -54,24 +65,34 @@ function VideoSchedulerMainPage(props) {
 
   return React.createElement(
     'div',
-    {
-      className: 'video-scheduler-main-page',
-      style: { padding: '20px' }
-    },
+    { className: 'video-scheduler-main-page', style: { padding: '20px' } },
     [
-      React.createElement('h1', { key: 'title' }, `${plugin.name || 'Video Scheduler'} Dashboard (Persistente)`),
-      React.createElement(
+      React.createElement('h1', { key: 'title' }, `${plugin.name || 'Video Scheduler'} Dashboard`),
+      
+      // --- Botón para mostrar formulario de creación ---
+      !showForm && React.createElement( // Solo mostrar si el formulario está oculto
         'button',
         {
-          key: 'add-video-btn',
-          onClick: handleAddVideo,
+          key: 'show-create-form-btn',
+          onClick: handleOpenCreateForm,
           style: { marginBottom: '20px', padding: '10px', cursor: 'pointer' }
         },
-        'Añadir Video (Guardado)'
+        'Crear Nuevo Video'
       ),
-      React.createElement('h2', { key: 'list-title' }, 'Lista de Videos Guardados:'),
-      videos.length === 0
-        ? React.createElement('p', { key: 'no-videos' }, 'No hay videos guardados. ¡Añade uno!')
+
+      // --- Renderizar VideoForm si showForm es true ---
+      showForm && React.createElement(VideoForm, {
+        key: 'video-form-instance',
+        plugin: plugin,
+        core: core,
+        existingVideo: editingVideo, // Será null para nuevo video
+        onSave: handleFormSave,
+        onCancel: handleFormCancel
+      }),
+      
+      React.createElement('h2', { key: 'list-title', style: { marginTop: showForm ? '30px' : '10px'} }, 'Lista de Videos:'),
+      videos.length === 0 && !showForm // No mostrar "No hay videos" si el form está abierto para crear el primero
+        ? React.createElement('p', { key: 'no-videos' }, 'No hay videos. ¡Crea uno!')
         : React.createElement(
             'ul',
             { key: 'videos-list', style: { listStyle: 'none', padding: 0 } },
@@ -81,14 +102,34 @@ function VideoSchedulerMainPage(props) {
                 { 
                   key: video.id || `video-${index}`,
                   style: { 
-                    padding: '8px', 
-                    borderBottom: '1px solid #eee',
+                    padding: '10px', 
+                    border: '1px solid #ddd',
+                    marginBottom: '5px',
+                    borderRadius: '4px',
+                    backgroundColor: '#fff',
                     display: 'flex',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   } 
                 },
                 [
-                    React.createElement('span', {key: `title-${video.id}`}, `${video.title} (Estado: ${video.status || 'N/A'})`),
+                  React.createElement('div', {key: `details-${video.id}`}, [
+                    React.createElement('strong', {key: `title-${video.id}`}, video.title),
+                    React.createElement('br', {key: `br-${video.id}`}),
+                    React.createElement('span', {key: `desc-${video.id}`, style: {fontSize: '0.9em', color: '#555'}}, video.description || React.createElement('em', {}, 'Sin descripción')),
+                    React.createElement('br', {key: `br2-${video.id}`}),
+                    React.createElement('span', {key: `status-${video.id}`, style: {fontSize: '0.8em', color: '#777'}}, `Estado: ${video.status}`)
+                  ]),
+                  // --- Botón de Editar (funcionalidad se completará después) ---
+                  // React.createElement(
+                  //   'button',
+                  //   { 
+                  //     key: `edit-btn-${video.id}`,
+                  //     onClick: () => handleOpenEditForm(video),
+                  //     style: { marginLeft: '10px', padding: '5px 10px', cursor: 'pointer' }
+                  //   },
+                  //   'Editar'
+                  // )
                 ]
               )
             )

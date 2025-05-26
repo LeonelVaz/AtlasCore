@@ -248,3 +248,69 @@ video-scheduler/
 ### Consideraciones Adicionales (Para el Futuro):
 *   **Borrado de Datos:** Dado que Atlas (actualmente) no provee una forma de desinstalar/limpiar datos de un plugin, se podría añadir una función dentro del plugin (ej. en un panel de configuración) para permitir al usuario restablecer/borrar todos los datos almacenados por el plugin.
 
+## Etapa 3: Formulario Básico de Creación de Video
+
+### Objetivos Cumplidos:
+1.  Creado el componente `VideoForm.jsx` con campos para título, descripción y estado.
+2.  Integrado `VideoForm.jsx` en `VideoSchedulerMainPage.jsx`, controlando su visibilidad con estado local.
+3.  El formulario permite crear nuevos videos, llamando a `plugin.publicAPI.createVideo()`.
+4.  Los datos introducidos en el formulario se utilizan para el nuevo video.
+5.  La lista de videos en `VideoSchedulerMainPage.jsx` se actualiza después de la creación.
+6.  Implementada validación básica (título obligatorio) en el formulario.
+7.  Implementado un esqueleto para la función `_internalUpdateVideo` en `index.js` (la funcionalidad de edición se completará más adelante).
+
+### Descubrimientos y Patrones Clave:
+
+#### 1. Componente de Formulario Reutilizable (`VideoForm.jsx`)
+*   Se crea un componente separado para el formulario (`VideoForm.jsx`) que maneja su propio estado interno para los campos (título, descripción, estado) usando `React.useState`.
+*   El formulario recibe props como `existingVideo` (para determinar si es modo creación o edición), `onSave` (callback para ejecutar al guardar), y `onCancel` (callback para ejecutar al cancelar).
+*   `React.useEffect` se utiliza dentro de `VideoForm.jsx` para inicializar/resetear los campos del formulario cuando `existingVideo` cambia (útil para modo edición o para limpiar al abrir para un nuevo video).
+
+#### 2. Gestión de Visibilidad del Formulario (Simulando Modal)
+*   El componente padre (`VideoSchedulerMainPage.jsx`) usa `React.useState` (ej. `showForm`) para controlar si el `VideoForm` está visible o no.
+*   Un botón "Crear Nuevo Video" en la página principal cambia el estado `showForm` a `true`.
+*   Los callbacks `onSave` y `onCancel` del `VideoForm` cambian `showForm` de nuevo a `false` en el componente padre.
+
+#### 3. Flujo de Creación de Datos
+*   **UI (`VideoSchedulerMainPage.jsx`):** Botón "Crear Nuevo Video" activa `showForm`.
+*   **UI (`VideoForm.jsx`):**
+    *   Usuario rellena los campos.
+    *   Al hacer clic en "Crear Video" (submit), se validan los datos.
+    *   Se llama a `props.onSave(videoData)` pasando un objeto con los datos del formulario.
+*   **UI (`VideoSchedulerMainPage.jsx`):**
+    *   La función `handleFormSave` (pasada como `onSave` a `VideoForm`) recibe `videoData`.
+    *   Llama a `await props.plugin.publicAPI.createVideo(videoData)`.
+    *   Llama a `refreshVideos()` para actualizar la lista en la UI.
+    *   Establece `showForm` a `false`.
+*   **Plugin (`index.js`):**
+    *   `publicAPI.createVideo` llama a `_internalCreateVideo`.
+    *   `_internalCreateVideo` construye el objeto video completo (con ID, timestamps, etc.), lo añade a `this._videos`, y llama a `_saveVideosToStorage()`.
+
+#### 4. `key` Prop en Listas (Corrección de Warning)
+*   Al renderizar listas de elementos con `.map()` en React (ej. las `<option>` de un `<select>`), es crucial que cada elemento hijo generado tenga una prop `key` única entre sus hermanos. Esto evita warnings y ayuda a React a optimizar el renderizado.
+    ```javascript
+    // En VideoForm.jsx, para el selector de estado
+    Object.keys(VIDEO_STATUS).map(statusKey => 
+      React.createElement('option', { 
+        key: VIDEO_STATUS[statusKey], // Usar un valor único como key
+        value: VIDEO_STATUS[statusKey] 
+      }, /* ... */)
+    )
+    ```
+
+#### 5. Manejo de Props en Componentes Importados
+*   Cuando se utiliza el patrón Wrapper para registrar extensiones UI, el componente real (ej. `VideoForm.jsx`) recibe las props inyectadas por el Wrapper (`plugin`, `core`, `pluginId`) y también las props pasadas por el componente que lo renderiza directamente (ej. `VideoSchedulerMainPage.jsx` pasa `existingVideo`, `onSave`, `onCancel` a `VideoForm`).
+
+### Estructura de Archivos Actualizada (Etapa 3):
+
+```
+video-scheduler/
+├── components/
+│   ├── VideoSchedulerNavItem.jsx
+│   ├── VideoSchedulerMainPage.jsx
+│   └── VideoForm.jsx  <-- NUEVO
+├── utils/
+│   └── constants.js
+└── index.js
+```
+
