@@ -184,3 +184,67 @@ video-scheduler/
 └── index.js
 ```
 
+## Etapa 2: Persistencia de Videos con `core.storage`
+
+### Objetivos Cumplidos:
+1.  La lista de videos ahora se carga desde `core.storage` cuando el plugin se inicializa.
+2.  Los videos creados se guardan en `core.storage` después de su creación.
+3.  Los videos persisten correctamente después de recargar la aplicación Atlas.
+
+### Descubrimientos y Patrones Clave:
+
+#### 1. Uso de `core.storage`
+*   **Clave de Almacenamiento:** Es recomendable definir una constante para la clave que se usará en `core.storage` (ej. `const STORAGE_KEY_VIDEOS = 'videos_data';`).
+*   **Carga de Datos en `init`:**
+    *   El método `init` del plugin ahora es `async` (o devuelve una `Promise`) para acomodar la carga asíncrona de datos desde el almacenamiento.
+    *   Se utiliza `await self._core.storage.getItem(pluginId, STORAGE_KEY, defaultValue)` para recuperar los datos. Es importante proporcionar un `defaultValue` (ej. `[]`) en caso de que no haya nada guardado aún.
+    ```javascript
+    // En index.js, dentro de init o un método llamado por init
+    async _loadVideosFromStorage() {
+      const storedVideos = await this._core.storage.getItem(this.id, STORAGE_KEY_VIDEOS, []);
+      this._videos = storedVideos || []; // this._videos es el array en memoria del plugin
+    }
+    ```
+*   **Guardado de Datos:**
+    *   Después de cualquier operación que modifique los datos que deben persistir (ej. crear, actualizar, eliminar un video), se llama a `await self._core.storage.setItem(pluginId, STORAGE_KEY, dataToSave)`.
+    *   Los métodos que realizan estas operaciones (ej. `_internalCreateVideo`) ahora deben ser `async` para usar `await` al guardar.
+    ```javascript
+    // En index.js
+    async _saveVideosToStorage() {
+      await this._core.storage.setItem(this.id, STORAGE_KEY_VIDEOS, this._videos);
+    }
+
+    async _internalCreateVideo(videoData) {
+      // ...lógica para crear newVideo y añadirlo a this._videos...
+      await this._saveVideosToStorage(); // Guardar después de modificar
+      return newVideo;
+    }
+    ```
+*   **Limpieza (`cleanup`):** Es una buena práctica guardar los datos una última vez en `cleanup` como medida de seguridad, convirtiendo `cleanup` también en una función `async`.
+
+#### 2. Manejo de Asincronía en Componentes UI
+*   Si la función de la `publicAPI` que el componente UI llama ahora es `async` (ej. `plugin.publicAPI.createVideo`), el manejador de eventos en el componente UI también debe ser `async` y usar `await` para asegurar que la operación se complete antes de, por ejemplo, refrescar la lista de datos.
+    ```javascript
+    // En VideoSchedulerMainPage.jsx
+    const handleAddVideo = async () => {
+      // ...
+      await plugin.publicAPI.createVideo(newVideoData);
+      refreshVideos();
+      // ...
+    };
+    ```
+
+#### 3. Permiso `storage`
+*   El plugin debe declarar el permiso `'storage'` en sus `permissions` dentro de `index.js` para poder usar `core.storage`.
+    ```javascript
+    // En index.js
+    permissions: ['ui', 'storage'], 
+    ```
+
+### Observaciones de Funcionamiento:
+*   Los logs confirman que los datos se cargan desde el storage al iniciar y se guardan tras la creación de videos.
+*   Los videos añadidos persisten correctamente entre sesiones de la aplicación.
+
+### Consideraciones Adicionales (Para el Futuro):
+*   **Borrado de Datos:** Dado que Atlas (actualmente) no provee una forma de desinstalar/limpiar datos de un plugin, se podría añadir una función dentro del plugin (ej. en un panel de configuración) para permitir al usuario restablecer/borrar todos los datos almacenados por el plugin.
+

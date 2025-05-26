@@ -1,46 +1,57 @@
-import React from 'react'; // React.useState y React.useEffect serán necesarios
+import React from 'react';
 
 function VideoSchedulerMainPage(props) {
-  const { plugin, pluginId } = props; // 'plugin' es la instancia de nuestro plugin
-
-  // Estado para almacenar la lista de videos a mostrar
+  const { plugin, pluginId } = props;
   const [videos, setVideos] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true); // Para feedback de carga inicial
 
-  // Función para cargar/refrescar los videos desde el plugin
-  const refreshVideos = () => {
+  const refreshVideos = React.useCallback(async () => { // useCallback para estabilidad
     if (plugin && plugin.publicAPI && plugin.publicAPI.getAllVideos) {
-      const currentVideos = plugin.publicAPI.getAllVideos();
+      console.log(`[${pluginId}] VideoSchedulerMainPage: Llamando a getAllVideos...`);
+      const currentVideos = plugin.publicAPI.getAllVideos(); // Sigue siendo síncrono para obtener la lista actual
       setVideos(currentVideos);
-      console.log(`[${pluginId}] Videos refrescados en UI:`, currentVideos);
+      console.log(`[${pluginId}] Videos refrescados en UI:`, currentVideos.length);
     } else {
-      console.warn(`[${pluginId}] publicAPI.getAllVideos no está disponible.`);
+      console.warn(`[${pluginId}] publicAPI.getAllVideos no está disponible en refreshVideos.`);
     }
-  };
+  }, [plugin, pluginId]);
 
-  // Cargar videos cuando el componente se monta y cuando el plugin esté listo
+
   React.useEffect(() => {
-    refreshVideos(); // Carga inicial
-  }, [plugin]); // Dependencia: re-ejecutar si la instancia del plugin cambia (poco probable pero seguro)
+    setIsLoading(true);
+    // Asegurarse de que el plugin y su publicAPI estén listos
+    if (plugin && plugin.publicAPI) {
+        refreshVideos();
+    }
+    setIsLoading(false); // Asumimos que getAllVideos es rápido por ahora
+    // En una app real con carga asíncrona de datos inicial, esto sería más complejo
+  }, [plugin, refreshVideos]);
 
 
-  const handleAddVideo = () => {
+  const handleAddVideo = async () => { // Ahora es async
     if (plugin && plugin.publicAPI && plugin.publicAPI.createVideo) {
-      // Crear un video con datos por defecto.
-      // En el futuro, esto podría abrir un formulario.
       const newVideoData = {
-        title: `Video de Prueba #${videos.length + 1}`
-        // No necesitamos pasar 'status' o 'id', el plugin se encargará
+        title: `Video Persistente #${videos.length + 1}`
       };
-      plugin.publicAPI.createVideo(newVideoData);
-      refreshVideos(); // Refrescar la lista después de añadir
+      try {
+        console.log(`[${pluginId}] VideoSchedulerMainPage: Llamando a createVideo...`);
+        await plugin.publicAPI.createVideo(newVideoData); // Esperar a que se cree y guarde
+        refreshVideos(); // Refrescar la lista
+      } catch (error) {
+        console.error(`[${pluginId}] Error al crear video:`, error);
+        // Aquí podrías mostrar un mensaje de error al usuario
+      }
     } else {
-      console.warn(`[${pluginId}] publicAPI.createVideo no está disponible.`);
+      console.warn(`[${pluginId}] publicAPI.createVideo no está disponible en handleAddVideo.`);
     }
   };
 
-  // Renderizado
-  console.log(`[${pluginId}] VideoSchedulerMainPage rendering. Número de videos: ${videos.length}`);
+  console.log(`[${pluginId}] VideoSchedulerMainPage rendering. Videos: ${videos.length}, Loading: ${isLoading}`);
   
+  if (isLoading) {
+    return React.createElement('p', {key: 'loading-msg'}, 'Cargando videos...');
+  }
+
   return React.createElement(
     'div',
     {
@@ -48,7 +59,7 @@ function VideoSchedulerMainPage(props) {
       style: { padding: '20px' }
     },
     [
-      React.createElement('h1', { key: 'title' }, `${plugin.name || 'Video Scheduler'} Dashboard`),
+      React.createElement('h1', { key: 'title' }, `${plugin.name || 'Video Scheduler'} Dashboard (Persistente)`),
       React.createElement(
         'button',
         {
@@ -56,11 +67,11 @@ function VideoSchedulerMainPage(props) {
           onClick: handleAddVideo,
           style: { marginBottom: '20px', padding: '10px', cursor: 'pointer' }
         },
-        'Añadir Video de Prueba'
+        'Añadir Video (Guardado)'
       ),
-      React.createElement('h2', { key: 'list-title' }, 'Lista de Videos:'),
+      React.createElement('h2', { key: 'list-title' }, 'Lista de Videos Guardados:'),
       videos.length === 0
-        ? React.createElement('p', { key: 'no-videos' }, 'No hay videos aún. ¡Añade uno!')
+        ? React.createElement('p', { key: 'no-videos' }, 'No hay videos guardados. ¡Añade uno!')
         : React.createElement(
             'ul',
             { key: 'videos-list', style: { listStyle: 'none', padding: 0 } },
@@ -68,7 +79,7 @@ function VideoSchedulerMainPage(props) {
               React.createElement(
                 'li',
                 { 
-                  key: video.id || `video-${index}`, // Usar video.id si está disponible
+                  key: video.id || `video-${index}`,
                   style: { 
                     padding: '8px', 
                     borderBottom: '1px solid #eee',
@@ -78,7 +89,6 @@ function VideoSchedulerMainPage(props) {
                 },
                 [
                     React.createElement('span', {key: `title-${video.id}`}, `${video.title} (Estado: ${video.status || 'N/A'})`),
-                    // Aquí podríamos añadir un botón de eliminar en el futuro
                 ]
               )
             )
