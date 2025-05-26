@@ -1,8 +1,8 @@
 /* video-scheduler/styles/StatusSelector.css */
 
-/* Popup selector de estado - minimalista con position fixed */
+/* Popup selector de estado - minimalista con position absolute */
 .status-selector-popup {
-  position: fixed; /* Cambio de absolute a fixed */
+  position: absolute; /* Cambiado de fixed a absolute */
   background: var(--modal-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);

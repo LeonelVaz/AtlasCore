@@ -151,32 +151,78 @@ function VideoSchedulerMainPage(props) {
     const videoKey = `${dateStr}-${slotIndex}`;
     const video = monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey}; 
     const rect = event.currentTarget.getBoundingClientRect();
+    
+    // Encontrar el contenedor de referencia para position absolute
     const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
     const wrapperRect = mainContentWrapper.getBoundingClientRect();
-
-    // Buscar el contenedor con scroll real (el contenedor padre del plugin)
-    let scrollContainer = mainContentWrapper.parentElement;
-    while (scrollContainer && scrollContainer !== document.body) {
-      const overflow = window.getComputedStyle(scrollContainer).overflow;
-      if (overflow === 'auto' || overflow === 'scroll' || scrollContainer.scrollTop > 0) {
-        break;
-      }
-      scrollContainer = scrollContainer.parentElement;
+    
+    // Encontrar el contenedor con scroll real
+    const scrollContainer = findScrollContainer(event.currentTarget);
+    
+    // Obtener el scroll actual
+    const scrollTop = scrollContainer.scrollTop || 0;
+    const scrollLeft = scrollContainer.scrollLeft || 0;
+    
+    console.log('=== STATUS SELECTOR DEBUG ===');
+    console.log('Scroll container:', scrollContainer.className || scrollContainer.tagName);
+    console.log('Scroll top:', scrollTop);
+    console.log('Icon rect (viewport):', rect);
+    console.log('Wrapper rect (viewport):', wrapperRect);
+    
+    // Calcular posición del icono relativa al wrapper
+    const iconTopInWrapper = rect.top - wrapperRect.top;
+    const iconLeftInWrapper = rect.left - wrapperRect.left;
+    const iconBottomInWrapper = rect.bottom - wrapperRect.top;
+    
+    console.log('Icon position in wrapper (before scroll):', {
+      top: iconTopInWrapper,
+      left: iconLeftInWrapper,
+      bottom: iconBottomInWrapper
+    });
+    
+    // Agregar el scroll offset
+    const finalIconTop = iconTopInWrapper + scrollTop;
+    const finalIconLeft = iconLeftInWrapper + scrollLeft;
+    const finalIconBottom = iconBottomInWrapper + scrollTop;
+    
+    console.log('Icon position in wrapper (after scroll):', {
+      top: finalIconTop,
+      left: finalIconLeft,
+      bottom: finalIconBottom
+    });
+    
+    // Posición del popup: debajo del icono
+    let finalLeft = finalIconLeft;
+    let finalTop = finalIconBottom + 5; // 5px debajo del icono
+    
+    // Verificar que no se salga por los bordes
+    const statusSelectorWidth = 200; // Ancho estimado del popup
+    const wrapperWidth = wrapperRect.width;
+    
+    // Ajustar posición horizontal si se sale por la derecha
+    if (finalLeft + statusSelectorWidth > wrapperWidth) {
+        finalLeft = wrapperWidth - statusSelectorWidth - 10;
+    }
+    
+    // Asegurar que no se salga por la izquierda
+    if (finalLeft < 10) {
+        finalLeft = 10;
+    }
+    
+    // Asegurar que el popup esté visible (no muy arriba en la pantalla)
+    const minVisibleTop = scrollTop + 10;
+    if (finalTop < minVisibleTop) {
+        finalTop = minVisibleTop;
     }
 
-    const containerScrollTop = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.scrollTop 
-      : window.scrollY;
-    
-    const containerScrollLeft = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.scrollLeft 
-      : window.scrollX;
+    console.log('Final status selector position:', { top: finalTop, left: finalLeft });
+    console.log('=== END STATUS DEBUG ===');
 
     setStatusSelectorContext({ 
         day, slotIndex, video, 
         position: { 
-            top: rect.bottom - wrapperRect.top + containerScrollTop + 5, 
-            left: rect.left - wrapperRect.left + containerScrollLeft
+            top: finalTop, 
+            left: finalLeft
         }
     });
     setShowStatusSelector(true);
