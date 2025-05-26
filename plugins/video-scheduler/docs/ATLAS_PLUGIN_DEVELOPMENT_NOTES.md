@@ -104,7 +104,83 @@ video-scheduler/
 └── index.js
 ```
 
-### Próximos Pasos (Hacia Etapa 1):
-*   Definir la estructura de datos para los videos.
-*   Implementar la lógica para crear y listar videos (inicialmente en memoria).
-*   Mostrar la lista de videos en `VideoSchedulerMainPage.jsx`.
+## Etapa 1: Estructura de Datos Básica y Creación/Visualización de Videos (En Memoria)
+
+### Objetivos Cumplidos:
+1.  Definida una estructura de datos inicial para "Videos" (`DEFAULT_VIDEO_STRUCTURE`).
+2.  Implementado el almacenamiento de videos en un array en memoria (`this._videos`) dentro de la instancia del plugin.
+3.  Creados métodos internos `_internalCreateVideo` y `_internalGetAllVideos`.
+4.  La `VideoSchedulerMainPage.jsx` ahora muestra una lista de videos y permite añadir nuevos (que se reflejan en la UI).
+5.  Funciones `createVideo` y `getAllVideos` expuestas a través de `publicAPI`.
+
+### Descubrimientos y Patrones Clave:
+
+#### 1. Estructura de Datos y Constantes
+*   Es útil definir estructuras de datos por defecto (ej. `DEFAULT_VIDEO_STRUCTURE`) y constantes (ej. `VIDEO_STATUS`) en un archivo separado (ej. `utils/constants.js`) para mantener la organización y consistencia.
+    ```javascript
+    // utils/constants.js
+    export const DEFAULT_VIDEO_STRUCTURE = { /* ... */ };
+    export const VIDEO_STATUS = { /* ... */ };
+    ```
+
+#### 2. Gestión de Estado en Componentes React (para listas)
+*   Para mostrar datos dinámicos (como una lista de videos) en un componente React, se utiliza `React.useState` para mantener el estado de los datos que se van a renderizar.
+    ```javascript
+    // En VideoSchedulerMainPage.jsx
+    const [videos, setVideos] = React.useState([]);
+    ```
+*   Se usa `React.useEffect` para cargar los datos iniciales cuando el componente se monta y/o cuando las dependencias relevantes (como la instancia del plugin) cambian.
+    ```javascript
+    // En VideoSchedulerMainPage.jsx
+    React.useEffect(() => {
+      refreshVideos(); // Función que llama a plugin.publicAPI.getAllVideos() y actualiza el estado 'videos'
+    }, [plugin]); // Dependencia
+    ```
+*   Después de acciones que modifican los datos (ej. crear un video), se debe llamar a la función que refresca los datos para actualizar la UI.
+
+#### 3. API Pública del Plugin para Interacción con UI
+*   El objeto `publicAPI` del plugin expone funciones que los componentes de UI (pasados a través de `props.plugin`) pueden llamar para interactuar con la lógica de negocio y los datos del plugin.
+    ```javascript
+    // En index.js
+    _createPublicAPI: function(pluginInstance) {
+      return {
+        getAllVideos: () => pluginInstance._internalGetAllVideos(),
+        createVideo: (videoData) => pluginInstance._internalCreateVideo(videoData),
+      };
+    }
+
+    // En VideoSchedulerMainPage.jsx
+    // plugin.publicAPI.createVideo(newVideoData);
+    // const currentVideos = plugin.publicAPI.getAllVideos();
+    ```
+
+#### 4. Métodos Internos del Plugin
+*   La lógica principal de manipulación de datos reside en métodos internos del plugin (prefijados con `_internal` por convención). Estos métodos son los que realmente modifican el estado interno del plugin (ej. `this._videos`).
+    ```javascript
+    // En index.js
+    _internalCreateVideo: function(videoData) {
+      // ... lógica para crear y añadir el video a this._videos ...
+      // En etapas futuras, esto también interactuará con core.storage
+    }
+    ```
+*   Es una buena práctica que los métodos internos devuelvan una copia de los datos (ej. `[...this._videos]`) cuando se leen, para evitar la mutación directa del estado interno del plugin desde el exterior.
+
+#### 5. Flujo de Datos
+*   **Acción del Usuario (UI):** Ej. Clic en "Añadir Video" en `VideoSchedulerMainPage.jsx`.
+*   **Llamada a API Pública (UI -> Plugin):** `props.plugin.publicAPI.createVideo(...)`.
+*   **Ejecución de Lógica Interna (Plugin):** `publicAPI.createVideo` llama a `this._internalCreateVideo(...)`, que actualiza `this._videos`.
+*   **Refresco de Datos (UI):** El componente llama a `refreshVideos()`, que a su vez llama a `props.plugin.publicAPI.getAllVideos()` para obtener la lista actualizada.
+*   **Actualización de Estado (UI):** `setVideos(...)` actualiza el estado del componente, causando un nuevo renderizado con los datos más recientes.
+
+### Estructura de Archivos Actualizada (Etapa 1):
+
+```
+video-scheduler/
+├── components/
+│   ├── VideoSchedulerNavItem.jsx
+│   └── VideoSchedulerMainPage.jsx
+├── utils/
+│   └── constants.js  <-- NUEVO
+└── index.js
+```
+
