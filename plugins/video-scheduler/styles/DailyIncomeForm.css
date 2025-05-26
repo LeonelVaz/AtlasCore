@@ -10,7 +10,6 @@
   color: var(--text-color);
   padding: 20px;
   z-index: 1050;
-  min-width: 280px;
   max-width: 320px;
   backdrop-filter: blur(12px);
 }
