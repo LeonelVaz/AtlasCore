@@ -1,4 +1,4 @@
-/* video-scheduler/styles/video-scheduler.css (Revisión 6.1 - COMPLETA) */
+/* video-scheduler/styles/video-scheduler.css (Revisión 6.2 - ALINEACIÓN CORREGIDA) */
 
 /* Contenedor principal de la página del plugin */
 .video-scheduler-page {
@@ -27,7 +27,6 @@
   overflow: hidden; 
   position: relative; 
 }
-
 
 /* Encabezado de la página (Navegación Mes/Año y Acciones Globales) */
 .page-header-controls {
@@ -79,21 +78,21 @@
     font-size: 1.2em;
 }
 
-
-/* Tabla del Calendario */
+/* Tabla del Calendario - CORRECCIÓN DE ALINEACIÓN */
 .calendar-grid {
   width: 100%;
   border-collapse: separate; 
   border-spacing: 0;
-  border: 1px solid var(--border-color); /* Borde general de la tabla */
-  border-radius: var(--border-radius-lg); /* Radio para la tabla general */
-  overflow: hidden; /* Para que el radio afecte a las celdas internas */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  table-layout: fixed; /* Aplicar table-layout a la tabla principal */
+  table-layout: fixed;
 }
 
+/* CORRECCIÓN: Ambos thead y tbody usan la misma estructura */
 .calendar-grid thead {
   background-color: var(--header-bg, var(--bg-color-secondary)); 
   color: var(--text-color);
@@ -101,13 +100,15 @@
   width: 100%;    
   table-layout: fixed; 
 }
+
 .calendar-grid tbody {
-  display: block; 
+  display: table; /* CAMBIO: de block a table */
   overflow-y: auto; 
   overflow-x: hidden; 
   flex-grow: 1;
   background-color: var(--card-bg); 
   width: 100%; 
+  table-layout: fixed; /* AGREGADO: misma configuración que thead */
 }
 
 /* Definición explícita de anchos para cada columna del thead y tbody */
@@ -117,7 +118,6 @@
 .calendar-grid th:nth-child(4), .calendar-grid td:nth-child(4) { width: 22%; } /* 22pm */
 .calendar-grid th:nth-child(5), .calendar-grid td:nth-child(5) { width: 12%; } /* Resumen */
 .calendar-grid th:nth-child(6), .calendar-grid td:nth-child(6) { width: 12%; } /* Ingresos */
-
 
 .calendar-grid th,
 .calendar-grid td {
@@ -145,9 +145,8 @@
 
 .calendar-grid tr {
    border-bottom: 1px solid var(--border-color);
-   display: table;
+   display: table-row; /* ESPECIFICADO: para mayor claridad */
    width: 100%;
-   table-layout: fixed;
 }
 .calendar-grid tbody tr:last-child td {
   border-bottom: none;
@@ -155,7 +154,7 @@
 
 .calendar-grid td {
   vertical-align: top; 
-  min-height: 70px; /* Reducido ligeramente de 75px */
+  min-height: 70px;
   height: auto; 
   color: var(--text-color);
   background-color: var(--card-bg); 
