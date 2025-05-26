@@ -17,16 +17,15 @@ const WEEKDAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 function VideoSchedulerMainPage(props) {
   const { plugin, core, pluginId } = props;
 
-  const [currentDate, setCurrentDate] = React.useState(new Date()); 
-  const [monthData, setMonthData] = React.useState({ videos: {}, dailyIncomes: {} }); 
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [monthData, setMonthData] = React.useState({ videos: {}, dailyIncomes: {} });
   const [isLoading, setIsLoading] = React.useState(true);
   const [isInitialLoad, setIsInitialLoad] = React.useState(true);
   const [showStatusSelector, setShowStatusSelector] = React.useState(false);
-  const [statusSelectorContext, setStatusSelectorContext] = React.useState(null); 
+  const [statusSelectorContext, setStatusSelectorContext] = React.useState(null);
   const [showIncomeForm, setShowIncomeForm] = React.useState(false);
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
 
-  // Configuración del popup de Ingresos (DailyIncomeForm)
   const incomePopupConfig = {
     width: 320,
     height: 300,
@@ -34,7 +33,14 @@ function VideoSchedulerMainPage(props) {
     gapToCell: 10 // Espacio deseado entre la celda y el popup cuando se posiciona a un lado
   };
 
-  // Función para encontrar el contenedor con scroll real
+  // Configuración para el popup StatusSelector
+  const statusSelectorPopupConfig = {
+    width: 220,  // Ancho del StatusSelector
+    height: 250, // Alto ESTIMADO del StatusSelector (puede variar con el contenido)
+    margin: 10,  // Margen respecto a los bordes del wrapper
+    gapToIcon: 10 // Espacio deseado entre el icono y el popup
+  };
+
   const findScrollContainer = () => {
     const appMain = document.querySelector('.app-main');
     if (appMain) return appMain;
@@ -45,7 +51,6 @@ function VideoSchedulerMainPage(props) {
     return document.documentElement;
   };
 
-  // Effect para cerrar popups cuando se hace scroll
   React.useEffect(() => {
     const handleScroll = () => {
       if (showIncomeForm || showStatusSelector) {
@@ -72,18 +77,15 @@ function VideoSchedulerMainPage(props) {
     };
   }, [showIncomeForm, showStatusSelector]);
 
-  // Función para cargar datos sin mostrar loading (para actualizaciones)
   const refreshCalendarDataSilently = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth(); 
       const data = await plugin.publicAPI.getMonthViewData(year, month);
       setMonthData(data);
-      // console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados silenciosamente.`);
     }
   }, [plugin, currentDate, pluginId]);
 
-  // Función para carga inicial con loading state
   const refreshCalendarData = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
       if (isInitialLoad) {
@@ -95,7 +97,6 @@ function VideoSchedulerMainPage(props) {
       setMonthData(data);
       setIsLoading(false);
       setIsInitialLoad(false);
-      // console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados.`);
     }
   }, [plugin, currentDate, pluginId, isInitialLoad]);
 
@@ -104,12 +105,14 @@ function VideoSchedulerMainPage(props) {
   }, [refreshCalendarData]); 
 
   const handlePrevMonth = () => {
-      setShowStatusSelector(false); setShowIncomeForm(false);
+      setShowStatusSelector(false); setStatusSelectorContext(null);
+      setShowIncomeForm(false); setIncomeFormContext(null);
       setIsInitialLoad(true);
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }
   const handleNextMonth = () => {
-      setShowStatusSelector(false); setShowIncomeForm(false);
+      setShowStatusSelector(false); setStatusSelectorContext(null);
+      setShowIncomeForm(false); setIncomeFormContext(null);
       setIsInitialLoad(true);
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   }
@@ -129,140 +132,166 @@ function VideoSchedulerMainPage(props) {
   const handleStatusIconClick = (day, slotIndex, event) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const videoKey = `${dateStr}-${slotIndex}`;
-    const video = monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey}; 
+    
+    if (!monthData || !monthData.videos) {
+        console.warn(`[${pluginId}] Month data or videos not available for status icon click.`);
+        return;
+    }
+    const video = monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey};
     
     const wrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper');
+    if (!wrapper) {
+        console.warn(`[${pluginId}] Wrapper for popup not found.`);
+        return;
+    }
     const iconRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
     
-    const iconLeft = iconRect.left - wrapperRect.left;
-    const iconTop = iconRect.top - wrapperRect.top;
-    const iconBottom = iconRect.bottom - wrapperRect.top;
+    const { 
+        width: popupWidth, 
+        height: popupHeightEstimate, // Es una estimación, la altura real puede variar
+        margin: popupMargin, 
+        gapToIcon 
+    } = statusSelectorPopupConfig;
     
-    const popupWidth = 220; // StatusSelector popup
-    const popupHeight = 250; // StatusSelector popup
-    const margin = 10;
-    const wrapperWidth = wrapper.clientWidth;
-    const wrapperHeight = wrapper.clientHeight;
+    // --- Posición Horizontal ---
+    // Prioridad 1: A la derecha del icono
+    let finalLeft = (iconRect.right - wrapperRect.left) + gapToIcon;
     
-    let finalLeft = iconLeft;
-    if (finalLeft + popupWidth > wrapperWidth - margin) {
-      finalLeft = wrapperWidth - popupWidth - margin;
+    // Si se sale por la derecha, intentar a la izquierda
+    if (finalLeft + popupWidth > wrapper.clientWidth - popupMargin) {
+      finalLeft = (iconRect.left - wrapperRect.left) - popupWidth - gapToIcon;
     }
-    if (finalLeft < margin) finalLeft = margin;
-    
-    let finalTop = iconBottom + 5; // 5px below icon
-    if (finalTop + popupHeight > wrapperHeight - margin) {
-      finalTop = iconTop - popupHeight - 5; // 5px above icon
+    // Si sigue saliéndose por la izquierda (o la posición izquierda no es viable)
+    if (finalLeft < popupMargin) {
+      // Si cabía a la derecha pero se ajustó a la izquierda y aun así no cabe,
+      // o si directamente no cabe a la izquierda, intentar pegarlo al borde derecho del wrapper.
+      finalLeft = wrapper.clientWidth - popupWidth - popupMargin;
+      // Si el popup es más ancho que el wrapper, pegarlo al borde izquierdo.
+      if (finalLeft < popupMargin) {
+        finalLeft = popupMargin;
+      }
     }
-    if (finalTop < margin) finalTop = margin;
+    // Asegurar que si es más ancho que el wrapper, se alinee a la izquierda con margen.
+    if (popupWidth > wrapper.clientWidth - 2 * popupMargin) {
+        finalLeft = popupMargin;
+    }
+
+    // --- Posición Vertical ---
+    // Idealmente, el centro del popup se alinea con el centro del icono.
+    let finalTop = (iconRect.top - wrapperRect.top) + (iconRect.height / 2) - (popupHeightEstimate / 2);
+    
+    const header = wrapper.querySelector('.page-header-controls');
+    const headerHeight = header ? header.offsetHeight : 0;
+    const minTopPosition = headerHeight + popupMargin; // No solapar el header
+    const maxBottomEdgeOfPopup = wrapper.clientHeight - popupMargin; // Límite inferior del wrapper
+
+    // Ajustar para no salirse por arriba
+    if (finalTop < minTopPosition) {
+      finalTop = minTopPosition;
+    }
+    // Ajustar para no salirse por abajo
+    if (finalTop + popupHeightEstimate > maxBottomEdgeOfPopup) {
+      finalTop = maxBottomEdgeOfPopup - popupHeightEstimate;
+      // Si después de ajustar al fondo, queda por encima del mínimo, está bien.
+      // Pero si el popup es muy alto para el espacio disponible, podría irse por encima del minTop.
+      if (finalTop < minTopPosition) {
+          finalTop = minTopPosition; // Priorizar no salirse por arriba. El popup podría cortarse si es muy alto.
+      }
+    }
 
     setStatusSelectorContext({ 
         day, slotIndex, video, 
         position: { top: finalTop, left: finalLeft }
     });
     setShowStatusSelector(true);
-    setShowIncomeForm(false); 
+    setShowIncomeForm(false); // Cerrar el otro popup si estuviera abierto
+    setIncomeFormContext(null);
   };
 
   const handleStatusChange = async (newMainStatus, newSubStatus) => {
-    if (statusSelectorContext) {
+    if (statusSelectorContext && statusSelectorContext.video) { // Verificación robusta
       const { day, slotIndex } = statusSelectorContext;
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
-      refreshCalendarDataSilently();
       
-      setStatusSelectorContext(prev => ({
-        ...prev,
-        video: {
-          ...prev.video,
-          status: newMainStatus,
-          subStatus: newSubStatus
-        }
-      }));
+      await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
+      
+      // Actualizar el estado local del popup para reflejo inmediato (si el popup no se cierra)
+      setStatusSelectorContext(prev => {
+        // Si prev o prev.video es null/undefined, devolver prev para evitar errores.
+        if (!prev || !prev.video) return prev; 
+        return {
+          ...prev,
+          video: {
+            ...prev.video, // Usar el video anterior como base
+            status: newMainStatus,
+            subStatus: newSubStatus
+          }
+        };
+      });
+      
+      refreshCalendarDataSilently(); // Refrescar los datos de la tabla principal
+    } else {
+        console.warn(`[${pluginId}] handleStatusChange llamado con contexto inválido:`, statusSelectorContext);
     }
   };
 
   const handleIncomeCellClick = (day, event) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const incomeData = monthData.dailyIncomes[dateStr] || null;
+    const incomeData = (monthData && monthData.dailyIncomes) ? (monthData.dailyIncomes[dateStr] || null) : null;
     
     const wrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper');
+    if (!wrapper) return;
     const cellRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
     
     const cellLeft = cellRect.left - wrapperRect.left;
     const cellRight = cellRect.right - wrapperRect.left;
     const cellTop = cellRect.top - wrapperRect.top;
-    // const cellBottom = cellRect.bottom - wrapperRect.top; // No usado directamente con la lógica actual
 
     const { width: popupWidth, height: popupHeight, margin, gapToCell } = incomePopupConfig;
     
     const header = wrapper.querySelector('.page-header-controls');
     const headerHeight = header ? header.offsetHeight : 0;
     
-    // El área disponible para el popup verticalmente.
-    // Considera el espacio debajo del header y encima del panel de estadísticas (si existe visiblemente).
-    const statsPanelPlaceholderHeight = 60; // Asumimos una altura fija o calculable
-    const availableHeightForPopup = wrapper.clientHeight - headerHeight - statsPanelPlaceholderHeight - (2 * margin) ;
+    const statsPanelPlaceholderHeight = 60; 
     const minTopPosition = headerHeight + margin;
     const maxBottomEdgeOfPopup = wrapper.clientHeight - statsPanelPlaceholderHeight - margin;
 
-
-    // --- Posición Horizontal ---
-    // Intentar a la izquierda de la celda, con un gap
     let finalLeft = cellLeft - popupWidth - gapToCell;
-
-    // Si no cabe a la izquierda (choca con el margen izquierdo del wrapper)
     if (finalLeft < margin) {
-      // Intentar a la derecha de la celda, con un gap
       finalLeft = cellRight + gapToCell;
-      // Si tampoco cabe a la derecha (choca con el margen derecho del wrapper)
       if (finalLeft + popupWidth > wrapper.clientWidth - margin) {
-        // Colocarlo pegado al margen derecho del wrapper
         finalLeft = wrapper.clientWidth - popupWidth - margin;
-        // Como último recurso, si ni así cabe (popup más ancho que el wrapper), pegarlo al margen izquierdo
         if (finalLeft < margin) {
             finalLeft = margin;
         }
       }
     }
     
-    // --- Posición Vertical ---
-    // Por defecto, alinear la parte superior del popup con la parte superior de la celda
     let finalTop = cellTop;
-    
-    // Si se sale por abajo del área disponible (maxBottomEdgeOfPopup)
     if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
-        // Intentar alinear la parte inferior del popup con la parte inferior de la celda
         finalTop = cellRect.bottom - wrapperRect.top - popupHeight;
-
-        // Si aun así se sale por abajo (o la celda es muy alta), ajustar al límite inferior
         if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
             finalTop = maxBottomEdgeOfPopup - popupHeight;
         }
     }
-    
-    // Asegurar que no se salga por arriba (debajo del header)
     if (finalTop < minTopPosition) {
       finalTop = minTopPosition;
     }
     
-    // Si después de todos los ajustes, el popup es demasiado alto para el espacio vertical disponible,
-    // se podría considerar reducir su altura o mostrar un scroll, pero eso excede esta lógica.
-    // Por ahora, simplemente se pegará al `minTopPosition` o `maxBottomEdgeOfPopup - popupHeight`.
-
     setIncomeFormContext({ 
         day, incomeData, 
         position: { 
             top: finalTop, 
             left: finalLeft,
-            width: `${popupWidth}px`, // Pasar el ancho y alto al styleProps
+            width: `${popupWidth}px`, 
             height: `${popupHeight}px`
         }
     });
     setShowIncomeForm(true);
-    setShowStatusSelector(false); 
+    setShowStatusSelector(false); // Cerrar el otro popup
+    setStatusSelectorContext(null);
   };
 
   const handleIncomeSave = async (day, newIncomeData) => {
@@ -288,7 +317,8 @@ function VideoSchedulerMainPage(props) {
   );
 
   const tableBodyRows = [];
-  if (!isLoading && monthData.videos && monthData.dailyIncomes) {
+  // Asegurarse que monthData y sus propiedades necesarias existan antes de iterar
+  if (!isLoading && monthData && monthData.videos && monthData.dailyIncomes) {
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const dayDate = new Date(year, month, day);
@@ -342,7 +372,7 @@ function VideoSchedulerMainPage(props) {
           React.createElement('table', {key: 'calendar-grid', className: 'calendar-grid'}, [tableHeader, tableBody])
         ]),
         
-        showStatusSelector && statusSelectorContext && React.createElement(StatusSelector, {
+        showStatusSelector && statusSelectorContext && statusSelectorContext.video && React.createElement(StatusSelector, { // AÑADIDA LA CONDICIÓN statusSelectorContext.video
           key: 'status-selector-instance',
           currentMainStatus: statusSelectorContext.video.status,
           currentSubStatus: statusSelectorContext.video.subStatus,
@@ -351,7 +381,7 @@ function VideoSchedulerMainPage(props) {
             setShowStatusSelector(false);
             setStatusSelectorContext(null);
           },
-          styleProps: statusSelectorContext.position // StatusSelector usa sus propias dimensiones
+          styleProps: statusSelectorContext.position
         }),
         showIncomeForm && incomeFormContext && React.createElement(DailyIncomeForm, {
           key: 'income-form-instance',
@@ -362,7 +392,7 @@ function VideoSchedulerMainPage(props) {
             setShowIncomeForm(false);
             setIncomeFormContext(null);
           },
-          styleProps: incomeFormContext.position // Ahora incluye width y height de incomePopupConfig
+          styleProps: incomeFormContext.position
         })
       ]),
       React.createElement('div', {key: 'stats-panel', className: 'video-stats-panel-placeholder'}, 'Panel de Estadísticas (Próximamente)')
