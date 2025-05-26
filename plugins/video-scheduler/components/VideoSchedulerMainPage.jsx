@@ -210,12 +210,26 @@ function VideoSchedulerMainPage(props) {
     console.log('Available height (minus stats panel):', availableHeight);
     console.log('Header height:', headerHeight);
     
-    // Posición horizontal: derecha de la celda, izquierda si no cabe
-    let finalLeft = cellRight + margin;
-    if (finalLeft + popupWidth > wrapper.clientWidth - margin) {
-      finalLeft = cellLeft - popupWidth - margin;
+    // Posición horizontal: izquierda de la celda por defecto, derecha si no cabe
+    let finalLeft = cellLeft - popupWidth;
+    console.log('=== HORIZONTAL DEBUG ===');
+    console.log('cellLeft:', cellLeft, 'cellRight:', cellRight);
+    console.log('popupWidth:', popupWidth, 'margin:', margin);
+    console.log('wrapper.clientWidth:', wrapper.clientWidth);
+    console.log('finalLeft inicial (izquierda):', finalLeft);
+    console.log('¿Cabe a la izquierda?', finalLeft >= margin);
+    
+    if (finalLeft < margin) {
+      console.log('NO CABE A LA IZQUIERDA - Posicionando a la derecha');
+      finalLeft = cellRight + margin;
+      console.log('finalLeft (derecha):', finalLeft);
+      
+      // Si tampoco cabe a la derecha, ajustar al máximo posible
+      if (finalLeft + popupWidth > wrapper.clientWidth - margin) {
+        console.log('Tampoco cabe a la derecha, ajustando al límite');
+        finalLeft = wrapper.clientWidth - popupWidth - margin;
+      }
     }
-    if (finalLeft < margin) finalLeft = margin;
     
     // Posición vertical: alineado con la celda por defecto
     let finalTop = cellTop;
@@ -234,6 +248,7 @@ function VideoSchedulerMainPage(props) {
     console.log('Final position:', { top: finalTop, left: finalLeft });
     console.log('Popup will end at:', finalTop + popupHeight);
     console.log('Available space ends at:', availableHeight);
+    console.log('=== SETTING CONTEXT ===');
 
     setIncomeFormContext({ 
         day, incomeData, 
