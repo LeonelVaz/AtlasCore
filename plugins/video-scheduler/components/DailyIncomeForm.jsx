@@ -41,64 +41,6 @@ function DailyIncomeForm(props) {
     setStatus(currentInitialData.status);
   }, [existingIncome]);
 
-  // Calcular posición ajustada para que no se salga de la pantalla
-  const getAdjustedPosition = () => {
-    const popupWidth = 320; // Ancho del popup (igual al CSS)
-    const popupHeight = 350; // Alto estimado del popup
-    const margin = 10; // Margen de seguridad
-    
-    let { top, left } = styleProps;
-    
-    // Buscar el contenedor con scroll (el contenedor padre del plugin)
-    let scrollContainer = document.querySelector('.video-scheduler-main-content-wrapper');
-    if (scrollContainer) {
-      scrollContainer = scrollContainer.parentElement;
-      // Buscar el contenedor scrollable más cercano
-      while (scrollContainer && scrollContainer !== document.body) {
-        const overflow = window.getComputedStyle(scrollContainer).overflow;
-        if (overflow === 'auto' || overflow === 'scroll' || scrollContainer.scrollTop > 0) {
-          break;
-        }
-        scrollContainer = scrollContainer.parentElement;
-      }
-    }
-    
-    // Si no encontramos un contenedor de scroll específico, usar el viewport
-    const containerRect = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.getBoundingClientRect() 
-      : { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-    
-    const containerScrollTop = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.scrollTop 
-      : window.scrollY;
-    
-    const containerScrollLeft = scrollContainer && scrollContainer !== document.body 
-      ? scrollContainer.scrollLeft 
-      : window.scrollX;
-    
-    // Ajustar las coordenadas considerando el scroll del contenedor
-    const availableWidth = containerRect.width;
-    const availableHeight = containerRect.height;
-    
-    // Ajustar horizontalmente
-    if (left + popupWidth > availableWidth - margin) {
-      left = availableWidth - popupWidth - margin;
-    }
-    if (left < margin) {
-      left = margin;
-    }
-    
-    // Ajustar verticalmente
-    if (top + popupHeight > availableHeight - margin) {
-      top = availableHeight - popupHeight - margin;
-    }
-    if (top < margin) {
-      top = margin;
-    }
-    
-    return { top, left };
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(day, {
@@ -114,45 +56,66 @@ function DailyIncomeForm(props) {
     {
       ref: popupRef,
       className: 'daily-income-form-popup',
-      style: styleProps // Usar directamente las coordenadas sin ajuste
+      style: styleProps
     },
     [
       React.createElement('h4', { key: 'dif-title' }, `Ingreso del Día ${day}`),
       React.createElement('form', { key: 'dif-form', onSubmit: handleSubmit }, [
         React.createElement('div', { key: 'dif-amount-group', className: 'form-group' }, [
-          React.createElement('label', {htmlFor: `dif-amount-${day}`}, 'Monto: '),
+          React.createElement('label', { key: 'amount-label', htmlFor: `dif-amount-${day}` }, 'Monto: '),
           React.createElement('input', { 
-            type: 'number', id: `dif-amount-${day}`, value: amount, 
-            onChange: e => setAmount(e.target.value), step: "0.01", min: "0"
+            key: 'amount-input',
+            type: 'number', 
+            id: `dif-amount-${day}`, 
+            value: amount, 
+            onChange: e => setAmount(e.target.value), 
+            step: "0.01", 
+            min: "0"
           })
         ]),
         React.createElement('div', { key: 'dif-currency-group', className: 'form-group' }, [
-          React.createElement('label', {htmlFor: `dif-currency-${day}`}, 'Moneda: '),
+          React.createElement('label', { key: 'currency-label', htmlFor: `dif-currency-${day}` }, 'Moneda: '),
           React.createElement('select', { 
-            id: `dif-currency-${day}`, value: currency, 
+            key: 'currency-select',
+            id: `dif-currency-${day}`, 
+            value: currency, 
             onChange: e => setCurrency(e.target.value)
-          }, CURRENCIES.map(c => React.createElement('option', {key: c, value: c}, c)))
+          }, CURRENCIES.map(c => React.createElement('option', { key: `currency-${c}`, value: c }, c)))
         ]),
         React.createElement('div', { key: 'dif-payer-group', className: 'form-group' }, [
-          React.createElement('label', {htmlFor: `dif-payer-${day}`}, 'Pagador: '),
+          React.createElement('label', { key: 'payer-label', htmlFor: `dif-payer-${day}` }, 'Pagador: '),
           React.createElement('input', { 
-            type: 'text', id: `dif-payer-${day}`, value: payer, 
+            key: 'payer-input',
+            type: 'text', 
+            id: `dif-payer-${day}`, 
+            value: payer, 
             onChange: e => setPayer(e.target.value)
           })
         ]),
         React.createElement('div', { key: 'dif-status-group', className: 'form-group' }, [
-          React.createElement('label', {htmlFor: `dif-inc-status-${day}`}, 'Estado Pago: '),
+          React.createElement('label', { key: 'status-label', htmlFor: `dif-inc-status-${day}` }, 'Estado Pago: '),
           React.createElement('select', { 
-            id: `dif-inc-status-${day}`, value: status, 
+            key: 'status-select',
+            id: `dif-inc-status-${day}`, 
+            value: status, 
             onChange: e => setStatus(e.target.value)
           }, [
-            React.createElement('option', {key: 'pending', value: 'pending'}, 'Pendiente'),
-            React.createElement('option', {key: 'paid', value: 'paid'}, 'Pagado')
+            React.createElement('option', { key: 'status-pending', value: 'pending' }, 'Pendiente'),
+            React.createElement('option', { key: 'status-paid', value: 'paid' }, 'Pagado')
           ])
         ]),
         React.createElement('div', { key: 'dif-actions', className: 'form-actions' }, [
-          React.createElement('button', {type: 'button', onClick: onCancel, className: 'button-secondary'}, 'Cancelar'),
-          React.createElement('button', {type: 'submit', className: 'button-primary'}, 'Guardar Ingreso')
+          React.createElement('button', { 
+            key: 'cancel-button',
+            type: 'button', 
+            onClick: onCancel, 
+            className: 'button-secondary' 
+          }, 'Cancelar'),
+          React.createElement('button', { 
+            key: 'submit-button',
+            type: 'submit', 
+            className: 'button-primary' 
+          }, 'Guardar Ingreso')
         ])
       ])
     ]
