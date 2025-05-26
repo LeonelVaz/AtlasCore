@@ -20,44 +20,20 @@ function VideoSchedulerMainPage(props) {
   const [currentDate, setCurrentDate] = React.useState(new Date()); 
   const [monthData, setMonthData] = React.useState({ videos: {}, dailyIncomes: {} }); 
   const [isLoading, setIsLoading] = React.useState(true);
-  const [isInitialLoad, setIsInitialLoad] = React.useState(true); // Nuevo estado para carga inicial
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
   const [showStatusSelector, setShowStatusSelector] = React.useState(false);
   const [statusSelectorContext, setStatusSelectorContext] = React.useState(null); 
   const [showIncomeForm, setShowIncomeForm] = React.useState(false);
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
 
   // Función para encontrar el contenedor con scroll real (app-main)
-  const findScrollContainer = (element) => {
-    // Buscar específicamente en el orden de jerarquía que mencionaste
+  const findScrollContainer = () => {
     const appMain = document.querySelector('.app-main');
-    if (appMain) {
-      console.log('Found app-main container');
-      return appMain;
-    }
+    if (appMain) return appMain;
     
     const appContent = document.querySelector('.app-content');
-    if (appContent) {
-      console.log('Found app-content container');
-      return appContent;
-    }
+    if (appContent) return appContent;
     
-    // Fallback: buscar por overflow como antes
-    let current = element;
-    while (current && current !== document.body) {
-      const overflow = window.getComputedStyle(current).overflow;
-      const overflowY = window.getComputedStyle(current).overflowY;
-      
-      if ((overflow === 'auto' || overflow === 'scroll' || 
-           overflowY === 'auto' || overflowY === 'scroll') && 
-          current.scrollHeight > current.clientHeight) {
-        console.log('Found overflow container:', current.className || current.tagName);
-        return current;
-      }
-      
-      current = current.parentElement;
-    }
-    
-    console.log('No scroll container found, using document.documentElement');
     return document.documentElement;
   };
 
@@ -72,19 +48,15 @@ function VideoSchedulerMainPage(props) {
       }
     };
 
-    // Agregar listener de scroll al contenedor principal y a window
-    const scrollContainer = document.querySelector('.app-main') || 
-                           document.querySelector('.app-content') || 
-                           window;
-    
-    if (scrollContainer === window) {
+    const scrollContainer = findScrollContainer();
+    if (scrollContainer === document.documentElement) {
       window.addEventListener('scroll', handleScroll, { passive: true });
     } else {
       scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     }
 
     return () => {
-      if (scrollContainer === window) {
+      if (scrollContainer === document.documentElement) {
         window.removeEventListener('scroll', handleScroll);
       } else {
         scrollContainer.removeEventListener('scroll', handleScroll);
@@ -125,105 +97,64 @@ function VideoSchedulerMainPage(props) {
 
   const handlePrevMonth = () => {
       setShowStatusSelector(false); setShowIncomeForm(false);
-      setIsInitialLoad(true); // Marcar como carga inicial para mostrar loading
+      setIsInitialLoad(true);
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }
   const handleNextMonth = () => {
       setShowStatusSelector(false); setShowIncomeForm(false);
-      setIsInitialLoad(true); // Marcar como carga inicial para mostrar loading
+      setIsInitialLoad(true);
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   }
 
   const handleVideoNameChange = async (day, slotIndex, newName) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     await plugin.publicAPI.updateVideoName(dateStr, slotIndex, newName);
-    refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
+    refreshCalendarDataSilently();
   };
 
   const handleVideoDescriptionChange = async (day, slotIndex, newDescription) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     await plugin.publicAPI.updateVideoDescription(dateStr, slotIndex, newDescription);
-    refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
+    refreshCalendarDataSilently();
   };
 
   const handleStatusIconClick = (day, slotIndex, event) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const videoKey = `${dateStr}-${slotIndex}`;
     const video = monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey}; 
-    const rect = event.currentTarget.getBoundingClientRect();
     
-    // Encontrar el contenedor de referencia para position absolute
-    const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
-    const wrapperRect = mainContentWrapper.getBoundingClientRect();
+    const wrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper');
+    const iconRect = event.currentTarget.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
     
-    // Encontrar el contenedor con scroll real
-    const scrollContainer = findScrollContainer(event.currentTarget);
+    // Calcular posición relativa al wrapper
+    const iconLeft = iconRect.left - wrapperRect.left;
+    const iconTop = iconRect.top - wrapperRect.top;
+    const iconBottom = iconRect.bottom - wrapperRect.top;
     
-    // Obtener el scroll actual
-    const scrollTop = scrollContainer.scrollTop || 0;
-    const scrollLeft = scrollContainer.scrollLeft || 0;
+    // Dimensiones del popup y wrapper
+    const popupWidth = 220;
+    const popupHeight = 250;
+    const wrapperWidth = wrapper.clientWidth;
+    const wrapperHeight = wrapper.clientHeight;
     
-    console.log('=== STATUS SELECTOR DEBUG ===');
-    console.log('Scroll container:', scrollContainer.className || scrollContainer.tagName);
-    console.log('Scroll top:', scrollTop);
-    console.log('Icon rect (viewport):', rect);
-    console.log('Wrapper rect (viewport):', wrapperRect);
-    
-    // Calcular posición del icono relativa al wrapper
-    const iconTopInWrapper = rect.top - wrapperRect.top;
-    const iconLeftInWrapper = rect.left - wrapperRect.left;
-    const iconBottomInWrapper = rect.bottom - wrapperRect.top;
-    
-    console.log('Icon position in wrapper (before scroll):', {
-      top: iconTopInWrapper,
-      left: iconLeftInWrapper,
-      bottom: iconBottomInWrapper
-    });
-    
-    // Agregar el scroll offset
-    const finalIconTop = iconTopInWrapper + scrollTop;
-    const finalIconLeft = iconLeftInWrapper + scrollLeft;
-    const finalIconBottom = iconBottomInWrapper + scrollTop;
-    
-    console.log('Icon position in wrapper (after scroll):', {
-      top: finalIconTop,
-      left: finalIconLeft,
-      bottom: finalIconBottom
-    });
-    
-    // Posición del popup: debajo del icono
-    let finalLeft = finalIconLeft;
-    let finalTop = finalIconBottom + 5; // 5px debajo del icono
-    
-    // Verificar que no se salga por los bordes
-    const statusSelectorWidth = 200; // Ancho estimado del popup
-    const wrapperWidth = wrapperRect.width;
-    
-    // Ajustar posición horizontal si se sale por la derecha
-    if (finalLeft + statusSelectorWidth > wrapperWidth) {
-        finalLeft = wrapperWidth - statusSelectorWidth - 10;
+    // Posición horizontal (alineado con icono, ajustado si se sale)
+    let finalLeft = iconLeft;
+    if (finalLeft + popupWidth > wrapperWidth - 10) {
+      finalLeft = wrapperWidth - popupWidth - 10;
     }
+    if (finalLeft < 10) finalLeft = 10;
     
-    // Asegurar que no se salga por la izquierda
-    if (finalLeft < 10) {
-        finalLeft = 10;
+    // Posición vertical (debajo del icono, arriba si se sale)
+    let finalTop = iconBottom + 5;
+    if (finalTop + popupHeight > wrapperHeight - 10) {
+      finalTop = iconTop - popupHeight - 5;
     }
-    
-    // Asegurar que el popup esté visible (no muy arriba en la pantalla)
-    const minVisibleTop = scrollTop + 10;
-    if (finalTop < minVisibleTop) {
-        finalTop = minVisibleTop;
-    }
-
-    console.log('Final status selector position:', { top: finalTop, left: finalLeft });
-    console.log('=== END STATUS DEBUG ===');
+    if (finalTop < 10) finalTop = 10;
 
     setStatusSelectorContext({ 
         day, slotIndex, video, 
-        position: { 
-            top: finalTop, 
-            left: finalLeft
-        }
+        position: { top: finalTop, left: finalLeft }
     });
     setShowStatusSelector(true);
     setShowIncomeForm(false); 
@@ -234,9 +165,8 @@ function VideoSchedulerMainPage(props) {
       const { day, slotIndex } = statusSelectorContext;
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
-      refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
+      refreshCalendarDataSilently();
       
-      // Actualizar el contexto con el nuevo estado para que el popup se mantenga actualizado
       setStatusSelectorContext(prev => ({
         ...prev,
         video: {
@@ -246,91 +176,56 @@ function VideoSchedulerMainPage(props) {
         }
       }));
     }
-    // NO cerrar automáticamente el popup - el componente StatusSelector maneja cuándo cerrarse
   };
 
   const handleIncomeCellClick = (day, event) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const incomeData = monthData.dailyIncomes[dateStr] || null;
+    
+    const wrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper');
     const cellRect = event.currentTarget.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
     
-    // Encontrar el contenedor de referencia para position absolute
-    const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
-    const wrapperRect = mainContentWrapper.getBoundingClientRect();
+    // Calcular posición relativa al wrapper
+    const cellLeft = cellRect.left - wrapperRect.left;
+    const cellRight = cellRect.right - wrapperRect.left;
+    const cellTop = cellRect.top - wrapperRect.top;
     
-    // Encontrar el contenedor con scroll real
-    const scrollContainer = findScrollContainer(event.currentTarget);
+    // Dimensiones del popup y wrapper
+    const popupWidth = 320;
+    const popupHeight = 320; // Aumenté la altura estimada
+    const wrapperWidth = wrapper.clientWidth;
+    const wrapperHeight = wrapper.clientHeight;
+    const margin = 20; // Margen más grande
     
-    // Obtener el scroll actual
-    const scrollTop = scrollContainer.scrollTop || 0;
-    const scrollLeft = scrollContainer.scrollLeft || 0;
+    // Posición horizontal (derecha de la celda, izquierda si se sale)
+    let finalLeft = cellRight + 10;
+    if (finalLeft + popupWidth > wrapperWidth - margin) {
+      finalLeft = cellLeft - popupWidth - 10;
+    }
+    if (finalLeft < margin) finalLeft = margin;
     
-    console.log('=== DEBUG INFO ===');
-    console.log('Scroll container:', scrollContainer.className || scrollContainer.tagName);
-    console.log('Scroll top:', scrollTop);
-    console.log('Cell rect (viewport):', cellRect);
-    console.log('Wrapper rect (viewport):', wrapperRect);
+    // Posición vertical - más agresivo para evitar que se salga
+    let finalTop = cellTop;
     
-    // MÉTODO ALTERNATIVO: Usar las coordenadas de viewport y restar la posición del wrapper
-    // Esto debería ser más confiable
-    const cellTopInWrapper = cellRect.top - wrapperRect.top;
-    const cellLeftInWrapper = cellRect.left - wrapperRect.left;
-    const cellRightInWrapper = cellRect.right - wrapperRect.left;
-    
-    console.log('Cell position in wrapper (before scroll):', {
-      top: cellTopInWrapper,
-      left: cellLeftInWrapper,
-      right: cellRightInWrapper
-    });
-    
-    // Solo agregar el scroll si realmente hay scroll
-    const finalCellTop = cellTopInWrapper + scrollTop;
-    const finalCellLeft = cellLeftInWrapper + scrollLeft;
-    const finalCellRight = cellRightInWrapper + scrollLeft;
-    
-    console.log('Cell position in wrapper (after scroll):', {
-      top: finalCellTop,
-      left: finalCellLeft,
-      right: finalCellRight
-    });
-    
-    // Ancho estimado del popup de ingresos
-    const incomeFormWidth = 320;
-    
-    // Posición por defecto: a la derecha de la celda
-    let finalLeft = finalCellRight + 10;
-    
-    // Verificar si hay suficiente espacio a la derecha
-    const wrapperWidth = wrapperRect.width;
-    if (finalLeft + incomeFormWidth > wrapperWidth) {
-        // Si no hay espacio a la derecha, ponerlo a la izquierda
-        finalLeft = finalCellLeft - incomeFormWidth - 10;
+    // Si se sale por abajo, posicionarlo arriba de la celda
+    if (finalTop + popupHeight > wrapperHeight - margin) {
+      finalTop = cellTop - popupHeight - 10;
     }
     
-    // Asegurar que no se salga por la izquierda
-    if (finalLeft < 10) {
-        finalLeft = 10;
+    // Si tampoco cabe arriba, ponerlo en la parte superior disponible
+    if (finalTop < margin) {
+      finalTop = margin;
     }
     
-    // Para la posición vertical, usar la posición calculada
-    let finalTop = finalCellTop;
-    
-    // Asegurar que el popup esté visible (no muy arriba en la pantalla)
-    const minVisibleTop = scrollTop + 10;
-    if (finalTop < minVisibleTop) {
-        finalTop = minVisibleTop;
+    // Verificación final: si aún se sale, ajustar desde abajo
+    if (finalTop + popupHeight > wrapperHeight - margin) {
+      finalTop = wrapperHeight - popupHeight - margin;
     }
-
-    console.log('Final popup position:', { top: finalTop, left: finalLeft });
-    console.log('=== END DEBUG ===');
 
     setIncomeFormContext({ 
-        day, 
-        incomeData, 
-        position: { 
-            top: finalTop,
-            left: finalLeft
-        } 
+        day, incomeData, 
+        position: { top: finalTop, left: finalLeft }
     });
     setShowIncomeForm(true);
     setShowStatusSelector(false); 
@@ -339,7 +234,7 @@ function VideoSchedulerMainPage(props) {
   const handleIncomeSave = async (day, newIncomeData) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     await plugin.publicAPI.setDailyIncome(dateStr, newIncomeData);
-    refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
+    refreshCalendarDataSilently();
     setShowIncomeForm(false);
     setIncomeFormContext(null);
   };
@@ -384,7 +279,7 @@ function VideoSchedulerMainPage(props) {
           React.createElement(DaySummaryCell, {key: `summary-${day}`, videosForDay}),
           React.createElement(DailyIncomeCell, {
               key: `incomecell-${day}`, day, dailyIncomeData: currentDailyIncome, 
-              onIncomeCellClick: (d,e) => handleIncomeCellClick(d,e) // Pasar el evento
+              onIncomeCellClick: (d,e) => handleIncomeCellClick(d,e)
           })
         ])
       );
@@ -392,7 +287,6 @@ function VideoSchedulerMainPage(props) {
   }
   const tableBody = React.createElement('tbody', {key: 'cal-body'}, tableBodyRows);
 
-  // Solo mostrar loading durante la carga inicial, no durante actualizaciones
   if (isLoading && isInitialLoad) return React.createElement('p', {key: 'loading', className: 'loading-message-placeholder'}, 'Cargando calendario...');
 
   return React.createElement(
