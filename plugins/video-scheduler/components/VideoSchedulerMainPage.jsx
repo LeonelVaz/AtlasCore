@@ -20,22 +20,38 @@ function VideoSchedulerMainPage(props) {
   const [currentDate, setCurrentDate] = React.useState(new Date()); 
   const [monthData, setMonthData] = React.useState({ videos: {}, dailyIncomes: {} }); 
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true); // Nuevo estado para carga inicial
   const [showStatusSelector, setShowStatusSelector] = React.useState(false);
   const [statusSelectorContext, setStatusSelectorContext] = React.useState(null); 
   const [showIncomeForm, setShowIncomeForm] = React.useState(false);
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
 
+  // Función para cargar datos sin mostrar loading (para actualizaciones)
+  const refreshCalendarDataSilently = React.useCallback(async () => {
+    if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth(); 
+      const data = await plugin.publicAPI.getMonthViewData(year, month);
+      setMonthData(data);
+      console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados silenciosamente.`);
+    }
+  }, [plugin, currentDate, pluginId]);
+
+  // Función para carga inicial con loading state
   const refreshCalendarData = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
-      setIsLoading(true);
+      if (isInitialLoad) {
+        setIsLoading(true);
+      }
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth(); 
       const data = await plugin.publicAPI.getMonthViewData(year, month);
       setMonthData(data);
       setIsLoading(false);
+      setIsInitialLoad(false);
       console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados.`);
     }
-  }, [plugin, currentDate, pluginId]);
+  }, [plugin, currentDate, pluginId, isInitialLoad]);
 
   React.useEffect(() => {
     refreshCalendarData();
@@ -43,23 +59,25 @@ function VideoSchedulerMainPage(props) {
 
   const handlePrevMonth = () => {
       setShowStatusSelector(false); setShowIncomeForm(false);
+      setIsInitialLoad(true); // Marcar como carga inicial para mostrar loading
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }
   const handleNextMonth = () => {
       setShowStatusSelector(false); setShowIncomeForm(false);
+      setIsInitialLoad(true); // Marcar como carga inicial para mostrar loading
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   }
 
   const handleVideoNameChange = async (day, slotIndex, newName) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     await plugin.publicAPI.updateVideoName(dateStr, slotIndex, newName);
-    refreshCalendarData(); 
+    refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
   };
 
   const handleVideoDescriptionChange = async (day, slotIndex, newDescription) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     await plugin.publicAPI.updateVideoDescription(dateStr, slotIndex, newDescription);
-    refreshCalendarData(); 
+    refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
   };
 
   const handleStatusIconClick = (day, slotIndex, event) => {
@@ -86,7 +104,7 @@ function VideoSchedulerMainPage(props) {
       const { day, slotIndex } = statusSelectorContext;
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
-      refreshCalendarData();
+      refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
     }
     setShowStatusSelector(false);
     setStatusSelectorContext(null);
@@ -110,7 +128,6 @@ function VideoSchedulerMainPage(props) {
     // Asegurar que no se salga por la izquierda del wrapper
     if (leftPosition < 0) leftPosition = 10;
 
-
     setIncomeFormContext({ 
         day, incomeData, 
         position: { 
@@ -125,7 +142,7 @@ function VideoSchedulerMainPage(props) {
   const handleIncomeSave = async (day, newIncomeData) => {
     const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     await plugin.publicAPI.setDailyIncome(dateStr, newIncomeData);
-    refreshCalendarData();
+    refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
     setShowIncomeForm(false);
     setIncomeFormContext(null);
   };
@@ -178,7 +195,8 @@ function VideoSchedulerMainPage(props) {
   }
   const tableBody = React.createElement('tbody', {key: 'cal-body'}, tableBodyRows);
 
-  if (isLoading) return React.createElement('p', {key: 'loading', className: 'loading-message-placeholder'}, 'Cargando calendario...');
+  // Solo mostrar loading durante la carga inicial, no durante actualizaciones
+  if (isLoading && isInitialLoad) return React.createElement('p', {key: 'loading', className: 'loading-message-placeholder'}, 'Cargando calendario...');
 
   return React.createElement(
     'div', 
