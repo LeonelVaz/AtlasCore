@@ -3,7 +3,7 @@ import React from 'react';
 import VideoSchedulerNavItemComponent from './components/VideoSchedulerNavItem.jsx';
 import VideoSchedulerMainPageComponent from './components/VideoSchedulerMainPage.jsx';
 import { DEFAULT_SLOT_VIDEO_STRUCTURE, VIDEO_MAIN_STATUS, DEFAULT_DAILY_INCOME_STRUCTURE } from './utils/constants.js';
-import './styles/video-scheduler.css'; // IMPORTANTE: Importar el CSS
+import './styles/index.css';
 
 const PLUGIN_PAGE_ID = 'videoscheduler';
 const STORAGE_KEY_DATA = 'video_scheduler_plugin_data';

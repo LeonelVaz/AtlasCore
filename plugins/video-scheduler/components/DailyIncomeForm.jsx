@@ -4,6 +4,7 @@ import { CURRENCIES, DEFAULT_DAILY_INCOME_STRUCTURE } from '../utils/constants.j
 
 function DailyIncomeForm(props) {
   const { day, existingIncome, onSave, onCancel, styleProps } = props;
+  const popupRef = React.useRef(null);
   
   const initialData = existingIncome || { ...DEFAULT_DAILY_INCOME_STRUCTURE };
 
@@ -11,6 +12,25 @@ function DailyIncomeForm(props) {
   const [currency, setCurrency] = React.useState(initialData.currency);
   const [payer, setPayer] = React.useState(initialData.payer);
   const [status, setStatus] = React.useState(initialData.status);
+
+  // Manejar clicks fuera del popup
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        onCancel();
+      }
+    };
+
+    // Agregar el listener después de un pequeño delay para evitar que se cierre inmediatamente
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onCancel]);
 
   // Sincronizar estado si existingIncome cambia (ej. al abrir para un día diferente)
   React.useEffect(() => {
@@ -20,6 +40,64 @@ function DailyIncomeForm(props) {
     setPayer(currentInitialData.payer);
     setStatus(currentInitialData.status);
   }, [existingIncome]);
+
+  // Calcular posición ajustada para que no se salga de la pantalla
+  const getAdjustedPosition = () => {
+    const popupWidth = 320; // Ancho del popup (igual al CSS)
+    const popupHeight = 350; // Alto estimado del popup
+    const margin = 10; // Margen de seguridad
+    
+    let { top, left } = styleProps;
+    
+    // Buscar el contenedor con scroll (el contenedor padre del plugin)
+    let scrollContainer = document.querySelector('.video-scheduler-main-content-wrapper');
+    if (scrollContainer) {
+      scrollContainer = scrollContainer.parentElement;
+      // Buscar el contenedor scrollable más cercano
+      while (scrollContainer && scrollContainer !== document.body) {
+        const overflow = window.getComputedStyle(scrollContainer).overflow;
+        if (overflow === 'auto' || overflow === 'scroll' || scrollContainer.scrollTop > 0) {
+          break;
+        }
+        scrollContainer = scrollContainer.parentElement;
+      }
+    }
+    
+    // Si no encontramos un contenedor de scroll específico, usar el viewport
+    const containerRect = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.getBoundingClientRect() 
+      : { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+    
+    const containerScrollTop = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.scrollTop 
+      : window.scrollY;
+    
+    const containerScrollLeft = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.scrollLeft 
+      : window.scrollX;
+    
+    // Ajustar las coordenadas considerando el scroll del contenedor
+    const availableWidth = containerRect.width;
+    const availableHeight = containerRect.height;
+    
+    // Ajustar horizontalmente
+    if (left + popupWidth > availableWidth - margin) {
+      left = availableWidth - popupWidth - margin;
+    }
+    if (left < margin) {
+      left = margin;
+    }
+    
+    // Ajustar verticalmente
+    if (top + popupHeight > availableHeight - margin) {
+      top = availableHeight - popupHeight - margin;
+    }
+    if (top < margin) {
+      top = margin;
+    }
+    
+    return { top, left };
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,8 +112,9 @@ function DailyIncomeForm(props) {
   return React.createElement(
     'div',
     {
+      ref: popupRef,
       className: 'daily-income-form-popup',
-      style: styleProps 
+      style: styleProps // Usar directamente las coordenadas sin ajuste
     },
     [
       React.createElement('h4', { key: 'dif-title' }, `Ingreso del Día ${day}`),

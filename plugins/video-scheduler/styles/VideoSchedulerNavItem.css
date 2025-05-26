@@ -1,0 +1,25 @@
+/* video-scheduler/styles/VideoSchedulerNavItem.css */
+
+/* Ítem de navegación del plugin */
+.video-scheduler-nav-item {
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.video-scheduler-nav-item:hover {
+  background: var(--hover-color);
+}
+
+.video-scheduler-nav-item span:first-child {
+  font-size: 1.2em;
+}
+
+.video-scheduler-nav-item span:last-child {
+  font-weight: 500;
+  color: var(--text-color);
+}

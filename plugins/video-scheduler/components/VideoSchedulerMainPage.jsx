@@ -88,11 +88,29 @@ function VideoSchedulerMainPage(props) {
     const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
     const wrapperRect = mainContentWrapper.getBoundingClientRect();
 
+    // Buscar el contenedor con scroll real (el contenedor padre del plugin)
+    let scrollContainer = mainContentWrapper.parentElement;
+    while (scrollContainer && scrollContainer !== document.body) {
+      const overflow = window.getComputedStyle(scrollContainer).overflow;
+      if (overflow === 'auto' || overflow === 'scroll' || scrollContainer.scrollTop > 0) {
+        break;
+      }
+      scrollContainer = scrollContainer.parentElement;
+    }
+
+    const containerScrollTop = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.scrollTop 
+      : window.scrollY;
+    
+    const containerScrollLeft = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.scrollLeft 
+      : window.scrollX;
+
     setStatusSelectorContext({ 
         day, slotIndex, video, 
         position: { 
-            top: rect.bottom - wrapperRect.top + window.scrollY + 5, 
-            left: rect.left - wrapperRect.left + window.scrollX 
+            top: rect.bottom - wrapperRect.top + containerScrollTop + 5, 
+            left: rect.left - wrapperRect.left + containerScrollLeft
         }
     });
     setShowStatusSelector(true);
@@ -105,9 +123,18 @@ function VideoSchedulerMainPage(props) {
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
       refreshCalendarDataSilently(); // Usar función silenciosa para evitar scroll
+      
+      // Actualizar el contexto con el nuevo estado para que el popup se mantenga actualizado
+      setStatusSelectorContext(prev => ({
+        ...prev,
+        video: {
+          ...prev.video,
+          status: newMainStatus,
+          subStatus: newSubStatus
+        }
+      }));
     }
-    setShowStatusSelector(false);
-    setStatusSelectorContext(null);
+    // NO cerrar automáticamente el popup - el componente StatusSelector maneja cuándo cerrarse
   };
 
   const handleIncomeCellClick = (day, event) => {
@@ -117,21 +144,44 @@ function VideoSchedulerMainPage(props) {
     const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
     const wrapperRect = mainContentWrapper.getBoundingClientRect();
 
+    // Buscar el contenedor con scroll real (el contenedor padre del plugin)
+    let scrollContainer = mainContentWrapper.parentElement;
+    while (scrollContainer && scrollContainer !== document.body) {
+      const overflow = window.getComputedStyle(scrollContainer).overflow;
+      if (overflow === 'auto' || overflow === 'scroll' || scrollContainer.scrollTop > 0) {
+        break;
+      }
+      scrollContainer = scrollContainer.parentElement;
+    }
+
+    const containerScrollTop = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.scrollTop 
+      : window.scrollY;
+    
+    const containerScrollLeft = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.scrollLeft 
+      : window.scrollX;
+
     // Ancho estimado del popup de ingresos (ajustar si es necesario)
     const incomeFormWidth = 320; // Estimado en px
-    let leftPosition = cellRect.right - wrapperRect.left + window.scrollX + 10; // Por defecto a la derecha
+    let leftPosition = cellRect.right - wrapperRect.left + containerScrollLeft + 10; // Por defecto a la derecha
+
+    // Determinar el ancho disponible del contenedor
+    const availableWidth = scrollContainer && scrollContainer !== document.body 
+      ? scrollContainer.clientWidth 
+      : window.innerWidth;
 
     // Si no hay suficiente espacio a la derecha, ponerlo a la izquierda
-    if (cellRect.right + incomeFormWidth > window.innerWidth - wrapperRect.left) { // Considerar el borde del wrapper también
-        leftPosition = cellRect.left - wrapperRect.left + window.scrollX - incomeFormWidth - 10;
+    if (cellRect.right + incomeFormWidth > availableWidth - wrapperRect.left) {
+        leftPosition = cellRect.left - wrapperRect.left + containerScrollLeft - incomeFormWidth - 10;
     }
     // Asegurar que no se salga por la izquierda del wrapper
-    if (leftPosition < 0) leftPosition = 10;
+    if (leftPosition < 10) leftPosition = 10;
 
     setIncomeFormContext({ 
         day, incomeData, 
         position: { 
-            top: cellRect.top - wrapperRect.top + window.scrollY, 
+            top: cellRect.top - wrapperRect.top + containerScrollTop, 
             left: leftPosition
         } 
     });
@@ -222,7 +272,10 @@ function VideoSchedulerMainPage(props) {
           currentMainStatus: statusSelectorContext.video.status,
           currentSubStatus: statusSelectorContext.video.subStatus,
           onStatusChange: handleStatusChange,
-          onCancel: () => setShowStatusSelector(false),
+          onCancel: () => {
+            setShowStatusSelector(false);
+            setStatusSelectorContext(null);
+          },
           styleProps: statusSelectorContext.position 
         }),
         showIncomeForm && incomeFormContext && React.createElement(DailyIncomeForm, {
@@ -230,7 +283,10 @@ function VideoSchedulerMainPage(props) {
           day: incomeFormContext.day,
           existingIncome: incomeFormContext.incomeData,
           onSave: handleIncomeSave,
-          onCancel: () => setShowIncomeForm(false),
+          onCancel: () => {
+            setShowIncomeForm(false);
+            setIncomeFormContext(null);
+          },
           styleProps: incomeFormContext.position
         })
       ]),

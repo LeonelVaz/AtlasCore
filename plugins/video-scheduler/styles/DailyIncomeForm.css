@@ -1,0 +1,99 @@
+/* video-scheduler/styles/DailyIncomeForm.css */
+
+/* Formulario de ingresos - diseño refinado con position fixed */
+.daily-income-form-popup {
+  position: fixed; /* Cambio de absolute a fixed */
+  background: var(--modal-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  border-radius: 8px;
+  color: var(--text-color);
+  padding: 20px;
+  z-index: 1050;
+  min-width: 280px;
+  max-width: 320px;
+  backdrop-filter: blur(12px);
+}
+
+.daily-income-form-popup h4 {
+  color: var(--text-color);
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.daily-income-form-popup .form-group {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-income-form-popup .form-group label {
+  color: var(--text-color-secondary);
+  font-size: 0.6875rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.daily-income-form-popup .form-group input,
+.daily-income-form-popup .form-group select {
+  background: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  font-size: 0.8125rem;
+}
+
+.daily-income-form-popup .form-group input:focus,
+.daily-income-form-popup .form-group select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.daily-income-form-popup .form-actions {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.daily-income-form-popup .form-actions .button-primary,
+.daily-income-form-popup .form-actions .button-secondary {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color);
+  font-size: 0.8125rem;
+}
+
+.daily-income-form-popup .form-actions .button-primary {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.daily-income-form-popup .form-actions .button-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.daily-income-form-popup .form-actions .button-secondary {
+  background: transparent;
+  color: var(--text-color-secondary);
+}
+
+.daily-income-form-popup .form-actions .button-secondary:hover {
+  background: var(--hover-color);
+  color: var(--text-color);
+}

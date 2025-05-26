@@ -1,0 +1,18 @@
+/* video-scheduler/styles/DaySummaryCell.css */
+
+/* Celda resumen - minimalista */
+.video-scheduler-summary-cell {
+  vertical-align: middle;
+  text-align: center;
+  padding: 12px 8px !important;
+  border-right: 1px solid var(--border-color);
+}
+
+.video-scheduler-summary-cell span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.8125rem;
+  opacity: 0.8;
+}

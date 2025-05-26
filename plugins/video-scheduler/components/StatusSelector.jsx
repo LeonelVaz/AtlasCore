@@ -4,6 +4,26 @@ import { VIDEO_MAIN_STATUS, VIDEO_SUB_STATUS, STATUS_EMOJIS, VALID_SUB_STATUSES_
 
 function StatusSelector(props) {
   const { currentMainStatus, currentSubStatus, onStatusChange, onCancel, styleProps } = props;
+  const popupRef = React.useRef(null);
+
+  // Manejar clicks fuera del popup
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        onCancel();
+      }
+    };
+
+    // Agregar el listener después de un pequeño delay para evitar que se cierre inmediatamente
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onCancel]);
 
   const handleMainStatusSelect = (newMainStatus) => {
     const validSubStatusesForNewMain = VALID_SUB_STATUSES_FOR_MAIN[newMainStatus] || [];
@@ -12,6 +32,7 @@ function StatusSelector(props) {
       newSub = currentSubStatus;
     }
     onStatusChange(newMainStatus, newSub);
+    // NO cerrar el popup aquí - solo actualizar el estado
   };
 
   const handleSubStatusSelect = (subStatus) => {
@@ -19,6 +40,8 @@ function StatusSelector(props) {
     if (validSubStatuses.includes(subStatus)) {
       const newSubStatus = currentSubStatus === subStatus ? null : subStatus;
       onStatusChange(currentMainStatus, newSubStatus);
+      // Cerrar el popup después de seleccionar sub-estado
+      onCancel();
     } else {
       console.warn(`Sub-estado ${subStatus} no es válido para el estado principal ${currentMainStatus}`);
     }
@@ -30,8 +53,9 @@ function StatusSelector(props) {
   return React.createElement(
     'div',
     {
+      ref: popupRef,
       className: 'status-selector-popup', 
-      style: styleProps 
+      style: styleProps // Usar directamente las coordenadas sin ajuste
     },
     [
       React.createElement('h4', { key: 'ss-title' }, 'Cambiar Estado'),

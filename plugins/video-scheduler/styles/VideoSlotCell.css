@@ -1,0 +1,126 @@
+/* video-scheduler/styles/VideoSlotCell.css */
+
+/* Slots de video - diseño limpio y funcional */
+.video-scheduler-slot-cell {
+  padding: 12px !important;
+  border-right: 1px solid var(--border-color);
+}
+
+.video-scheduler-slot-cell .video-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+  min-height: 68px;
+  transition: all 0.2s ease;
+}
+
+/* Estados de video - SIN COLORES DE FONDO */
+.video-slot.status-pending,
+.video-slot.status-empty,
+.video-slot.status-development,
+.video-slot.status-production,
+.video-slot.status-published {
+  background: transparent;
+}
+
+/* Input del nombre del video */
+.video-scheduler-slot-cell .video-name-input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 6px 0;
+  font-size: 0.8125rem;
+  background: color-mix(in srgb, var(--bg-color-secondary) 20%, transparent);
+  color: var(--text-color);
+  outline: none;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.video-scheduler-slot-cell .video-name-input::placeholder {
+  color: var(--text-color-secondary);
+  opacity: 0.6;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.video-scheduler-slot-cell .video-name-input:focus {
+  border-bottom-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+.video-scheduler-slot-cell .video-name-input:not(:placeholder-shown) {
+  border-bottom-color: rgba(var(--primary-color-rgb), 0.2);
+  background: none;
+}
+
+.video-scheduler-slot-cell .video-name-input:disabled {
+  color: var(--text-color-secondary);
+  font-style: italic;
+}
+
+/* CONTENEDOR DESCRIPCIÓN Y EMOJI EN LÍNEA HORIZONTAL */
+.description-status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+/* CAMPO DE DESCRIPCIÓN - A LA IZQUIERDA */
+.video-scheduler-slot-cell .video-description-input {
+  flex: 1;
+  border: none;
+  padding: 2px 4px;
+  font-size: 0.6875rem;
+  background: transparent;
+  color: var(--text-color-secondary);
+  outline: none;
+  transition: all 0.2s ease;
+  font-weight: 400;
+  opacity: 0.7;
+  min-width: 0;
+}
+
+.video-scheduler-slot-cell .video-description-input:focus {
+  color: var(--text-color);
+  opacity: 1;
+  background: rgba(var(--primary-color-rgb), 0.05);
+  border-radius: 2px;
+}
+
+.video-scheduler-slot-cell .video-description-input:disabled {
+  color: var(--text-color-secondary);
+  font-style: italic;
+  opacity: 0.4;
+}
+
+/* EMOJI A LA DERECHA */
+.video-scheduler-slot-cell .status-container {
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 2px 4px;
+  color: var(--text-color-secondary);
+  transition: all 0.2s ease;
+  opacity: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.video-scheduler-slot-cell .status-container:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Responsive para video slots */
+@media (max-width: 1024px) {
+  .video-scheduler-slot-cell .video-slot {
+    min-height: 60px;
+  }
+}
