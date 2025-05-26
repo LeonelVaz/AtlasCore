@@ -1,196 +1,213 @@
 // video-scheduler/components/VideoSchedulerMainPage.jsx
 import React from 'react';
-import VideoForm from './VideoForm.jsx';
+import DayCell from './DayCell.jsx';
+import VideoSlotCell from './VideoSlotCell.jsx';
+import DaySummaryCell from './DaySummaryCell.jsx';
+import DailyIncomeCell from './DailyIncomeCell.jsx';
 import StatusSelector from './StatusSelector.jsx';
-import { STATUS_EMOJIS, VIDEO_MAIN_STATUS } from '../utils/constants.js';
+import DailyIncomeForm from './DailyIncomeForm.jsx';
+import { VIDEO_MAIN_STATUS, DEFAULT_SLOT_VIDEO_STRUCTURE } from '../utils/constants.js';
+
+function getMonthDetails(year, month) { // month es 0-11
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return { daysInMonth };
+}
+const WEEKDAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 function VideoSchedulerMainPage(props) {
   const { plugin, core, pluginId } = props;
-  const [videos, setVideos] = React.useState([]);
+
+  const [currentDate, setCurrentDate] = React.useState(new Date()); 
+  const [monthData, setMonthData] = React.useState({ videos: {}, dailyIncomes: {} }); 
   const [isLoading, setIsLoading] = React.useState(true);
-  const [showForm, setShowForm] = React.useState(false);
-  const [editingVideo, setEditingVideo] = React.useState(null); 
-
   const [showStatusSelector, setShowStatusSelector] = React.useState(false);
-  const [statusSelectorTargetVideo, setStatusSelectorTargetVideo] = React.useState(null);
-  const [statusSelectorPosition, setStatusSelectorPosition] = React.useState({ top: 0, left: 0 });
+  const [statusSelectorContext, setStatusSelectorContext] = React.useState(null); 
+  const [showIncomeForm, setShowIncomeForm] = React.useState(false);
+  const [incomeFormContext, setIncomeFormContext] = React.useState(null);
 
-  const refreshVideos = React.useCallback(async () => {
-    if (plugin && plugin.publicAPI && plugin.publicAPI.getAllVideos) {
-      const currentVideos = plugin.publicAPI.getAllVideos();
-      setVideos(currentVideos);
-      console.log(`[${pluginId}] Videos refrescados en UI: ${currentVideos.length} videos.`);
-    } else {
-        console.warn(`[${pluginId}] publicAPI o getAllVideos no disponible al refrescar.`);
+  const refreshCalendarData = React.useCallback(async () => {
+    if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
+      setIsLoading(true);
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth(); 
+      const data = await plugin.publicAPI.getMonthViewData(year, month);
+      setMonthData(data);
+      setIsLoading(false);
+      console.log(`[${pluginId}] Datos del mes ${year}-${month+1} refrescados.`);
     }
-  }, [plugin, pluginId]);
+  }, [plugin, currentDate, pluginId]);
 
   React.useEffect(() => {
-    setIsLoading(true);
-    if (plugin && plugin.publicAPI) {
-      refreshVideos();
-    }
-    setIsLoading(false);
-  }, [plugin, refreshVideos]);
+    refreshCalendarData();
+  }, [refreshCalendarData]); 
 
-  const handleOpenCreateForm = () => {
-    setEditingVideo(null); 
-    setShowForm(true);
-    setShowStatusSelector(false);
-    console.log(`[${pluginId}] Abriendo formulario para crear nuevo video.`);
-  };
-  
-  const handleFormSave = async (videoDataFromForm) => {
-    console.log(`[${pluginId}] VideoForm guardado. Datos del formulario:`, videoDataFromForm);
-    if (editingVideo) {
-      // await plugin.publicAPI.updateVideo(editingVideo.id, videoDataFromForm); // Para Etapa 4
-    } else {
-      await plugin.publicAPI.createVideo(videoDataFromForm);
-    }
-    refreshVideos();
-    setShowForm(false);
-    setEditingVideo(null);
-  };
-
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setEditingVideo(null);
-    console.log(`[${pluginId}] Formulario cancelado.`);
-  };
-
-  const handleOpenStatusSelector = (video, event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setStatusSelectorTargetVideo(video);
-    setStatusSelectorPosition({ 
-        top: rect.bottom + window.scrollY + 5,
-        left: rect.left + window.scrollX 
-    });
-    setShowForm(false); 
-    setShowStatusSelector(true);
-    console.log(`[${pluginId}] Abriendo StatusSelector para video: ${video.id}`);
-  };
-
-  const handleStatusSelectorClose = () => {
-    setShowStatusSelector(false);
-    setStatusSelectorTargetVideo(null);
-  };
-
-  const handleStatusChangeFromSelector = async (newMainStatus, newSubStatus) => {
-    if (statusSelectorTargetVideo && plugin.publicAPI.updateVideoStatus) {
-      console.log(`[${pluginId}] Cambiando estado para ${statusSelectorTargetVideo.id} a: Main=${newMainStatus}, Sub=${newSubStatus}`);
-      await plugin.publicAPI.updateVideoStatus(statusSelectorTargetVideo.id, newMainStatus, newSubStatus);
-      refreshVideos();
-    }
-    handleStatusSelectorClose();
-  };
-  
-  // Helper para formatear el texto del estado
-  const formatStatusText = (statusValue) => {
-    if (typeof statusValue === 'string' && statusValue.length > 0) {
-      return statusValue.charAt(0).toUpperCase() + statusValue.slice(1);
-    }
-    return 'N/A'; // O algún otro valor por defecto si el estado es inválido
-  };
-
-  if (isLoading) {
-    return React.createElement('p', {key: 'loading-msg'}, 'Cargando videos...');
+  const handlePrevMonth = () => {
+      setShowStatusSelector(false); setShowIncomeForm(false);
+      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }
+  const handleNextMonth = () => {
+      setShowStatusSelector(false); setShowIncomeForm(false);
+      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  }
+
+  const handleVideoNameChange = async (day, slotIndex, newName) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    await plugin.publicAPI.updateVideoName(dateStr, slotIndex, newName);
+    refreshCalendarData(); 
+  };
+
+  const handleStatusIconClick = (day, slotIndex, event) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const videoKey = `${dateStr}-${slotIndex}`;
+    const video = monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey}; 
+    const rect = event.currentTarget.getBoundingClientRect();
+    const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
+    const wrapperRect = mainContentWrapper.getBoundingClientRect();
+
+    setStatusSelectorContext({ 
+        day, slotIndex, video, 
+        position: { 
+            top: rect.bottom - wrapperRect.top + window.scrollY + 5, 
+            left: rect.left - wrapperRect.left + window.scrollX 
+        }
+    });
+    setShowStatusSelector(true);
+    setShowIncomeForm(false); 
+  };
+
+  const handleStatusChange = async (newMainStatus, newSubStatus) => {
+    if (statusSelectorContext) {
+      const { day, slotIndex } = statusSelectorContext;
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
+      refreshCalendarData();
+    }
+    setShowStatusSelector(false);
+    setStatusSelectorContext(null);
+  };
+
+  const handleIncomeCellClick = (day, event) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const incomeData = monthData.dailyIncomes[dateStr] || null;
+    const cellRect = event.currentTarget.getBoundingClientRect(); 
+    const mainContentWrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper') || document.body;
+    const wrapperRect = mainContentWrapper.getBoundingClientRect();
+
+    // Ancho estimado del popup de ingresos (ajustar si es necesario)
+    const incomeFormWidth = 320; // Estimado en px
+    let leftPosition = cellRect.right - wrapperRect.left + window.scrollX + 10; // Por defecto a la derecha
+
+    // Si no hay suficiente espacio a la derecha, ponerlo a la izquierda
+    if (cellRect.right + incomeFormWidth > window.innerWidth - wrapperRect.left) { // Considerar el borde del wrapper también
+        leftPosition = cellRect.left - wrapperRect.left + window.scrollX - incomeFormWidth - 10;
+    }
+    // Asegurar que no se salga por la izquierda del wrapper
+    if (leftPosition < 0) leftPosition = 10;
+
+
+    setIncomeFormContext({ 
+        day, incomeData, 
+        position: { 
+            top: cellRect.top - wrapperRect.top + window.scrollY, 
+            left: leftPosition
+        } 
+    });
+    setShowIncomeForm(true);
+    setShowStatusSelector(false); 
+  };
+
+  const handleIncomeSave = async (day, newIncomeData) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    await plugin.publicAPI.setDailyIncome(dateStr, newIncomeData);
+    refreshCalendarData();
+    setShowIncomeForm(false);
+    setIncomeFormContext(null);
+  };
+  
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth(); 
+  const { daysInMonth } = getMonthDetails(year, month);
+  const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long' });
+
+  const tableHeader = React.createElement(
+    'thead', {key: 'cal-head'},
+    React.createElement('tr', null, 
+      ["Día", "7am", "15pm", "22pm", "Resumen", "Ingresos"].map(headerText => 
+        React.createElement('th', {key: headerText}, headerText)
+      )
+    )
+  );
+
+  const tableBodyRows = [];
+  if (!isLoading && monthData.videos && monthData.dailyIncomes) {
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayDate = new Date(year, month, day);
+      const dayName = WEEKDAY_NAMES[dayDate.getDay()];
+      const videosForDay = [0, 1, 2].map(slotIndex => {
+          const videoKey = `${dateStr}-${slotIndex}`;
+          return monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey, status: VIDEO_MAIN_STATUS.PENDING };
+      });
+      const currentDailyIncome = monthData.dailyIncomes[dateStr] || null;
+
+      tableBodyRows.push(
+        React.createElement('tr', {key: `day-row-${day}`}, [
+          React.createElement(DayCell, {key: `daycell-${day}`, dayNumber: day, dayName: dayName}),
+          videosForDay.map((video, slotIndex) => 
+            React.createElement(VideoSlotCell, {
+              key: `videoslot-${day}-${slotIndex}`, day, slotIndex, videoData: video,
+              onNameChange: handleVideoNameChange,
+              onStatusIconClick: (d,s,e) => handleStatusIconClick(d,s,e)
+            })
+          ),
+          React.createElement(DaySummaryCell, {key: `summary-${day}`, videosForDay}),
+          React.createElement(DailyIncomeCell, {
+              key: `incomecell-${day}`, day, dailyIncomeData: currentDailyIncome, 
+              onIncomeCellClick: (d,e) => handleIncomeCellClick(d,e) // Pasar el evento
+          })
+        ])
+      );
+    }
+  }
+  const tableBody = React.createElement('tbody', {key: 'cal-body'}, tableBodyRows);
+
+  if (isLoading) return React.createElement('p', {key: 'loading', className: 'loading-message-placeholder'}, 'Cargando calendario...');
 
   return React.createElement(
     'div', 
-    { className: 'video-scheduler-main-page', style: { padding: '20px', position: 'relative' } },
+    {className: 'video-scheduler-page'},
     [
-      React.createElement('h1', { key: 'title' }, `${plugin.name || 'Video Scheduler'} Dashboard`),
-      
-      !showForm && !showStatusSelector && React.createElement(
-        'button',
-        {
-          key: 'show-create-form-btn',
-          onClick: handleOpenCreateForm,
-          style: { marginBottom: '20px', padding: '10px 15px', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }
-        },
-        'Crear Nuevo Video'
-      ),
-
-      showForm && React.createElement(VideoForm, {
-        key: 'video-form-instance',
-        plugin: plugin,
-        core: core,
-        existingVideo: editingVideo,
-        onSave: handleFormSave,
-        onCancel: handleFormCancel
-      }),
-      
-      React.createElement('h2', { key: 'list-title', style: { marginTop: (showForm || showStatusSelector) ? '30px' : '10px'} }, 'Lista de Videos:'),
-      videos.length === 0 && !showForm 
-        ? React.createElement('p', { key: 'no-videos' }, 'No hay videos. ¡Crea uno!')
-        : React.createElement(
-            'ul',
-            { key: 'videos-list', style: { listStyle: 'none', padding: 0 } },
-            videos.map((video) => {
-              // --- CORRECCIÓN AQUÍ ---
-              // Asegurarse de que video.status y video.subStatus sean strings antes de usar charAt
-              const mainStatusText = video.status ? formatStatusText(video.status) : 'Desconocido';
-              const subStatusText = video.subStatus ? formatStatusText(video.subStatus) : '';
-
-              const statusDisplay = `Estado: ${STATUS_EMOJIS[video.status] || '?'} ${mainStatusText} ${
-                                video.subStatus 
-                                ? `(${STATUS_EMOJIS[video.subStatus] || '?'} ${subStatusText})` 
-                                : ''
-                              }`;
-
-              return React.createElement(
-                'li',
-                { 
-                  key: video.id,
-                  style: { 
-                    padding: '12px', border: '1px solid #ddd', marginBottom: '8px',
-                    borderRadius: '6px', backgroundColor: '#fff',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                  } 
-                },
-                [
-                  React.createElement('div', {key: `details-${video.id}`}, [
-                    React.createElement('strong', {key: `title-${video.id}`, style: {fontSize: '16px'}}, video.title),
-                    React.createElement('br', {key: `br1-${video.id}`}),
-                    React.createElement('span', {key: `desc-${video.id}`, style: {fontSize: '14px', color: '#555'}}, video.description || React.createElement('em', {}, 'Sin descripción')),
-                    React.createElement('br', {key: `br2-${video.id}`}),
-                    React.createElement(
-                        'span',
-                        {
-                            key: `status-indicator-${video.id}`,
-                            style: { 
-                                fontSize: '14px', 
-                                color: '#333', 
-                                cursor: 'pointer', 
-                                display: 'inline-block',
-                                padding: '4px 8px',
-                                border: '1px solid #007bff', 
-                                borderRadius: '4px',
-                                backgroundColor: '#f0f8ff',
-                                marginTop: '5px'
-                            },
-                            onClick: (e) => handleOpenStatusSelector(video, e) 
-                        },
-                        statusDisplay // Usar la variable formateada
-                    )
-                  ]),
-                ]
-              );
-            })
-          ),
-      showStatusSelector && statusSelectorTargetVideo && React.createElement(StatusSelector, {
-        key: 'status-selector-instance',
-        currentMainStatus: statusSelectorTargetVideo.status,
-        currentSubStatus: statusSelectorTargetVideo.subStatus,
-        onStatusChange: handleStatusChangeFromSelector,
-        onCancel: handleStatusSelectorClose,
-        styleProps: { 
-            top: `${statusSelectorPosition.top}px`, 
-            left: `${statusSelectorPosition.left}px` 
-        }
-      })
+      React.createElement('div', {key: 'main-wrapper', className: 'video-scheduler-main-content-wrapper'}, [
+        React.createElement('header', {key: 'page-header', className: 'page-header-controls'}, [
+          React.createElement('div', {key: 'month-nav', className: 'month-navigation'}, [
+            React.createElement('button', {key: 'prev-month', onClick: handlePrevMonth}, '← Mes Anterior'),
+            React.createElement('h2', {key: 'current-month-display'}, `${monthName} ${year}`),
+            React.createElement('button', {key: 'next-month', onClick: handleNextMonth}, 'Mes Siguiente →')
+          ]),
+          React.createElement('div', {key: 'global-actions', className: 'video-scheduler-global-actions'}, [
+            /* Futuros botones globales */
+          ])
+        ]),
+        React.createElement('table', {key: 'calendar-grid', className: 'calendar-grid'}, [tableHeader, tableBody]),
+        
+        showStatusSelector && statusSelectorContext && React.createElement(StatusSelector, {
+          key: 'status-selector-instance',
+          currentMainStatus: statusSelectorContext.video.status,
+          currentSubStatus: statusSelectorContext.video.subStatus,
+          onStatusChange: handleStatusChange,
+          onCancel: () => setShowStatusSelector(false),
+          styleProps: statusSelectorContext.position 
+        }),
+        showIncomeForm && incomeFormContext && React.createElement(DailyIncomeForm, {
+          key: 'income-form-instance',
+          day: incomeFormContext.day,
+          existingIncome: incomeFormContext.incomeData,
+          onSave: handleIncomeSave,
+          onCancel: () => setShowIncomeForm(false),
+          styleProps: incomeFormContext.position
+        })
+      ]),
+      React.createElement('div', {key: 'stats-panel', className: 'video-stats-panel-placeholder'}, 'Panel de Estadísticas (Próximamente)')
     ]
   );
 }

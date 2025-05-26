@@ -1,0 +1,462 @@
+/* video-scheduler/styles/video-scheduler.css (Revisión 6.1 - COMPLETA) */
+
+/* Contenedor principal de la página del plugin */
+.video-scheduler-page {
+  font-family: var(--font-family-body, sans-serif);
+  color: var(--text-color);
+  background-color: var(--bg-color); 
+  padding: var(--spacing-lg, 20px);
+  height: 100%; 
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+}
+
+/* Wrapper para el contenido principal para controlar el ancho máximo */
+.video-scheduler-main-content-wrapper {
+  width: 100%;
+  max-width: 1400px; 
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; 
+  background-color: var(--card-bg); 
+  border-radius: var(--border-radius-xl, 12px);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-lg, 20px);
+  overflow: hidden; 
+  position: relative; 
+}
+
+
+/* Encabezado de la página (Navegación Mes/Año y Acciones Globales) */
+.page-header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-md, 15px);
+  margin-bottom: var(--spacing-lg, 20px);
+  padding-bottom: var(--spacing-md, 15px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.month-navigation {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 10px);
+}
+
+.page-header-controls h2 {
+  margin: 0;
+  font-size: 2em;
+  font-family: var(--font-family-heading, sans-serif);
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.page-header-controls button,
+.video-scheduler-global-actions button {
+  background-color: var(--color-button-secondary-bg, var(--bg-color-secondary));
+  color: var(--color-button-secondary-text, var(--text-color));
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 15px);
+  border-radius: var(--border-radius-md, 6px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs, 5px);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  font-weight: 500;
+}
+.page-header-controls button:hover,
+.video-scheduler-global-actions button:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-color); 
+  box-shadow: var(--shadow-sm);
+}
+.video-scheduler-global-actions button .material-icons {
+    font-size: 1.2em;
+}
+
+
+/* Tabla del Calendario */
+.calendar-grid {
+  width: 100%;
+  border-collapse: separate; 
+  border-spacing: 0;
+  border: 1px solid var(--border-color); /* Borde general de la tabla */
+  border-radius: var(--border-radius-lg); /* Radio para la tabla general */
+  overflow: hidden; /* Para que el radio afecte a las celdas internas */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  table-layout: fixed; /* Aplicar table-layout a la tabla principal */
+}
+
+.calendar-grid thead {
+  background-color: var(--header-bg, var(--bg-color-secondary)); 
+  color: var(--text-color);
+  display: table; 
+  width: 100%;    
+  table-layout: fixed; 
+}
+.calendar-grid tbody {
+  display: block; 
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  flex-grow: 1;
+  background-color: var(--card-bg); 
+  width: 100%; 
+}
+
+/* Definición explícita de anchos para cada columna del thead y tbody */
+.calendar-grid th:nth-child(1), .calendar-grid td:nth-child(1) { width: 10%; } /* Día */
+.calendar-grid th:nth-child(2), .calendar-grid td:nth-child(2) { width: 22%; } /* 7am */
+.calendar-grid th:nth-child(3), .calendar-grid td:nth-child(3) { width: 22%; } /* 15pm */
+.calendar-grid th:nth-child(4), .calendar-grid td:nth-child(4) { width: 22%; } /* 22pm */
+.calendar-grid th:nth-child(5), .calendar-grid td:nth-child(5) { width: 12%; } /* Resumen */
+.calendar-grid th:nth-child(6), .calendar-grid td:nth-child(6) { width: 12%; } /* Ingresos */
+
+
+.calendar-grid th,
+.calendar-grid td {
+  padding: var(--spacing-xs, 6px); 
+  border-right: 1px solid var(--border-color);
+  box-sizing: border-box; 
+  text-align: center; 
+}
+
+.calendar-grid th {
+  padding-top: var(--spacing-sm, 10px);
+  padding-bottom: var(--spacing-sm, 10px);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color); 
+  font-family: var(--font-family-body);
+  font-size: 0.85em; 
+  color: var(--text-color-secondary);
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.calendar-grid th:last-child,
+.calendar-grid td:last-child {
+    border-right: none; 
+}
+
+.calendar-grid tr {
+   border-bottom: 1px solid var(--border-color);
+   display: table;
+   width: 100%;
+   table-layout: fixed;
+}
+.calendar-grid tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.calendar-grid td {
+  vertical-align: top; 
+  min-height: 70px; /* Reducido ligeramente de 75px */
+  height: auto; 
+  color: var(--text-color);
+  background-color: var(--card-bg); 
+}
+
+/* Celdas Específicas */
+.video-scheduler-day-cell {
+  text-align: center !important;
+  vertical-align: top;
+  padding-top: var(--spacing-sm, 8px) !important; 
+  padding-bottom: var(--spacing-sm, 8px) !important;
+  background-color: var(--bg-color-secondary) !important; 
+  font-weight: 500;
+}
+.video-scheduler-day-cell .day-number-display {
+  font-size: 1.3em;
+  font-weight: 600; 
+  color: var(--primary-color);
+}
+.video-scheduler-day-cell .day-name-display {
+  font-size: 0.75em;
+  color: var(--text-color-secondary);
+  margin-top: 1px;
+}
+
+.video-scheduler-slot-cell {
+  padding: var(--spacing-xs, 6px) !important;
+}
+.video-scheduler-slot-cell .video-slot {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; 
+  height: 100%;
+  min-height: 60px; 
+}
+.video-scheduler-slot-cell .video-name-input {
+  width: 100%; 
+  border: none;
+  border-bottom: 1px dashed var(--text-color-secondary); 
+  padding: var(--spacing-xs, 4px) 0; 
+  font-size: 0.85em;
+  background-color: transparent;
+  color: var(--text-color);
+  outline: none;
+  margin-bottom: var(--spacing-xs, 4px);
+  box-sizing: border-box;
+}
+.video-scheduler-slot-cell .video-name-input::placeholder {
+    color: var(--text-color-secondary);
+    opacity: 0.7; 
+}
+.video-scheduler-slot-cell .video-name-input:focus {
+  border-bottom: 1px solid var(--primary-color);
+}
+.video-scheduler-slot-cell .video-name-input:disabled {
+  color: var(--text-color-secondary);
+  font-style: italic;
+  border-bottom-color: transparent; 
+}
+.video-scheduler-slot-cell .status-container {
+  cursor: pointer;
+  text-align: right;
+  font-size: 1em; 
+  padding: 2px 0; 
+  color: var(--text-color);
+  line-height: 1; 
+}
+
+.video-scheduler-summary-cell {
+  vertical-align: middle;
+  text-align: center;
+  padding: var(--spacing-sm, 8px) var(--spacing-xs, 4px) !important;
+  font-size: 1em; 
+}
+.video-scheduler-summary-cell span {
+    display: flex;
+    justify-content: center;
+    gap: 1px; 
+    line-height: 1;
+}
+
+.video-scheduler-income-cell {
+  vertical-align: middle; 
+  text-align: center;
+  padding: var(--spacing-sm, 8px) !important;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+  background-color: var(--bg-color-secondary); 
+  color: var(--text-color-secondary); 
+  font-size: 0.8em; 
+}
+.video-scheduler-income-cell:hover {
+  opacity: 0.8;
+  background-color: var(--hover-color) !important;
+}
+.video-scheduler-income-cell.income-empty .income-amount-text::before {
+  content: "+ "; 
+}
+.video-scheduler-income-cell.income-pending {
+  background-color: var(--warning-color) !important; 
+  color: var(--color-button-primary-text, white) !important; 
+}
+.video-scheduler-income-cell.income-pending .income-payer-text {
+    color: var(--color-button-primary-text, white) !important;
+    opacity: 0.8;
+}
+.video-scheduler-income-cell.income-paid {
+  background-color: var(--success-color) !important; 
+  color: var(--color-button-primary-text, white) !important; 
+}
+.video-scheduler-income-cell.income-paid .income-payer-text {
+    color: var(--color-button-primary-text, white) !important;
+    opacity: 0.8;
+}
+.video-scheduler-income-cell .income-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+.video-scheduler-income-cell .income-amount-text {
+  font-weight: 500; 
+}
+.video-scheduler-income-cell .income-payer-text {
+  font-size: 0.9em; 
+  margin-top: 2px;
+}
+
+/* Pop-up de Selector de Estado */
+.status-selector-popup {
+  position: absolute;
+  background-color: var(--modal-bg); 
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg); 
+  border-radius: var(--border-radius-md, 6px); 
+  color: var(--text-color);
+  padding: var(--spacing-md, 15px);
+  z-index: 1050; 
+  min-width: 220px; 
+}
+.status-selector-popup h4 {
+  color: var(--text-color);
+  font-family: var(--font-family-heading);
+  margin-top: 0;
+  margin-bottom: var(--spacing-md, 15px);
+  font-size: 1.1em;
+}
+.status-selector-popup .status-selector-label {
+    display: block;
+    margin-bottom: var(--spacing-xs, 5px);
+    font-size: 0.9em;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+}
+.status-selector-popup .status-options-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs, 8px);
+    margin-bottom: var(--spacing-md, 15px);
+}
+.status-selector-popup .status-options-group:last-of-type {
+    margin-bottom: var(--spacing-lg, 20px);
+}
+.status-selector-popup .status-option-button {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  padding: var(--spacing-sm, 10px);
+  transition: background-color 0.2s, border-color 0.2s;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1em; 
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+}
+.status-selector-popup .status-option-button:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-color);
+}
+.status-selector-popup .status-option-button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--color-button-primary-text, white) !important;
+  border-color: var(--primary-color) !important;
+  font-weight: 600;
+}
+.status-selector-popup .status-selector-cancel-button {
+  background-color: var(--bg-color-secondary);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  padding: var(--spacing-sm, 10px);
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.status-selector-popup .status-selector-cancel-button:hover {
+  background-color: var(--hover-color);
+}
+
+/* Pop-up de Formulario de Ingresos Diarios */
+.daily-income-form-popup {
+  position: absolute;
+  background-color: var(--modal-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-xl); 
+  border-radius: var(--border-radius-lg, 8px);
+  color: var(--text-color);
+  padding: var(--spacing-lg, 20px);
+  z-index: 1050; 
+  min-width: 280px;
+  max-width: 350px;
+}
+.daily-income-form-popup h4 {
+  color: var(--text-color);
+  font-family: var(--font-family-heading);
+  margin-top: 0;
+  margin-bottom: var(--spacing-lg, 20px);
+  font-size: 1.2em;
+}
+.daily-income-form-popup .form-group {
+    margin-bottom: var(--spacing-md, 15px);
+    display: flex;
+    flex-direction: column; 
+}
+.daily-income-form-popup .form-group label {
+  color: var(--text-color-secondary);
+  font-size: 0.9em;
+  margin-bottom: var(--spacing-xs, 5px);
+}
+.daily-income-form-popup .form-group input,
+.daily-income-form-popup .form-group select {
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm, 4px);
+  padding: var(--spacing-sm, 8px); 
+  width: 100%;
+  box-sizing: border-box; 
+}
+.daily-income-form-popup .form-group input:focus,
+.daily-income-form-popup .form-group select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-focus-shadow, rgba(0, 123, 255, 0.25));
+  outline: none;
+}
+.daily-income-form-popup .form-actions {
+    margin-top: var(--spacing-lg, 20px);
+    padding-top: var(--spacing-md, 15px);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end; 
+    gap: var(--spacing-sm, 10px);
+}
+.daily-income-form-popup .form-actions .button-primary,
+.daily-income-form-popup .form-actions .button-secondary {
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 15px);
+  border-radius: var(--border-radius-md, 6px);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s, border-color 0.2s;
+  border: none;
+}
+.daily-income-form-popup .form-actions .button-primary {
+  background-color: var(--primary-color);
+  color: var(--color-button-primary-text, white);
+}
+.daily-income-form-popup .form-actions .button-primary:hover {
+  background-color: var(--primary-hover);
+}
+.daily-income-form-popup .form-actions .button-secondary {
+  background-color: var(--color-button-secondary-bg, var(--bg-color-secondary));
+  color: var(--color-button-secondary-text, var(--text-color));
+  border: 1px solid var(--border-color);
+}
+.daily-income-form-popup .form-actions .button-secondary:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-color);
+}
+
+/* Placeholder para panel de estadísticas */
+.video-stats-panel-placeholder {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-color);
+    color: var(--text-color-secondary);
+    text-align: center;
+}
+
+/* Ajuste general para la altura de la tabla */
+.video-scheduler-main-content-wrapper > .calendar-grid {
+    min-height: 450px; 
+}
+
+.loading-message-placeholder {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-color-secondary);
+    font-style: italic;
+}

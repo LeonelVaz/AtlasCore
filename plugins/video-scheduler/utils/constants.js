@@ -1,28 +1,21 @@
 // video-scheduler/utils/constants.js
 
 export const VIDEO_MAIN_STATUS = {
-  PENDING: 'pending',         // 📅 Slot disponible
-  EMPTY: 'empty',             // ⬜ Slot intencionalmente vacío
-  DEVELOPMENT: 'development', // 🟦 En desarrollo inicial
-  PRODUCTION: 'production',   // 🟨 En producción activa
-  PUBLISHED: 'published'      // 🟩 Video publicado
-  // Considerar 'ARCHIVED' en el futuro
+  PENDING: 'pending',
+  EMPTY: 'empty',
+  DEVELOPMENT: 'development',
+  PRODUCTION: 'production',
+  PUBLISHED: 'published'
 };
 
 export const VIDEO_SUB_STATUS = {
-  // Sub-estados para DEVELOPMENT
-  REC: 'rec',                 // ☕ Grabando (asociado a DEVELOPMENT)
-
-  // Sub-estados para PRODUCTION
-  EDITING: 'editing',         // 💻 Edición
-  THUMBNAIL: 'thumbnail',     // ✏️ Creando miniatura
-  SCHEDULING_POST: 'scheduling_post', // 🕰️ Agendando publicación en plataforma
-
-  // Sub-estados para PUBLISHED
-  SCHEDULED: 'scheduled'      // 🌐 Publicación ya agendada en plataforma
+  REC: 'rec',
+  EDITING: 'editing',
+  THUMBNAIL: 'thumbnail',
+  SCHEDULING_POST: 'scheduling_post',
+  SCHEDULED: 'scheduled'
 };
 
-// Mapeo de sub-estados a sus estados principales para validación o lógica
 export const SUB_STATUS_MAIN_MAP = {
   [VIDEO_SUB_STATUS.REC]: VIDEO_MAIN_STATUS.DEVELOPMENT,
   [VIDEO_SUB_STATUS.EDITING]: VIDEO_MAIN_STATUS.PRODUCTION,
@@ -31,7 +24,6 @@ export const SUB_STATUS_MAIN_MAP = {
   [VIDEO_SUB_STATUS.SCHEDULED]: VIDEO_MAIN_STATUS.PUBLISHED,
 };
 
-// Mapeo de qué sub-estados son válidos para cada estado principal
 export const VALID_SUB_STATUSES_FOR_MAIN = {
   [VIDEO_MAIN_STATUS.DEVELOPMENT]: [VIDEO_SUB_STATUS.REC],
   [VIDEO_MAIN_STATUS.PRODUCTION]: [VIDEO_SUB_STATUS.EDITING, VIDEO_SUB_STATUS.THUMBNAIL, VIDEO_SUB_STATUS.SCHEDULING_POST],
@@ -40,7 +32,6 @@ export const VALID_SUB_STATUSES_FOR_MAIN = {
   [VIDEO_MAIN_STATUS.EMPTY]: [],
 };
 
-// Emojis para todos los estados y sub-estados
 export const STATUS_EMOJIS = {
   [VIDEO_MAIN_STATUS.PENDING]: "📅",
   [VIDEO_MAIN_STATUS.EMPTY]: "⬜",
@@ -54,14 +45,19 @@ export const STATUS_EMOJIS = {
   [VIDEO_SUB_STATUS.SCHEDULED]: "🌐",
 };
 
-// Estructura base para un objeto Video (actualizada)
-export const DEFAULT_VIDEO_STRUCTURE = {
-  id: null,
-  title: '', // Un slot PENDING o EMPTY no tendrá título inicialmente
-  description: '',
-  status: VIDEO_MAIN_STATUS.PENDING, // Estado principal
-  subStatus: null,                  // Sub-estado (si aplica)
-  // slot: { date: null, timeSlot: null }, // Se añadirá en etapas de calendario
-  createdAt: null,
-  updatedAt: null,
+// Para la lógica de tu app vanilla, un video en un slot tiene una estructura simple
+export const DEFAULT_SLOT_VIDEO_STRUCTURE = {
+  id: null, // Se generará como 'day-slotIndex'
+  name: '',
+  status: VIDEO_MAIN_STATUS.PENDING,
+  subStatus: null,
 };
+
+export const DEFAULT_DAILY_INCOME_STRUCTURE = {
+  amount: 0,
+  currency: 'USD', // Moneda por defecto
+  payer: '',
+  status: 'pending' // 'pending' o 'paid'
+};
+
+export const CURRENCIES = ['USD', 'EUR', 'ARS']; // Simple array para selectores

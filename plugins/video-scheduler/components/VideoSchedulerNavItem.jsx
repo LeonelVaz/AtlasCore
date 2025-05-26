@@ -1,7 +1,7 @@
+// video-scheduler/components/VideoSchedulerNavItem.jsx
 import React from 'react';
 
 function VideoSchedulerNavItem(props) {
-  // props pasados desde el Wrapper: core, plugin, pluginId, pageIdToNavigate, y props de Atlas como onNavigate
   const { pluginId, onNavigate, pageIdToNavigate, plugin } = props;
 
   const handleClick = () => {
