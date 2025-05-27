@@ -155,12 +155,6 @@
   padding: 28px; /* Padding uniforme */
 }
 
-
-/* Estilos para gráficos (mantiene los definidos en StatsOverviewPanel.css si son adecuados) */
-.charts-content {
-  /* padding: 28px; Ya definido arriba */
-}
-
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Ajuste para gráficos */
