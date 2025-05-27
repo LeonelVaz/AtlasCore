@@ -164,17 +164,11 @@
   box-sizing: border-box;
 }
 
-.calendar-grid tbody tr:hover {
-  background: rgba(var(--primary-color-rgb), 0.02);
-}
-
 .calendar-grid tr {
   display: table;
   width: 100%;
   table-layout: fixed;
 }
-
-/* Panel de estadísticas minimalista - ELIMINADO porque ahora usa el panel completo */
 
 /* Mensaje de carga */
 .loading-message-placeholder {
@@ -203,4 +197,10 @@
   .calendar-grid td {
     height: 70px;
   }
+}
+
+
+.calendar-row:hover .video-scheduler-slot-cell,
+.calendar-row:hover .video-scheduler-summary-cell {
+  background-color: var(--bg-color-tertiary, var(--bg-color-secondary)) !important;
 }

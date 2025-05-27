@@ -352,7 +352,10 @@ function VideoSchedulerMainPage(props) {
       const currentDailyIncome = monthData.dailyIncomes[dateStr] || null;
 
       tableBodyRows.push(
-        React.createElement('tr', {key: `day-row-${day}`, className: 'calendar-row'}, [ // Añadida clase para hover
+        React.createElement('tr', {
+          key: `day-row-${day}`, 
+          className: 'calendar-row' // <--- CLASE AÑADIDA AQUÍ
+        }, [ 
           React.createElement(DayCell, {key: `daycell-${day}`, dayNumber: day, dayName: dayName}),
           videosForDay.map((video, slotIndex) => 
             React.createElement(VideoSlotCell, {
