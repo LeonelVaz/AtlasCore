@@ -205,36 +205,35 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
 
   // Componente de gráfico de barras simple
   const BarChart = ({ data, title, maxValue }) => {
+    const chartBars = Object.entries(data).map(([key, value]) => {
+      const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
+      return React.createElement(
+        'div',
+        { key: `bar-item-${key}`, className: 'chart-bar-item' },
+        React.createElement(
+          'div',
+          { className: 'chart-bar-container' },
+          [
+            React.createElement('div', {
+              key: `bar-fill-${key}`,
+              className: 'chart-bar',
+              style: { width: `${percentage}%` }
+            }),
+            React.createElement('span', { 
+              key: `bar-label-${key}`, 
+              className: 'chart-bar-label' 
+            }, `${STATUS_EMOJIS[key] || ''} ${value}`)
+          ]
+        )
+      );
+    });
+
     return React.createElement(
       'div',
       { className: 'simple-bar-chart' },
       [
         React.createElement('h5', { key: 'chart-title' }, title),
-        React.createElement(
-          'div',
-          { key: 'chart-bars', className: 'chart-bars' },
-          Object.entries(data).map(([key, value]) => {
-            const percentage = maxValue > 0 ? (value / maxValue) * 100 : 0;
-            return React.createElement(
-              'div',
-              { key: `bar-${key}`, className: 'chart-bar-item' },
-              [
-                React.createElement(
-                  'div',
-                  { key: `bar-container-${key}`, className: 'chart-bar-container' },
-                  [
-                    React.createElement('div', {
-                      key: `bar-${key}`,
-                      className: 'chart-bar',
-                      style: { width: `${percentage}%` }
-                    }),
-                    React.createElement('span', { key: `label-${key}`, className: 'chart-bar-label' }, `${STATUS_EMOJIS[key] || ''} ${value}`)
-                  ]
-                )
-              ]
-            );
-          })
-        )
+        React.createElement('div', { key: 'chart-bars', className: 'chart-bars' }, chartBars)
       ]
     );
   };
@@ -242,31 +241,29 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
   // Pestañas del panel
   const renderTabButtons = () => {
     const tabs = [
-      { id: 'overview', label: '📊 Vista General', icon: '📊' },
-      { id: 'charts', label: '📈 Gráficos', icon: '📈' },
-      { id: 'compare', label: '⚖️ Comparar', icon: '⚖️' }
+      { id: 'overview', label: '📊 Vista General' },
+      { id: 'charts', label: '📈 Gráficos' },
+      { id: 'compare', label: '⚖️ Comparar' }
     ];
 
-    return React.createElement(
-      'div',
-      { className: 'stats-tabs' },
-      tabs.map(tab =>
-        React.createElement(
-          'button',
-          {
-            key: `tab-${tab.id}`,
-            className: `stats-tab ${activeTab === tab.id ? 'active' : ''}`,
-            onClick: () => {
-              setActiveTab(tab.id);
-              if (tab.id === 'compare') {
-                setCompareMode(true);
-              }
+    const tabButtons = tabs.map(tab =>
+      React.createElement(
+        'button',
+        {
+          key: `tab-button-${tab.id}`,
+          className: `stats-tab ${activeTab === tab.id ? 'active' : ''}`,
+          onClick: () => {
+            setActiveTab(tab.id);
+            if (tab.id === 'compare') {
+              setCompareMode(true);
             }
-          },
-          tab.label
-        )
+          }
+        },
+        tab.label
       )
     );
+
+    return React.createElement('div', { className: 'stats-tabs' }, tabButtons);
   };
 
   // Contenido de la pestaña Gráficos
@@ -283,57 +280,59 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     return React.createElement(
       'div',
       { className: 'stats-tab-content charts-content' },
-      [
-        React.createElement(
-          'div',
-          { key: 'charts-grid', className: 'charts-grid' },
-          [
-            React.createElement(BarChart, {
-              key: 'main-states-chart',
-              data: mainStatesData,
-              title: 'Estados Principales de Videos',
-              maxValue: maxMainStates
-            }),
-            
-            React.createElement(
-              'div',
-              { key: 'income-chart', className: 'income-chart' },
-              [
-                React.createElement('h5', { key: 'title' }, 'Distribución de Ingresos'),
-                React.createElement(
-                  'div',
-                  { key: 'income-pie', className: 'income-pie-chart' },
-                  [
-                    React.createElement(
-                      'div',
-                      { key: 'paid-segment', className: 'pie-segment paid' },
-                      [
-                        React.createElement('span', { key: 'label' }, '✅ Pagado'),
-                        React.createElement('span', { key: 'amount' }, formatCurrency(incomeStats.totalPaidInARS))
-                      ]
-                    ),
-                    React.createElement(
-                      'div',
-                      { key: 'pending-segment', className: 'pie-segment pending' },
-                      [
-                        React.createElement('span', { key: 'label' }, '⏳ Pendiente'),
-                        React.createElement('span', { key: 'amount' }, formatCurrency(incomeStats.totalPendingInARS))
-                      ]
-                    )
-                  ]
-                )
-              ]
-            )
-          ]
-        )
-      ]
+      React.createElement(
+        'div',
+        { className: 'charts-grid' },
+        [
+          React.createElement(BarChart, {
+            key: 'main-states-chart',
+            data: mainStatesData,
+            title: 'Estados Principales de Videos',
+            maxValue: maxMainStates
+          }),
+          
+          React.createElement(
+            'div',
+            { key: 'income-chart', className: 'income-chart' },
+            [
+              React.createElement('h5', { key: 'income-chart-title' }, 'Distribución de Ingresos'),
+              React.createElement(
+                'div',
+                { key: 'income-pie', className: 'income-pie-chart' },
+                [
+                  React.createElement(
+                    'div',
+                    { key: 'paid-segment', className: 'pie-segment paid' },
+                    [
+                      React.createElement('span', { key: 'paid-label' }, '✅ Pagado'),
+                      React.createElement('span', { key: 'paid-amount' }, formatCurrency(incomeStats.totalPaidInARS))
+                    ]
+                  ),
+                  React.createElement(
+                    'div',
+                    { key: 'pending-segment', className: 'pie-segment pending' },
+                    [
+                      React.createElement('span', { key: 'pending-label' }, '⏳ Pendiente'),
+                      React.createElement('span', { key: 'pending-amount' }, formatCurrency(incomeStats.totalPendingInARS))
+                    ]
+                  )
+                ]
+              )
+            ]
+          )
+        ]
+      )
     );
   };
 
   // Contenido de la pestaña Comparar
   const renderCompareTab = () => {
     if (!compareStatsData) {
-      return React.createElement('div', { className: 'loading-compare' }, 'Cargando datos de comparación...');
+      return React.createElement(
+        'div', 
+        { className: 'stats-tab-content compare-content' },
+        React.createElement('div', { className: 'loading-compare' }, 'Cargando datos de comparación...')
+      );
     }
 
     const calculateDifference = (current, compare) => {
@@ -341,6 +340,47 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
       const percentage = compare > 0 ? Math.round((diff / compare) * 100) : 0;
       return { diff, percentage };
     };
+
+    const videoComparisonItems = Object.entries({
+      [VIDEO_MAIN_STATUS.DEVELOPMENT]: 'Desarrollo',
+      [VIDEO_MAIN_STATUS.PRODUCTION]: 'Producción',
+      [VIDEO_MAIN_STATUS.PUBLISHED]: 'Publicado'
+    }).map(([status, label]) => {
+      const current = videoStats[status];
+      const compare = compareVideoStats[status];
+      const { diff, percentage } = calculateDifference(current, compare);
+      
+      return React.createElement(
+        'div',
+        { key: `video-compare-item-${status}`, className: 'comparison-item' },
+        [
+          React.createElement('span', { key: `video-emoji-${status}` }, STATUS_EMOJIS[status]),
+          React.createElement('span', { key: `video-label-${status}` }, label),
+          React.createElement('span', { key: `video-current-${status}` }, current),
+          React.createElement('span', { key: `video-vs-${status}` }, 'vs'),
+          React.createElement('span', { key: `video-compare-value-${status}` }, compare),
+          React.createElement(
+            'span',
+            { 
+              key: `video-diff-${status}`,
+              className: `diff ${diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral'}`
+            },
+            `${diff > 0 ? '+' : ''}${diff} (${percentage > 0 ? '+' : ''}${percentage}%)`
+          )
+        ]
+      );
+    });
+
+    const incomeDiffResult = (() => {
+      const { diff, percentage } = calculateDifference(incomeStats.totalInARS, compareIncomeStats.totalInARS);
+      return React.createElement(
+        'span',
+        { 
+          className: `diff ${diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral'}` 
+        },
+        `${diff > 0 ? '+' : ''}${formatCurrency(diff)} (${percentage > 0 ? '+' : ''}${percentage}%)`
+      );
+    })();
 
     return React.createElement(
       'div',
@@ -350,9 +390,9 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
           'div',
           { key: 'compare-controls', className: 'compare-controls' },
           [
-            React.createElement('label', { key: 'label' }, 'Comparar con:'),
+            React.createElement('label', { key: 'compare-label' }, 'Comparar con:'),
             React.createElement('input', {
-              key: 'compare-date',
+              key: 'compare-date-input',
               type: 'month',
               value: `${compareDate.getFullYear()}-${String(compareDate.getMonth() + 1).padStart(2, '0')}`,
               onChange: (e) => {
@@ -371,40 +411,8 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
               'div',
               { key: 'video-comparison', className: 'comparison-section' },
               [
-                React.createElement('h4', { key: 'title' }, 'Videos: Estado Principal'),
-                React.createElement(
-                  'div',
-                  { key: 'items', className: 'comparison-items' },
-                  Object.entries({
-                    [VIDEO_MAIN_STATUS.DEVELOPMENT]: 'Desarrollo',
-                    [VIDEO_MAIN_STATUS.PRODUCTION]: 'Producción',
-                    [VIDEO_MAIN_STATUS.PUBLISHED]: 'Publicado'
-                  }).map(([status, label]) => {
-                    const current = videoStats[status];
-                    const compare = compareVideoStats[status];
-                    const { diff, percentage } = calculateDifference(current, compare);
-                    
-                    return React.createElement(
-                      'div',
-                      { key: `compare-${status}`, className: 'comparison-item' },
-                      [
-                        React.createElement('span', { key: `emoji-${status}` }, STATUS_EMOJIS[status]),
-                        React.createElement('span', { key: `label-${status}` }, label),
-                        React.createElement('span', { key: `current-${status}` }, current),
-                        React.createElement('span', { key: `vs-${status}` }, 'vs'),
-                        React.createElement('span', { key: `compare-${status}` }, compare),
-                        React.createElement(
-                          'span',
-                          { 
-                            key: `diff-${status}`,
-                            className: `diff ${diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral'}`
-                          },
-                          `${diff > 0 ? '+' : ''}${diff} (${percentage > 0 ? '+' : ''}${percentage}%)`
-                        )
-                      ]
-                    );
-                  })
-                )
+                React.createElement('h4', { key: 'video-comp-title' }, 'Videos: Estado Principal'),
+                React.createElement('div', { key: 'video-comp-items', className: 'comparison-items' }, videoComparisonItems)
               ]
             ),
             
@@ -412,39 +420,32 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
               'div',
               { key: 'income-comparison', className: 'comparison-section' },
               [
-                React.createElement('h4', { key: 'title' }, 'Ingresos Totales'),
+                React.createElement('h4', { key: 'income-comp-title' }, 'Ingresos Totales'),
                 React.createElement(
                   'div',
-                  { key: 'total-comparison', className: 'total-income-comparison' },
+                  { key: 'total-income-comparison', className: 'total-income-comparison' },
                   [
                     React.createElement(
                       'div',
-                      { key: 'current-month', className: 'month-income current' },
+                      { key: 'current-month-income', className: 'month-income current' },
                       [
-                        React.createElement('span', { key: 'label' }, monthName),
-                        React.createElement('span', { key: 'amount' }, formatCurrency(incomeStats.totalInARS))
+                        React.createElement('span', { key: 'current-month-label' }, monthName),
+                        React.createElement('span', { key: 'current-month-amount' }, formatCurrency(incomeStats.totalInARS))
                       ]
                     ),
-                    React.createElement('span', { key: 'vs' }, 'vs'),
+                    React.createElement('span', { key: 'income-vs' }, 'vs'),
                     React.createElement(
                       'div',
-                      { key: 'compare-month', className: 'month-income compare' },
+                      { key: 'compare-month-income', className: 'month-income compare' },
                       [
-                        React.createElement('span', { key: 'label' }, compareMonthName),
-                        React.createElement('span', { key: 'amount' }, formatCurrency(compareIncomeStats.totalInARS))
+                        React.createElement('span', { key: 'compare-month-label' }, compareMonthName),
+                        React.createElement('span', { key: 'compare-month-amount' }, formatCurrency(compareIncomeStats.totalInARS))
                       ]
                     ),
                     React.createElement(
                       'div',
-                      { key: 'income-diff', className: 'income-difference' },
-                      (() => {
-                        const { diff, percentage } = calculateDifference(incomeStats.totalInARS, compareIncomeStats.totalInARS);
-                        return React.createElement(
-                          'span',
-                          { className: `diff ${diff > 0 ? 'positive' : diff < 0 ? 'negative' : 'neutral'}` },
-                          `${diff > 0 ? '+' : ''}${formatCurrency(diff)} (${percentage > 0 ? '+' : ''}${percentage}%)`
-                        );
-                      })()
+                      { key: 'income-difference', className: 'income-difference' },
+                      incomeDiffResult
                     )
                   ]
                 )
@@ -456,13 +457,30 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     );
   };
 
+  // Renderizar contenido de pestaña activa
+  const renderActiveTabContent = () => {
+    if (activeTab === 'overview') {
+      return React.createElement(StatsOverviewPanel, {
+        monthData: currentStatsData,
+        currentDate: currentStatsDate,
+        plugin: plugin,
+        compact: false
+      });
+    } else if (activeTab === 'charts') {
+      return renderChartsTab();
+    } else if (activeTab === 'compare') {
+      return renderCompareTab();
+    }
+    return null;
+  };
+
   return React.createElement(
     'div',
     { className: 'video-scheduler-stats-panel advanced' },
     [
       React.createElement(
         'div',
-        { key: 'header', className: 'stats-panel-header' },
+        { key: 'stats-header', className: 'stats-panel-header' },
         [
           React.createElement(
             'div',
@@ -471,17 +489,17 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
               React.createElement(
                 'button',
                 { 
-                  key: 'prev-month',
+                  key: 'prev-month-btn',
                   className: 'month-nav-button',
                   onClick: handlePrevMonth 
                 },
                 '←'
               ),
-              React.createElement('h2', { key: 'title' }, `Estadísticas - ${monthName}`),
+              React.createElement('h2', { key: 'stats-title' }, `Estadísticas - ${monthName}`),
               React.createElement(
                 'button',
                 { 
-                  key: 'next-month',
+                  key: 'next-month-btn',
                   className: 'month-nav-button',
                   onClick: handleNextMonth 
                 },
@@ -492,7 +510,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
           React.createElement(
             'button',
             { 
-              key: 'close',
+              key: 'close-btn',
               className: 'stats-panel-close',
               onClick: onClose 
             },
@@ -503,19 +521,10 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
       
       React.createElement(
         'div',
-        { key: 'content', className: 'stats-panel-content' },
+        { key: 'stats-content', className: 'stats-panel-content' },
         [
-          renderTabButtons(),
-          
-          activeTab === 'overview' && React.createElement(StatsOverviewPanel, {
-            key: 'overview-panel',
-            monthData: currentStatsData,
-            currentDate: currentStatsDate,
-            plugin: plugin,
-            compact: false
-          }),
-          activeTab === 'charts' && renderChartsTab(),
-          activeTab === 'compare' && renderCompareTab()
+          React.createElement('div', { key: 'tab-buttons-container' }, renderTabButtons()),
+          React.createElement('div', { key: 'active-tab-content' }, renderActiveTabContent())
         ]
       )
     ]
