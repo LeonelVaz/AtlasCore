@@ -31,7 +31,7 @@
   border-bottom: 1px solid transparent;
   padding: 6px 0;
   font-size: 0.8125rem;
-  background: color-mix(in srgb, var(--bg-color-secondary) 20%, transparent);
+  background: transparent;
   color: var(--text-color);
   outline: none;
   margin-bottom: 8px;
