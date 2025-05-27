@@ -4,7 +4,7 @@
 .video-scheduler-stats-panel {
   position: fixed;
   /* Asumir una altura de header de Atlas de 60px, el modal empieza debajo */
-  top: 60px; 
+  top: 50px; 
   left: 0;
   right: 0;
   bottom: 0; /* Opcional, si quieres que llegue hasta abajo */
