@@ -34,7 +34,7 @@ export default {
     videosBySlotKey: {}, 
     dailyIncomes: {},
     settings: {
-        currencyRates: { USD: 1, EUR: 0.92, ARS: 870 }, 
+        currencyRates: { USD: 870, EUR: 950, ARS: 1 }, 
         defaultCurrency: 'USD',
     } 
   },
@@ -154,6 +154,34 @@ export default {
     return this._pluginData.videosBySlotKey[key];
   },
 
+  // Función para filtrar datos por mes específico
+  _filterDataByMonth: function(year, month) {
+    const self = this;
+    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+    
+    const filteredVideos = {};
+    const filteredIncomes = {};
+    
+    // Filtrar videos por mes
+    Object.entries(self._pluginData.videosBySlotKey).forEach(([key, video]) => {
+      if (key.startsWith(monthKey)) {
+        filteredVideos[key] = video;
+      }
+    });
+    
+    // Filtrar ingresos por mes
+    Object.entries(self._pluginData.dailyIncomes).forEach(([key, income]) => {
+      if (key.startsWith(monthKey)) {
+        filteredIncomes[key] = income;
+      }
+    });
+    
+    return {
+      videos: filteredVideos,
+      dailyIncomes: filteredIncomes
+    };
+  },
+
   // Función para aplicar alertas de sistema automáticas
   _applySystemWarnings: function(video, dateStr) {
     if (!video || !dateStr) {
@@ -215,8 +243,12 @@ export default {
 
     let changedByTransition = false;
 
-    // Aplicar transiciones automáticas basadas en tiempo
+    // Aplicar transiciones automáticas basadas en tiempo SOLO para el mes solicitado
+    const monthKey = `${year}-${String(month_idx + 1).padStart(2, '0')}`;
     Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
+        // Solo procesar videos del mes solicitado
+        if (!key.startsWith(monthKey)) return;
+        
         const video = self._pluginData.videosBySlotKey[key];
         const dateStr = key.split('-').slice(0, 3).join('-');
         const isPast = isDateInPast(dateStr);
@@ -254,10 +286,8 @@ export default {
         await self._savePluginData();
     }
     
-    return { 
-        videos: { ...self._pluginData.videosBySlotKey }, 
-        dailyIncomes: { ...self._pluginData.dailyIncomes }
-    };
+    // Retornar solo los datos filtrados del mes solicitado
+    return self._filterDataByMonth(year, month_idx);
   },
 
   _internalUpdateVideoName: async function(dateStr, slotIndex, newName) {
@@ -412,6 +442,7 @@ export default {
       withQuestions: 0
     };
 
+    // IMPORTANTE: Solo contar videos de los datos filtrados por mes
     if (monthData && monthData.videos) {
       Object.values(monthData.videos).forEach(video => {
         stats.total++;
@@ -459,6 +490,7 @@ export default {
       USD: 870, EUR: 950, ARS: 1
     };
 
+    // IMPORTANTE: Solo contar ingresos de los datos filtrados por mes
     if (monthData && monthData.dailyIncomes) {
       Object.values(monthData.dailyIncomes).forEach(income => {
         if (income && income.amount > 0) {

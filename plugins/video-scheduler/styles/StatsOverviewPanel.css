@@ -1,0 +1,180 @@
+/* video-scheduler/styles/StatsOverviewPanel.css */
+
+/* Panel de estadísticas inferior - básico */
+.video-scheduler-footer-stats {
+  padding: 20px 32px;
+  background: var(--bg-color-secondary);
+  border-top: 1px solid var(--border-color);
+  color: var(--text-color);
+  flex-shrink: 0;
+}
+
+.footer-stats-overview h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.footer-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.footer-stats-section {
+  background: var(--bg-color);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.footer-stats-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.footer-stats-items {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.footer-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(var(--primary-color-rgb), 0.05);
+  min-width: 50px;
+  transition: all 0.2s ease;
+}
+
+.footer-stat-item:hover {
+  background: rgba(var(--primary-color-rgb), 0.1);
+  transform: scale(1.05);
+}
+
+.footer-stat-item span:first-child {
+  font-size: 1.2em;
+}
+
+.footer-stat-item span:last-child {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--primary-color);
+}
+
+.footer-stat-item.warning span:last-child {
+  color: var(--warning-color);
+}
+
+.footer-stat-item.question span:last-child {
+  color: var(--info-color);
+}
+
+/* Sección de ingresos especial */
+.footer-stats-section.income-section {
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-color-rgb), 0.1), 
+    rgba(var(--primary-color-rgb), 0.05)
+  );
+  border-color: var(--primary-color);
+}
+
+.footer-income-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-income-total {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: center;
+  padding: 8px 12px;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  border-radius: 6px;
+  border: 2px solid rgba(var(--primary-color-rgb), 0.2);
+}
+
+.footer-income-breakdown {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+}
+
+.footer-income-breakdown .income-paid {
+  color: var(--success-color);
+  font-weight: 500;
+}
+
+.footer-income-breakdown .income-pending {
+  color: var(--warning-color);
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .video-scheduler-footer-stats {
+    padding: 16px 20px;
+  }
+  
+  .footer-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .footer-stats-overview h3 {
+    font-size: 1rem;
+  }
+  
+  .footer-stats-items {
+    gap: 8px;
+  }
+  
+  .footer-stat-item {
+    min-width: 45px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-stats-section {
+    padding: 12px;
+  }
+  
+  .footer-stats-section h4 {
+    font-size: 0.8125rem;
+  }
+  
+  .footer-stat-item span:first-child {
+    font-size: 1em;
+  }
+  
+  .footer-stat-item span:last-child {
+    font-size: 0.8125rem;
+  }
+  
+  .footer-income-total {
+    font-size: 1.125rem;
+    padding: 6px 10px;
+  }
+  
+  .footer-income-breakdown {
+    font-size: 0.6875rem;
+    gap: 8px;
+  }
+}

@@ -7,6 +7,7 @@ import DailyIncomeCell from './DailyIncomeCell.jsx';
 import StatusSelector from './StatusSelector.jsx';
 import DailyIncomeForm from './DailyIncomeForm.jsx';
 import StatsPanel from './StatsPanel.jsx';
+import StatsOverviewPanel from './StatsOverviewPanel.jsx';
 import BulkAddForm from './BulkAddForm.jsx';
 import { VIDEO_MAIN_STATUS, DEFAULT_SLOT_VIDEO_STRUCTURE } from '../utils/constants.js';
 
@@ -456,7 +457,15 @@ function VideoSchedulerMainPage(props) {
           styleProps: {}
         })
       ]),
-      React.createElement('div', {key: 'stats-panel', className: 'video-stats-panel-placeholder'}, 'Panel de Estadísticas (Próximamente)')
+      
+      // Panel de estadísticas compartido inferior usando el mismo componente
+      !isLoading && React.createElement(StatsOverviewPanel, {
+        key: 'footer-stats-panel',
+        monthData: monthData,
+        currentDate: currentDate,
+        plugin: plugin,
+        compact: true // Usa el modo compacto para el panel inferior
+      })
     ]
   );
 }
