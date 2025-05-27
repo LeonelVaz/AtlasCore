@@ -2,51 +2,54 @@
 
 ## Índice
 1. [Introducción](#introducción)
-2. [Estructura básica de un plugin](#estructura-básica-de-un-plugin)
-3. [Metadatos del plugin](#metadatos-del-plugin)
-4. [Ciclo de vida del plugin](#ciclo-de-vida-del-plugin)
+2. [Primer Plugin Paso a Paso](#primer-plugin-paso-a-paso)
+3. [Estructura básica de un plugin](#estructura-básica-de-un-plugin)
+4. [Metadatos del plugin](#metadatos-del-plugin)
+5. [Ciclo de vida del plugin](#ciclo-de-vida-del-plugin)
    - [Inicialización](#inicialización)
    - [Limpieza](#limpieza)
-5. [La API de Core](#la-api-de-core)
+6. [La API de Core](#la-api-de-core)
    - [Almacenamiento persistente](#almacenamiento-persistente)
    - [Sistema de eventos](#sistema-de-eventos)
    - [Extensiones de UI](#extensiones-de-ui)
    - [Comunicación entre plugins](#comunicación-entre-plugins)
-6. [Sistema de permisos](#sistema-de-permisos)
-7. [Sistema de seguridad](#sistema-de-seguridad)
+7. [Sistema de permisos](#sistema-de-permisos)
+8. [Sistema de seguridad](#sistema-de-seguridad)
    - [Modelo de seguridad multinivel](#modelo-de-seguridad-multinivel)
    - [Sandbox para ejecución segura](#sandbox-para-ejecución-segura)
    - [Monitoreo de recursos](#monitoreo-de-recursos)
    - [Auditoría de seguridad](#auditoría-de-seguridad)
-8. [Creación de interfaces de usuario](#creación-de-interfaces-de-usuario)
+9. [Creación de interfaces de usuario](#creación-de-interfaces-de-usuario)
    - [Puntos de extensión UI](#puntos-de-extensión-ui)
+   - [Patrón Wrapper para componentes](#patrón-wrapper-para-componentes)
    - [Componentes para la barra lateral](#componentes-para-la-barra-lateral)
    - [Extensiones para el calendario](#extensiones-para-el-calendario)
    - [Páginas completas de plugin](#páginas-completas-de-plugin)
    - [Widgets para el panel de configuración](#widgets-para-el-panel-de-configuración)
-9. [Estilos y temas](#estilos-y-temas)
-   - [Sistema de temas de Atlas](#sistema-de-temas-de-atlas)
-   - [Variables CSS disponibles](#variables-css-disponibles)
-   - [Adaptación a diferentes temas](#adaptación-a-diferentes-temas)
-   - [Buenas prácticas de CSS](#buenas-prácticas-de-css)
-10. [Dependencias y conflictos](#dependencias-y-conflictos)
+10. [Gestión de estado en componentes React](#gestión-de-estado-en-componentes-react)
+11. [Estilos y temas](#estilos-y-temas)
+    - [Sistema de temas de Atlas](#sistema-de-temas-de-atlas)
+    - [Variables CSS disponibles](#variables-css-disponibles)
+    - [Adaptación a diferentes temas](#adaptación-a-diferentes-temas)
+    - [Buenas prácticas de CSS](#buenas-prácticas-de-css)
+12. [Dependencias y conflictos](#dependencias-y-conflictos)
     - [Manejo de dependencias](#manejo-de-dependencias)
     - [Resolución de conflictos](#resolución-de-conflictos)
     - [Resolver ciclos de dependencias](#resolver-ciclos-de-dependencias)
-11. [Empaquetado y distribución](#empaquetado-y-distribución)
+13. [Empaquetado y distribución](#empaquetado-y-distribución)
     - [Estructura del paquete](#estructura-del-paquete)
     - [Verificación de integridad](#verificación-de-integridad)
     - [Repositorios de plugins](#repositorios-de-plugins)
     - [Actualizaciones automáticas](#actualizaciones-automáticas)
-12. [Mejores prácticas](#mejores-prácticas)
+14. [Mejores prácticas](#mejores-prácticas)
     - [Manejo asíncrono de datos](#manejo-asíncrono-de-datos)
     - [Gestión de errores robusta](#gestión-de-errores-robusta)
     - [Prevención de errores comunes](#prevención-de-errores-comunes)
     - [Optimización de rendimiento](#optimización-de-rendimiento)
-13. [Depuración](#depuración)
+15. [Depuración](#depuración)
     - [Técnicas de depuración](#técnicas-de-depuración)
     - [Errores comunes y soluciones](#errores-comunes-y-soluciones)
-14. [Ejemplos prácticos](#ejemplos-prácticos)
+16. [Ejemplos prácticos](#ejemplos-prácticos)
 
 ## Introducción
 
@@ -60,11 +63,264 @@ Los plugins en Atlas pueden:
 - Almacenar datos persistentes
 - Extender el calendario y mejorar la experiencia del usuario
 
+## Primer Plugin Paso a Paso
+
+Esta sección te guiará desde cero para crear tu primer plugin funcional con navegación y página principal.
+
+### Paso 1: Estructura Básica de Archivos
+
+Crea la siguiente estructura de archivos:
+
+```
+mi-primer-plugin/
+├── components/
+│   ├── MiPluginNavItem.jsx
+│   └── MiPluginMainPage.jsx
+├── utils/
+│   └── constants.js
+└── index.js
+```
+
+### Paso 2: Archivo Principal (index.js)
+
+⚠️ **IMPORTANTE**: Debes importar React explícitamente en todos los archivos que lo usen:
+
+```javascript
+import React from 'react';
+import MiPluginNavItem from './components/MiPluginNavItem.jsx';
+import MiPluginMainPage from './components/MiPluginMainPage.jsx';
+
+export default {
+  // Metadatos obligatorios
+  id: 'mi-primer-plugin',
+  name: 'Mi Primer Plugin',
+  version: '1.0.0',
+  description: 'Mi primer plugin para Atlas',
+  author: 'Tu Nombre',
+  
+  // Restricciones de compatibilidad
+  minAppVersion: '0.3.0',
+  maxAppVersion: '1.0.0',
+  
+  // Permisos requeridos
+  permissions: ['ui', 'storage'],
+  
+  // Variables internas
+  _core: null,
+  _navigationExtensionId: null,
+  _pageExtensionId: null,
+  
+  // CONSTANTE CRÍTICA: Define el ID de tu página
+  _PAGE_ID: 'mi-pagina-principal',
+  
+  // Método de inicialización
+  init: function(core) {
+    try {
+      this._core = core;
+      
+      // Registrar componentes UI
+      this._registerNavigation();
+      this._registerMainPage();
+      
+      console.log('[Mi Primer Plugin] Inicializado correctamente');
+      return true;
+    } catch (error) {
+      console.error('[Mi Primer Plugin] Error de inicialización:', error);
+      return false;
+    }
+  },
+  
+  // ⚠️ PATRÓN CRÍTICO: Patrón Wrapper para inyección de dependencias
+  _registerNavigation: function() {
+    const self = this; // Preservar contexto
+    
+    // Wrapper que inyecta dependencias al componente
+    function NavigationWrapper(propsFromAtlas) {
+      return React.createElement(MiPluginNavItem, {
+        ...propsFromAtlas,          // Props de Atlas (ej. onNavigate)
+        plugin: self,               // Instancia del plugin
+        core: self._core,           // API de Core
+        pluginId: self.id,          // ID del plugin
+        pageIdToNavigate: self._PAGE_ID  // ID de página para navegación
+      });
+    }
+    
+    // Registrar el Wrapper (no el componente directamente)
+    this._navigationExtensionId = this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().MAIN_NAVIGATION,
+      NavigationWrapper,
+      { order: 100 }
+    );
+  },
+  
+  // ⚠️ REGISTRO CRÍTICO: El pageId DEBE estar en props
+  _registerMainPage: function() {
+    const self = this;
+    
+    function PageWrapper(propsFromAtlas) {
+      return React.createElement(MiPluginMainPage, {
+        ...propsFromAtlas,
+        plugin: self,
+        core: self._core,
+        pluginId: self.id
+      });
+    }
+    
+    // ¡CRUCIAL! El pageId debe estar en props
+    this._pageExtensionId = this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().PLUGIN_PAGES,
+      PageWrapper,
+      {
+        order: 100,
+        props: { 
+          pageId: this._PAGE_ID  // ¡ESTO ES OBLIGATORIO!
+        }
+      }
+    );
+  },
+  
+  // Método de limpieza
+  cleanup: function() {
+    try {
+      // Limpiar extensiones específicas (recomendado)
+      if (this._navigationExtensionId) {
+        this._core.ui.removeExtension(this.id, this._navigationExtensionId);
+      }
+      if (this._pageExtensionId) {
+        this._core.ui.removeExtension(this.id, this._pageExtensionId);
+      }
+      
+      // O limpieza general (alternativa)
+      // this._core.ui.removeAllExtensions(this.id);
+      
+      console.log('[Mi Primer Plugin] Limpieza completada');
+      return true;
+    } catch (error) {
+      console.error('[Mi Primer Plugin] Error en limpieza:', error);
+      return false;
+    }
+  }
+};
+```
+
+### Paso 3: Componente de Navegación (components/MiPluginNavItem.jsx)
+
+```javascript
+import React from 'react';
+
+function MiPluginNavItem(props) {
+  // ⚠️ NAVEGACIÓN CRÍTICA: Usar exactamente el mismo pageId
+  const handleClick = () => {
+    props.onNavigate(props.pluginId, props.pageIdToNavigate);
+  };
+  
+  return React.createElement(
+    'div',
+    {
+      className: 'navigation-item',
+      onClick: handleClick,
+      style: { cursor: 'pointer', padding: '8px' }
+    },
+    [
+      React.createElement(
+        'span',
+        { className: 'material-icons', key: 'icon' },
+        'extension'
+      ),
+      React.createElement(
+        'span',
+        { key: 'label', style: { marginLeft: '8px' } },
+        'Mi Plugin'
+      )
+    ]
+  );
+}
+
+export default MiPluginNavItem;
+```
+
+### Paso 4: Página Principal (components/MiPluginMainPage.jsx)
+
+```javascript
+import React from 'react';
+
+function MiPluginMainPage(props) {
+  return React.createElement(
+    'div',
+    { className: 'plugin-page', style: { padding: '20px' } },
+    [
+      React.createElement('h1', { key: 'title' }, 'Mi Primer Plugin'),
+      React.createElement(
+        'p', 
+        { key: 'description' }, 
+        '¡Felicitaciones! Tu plugin está funcionando correctamente.'
+      ),
+      React.createElement(
+        'div',
+        { key: 'info' },
+        [
+          React.createElement('h2', { key: 'info-title' }, 'Información del Plugin:'),
+          React.createElement('p', { key: 'plugin-id' }, `ID: ${props.pluginId}`),
+          React.createElement('p', { key: 'page-id' }, `Página ID: ${props.pageId}`)
+        ]
+      )
+    ]
+  );
+}
+
+export default MiPluginMainPage;
+```
+
+### Paso 5: Constantes (utils/constants.js)
+
+```javascript
+// Constantes para tu plugin
+export const PLUGIN_CONFIG = {
+  STORAGE_KEY: 'plugin_data',
+  VERSION: '1.0.0'
+};
+
+export const UI_CONSTANTS = {
+  COLORS: {
+    PRIMARY: '#007bff',
+    SUCCESS: '#28a745',
+    WARNING: '#ffc107',
+    DANGER: '#dc3545'
+  }
+};
+```
+
+### Paso 6: Verificación
+
+Si seguiste estos pasos correctamente:
+
+1. **El plugin se carga**: Aparece en la lista de plugins de Atlas
+2. **El item de navegación funciona**: Aparece en la navegación principal
+3. **La página se muestra**: Al hacer clic en el item de navegación, se muestra tu página principal
+
+### Problemas Comunes en el Primer Plugin
+
+#### Error: "La página no se muestra"
+**Causa**: El `pageId` en `props` del registro de página no coincide con el usado en `onNavigate`.
+**Solución**: Verifica que ambos usen exactamente el mismo valor.
+
+#### Error: "Cannot read property of undefined"
+**Causa**: No importaste React o hay problemas con el patrón Wrapper.
+**Solución**: Importa React explícitamente y usa el patrón Wrapper mostrado arriba.
+
+#### Error: "Plugin no se carga"
+**Causa**: Error de sintaxis o falta algún método obligatorio.
+**Solución**: Verifica que `init` y `cleanup` estén definidos y devuelvan `true`.
+
 ## Estructura básica de un plugin
 
 Un plugin de Atlas se define como un objeto JavaScript con propiedades y métodos específicos. La estructura básica es la siguiente:
 
 ```javascript
+import React from 'react'; // ⚠️ OBLIGATORIO en archivos que usen React
+
 export default {
   // Metadatos del plugin
   id: 'mi-plugin',
@@ -73,7 +329,7 @@ export default {
   description: 'Descripción de mi plugin',
   author: 'Tu Nombre',
   
-  // Restricciones de compatibilidad
+  // Restricciones de compatibilidad (⚠️ OBLIGATORIO)
   minAppVersion: '0.3.0',
   maxAppVersion: '1.0.0',
   
@@ -83,6 +339,11 @@ export default {
   
   // Permisos requeridos
   permissions: ['storage', 'events', 'ui'],
+  
+  // Variables internas (recomendado para tracking)
+  _core: null,
+  _subscriptions: [],
+  _extensionIds: {},
   
   // API pública (opcional)
   publicAPI: {
@@ -116,7 +377,8 @@ mi-plugin/
 ├── components/               // Componentes React/UI
 │   ├── SidebarWidget.jsx     // Widget para la barra lateral
 │   ├── MainPage.jsx          // Página principal del plugin
-│   └── SettingsPanel.jsx     // Panel de configuración
+│   ├── SettingsPanel.jsx     // Panel de configuración
+│   └── MyForm.jsx            // Formularios del plugin
 ├── services/                 // Lógica de servicios
 │   ├── api.js                // Comunicación con APIs externas
 │   └── storage.js            // Manejo de almacenamiento
@@ -128,6 +390,13 @@ mi-plugin/
 └── package.json              // Para dependencias y metadatos
 ```
 
+⚠️ **IMPORTANTE**: Todos los archivos `.jsx` deben importar React explícitamente:
+
+```javascript
+// En cada archivo .jsx
+import React from 'react';
+```
+
 ## Metadatos del plugin
 
 Los metadatos son propiedades que describen tu plugin y determinan cómo interactúa con Atlas:
@@ -137,8 +406,8 @@ Los metadatos son propiedades que describen tu plugin y determinan cómo interac
 - **version**: Sigue el formato de [versionado semántico](https://semver.org/) (X.Y.Z)
 - **description**: Breve descripción de lo que hace tu plugin
 - **author**: Tu nombre o el de tu organización
-- **minAppVersion**: Versión mínima de Atlas compatible con tu plugin
-- **maxAppVersion**: Versión máxima de Atlas compatible con tu plugin
+- **minAppVersion**: Versión mínima de Atlas compatible con tu plugin ⚠️ **RECOMENDADO**
+- **maxAppVersion**: Versión máxima de Atlas compatible con tu plugin ⚠️ **RECOMENDADO**
 - **priority** (opcional): Prioridad de carga (número menor = mayor prioridad)
 - **core** (opcional): Establécelo a `true` si tu plugin es un componente crítico para la aplicación
 
@@ -151,8 +420,8 @@ Ejemplo:
   version: '1.2.0',
   description: 'Permite exportar eventos del calendario a diversos formatos',
   author: 'Tu Nombre',
-  minAppVersion: '0.3.0',
-  maxAppVersion: '1.0.0',
+  minAppVersion: '0.3.0', // ⚠️ Incluir para compatibilidad
+  maxAppVersion: '1.0.0', // ⚠️ Incluir para compatibilidad
   priority: 100,
   core: false
 }
@@ -168,40 +437,72 @@ El método `init` se llama cuando el plugin se activa. Recibe el objeto `core` q
 init: function(core) {
   const self = this; // Preservar el contexto 'this'
   
-  // Se recomienda devolver una Promise para manejar operaciones asíncronas
-  return new Promise(function(resolve) {
-    try {
-      // Guardar referencia al core
-      self._core = core;
-      
-      // Cargar datos almacenados (operación asíncrona)
-      core.storage.getItem(self.id, 'plugin-data', null)
-        .then(function(savedData) {
-          if (savedData) {
-            self._data = savedData;
-          }
-          
-          // Configurar el resto del plugin
-          self._setupEventListeners();
-          self._registerUIExtensions();
-          
-          // Registrar API pública si existe
-          if (self.publicAPI) {
-            core.plugins.registerAPI(self.id, self.publicAPI);
-          }
-          
-          console.log('[Mi Plugin] Inicializado correctamente');
-          resolve(true);
-        })
-        .catch(function(error) {
-          console.error('[Mi Plugin] Error al cargar datos:', error);
-          resolve(false);
-        });
-    } catch (error) {
-      console.error('[Mi Plugin] Error durante la inicialización:', error);
-      resolve(false);
+  try {
+    // Guardar referencia al core
+    self._core = core;
+    
+    // Inicializar arrays de tracking (recomendado)
+    self._subscriptions = [];
+    self._extensionIds = {};
+    
+    // Configurar el plugin
+    self._setupEventListeners();
+    self._registerUIExtensions();
+    
+    // Registrar API pública si existe
+    if (self.publicAPI) {
+      core.plugins.registerAPI(self.id, self.publicAPI);
     }
-  });
+    
+    console.log(`[${self.name}] Inicializado correctamente`);
+    return true;
+  } catch (error) {
+    console.error(`[${self.name}] Error durante la inicialización:`, error);
+    return false;
+  }
+}
+```
+
+#### Inicialización Asíncrona (Con Almacenamiento)
+
+Si tu plugin necesita cargar datos del almacenamiento, el método `init` debe ser asíncrono:
+
+```javascript
+init: async function(core) {
+  const self = this;
+  
+  try {
+    self._core = core;
+    
+    // ⚠️ CRÍTICO: Cargar datos almacenados primero
+    await self._loadDataFromStorage();
+    
+    // Luego configurar el resto del plugin
+    self._setupEventListeners();
+    self._registerUIExtensions();
+    
+    if (self.publicAPI) {
+      core.plugins.registerAPI(self.id, self.publicAPI);
+    }
+    
+    console.log(`[${self.name}] Inicializado correctamente`);
+    return true;
+  } catch (error) {
+    console.error(`[${self.name}] Error durante la inicialización:`, error);
+    return false;
+  }
+}
+
+// Método auxiliar para cargar datos
+async _loadDataFromStorage() {
+  const STORAGE_KEY = 'plugin_data'; // ⚠️ Define constantes para claves
+  const storedData = await this._core.storage.getItem(
+    this.id, 
+    STORAGE_KEY, 
+    {} // ⚠️ CRUCIAL: Proporcionar valor por defecto
+  );
+  
+  this._data = storedData || {};
 }
 ```
 
@@ -214,16 +515,15 @@ El método `cleanup` se llama cuando el plugin se desactiva. Debes liberar todos
 ```javascript
 cleanup: function() {
   try {
-    // Guardar datos
-    if (this._core) {
-      this._core.storage.setItem(this.id, 'plugin-data', this._data)
-        .catch(function(error) {
-          console.error('[Mi Plugin] Error al guardar datos:', error);
-        });
-    }
+    // ⚠️ IMPORTANTE: Limpiar extensiones específicas
+    Object.entries(this._extensionIds).forEach(([zone, extensionId]) => {
+      this._core.ui.removeExtension(this.id, extensionId);
+    });
     
-    // Cancelar suscripciones a eventos
-    this._unsubscribeFromEvents();
+    // ⚠️ IMPORTANTE: Cancelar suscripciones a eventos
+    this._subscriptions.forEach(unsub => {
+      if (typeof unsub === 'function') unsub();
+    });
     
     // Limpiar temporizadores
     if (this._timerId) {
@@ -231,11 +531,50 @@ cleanup: function() {
       this._timerId = null;
     }
     
-    console.log('[Mi Plugin] Limpieza completada');
+    console.log(`[${this.name}] Limpieza completada`);
     return true;
   } catch (error) {
-    console.error('[Mi Plugin] Error durante la limpieza:', error);
+    console.error(`[${this.name}] Error durante la limpieza:`, error);
     return false;
+  }
+}
+```
+
+#### Limpieza Asíncrona (Con Almacenamiento)
+
+Si tu plugin guarda datos, la limpieza también debe ser asíncrona:
+
+```javascript
+cleanup: async function() {
+  try {
+    // ⚠️ IMPORTANTE: Guardar datos antes de limpiar
+    await this._saveDataToStorage();
+    
+    // Limpiar extensiones
+    Object.entries(this._extensionIds).forEach(([zone, extensionId]) => {
+      this._core.ui.removeExtension(this.id, extensionId);
+    });
+    
+    // Cancelar suscripciones
+    this._subscriptions.forEach(unsub => {
+      if (typeof unsub === 'function') unsub();
+    });
+    
+    console.log(`[${this.name}] Limpieza completada`);
+    return true;
+  } catch (error) {
+    console.error(`[${this.name}] Error durante la limpieza:`, error);
+    return false;
+  }
+}
+
+// Método auxiliar para guardar datos
+async _saveDataToStorage() {
+  const STORAGE_KEY = 'plugin_data';
+  try {
+    await this._core.storage.setItem(this.id, STORAGE_KEY, this._data);
+  } catch (error) {
+    console.error(`[${this.name}] Error al guardar datos:`, error);
   }
 }
 ```
@@ -249,17 +588,64 @@ El objeto `core` proporcionado durante la inicialización contiene varias APIs:
 La API `storage` permite guardar y recuperar datos persistentes:
 
 ```javascript
-// Guardar datos
-await core.storage.setItem(pluginId, 'miClave', misDatos);
+// ⚠️ PATRÓN RECOMENDADO: Definir constantes para claves
+const STORAGE_KEY_DATA = 'plugin_data';
+const STORAGE_KEY_SETTINGS = 'settings';
 
-// Recuperar datos
-const misDatos = await core.storage.getItem(pluginId, 'miClave', valorPorDefecto);
+// Guardar datos
+await core.storage.setItem(pluginId, STORAGE_KEY_DATA, misDatos);
+
+// Recuperar datos con valor por defecto ⚠️ CRUCIAL
+const misDatos = await core.storage.getItem(pluginId, STORAGE_KEY_DATA, valorPorDefecto);
 
 // Eliminar datos
-await core.storage.removeItem(pluginId, 'miClave');
+await core.storage.removeItem(pluginId, STORAGE_KEY_DATA);
 
 // Limpiar todos los datos del plugin
 await core.storage.clearPluginData(pluginId);
+```
+
+⚠️ **PATRONES CRÍTICOS DE ALMACENAMIENTO:**
+
+```javascript
+// 1. Método de carga con manejo de errores
+async _loadDataFromStorage() {
+  const STORAGE_KEY = 'data';
+  try {
+    const storedData = await this._core.storage.getItem(
+      this.id, 
+      STORAGE_KEY, 
+      [] // ⚠️ SIEMPRE proporcionar valor por defecto
+    );
+    this._data = storedData || []; // ⚠️ Verificación adicional
+  } catch (error) {
+    console.error(`[${this.name}] Error al cargar datos:`, error);
+    this._data = []; // Valor de emergencia
+  }
+}
+
+// 2. Método de guardado con manejo de errores
+async _saveDataToStorage() {
+  const STORAGE_KEY = 'data';
+  try {
+    await this._core.storage.setItem(this.id, STORAGE_KEY, this._data);
+  } catch (error) {
+    console.error(`[${this.name}] Error al guardar datos:`, error);
+  }
+}
+
+// 3. Métodos internos que modifican datos deben guardar
+async _internalCreateItem(itemData) {
+  const newItem = {
+    id: Date.now().toString(),
+    ...itemData,
+    createdAt: new Date().toISOString()
+  };
+  
+  this._data.push(newItem);
+  await this._saveDataToStorage(); // ⚠️ Guardar después de modificar
+  return newItem;
+}
 ```
 
 El almacenamiento tiene límites impuestos por el sistema de seguridad. Por defecto, cada plugin tiene un límite de 1MB de almacenamiento.
@@ -277,6 +663,9 @@ const unsubscribe = core.events.subscribe(
     // Manejar el evento
   }
 );
+
+// ⚠️ IMPORTANTE: Guardar función de cancelación
+this._subscriptions.push(unsubscribe);
 
 // Publicar un evento
 core.events.publish(
@@ -379,6 +768,9 @@ const extensionId = core.ui.registerExtension(
     props: { /* Props adicionales */ }
   }
 );
+
+// ⚠️ IMPORTANTE: Guardar ID para limpieza posterior
+this._extensionIds[zonaDePuntoDeExtension] = extensionId;
 
 // Eliminar una extensión
 core.ui.removeExtension(pluginId, extensionId);
@@ -634,6 +1026,39 @@ const EXTENSION_ZONES = {
 };
 ```
 
+### Patrón Wrapper para componentes
+
+⚠️ **PATRÓN FUNDAMENTAL**: Para pasar datos del plugin a los componentes UI, debes usar el patrón Wrapper:
+
+```javascript
+// ⚠️ PATRÓN CRÍTICO: Wrapper para inyección de dependencias
+function _createComponentWrapper(ComponenteReal, extraProps = {}) {
+  const self = this; // Preservar contexto del plugin
+  
+  return function ComponentWrapper(propsFromAtlas) {
+    return React.createElement(ComponenteReal, {
+      ...propsFromAtlas,    // Props que Atlas proporciona
+      plugin: self,         // Instancia del plugin
+      core: self._core,     // API de Core
+      pluginId: self.id,    // ID del plugin
+      ...extraProps         // Props adicionales específicas
+    });
+  };
+}
+
+// Uso del patrón:
+const NavigationWrapper = this._createComponentWrapper(MiNavComponent, {
+  pageIdToNavigate: this._PAGE_ID
+});
+
+const extensionId = this._core.ui.registerExtension(
+  this.id,
+  this._core.ui.getExtensionZones().MAIN_NAVIGATION,
+  NavigationWrapper, // Registra el Wrapper, no el componente directamente
+  { order: 100 }
+);
+```
+
 ### Componentes para la barra lateral
 
 ```javascript
@@ -648,11 +1073,13 @@ function SidebarWidget(props) {
   );
 }
 
-// Registrar en la barra lateral
+// Registrar en la barra lateral usando el patrón Wrapper
+const SidebarWrapper = this._createComponentWrapper(SidebarWidget);
+
 const extensionId = core.ui.registerExtension(
   pluginId,
   core.ui.getExtensionZones().CALENDAR_SIDEBAR,
-  SidebarWidget,
+  SidebarWrapper,
   { order: 100 }
 );
 ```
@@ -685,10 +1112,10 @@ function DayHeaderExtension(props) {
 }
 
 // Registrar extensión para encabezados de día
-core.ui.registerExtension(
+const extensionId = core.ui.registerExtension(
   pluginId,
   core.ui.getExtensionZones().CALENDAR_DAY_HEADER,
-  DayHeaderExtension,
+  this._createComponentWrapper(DayHeaderExtension),
   { order: 100 }
 );
 ```
@@ -718,10 +1145,10 @@ function HourCellExtension(props) {
 }
 
 // Registrar extensión para celdas de hora
-core.ui.registerExtension(
+const extensionId = core.ui.registerExtension(
   pluginId,
   core.ui.getExtensionZones().CALENDAR_HOUR_CELL,
-  HourCellExtension,
+  this._createComponentWrapper(HourCellExtension),
   { order: 100 }
 );
 ```
@@ -741,10 +1168,10 @@ function EventDetailExtension(props) {
 }
 
 // Registrar extensión para detalles de eventos
-core.ui.registerExtension(
+const extensionId = core.ui.registerExtension(
   pluginId,
   core.ui.getExtensionZones().EVENT_DETAIL_VIEW,
-  EventDetailExtension,
+  this._createComponentWrapper(EventDetailExtension),
   { order: 100 }
 );
 ```
@@ -781,23 +1208,27 @@ function EventFormExtension(props) {
 }
 
 // Registrar extensión para formulario de eventos
-core.ui.registerExtension(
+const extensionId = core.ui.registerExtension(
   pluginId,
   core.ui.getExtensionZones().EVENT_FORM,
-  EventFormExtension,
+  this._createComponentWrapper(EventFormExtension),
   { order: 100 }
 );
 ```
 
 ### Páginas completas de plugin
 
-Los plugins pueden tener páginas completas accesibles desde la navegación principal:
+⚠️ **REGISTRO CRÍTICO**: Las páginas de plugin requieren configuración específica:
 
 ```javascript
+// ⚠️ IMPORTANTE: Define una constante para el ID de página
+const PAGE_ID = 'mi-pagina-principal';
+
 // Componente de navegación
 function NavigationItem(props) {
   const handleClick = () => {
-    props.onNavigate(props.pluginId, 'pagina-principal');
+    // ⚠️ CRÍTICO: Usar exactamente el mismo pageId
+    props.onNavigate(props.pluginId, props.pageIdToNavigate);
   };
   
   return React.createElement(
@@ -831,21 +1262,29 @@ function MainPage(props) {
 }
 
 // Registrar navegación
-core.ui.registerExtension(
-  pluginId,
+const navWrapper = this._createComponentWrapper(NavigationItem, {
+  pageIdToNavigate: PAGE_ID // Pasar el pageId como prop
+});
+
+this._navigationExtensionId = core.ui.registerExtension(
+  this.id,
   core.ui.getExtensionZones().MAIN_NAVIGATION,
-  NavigationItem,
+  navWrapper,
   { order: 100 }
 );
 
-// Registrar página
-core.ui.registerExtension(
-  pluginId,
+// ⚠️ REGISTRO CRUCIAL: pageId DEBE estar en props
+const pageWrapper = this._createComponentWrapper(MainPage);
+
+this._pageExtensionId = core.ui.registerExtension(
+  this.id,
   core.ui.getExtensionZones().PLUGIN_PAGES,
-  MainPage,
+  pageWrapper,
   {
     order: 100,
-    props: { pageId: 'pagina-principal' }
+    props: { 
+      pageId: PAGE_ID // ¡OBLIGATORIO!
+    }
   }
 );
 ```
@@ -882,12 +1321,338 @@ function SettingsWidget(props) {
 }
 
 // Registrar en el panel de configuración
+const settingsWrapper = this._createComponentWrapper(SettingsWidget);
+
 const extensionId = core.ui.registerExtension(
   pluginId,
   core.ui.getExtensionZones().SETTINGS_PANEL,
-  SettingsWidget,
+  settingsWrapper,
   { order: 100 }
 );
+```
+
+## Gestión de estado en componentes React
+
+⚠️ **PATRONES CRÍTICOS** para manejar estado en componentes de plugins:
+
+### 1. Estado para listas dinámicas
+
+```javascript
+function MiListaComponent(props) {
+  // ⚠️ Estado para datos que cambián
+  const [items, setItems] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  
+  // ⚠️ Función para refrescar datos
+  const refreshItems = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const currentItems = await props.plugin.publicAPI.getAllItems();
+      setItems(currentItems);
+    } catch (error) {
+      console.error('Error al cargar items:', error);
+      setItems([]); // Valor de emergencia
+    } finally {
+      setLoading(false);
+    }
+  }, [props.plugin]);
+  
+  // ⚠️ Cargar datos iniciales
+  React.useEffect(() => {
+    refreshItems();
+  }, [refreshItems]);
+  
+  // ⚠️ Función para manejar acciones
+  const handleCreateItem = async (itemData) => {
+    try {
+      await props.plugin.publicAPI.createItem(itemData);
+      refreshItems(); // ⚠️ Refrescar después de modificar
+    } catch (error) {
+      console.error('Error al crear item:', error);
+    }
+  };
+  
+  if (loading) {
+    return React.createElement('div', {}, 'Cargando...');
+  }
+  
+  return React.createElement(
+    'div',
+    { className: 'items-list' },
+    [
+      React.createElement('h2', { key: 'title' }, 'Mi Lista'),
+      React.createElement(
+        'button',
+        { key: 'add-btn', onClick: () => handleCreateItem({ name: 'Nuevo item' }) },
+        'Añadir Item'
+      ),
+      React.createElement(
+        'ul',
+        { key: 'list' },
+        items.map((item, index) => 
+          React.createElement(
+            'li', 
+            { key: item.id || index }, // ⚠️ Key única obligatoria
+            item.name
+          )
+        )
+      )
+    ]
+  );
+}
+```
+
+### 2. Estado para formularios
+
+```javascript
+function MiFormulario(props) {
+  // ⚠️ Estado inicial basado en props
+  const [formData, setFormData] = React.useState({
+    name: '',
+    description: '',
+    status: 'active'
+  });
+  
+  // ⚠️ Resetear formulario cuando cambian las props
+  React.useEffect(() => {
+    if (props.existingItem) {
+      setFormData(props.existingItem);
+    } else {
+      setFormData({ name: '', description: '', status: 'active' });
+    }
+  }, [props.existingItem]);
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // ⚠️ Validación básica
+    if (!formData.name.trim()) {
+      alert('El nombre es obligatorio');
+      return;
+    }
+    
+    try {
+      if (props.existingItem) {
+        await props.plugin.publicAPI.updateItem(props.existingItem.id, formData);
+      } else {
+        await props.plugin.publicAPI.createItem(formData);
+      }
+      
+      // ⚠️ Callback al componente padre
+      if (props.onSave) {
+        props.onSave(formData);
+      }
+    } catch (error) {
+      console.error('Error al guardar:', error);
+    }
+  };
+  
+  return React.createElement(
+    'form',
+    { onSubmit: handleSubmit },
+    [
+      React.createElement(
+        'input',
+        {
+          key: 'name',
+          type: 'text',
+          name: 'name',
+          value: formData.name,
+          onChange: handleChange,
+          placeholder: 'Nombre'
+        }
+      ),
+      React.createElement(
+        'textarea',
+        {
+          key: 'description',
+          name: 'description',
+          value: formData.description,
+          onChange: handleChange,
+          placeholder: 'Descripción'
+        }
+      ),
+      React.createElement(
+        'select',
+        {
+          key: 'status',
+          name: 'status',
+          value: formData.status,
+          onChange: handleChange
+        },
+        [
+          React.createElement('option', { key: 'active', value: 'active' }, 'Activo'),
+          React.createElement('option', { key: 'inactive', value: 'inactive' }, 'Inactivo')
+        ]
+      ),
+      React.createElement(
+        'button',
+        { key: 'submit', type: 'submit' },
+        props.existingItem ? 'Actualizar' : 'Crear'
+      )
+    ]
+  );
+}
+```
+
+### 3. Estado para controlar visibilidad (modales/popups)
+
+```javascript
+function ComponenteConModal(props) {
+  const [showModal, setShowModal] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState(null);
+  
+  const handleOpenModal = (item = null) => {
+    setEditingItem(item);
+    setShowModal(true);
+  };
+  
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingItem(null);
+  };
+  
+  const handleSave = (formData) => {
+    // La lógica de guardado se maneja en el formulario
+    handleCloseModal();
+  };
+  
+  return React.createElement(
+    'div',
+    { className: 'component-with-modal' },
+    [
+      React.createElement(
+        'button',
+        { key: 'open-btn', onClick: () => handleOpenModal() },
+        'Crear Nuevo'
+      ),
+      
+      // ⚠️ Renderizado condicional del modal
+      showModal && React.createElement(
+        'div',
+        {
+          key: 'modal',
+          className: 'modal-overlay',
+          style: {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }
+        },
+        React.createElement(
+          'div',
+          {
+            className: 'modal-content',
+            style: {
+              backgroundColor: 'white',
+              padding: '20px',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '90%'
+            }
+          },
+          [
+            React.createElement(MiFormulario, {
+              key: 'form',
+              plugin: props.plugin,
+              existingItem: editingItem,
+              onSave: handleSave
+            }),
+            React.createElement(
+              'button',
+              { key: 'cancel', onClick: handleCloseModal },
+              'Cancelar'
+            )
+          ]
+        )
+      )
+    ]
+  );
+}
+```
+
+### 4. API Pública del Plugin para UI
+
+⚠️ **PATRÓN RECOMENDADO** para exponer funcionalidad a los componentes UI:
+
+```javascript
+// En index.js del plugin
+_createPublicAPI: function() {
+  const self = this;
+  
+  return {
+    // Operaciones de lectura
+    getAllItems: () => [...self._items], // ⚠️ Devolver copia
+    getItem: (id) => self._items.find(item => item.id === id),
+    
+    // Operaciones de escritura (deben ser async si usan storage)
+    createItem: async (itemData) => {
+      return await self._internalCreateItem(itemData);
+    },
+    
+    updateItem: async (id, updateData) => {
+      return await self._internalUpdateItem(id, updateData);
+    },
+    
+    deleteItem: async (id) => {
+      return await self._internalDeleteItem(id);
+    }
+  };
+},
+
+// Métodos internos que realmente modifican los datos
+async _internalCreateItem(itemData) {
+  const newItem = {
+    id: Date.now().toString(),
+    ...itemData,
+    createdAt: new Date().toISOString()
+  };
+  
+  this._items.push(newItem);
+  await this._saveDataToStorage(); // ⚠️ Persistir cambios
+  return newItem;
+},
+
+async _internalUpdateItem(id, updateData) {
+  const index = this._items.findIndex(item => item.id === id);
+  if (index === -1) {
+    throw new Error(`Item con ID ${id} no encontrado`);
+  }
+  
+  this._items[index] = {
+    ...this._items[index],
+    ...updateData,
+    updatedAt: new Date().toISOString()
+  };
+  
+  await this._saveDataToStorage();
+  return this._items[index];
+},
+
+async _internalDeleteItem(id) {
+  const index = this._items.findIndex(item => item.id === id);
+  if (index === -1) {
+    throw new Error(`Item con ID ${id} no encontrado`);
+  }
+  
+  const deletedItem = this._items.splice(index, 1)[0];
+  await this._saveDataToStorage();
+  return deletedItem;
+}
 ```
 
 ## Estilos y temas
@@ -1207,34 +1972,41 @@ const updateSettings = {
 
 ### Manejo asíncrono de datos
 
-Al trabajar con operaciones asíncronas como almacenamiento o solicitudes de red:
+⚠️ **PATRONES CRÍTICOS** para operaciones asíncronas:
 
-1. **Usa Promesas de forma consistente**:
+1. **Init asíncrono para almacenamiento**:
 
 ```javascript
-// Recomendado: devolver Promise desde init
-init: function(core) {
+// ⚠️ RECOMENDADO: Init asíncrono
+init: async function(core) {
   const self = this;
   
-  return new Promise(function(resolve) {
-    // Operaciones asíncronas aquí
-    core.storage.getItem(self.id, 'data', null)
-      .then(function(data) {
-        // Procesar datos
-        resolve(true);
-      })
-      .catch(function(error) {
-        console.error('Error:', error);
-        resolve(false);
-      });
-  });
+  try {
+    self._core = core;
+    
+    // ⚠️ Cargar datos primero
+    await self._loadDataFromStorage();
+    
+    // Luego configurar el resto
+    self._setupEventListeners();
+    self._registerUIExtensions();
+    
+    if (self.publicAPI) {
+      core.plugins.registerAPI(self.id, self.publicAPI);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`[${self.name}] Error de inicialización:`, error);
+    return false;
+  }
 }
 ```
 
-2. **Maneja el contexto `this` correctamente**:
+2. **Manejo correcto del contexto `this`**:
 
 ```javascript
-// Problema: contexto 'this' perdido en callbacks
+// ⚠️ PROBLEMA: contexto 'this' perdido en callbacks
 init: function(core) {
   this._core = core;
   
@@ -1245,7 +2017,7 @@ init: function(core) {
     });
 }
 
-// Solución 1: Guardar 'this' en una variable
+// ✅ SOLUCIÓN 1: Guardar 'this' en una variable
 init: function(core) {
   const self = this;
   this._core = core;
@@ -1256,7 +2028,7 @@ init: function(core) {
     });
 }
 
-// Solución 2: Usar funciones flecha (si el entorno lo permite)
+// ✅ SOLUCIÓN 2: Usar funciones flecha (recomendado)
 init: function(core) {
   this._core = core;
   
@@ -1265,44 +2037,54 @@ init: function(core) {
       this._data = data; // Funciona correctamente
     });
 }
+
+// ✅ SOLUCIÓN 3: Async/await (más limpio)
+init: async function(core) {
+  try {
+    this._core = core;
+    
+    const data = await core.storage.getItem(this.id, 'data', null);
+    this._data = data;
+    
+    return true;
+  } catch (error) {
+    console.error('Error:', error);
+    return false;
+  }
+}
 ```
 
-3. **Implementa inicialización por etapas** para tareas complejas:
+3. **Implementación por etapas para tareas complejas**:
 
 ```javascript
-init: function(core) {
+init: async function(core) {
   const self = this;
   
-  return new Promise(function(resolve) {
-    // Paso 1: Cargar datos
-    function step1() {
-      return core.storage.getItem(self.id, 'data', null);
+  try {
+    // Paso 1: Configuración básica
+    self._core = core;
+    self._subscriptions = [];
+    self._extensionIds = {};
+    
+    // Paso 2: Cargar datos
+    await self._loadDataFromStorage();
+    
+    // Paso 3: Configurar dependencias de datos
+    await self._setupDataDependentFeatures();
+    
+    // Paso 4: Registrar UI
+    self._registerUIExtensions();
+    
+    // Paso 5: API pública
+    if (self.publicAPI) {
+      core.plugins.registerAPI(self.id, self.publicAPI);
     }
     
-    // Paso 2: Configurar cosas que dependen de los datos
-    function step2(data) {
-      self._data = data || { configuracion: {} };
-      return self._setupSomething(self._data);
-    }
-    
-    // Paso 3: Finalizar inicialización
-    function step3() {
-      self._registerUIExtensions();
-      return true;
-    }
-    
-    // Ejecutar pasos en secuencia
-    step1()
-      .then(step2)
-      .then(step3)
-      .then(function(success) {
-        resolve(success);
-      })
-      .catch(function(error) {
-        console.error('Error en inicialización:', error);
-        resolve(false);
-      });
-  });
+    return true;
+  } catch (error) {
+    console.error(`[${self.name}] Error en inicialización:`, error);
+    return false;
+  }
 }
 ```
 
@@ -1316,7 +2098,7 @@ Una buena gestión de errores es crucial para plugins estables:
 try {
   // Código que podría fallar
 } catch (error) {
-  console.error('[Mi Plugin] Error:', error);
+  console.error(`[${this.name}] Error:`, error);
   // Manejar el error apropiadamente
 }
 ```
@@ -1324,13 +2106,13 @@ try {
 2. **Valida datos antes de usarlos**:
 
 ```javascript
-// Malo: Acceso directo sin validación
+// ⚠️ Malo: Acceso directo sin validación
 function processData(data) {
   const result = data.items.filter(item => item.active);
   return result;
 }
 
-// Bueno: Validación antes de uso
+// ✅ Bueno: Validación antes de uso
 function processData(data) {
   if (!data || !Array.isArray(data.items)) {
     console.warn('Datos inválidos, usando valores predeterminados');
@@ -1372,23 +2154,42 @@ core.storage.getItem(this.id, 'data')
 
 ### Prevención de errores comunes
 
-Evita estos errores comunes en el desarrollo de plugins:
+⚠️ **ERRORES FRECUENTES** y cómo evitarlos:
 
 1. **Problema**: Usar `async/await` directamente en la definición de funciones de objeto:
 
 ```javascript
-// Incorrecto: Puede causar errores de sintaxis en algunos entornos
+// ❌ Incorrecto: Puede causar errores de sintaxis en algunos entornos
 {
   init: async function(core) { /* ... */ }
 }
 
-// Correcto: Usar Promise explícita
+// ✅ Correcto: Usar async dentro de la función
 {
   init: function(core) {
-    return new Promise(async function(resolve) {
-      // Código asíncrono aquí
-      resolve(true);
+    return new Promise(async (resolve) => {
+      try {
+        // Código asíncrono aquí
+        await this._loadData();
+        resolve(true);
+      } catch (error) {
+        console.error('Error:', error);
+        resolve(false);
+      }
     });
+  }
+}
+
+// ✅ Alternativa (más simple y moderna):
+{
+  init: async function(core) {
+    try {
+      await this._loadData();
+      return true;
+    } catch (error) {
+      console.error('Error:', error);
+      return false;
+    }
   }
 }
 ```
@@ -1396,12 +2197,12 @@ Evita estos errores comunes en el desarrollo de plugins:
 2. **Problema**: No verificar si los objetos existen antes de acceder a sus propiedades:
 
 ```javascript
-// Incorrecto: Acceso sin verificación
+// ❌ Incorrecto: Acceso sin verificación
 function doSomething(props) {
   const count = props.data.items.length; // Error si props.data es undefined
 }
 
-// Correcto: Verificar antes de acceder
+// ✅ Correcto: Verificar antes de acceder
 function doSomething(props) {
   if (props && props.data && Array.isArray(props.data.items)) {
     const count = props.data.items.length;
@@ -1411,23 +2212,53 @@ function doSomething(props) {
   }
 }
 
-// Alternativa concisa con operador opcional (si el entorno lo soporta)
+// ✅ Alternativa concisa (si el entorno lo soporta)
 function doSomething(props) {
   const count = props?.data?.items?.length || 0;
   // continuar
 }
 ```
 
-3. **Problema**: Inicialización insegura en componentes React:
+3. **Problema**: No incluir key props en listas de React:
 
 ```javascript
-// Incorrecto: Asume que plugin.publicAPI existe
+// ❌ Incorrecto: Sin key props
+function MiLista(props) {
+  return React.createElement(
+    'ul',
+    {},
+    props.items.map((item) => 
+      React.createElement('li', {}, item.name) // ⚠️ Falta key
+    )
+  );
+}
+
+// ✅ Correcto: Con key props únicas
+function MiLista(props) {
+  return React.createElement(
+    'ul',
+    {},
+    props.items.map((item, index) => 
+      React.createElement(
+        'li', 
+        { key: item.id || index }, // ✅ Key única
+        item.name
+      )
+    )
+  );
+}
+```
+
+4. **Problema**: Inicialización insegura en componentes React:
+
+```javascript
+// ❌ Incorrecto: Asume que plugin.publicAPI existe
 function Dashboard(props) {
-  const [stats, setStats] = useState(props.plugin.publicAPI.getStats());
+  const [stats, setStats] = React.useState(props.plugin.publicAPI.getStats());
   // ...
 }
 
-// Correcto: Inicialización segura con valores predeterminados
+// ✅ Correcto: Inicialización segura con valores predeterminados
 function Dashboard(props) {
   const getInitialStats = () => {
     try {
@@ -1437,16 +2268,16 @@ function Dashboard(props) {
     }
   };
   
-  const [stats, setStats] = useState(getInitialStats());
+  const [stats, setStats] = React.useState(getInitialStats());
   // ...
 }
 ```
 
-4. **Problema**: No limpiar recursos adecuadamente:
+5. **Problema**: No limpiar recursos adecuadamente:
 
 ```javascript
-// Incorrecto: Suscripción sin limpieza
-useEffect(() => {
+// ❌ Incorrecto: Suscripción sin limpieza
+React.useEffect(() => {
   const subscription = props.core.events.subscribe(
     'event',
     handleEvent
@@ -1454,8 +2285,8 @@ useEffect(() => {
   // Sin función de limpieza
 }, []);
 
-// Correcto: Limpieza adecuada
-useEffect(() => {
+// ✅ Correcto: Limpieza adecuada
+React.useEffect(() => {
   const subscription = props.core.events.subscribe(
     'event',
     handleEvent
@@ -1467,6 +2298,47 @@ useEffect(() => {
     }
   };
 }, []);
+```
+
+6. **Problema**: No usar el patrón Wrapper correctamente:
+
+```javascript
+// ❌ Incorrecto: Registrar componente directamente
+core.ui.registerExtension(
+  pluginId,
+  zone,
+  MiComponente, // Componente no tendrá acceso al plugin
+  options
+);
+
+// ✅ Correcto: Usar patrón Wrapper
+const ComponentWrapper = this._createComponentWrapper(MiComponente);
+core.ui.registerExtension(
+  pluginId,
+  zone,
+  ComponentWrapper, // Wrapper inyecta dependencias
+  options
+);
+```
+
+7. **Problema**: pageId no coincide en navegación:
+
+```javascript
+// ❌ Incorrecto: pageId diferentes
+// En registro de página:
+props: { pageId: 'mi-pagina' }
+
+// En navegación:
+props.onNavigate(pluginId, 'mi-pagina-principal'); // ¡No coincide!
+
+// ✅ Correcto: Usar constante
+const PAGE_ID = 'mi-pagina-principal';
+
+// En registro:
+props: { pageId: PAGE_ID }
+
+// En navegación:
+props.onNavigate(pluginId, PAGE_ID);
 ```
 
 ### Optimización de rendimiento
@@ -1498,7 +2370,7 @@ function MyComponent(props) {
     return computeExpensiveValue(props.data);
   }, [props.data]);
   
-  return <div>{expensiveResult}</div>;
+  return React.createElement('div', {}, expensiveResult);
 }
 ```
 
@@ -1507,15 +2379,23 @@ function MyComponent(props) {
 ```javascript
 // Evitar recrear funciones en cada renderizado
 function MyComponent() {
-  // Mal: Se crea una nueva función en cada renderizado
-  return <Button onClick={() => handleClick()} />;
+  // ❌ Mal: Se crea una nueva función en cada renderizado
+  return React.createElement(
+    'button', 
+    { onClick: () => handleClick() }, 
+    'Click me'
+  );
   
-  // Bien: Usar useCallback
+  // ✅ Bien: Usar useCallback
   const handleButtonClick = React.useCallback(() => {
     handleClick();
   }, []);
   
-  return <Button onClick={handleButtonClick} />;
+  return React.createElement(
+    'button', 
+    { onClick: handleButtonClick }, 
+    'Click me'
+  );
 }
 ```
 
@@ -1524,8 +2404,8 @@ function MyComponent() {
 ```javascript
 // Cargar grandes conjuntos de datos solo cuando sea necesario
 function UserList() {
-  const [users, setUsers] = useState([]);
-  const [loaded, setLoaded] = useState(false);
+  const [users, setUsers] = React.useState([]);
+  const [loaded, setLoaded] = React.useState(false);
   
   const loadUsers = () => {
     if (!loaded) {
@@ -1536,11 +2416,17 @@ function UserList() {
     }
   };
   
-  return (
-    <div>
-      {!loaded && <button onClick={loadUsers}>Cargar usuarios</button>}
-      {loaded && <UserTable users={users} />}
-    </div>
+  return React.createElement(
+    'div',
+    {},
+    [
+      !loaded && React.createElement(
+        'button', 
+        { key: 'load', onClick: loadUsers }, 
+        'Cargar usuarios'
+      ),
+      loaded && React.createElement(UserTable, { key: 'table', users: users })
+    ]
   );
 }
 ```
@@ -1555,11 +2441,11 @@ Para depurar tu plugin de manera efectiva:
 
 ```javascript
 function log(message, data) {
-  console.log(`[${this.id}] ${message}`, data);
+  console.log(`[${this.name || this.id}] ${message}`, data);
 }
 
 function error(message, err) {
-  console.error(`[${this.id}] ${message}`, err);
+  console.error(`[${this.name || this.id}] ${message}`, err);
 }
 ```
 
@@ -1567,13 +2453,13 @@ function error(message, err) {
 
 ```javascript
 // Para ver el estado completo del plugin
-console.log('[Mi Plugin] Estado actual:', JSON.parse(JSON.stringify(this)));
+console.log(`[${this.name}] Estado actual:`, JSON.parse(JSON.stringify(this)));
 
 // Para ver una versión limpia para inspección
-console.log('[Mi Plugin] Datos:', {
+console.log(`[${this.name}] Datos:`, {
   configuracion: this._data.configuracion,
   contador: this._data.contador,
-  eventos: this._data.registroEventos.length
+  eventos: this._data.registroEventos?.length || 0
 });
 ```
 
@@ -1591,7 +2477,7 @@ function DebugComponent(props) {
     };
   }, []);
   
-  return <div>Componente</div>;
+  return React.createElement('div', {}, 'Componente');
 }
 ```
 
@@ -1631,20 +2517,20 @@ Si un evento no funciona como esperas, puedes verificar:
 
 ### Errores comunes y soluciones
 
-Estos son errores frecuentes y cómo solucionarlos:
+⚠️ **ERRORES FRECUENTES** y sus soluciones:
 
 1. **Error**: `Cannot read property 'X' of undefined`
 
    **Solución**: Verificar que los objetos existen antes de acceder a sus propiedades.
    
    ```javascript
-   // Incorrecto
+   // ❌ Incorrecto
    const value = obj.prop.deepProp;
    
-   // Correcto
+   // ✅ Correcto
    const value = obj && obj.prop ? obj.prop.deepProp : undefined;
    
-   // Alternativa (si el entorno lo soporta)
+   // ✅ Alternativa (si el entorno lo soporta)
    const value = obj?.prop?.deepProp;
    ```
 
@@ -1653,13 +2539,13 @@ Estos son errores frecuentes y cómo solucionarlos:
    **Solución**: Guardar referencia a `this` o usar funciones flecha.
    
    ```javascript
-   // Guardar 'this'
+   // ✅ Guardar 'this'
    const self = this;
    someFunction(function() {
      self.doSomething();
    });
    
-   // O usar arrow function
+   // ✅ O usar arrow function
    someFunction(() => {
      this.doSomething();
    });
@@ -1695,13 +2581,13 @@ Estos son errores frecuentes y cómo solucionarlos:
    **Solución**: Verificar dependencias en useEffect y estructura de datos.
    
    ```javascript
-   // Incorrecto
-   useEffect(() => {
+   // ❌ Incorrecto
+   React.useEffect(() => {
      fetchData().then(setData);
    }, []); // Falta dependencia
    
-   // Correcto
-   useEffect(() => {
+   // ✅ Correcto
+   React.useEffect(() => {
      fetchData().then(setData);
    }, [fetchData]); // Incluye todas las dependencias
    ```
@@ -1711,14 +2597,14 @@ Estos son errores frecuentes y cómo solucionarlos:
    **Solución**: Usar correctamente then/catch o async/await.
    
    ```javascript
-   // Incorrecto
+   // ❌ Incorrecto
    function saveData() {
      core.storage.setItem(id, 'data', data);
      // Continúa sin esperar a que termine la operación
      doNextThing();
    }
    
-   // Correcto con then/catch
+   // ✅ Correcto con then/catch
    function saveData() {
      core.storage.setItem(id, 'data', data)
        .then(() => {
@@ -1729,7 +2615,7 @@ Estos son errores frecuentes y cómo solucionarlos:
        });
    }
    
-   // Correcto con async/await
+   // ✅ Correcto con async/await
    async function saveData() {
      try {
        await core.storage.setItem(id, 'data', data);
@@ -1745,13 +2631,13 @@ Estos son errores frecuentes y cómo solucionarlos:
    **Solución**: Verificar que estás suscrito a los nombres correctos de eventos.
    
    ```javascript
-   // Los nombres correctos de eventos son:
+   // ✅ Los nombres correctos de eventos son:
    'calendar.eventCreated'    // NO 'calendar.create'
    'calendar.eventUpdated'    // NO 'calendar.update'
    'calendar.eventDeleted'    // NO 'calendar.delete'
    'calendar.eventsLoaded'    // Cuando se cargan todos los eventos
    
-   // Ejemplo correcto:
+   // ✅ Ejemplo correcto:
    core.events.subscribe(
      pluginId,
      'calendar.eventUpdated',
@@ -1763,11 +2649,52 @@ Estos son errores frecuentes y cómo solucionarlos:
    );
    ```
 
+7. **Error**: "La página del plugin no se muestra"
+
+   **Causa**: El `pageId` en el registro no coincide con el usado en navegación.
+   
+   **Solución**: Usar exactamente el mismo `pageId`:
+   
+   ```javascript
+   // ✅ Definir constante
+   const PAGE_ID = 'mi-pagina-principal';
+   
+   // ✅ En registro de página:
+   core.ui.registerExtension(
+     pluginId,
+     core.ui.getExtensionZones().PLUGIN_PAGES,
+     PageWrapper,
+     {
+       order: 100,
+       props: { pageId: PAGE_ID } // ✅ Usar constante
+     }
+   );
+   
+   // ✅ En navegación:
+   props.onNavigate(props.pluginId, PAGE_ID); // ✅ Misma constante
+   ```
+
+8. **Error**: "Warning: Each child in a list should have a unique 'key' prop"
+
+   **Solución**: Añadir key props únicas a elementos de lista:
+   
+   ```javascript
+   // ✅ Correcto: Key props en listas
+   Object.keys(VIDEO_STATUS).map(statusKey => 
+     React.createElement('option', { 
+       key: VIDEO_STATUS[statusKey], // ✅ Key única obligatoria
+       value: VIDEO_STATUS[statusKey] 
+     }, statusKey)
+   )
+   ```
+
 ## Ejemplos prácticos
 
 ### Plugin simple con extensión de calendario
 
 ```javascript
+import React from 'react';
+
 export default {
   id: 'calendario-notificador',
   name: 'Notificador de Eventos',
@@ -1785,13 +2712,14 @@ export default {
     showInCells: true
   },
   _subscriptions: [],
+  _extensionIds: {},
   
-  init: function(core) {
+  init: async function(core) {
     try {
       this._core = core;
       
       // Cargar configuración
-      this._loadSettings();
+      await this._loadSettings();
       
       // Registrar extensiones UI
       this._registerUIExtensions();
@@ -1809,10 +2737,10 @@ export default {
     }
   },
   
-  cleanup: function() {
+  cleanup: async function() {
     try {
       // Guardar configuración
-      this._saveSettings();
+      await this._saveSettings();
       
       // Cancelar suscripciones a eventos
       this._subscriptions.forEach(unsub => {
@@ -1881,6 +2809,20 @@ export default {
     // Aquí podrías procesar los cambios de eventos
     // Para este plugin, las extensiones UI reaccionan automáticamente
     console.log('[Notificador] Evento del calendario recibido:', data);
+  },
+  
+  _createComponentWrapper: function(Component, extraProps = {}) {
+    const self = this;
+    
+    return function ComponentWrapper(propsFromAtlas) {
+      return React.createElement(Component, {
+        ...propsFromAtlas,
+        plugin: self,
+        core: self._core,
+        pluginId: self.id,
+        ...extraProps
+      });
+    };
   },
   
   _registerUIExtensions: function() {
@@ -1961,18 +2903,18 @@ export default {
     }
     
     // Registrar extensión para encabezados de día
-    this._core.ui.registerExtension(
+    this._extensionIds.dayHeader = this._core.ui.registerExtension(
       this.id,
       this._core.ui.getExtensionZones().CALENDAR_DAY_HEADER,
-      DayHeaderExtension,
+      this._createComponentWrapper(DayHeaderExtension),
       { order: 100 }
     );
     
     // Registrar extensión para celdas de hora
-    this._core.ui.registerExtension(
+    this._extensionIds.hourCell = this._core.ui.registerExtension(
       this.id,
       this._core.ui.getExtensionZones().CALENDAR_HOUR_CELL,
-      HourCellExtension,
+      this._createComponentWrapper(HourCellExtension),
       { order: 100 }
     );
   },
@@ -2067,10 +3009,10 @@ export default {
     }
     
     // Registrar en el panel de configuración
-    this._core.ui.registerExtension(
+    this._extensionIds.settings = this._core.ui.registerExtension(
       this.id,
       this._core.ui.getExtensionZones().SETTINGS_PANEL,
-      SettingsPanel,
+      this._createComponentWrapper(SettingsPanel),
       { order: 100 }
     );
   }
@@ -2080,6 +3022,8 @@ export default {
 ### Plugin con página completa y API pública
 
 ```javascript
+import React from 'react';
+
 export default {
   id: 'estadisticas-tiempo',
   name: 'Estadísticas de Tiempo',
@@ -2095,71 +3039,77 @@ export default {
     stats: {},
     lastUpdate: null
   },
+  _subscriptions: [],
+  _extensionIds: {},
+  _PAGE_ID: 'estadisticas',
   
-  init: function(core) {
+  init: async function(core) {
     const self = this;
     
-    return new Promise(function(resolve) {
-      try {
-        self._core = core;
-        
-        // Cargar datos
-        core.storage.getItem(self.id, 'stats', { stats: {}, lastUpdate: null })
-          .then(function(data) {
-            self._data = data;
-            
-            // Registrar nav item
-            core.ui.registerExtension(
-              self.id,
-              core.ui.getExtensionZones().MAIN_NAVIGATION,
-              self._createNavItem(),
-              { order: 100 }
-            );
-            
-            // Registrar página
-            core.ui.registerExtension(
-              self.id,
-              core.ui.getExtensionZones().PLUGIN_PAGES,
-              self._createStatsPage(),
-              {
-                order: 100,
-                props: { pageId: 'estadisticas' }
-              }
-            );
-            
-            // Suscribirse a eventos para actualizar estadísticas
-            self._setupEventListeners();
-            
-            // Crear y registrar API pública
-            self.publicAPI = self._createPublicAPI();
-            core.plugins.registerAPI(self.id, self.publicAPI);
-            
-            resolve(true);
-          })
-          .catch(function(error) {
-            console.error('[Estadísticas] Error al cargar datos:', error);
-            resolve(false);
-          });
-      } catch (error) {
-        console.error('[Estadísticas] Error de inicialización:', error);
-        resolve(false);
-      }
-    });
+    try {
+      self._core = core;
+      
+      // Cargar datos
+      await self._loadDataFromStorage();
+      
+      // Registrar navegación y página
+      self._registerNavigation();
+      self._registerMainPage();
+      
+      // Suscribirse a eventos para actualizar estadísticas
+      self._setupEventListeners();
+      
+      // Crear y registrar API pública
+      self.publicAPI = self._createPublicAPI();
+      core.plugins.registerAPI(self.id, self.publicAPI);
+      
+      console.log(`[${self.name}] Inicializado correctamente`);
+      return true;
+    } catch (error) {
+      console.error(`[${self.name}] Error de inicialización:`, error);
+      return false;
+    }
   },
   
-  cleanup: function() {
-    // Guardar datos
-    if (this._core) {
-      this._core.storage.setItem(this.id, 'stats', this._data)
-        .catch(function(error) {
-          console.error('[Estadísticas] Error al guardar datos:', error);
-        });
+  cleanup: async function() {
+    try {
+      // Guardar datos
+      await this._saveDataToStorage();
       
       // Cancelar suscripciones
-      this._core.events.unsubscribeAll(this.id);
+      this._subscriptions.forEach(unsub => {
+        if (typeof unsub === 'function') unsub();
+      });
+      
+      return true;
+    } catch (error) {
+      console.error(`[${this.name}] Error en limpieza:`, error);
+      return false;
     }
-    
-    return true;
+  },
+  
+  async _loadDataFromStorage() {
+    const STORAGE_KEY = 'stats_data';
+    try {
+      const storedData = await this._core.storage.getItem(
+        this.id, 
+        STORAGE_KEY, 
+        { stats: {}, lastUpdate: null }
+      );
+      this._data = storedData || { stats: {}, lastUpdate: null };
+    } catch (error) {
+      console.error(`[${this.name}] Error al cargar datos:`, error);
+      this._data = { stats: {}, lastUpdate: null };
+    }
+  },
+  
+  async _saveDataToStorage() {
+    const STORAGE_KEY = 'stats_data';
+    try {
+      await this._core.storage.setItem(this.id, STORAGE_KEY, this._data);
+    } catch (error) {
+      console.error(`[${this.name}] Error al guardar datos:`, error);
+    }
   },
   
   _createPublicAPI: function() {
@@ -2183,26 +3133,28 @@ export default {
   
   _setupEventListeners: function() {
     // Suscribirse a eventos de calendario
-    this._core.events.subscribe(
+    const createdSub = this._core.events.subscribe(
       this.id,
       'calendar.eventCreated',
       (data) => this._updateStats({ ...data, type: 'created' })
     );
     
-    this._core.events.subscribe(
+    const updatedSub = this._core.events.subscribe(
       this.id,
       'calendar.eventUpdated',
       (data) => this._updateStats({ ...data, type: 'updated' })
     );
     
-    this._core.events.subscribe(
+    const deletedSub = this._core.events.subscribe(
       this.id,
       'calendar.eventDeleted',
       (data) => this._updateStats({ ...data, type: 'deleted' })
     );
+    
+    this._subscriptions.push(createdSub, updatedSub, deletedSub);
   },
   
-  _updateStats: function(eventData) {
+  _updateStats: async function(eventData) {
     // Actualizar estadísticas
     const stats = this._data.stats;
     const date = new Date().toISOString().split('T')[0];
@@ -2229,23 +3181,37 @@ export default {
     );
     
     // Guardar datos
-    this._core.storage.setItem(this.id, 'stats', this._data)
-      .catch(function(error) {
-        console.error('[Estadísticas] Error al guardar estadísticas:', error);
-      });
+    await this._saveDataToStorage();
   },
   
-  _createNavItem: function() {
-    return function NavItem(props) {
+  _createComponentWrapper: function(Component, extraProps = {}) {
+    const self = this;
+    
+    return function ComponentWrapper(propsFromAtlas) {
+      return React.createElement(Component, {
+        ...propsFromAtlas,
+        plugin: self,
+        core: self._core,
+        pluginId: self.id,
+        ...extraProps
+      });
+    };
+  },
+  
+  _registerNavigation: function() {
+    const self = this;
+    
+    function NavItem(props) {
       const handleClick = () => {
-        props.onNavigate(props.pluginId, 'estadisticas');
+        props.onNavigate(props.pluginId, props.pageIdToNavigate);
       };
       
       return React.createElement(
         'div',
         {
           className: 'navigation-item',
-          onClick: handleClick
+          onClick: handleClick,
+          style: { cursor: 'pointer', padding: '8px' }
         },
         [
           React.createElement(
@@ -2255,18 +3221,29 @@ export default {
           ),
           React.createElement(
             'span',
-            { key: 'label' },
+            { key: 'label', style: { marginLeft: '8px' } },
             'Estadísticas'
           )
         ]
       );
-    };
+    }
+    
+    const navWrapper = this._createComponentWrapper(NavItem, {
+      pageIdToNavigate: this._PAGE_ID
+    });
+    
+    this._extensionIds.navigation = this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().MAIN_NAVIGATION,
+      navWrapper,
+      { order: 100 }
+    );
   },
   
-  _createStatsPage: function() {
+  _registerMainPage: function() {
     const self = this;
     
-    return function StatsPage(props) {
+    function StatsPage(props) {
       const [stats, setStats] = React.useState({});
       
       React.useEffect(() => {
@@ -2301,7 +3278,10 @@ export default {
       
       return React.createElement(
         'div',
-        { className: 'stats-page' },
+        { 
+          className: 'stats-page',
+          style: { padding: '20px' }
+        },
         [
           React.createElement('h1', { key: 'title' }, 'Estadísticas de Tiempo'),
           
@@ -2310,7 +3290,16 @@ export default {
             { 
               key: 'download', 
               className: 'download-button',
-              onClick: handleDownload
+              onClick: handleDownload,
+              style: {
+                backgroundColor: 'var(--primary-color)',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                marginBottom: '20px'
+              }
             },
             'Descargar estadísticas'
           ),
@@ -2318,29 +3307,741 @@ export default {
           React.createElement(
             'div',
             { className: 'stats-container', key: 'container' },
-            Object.entries(stats).map(([date, dayStat]) => {
-              return React.createElement(
-                'div',
-                { className: 'stat-item', key: date },
-                [
-                  React.createElement('h3', { key: 'date' }, date),
-                  React.createElement(
-                    'ul',
-                    { key: 'list' },
-                    [
-                      React.createElement('li', { key: 'created' }, `Creados: ${dayStat.created}`),
-                      React.createElement('li', { key: 'updated' }, `Actualizados: ${dayStat.updated}`),
-                      React.createElement('li', { key: 'deleted' }, `Eliminados: ${dayStat.deleted}`),
-                      React.createElement('li', { key: 'total' }, `Total: ${dayStat.created + dayStat.updated + dayStat.deleted}`)
-                    ]
-                  )
-                ]
-              );
-            })
+            Object.entries(stats).length === 0 ?
+              React.createElement('p', { key: 'no-data' }, 'No hay estadísticas disponibles') :
+              Object.entries(stats).map(([date, dayStat]) => {
+                return React.createElement(
+                  'div',
+                  { 
+                    className: 'stat-item', 
+                    key: date,
+                    style: {
+                      backgroundColor: 'var(--card-bg)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      marginBottom: '12px'
+                    }
+                  },
+                  [
+                    React.createElement('h3', { key: 'date' }, date),
+                    React.createElement(
+                      'ul',
+                      { key: 'list', style: { listStyle: 'none', padding: 0 } },
+                      [
+                        React.createElement('li', { key: 'created' }, `✅ Creados: ${dayStat.created}`),
+                        React.createElement('li', { key: 'updated' }, `📝 Actualizados: ${dayStat.updated}`),
+                        React.createElement('li', { key: 'deleted' }, `❌ Eliminados: ${dayStat.deleted}`),
+                        React.createElement('li', { key: 'total' }, `📊 Total: ${dayStat.created + dayStat.updated + dayStat.deleted}`)
+                      ]
+                    )
+                  ]
+                );
+              })
           )
         ]
       );
+    }
+    
+    const pageWrapper = this._createComponentWrapper(StatsPage);
+    
+    this._extensionIds.page = this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().PLUGIN_PAGES,
+      pageWrapper,
+      {
+        order: 100,
+        props: { 
+          pageId: this._PAGE_ID 
+        }
+      }
+    );
+  }
+};
+```
+
+### Plugin Completo con Formularios y Gestión de Estado
+
+```javascript
+import React from 'react';
+
+// Constantes del plugin
+const TASK_STATUS = {
+  PENDING: 'pending',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed'
+};
+
+const STATUS_LABELS = {
+  [TASK_STATUS.PENDING]: 'Pendiente',
+  [TASK_STATUS.IN_PROGRESS]: 'En Progreso',
+  [TASK_STATUS.COMPLETED]: 'Completado'
+};
+
+export default {
+  id: 'task-manager',
+  name: 'Gestor de Tareas',
+  version: '1.0.0',
+  description: 'Plugin completo para gestión de tareas con formularios',
+  author: 'Tu Nombre',
+  minAppVersion: '0.3.0',
+  maxAppVersion: '1.0.0',
+  permissions: ['storage', 'events', 'ui'],
+  
+  _core: null,
+  _tasks: [],
+  _subscriptions: [],
+  _extensionIds: {},
+  _PAGE_ID: 'task-manager',
+  
+  init: async function(core) {
+    try {
+      this._core = core;
+      this._subscriptions = [];
+      this._extensionIds = {};
+      
+      // Cargar datos
+      await this._loadTasksFromStorage();
+      
+      // Crear API pública
+      this.publicAPI = this._createPublicAPI();
+      core.plugins.registerAPI(this.id, this.publicAPI);
+      
+      // Registrar UI
+      this._registerNavigation();
+      this._registerMainPage();
+      
+      console.log(`[${this.name}] Inicializado correctamente`);
+      return true;
+    } catch (error) {
+      console.error(`[${this.name}] Error de inicialización:`, error);
+      return false;
+    }
+  },
+  
+  cleanup: async function() {
+    try {
+      await this._saveTasksToStorage();
+      
+      this._subscriptions.forEach(unsub => {
+        if (typeof unsub === 'function') unsub();
+      });
+      
+      return true;
+    } catch (error) {
+      console.error(`[${this.name}] Error en limpieza:`, error);
+      return false;
+    }
+  },
+  
+  async _loadTasksFromStorage() {
+    const STORAGE_KEY = 'tasks';
+    try {
+      const storedTasks = await this._core.storage.getItem(
+        this.id, 
+        STORAGE_KEY, 
+        []
+      );
+      this._tasks = storedTasks || [];
+    } catch (error) {
+      console.error(`[${this.name}] Error al cargar tareas:`, error);
+      this._tasks = [];
+    }
+  },
+  
+  async _saveTasksToStorage() {
+    const STORAGE_KEY = 'tasks';
+    try {
+      await this._core.storage.setItem(this.id, STORAGE_KEY, this._tasks);
+    } catch (error) {
+      console.error(`[${this.name}] Error al guardar tareas:`, error);
+    }
+  },
+  
+  _createPublicAPI: function() {
+    const self = this;
+    
+    return {
+      getAllTasks: () => [...self._tasks],
+      
+      createTask: async (taskData) => {
+        return await self._internalCreateTask(taskData);
+      },
+      
+      updateTask: async (id, updateData) => {
+        return await self._internalUpdateTask(id, updateData);
+      },
+      
+      deleteTask: async (id) => {
+        return await self._internalDeleteTask(id);
+      },
+      
+      getTasksByStatus: (status) => {
+        return self._tasks.filter(task => task.status === status);
+      }
     };
+  },
+  
+  async _internalCreateTask(taskData) {
+    const newTask = {
+      id: Date.now().toString(),
+      title: taskData.title || '',
+      description: taskData.description || '',
+      status: taskData.status || TASK_STATUS.PENDING,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    this._tasks.push(newTask);
+    await this._saveTasksToStorage();
+    
+    // Publicar evento
+    this._core.events.publish(
+      this.id,
+      'taskManager.taskCreated',
+      { task: newTask }
+    );
+    
+    return newTask;
+  },
+  
+  async _internalUpdateTask(id, updateData) {
+    const index = this._tasks.findIndex(task => task.id === id);
+    if (index === -1) {
+      throw new Error(`Tarea con ID ${id} no encontrada`);
+    }
+    
+    this._tasks[index] = {
+      ...this._tasks[index],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    await this._saveTasksToStorage();
+    
+    // Publicar evento
+    this._core.events.publish(
+      this.id,
+      'taskManager.taskUpdated',
+      { task: this._tasks[index] }
+    );
+    
+    return this._tasks[index];
+  },
+  
+  async _internalDeleteTask(id) {
+    const index = this._tasks.findIndex(task => task.id === id);
+    if (index === -1) {
+      throw new Error(`Tarea con ID ${id} no encontrada`);
+    }
+    
+    const deletedTask = this._tasks.splice(index, 1)[0];
+    await this._saveTasksToStorage();
+    
+    // Publicar evento
+    this._core.events.publish(
+      this.id,
+      'taskManager.taskDeleted',
+      { task: deletedTask }
+    );
+    
+    return deletedTask;
+  },
+  
+  _createComponentWrapper: function(Component, extraProps = {}) {
+    const self = this;
+    
+    return function ComponentWrapper(propsFromAtlas) {
+      return React.createElement(Component, {
+        ...propsFromAtlas,
+        plugin: self,
+        core: self._core,
+        pluginId: self.id,
+        ...extraProps
+      });
+    };
+  },
+  
+  _registerNavigation: function() {
+    function NavItem(props) {
+      const handleClick = () => {
+        props.onNavigate(props.pluginId, props.pageIdToNavigate);
+      };
+      
+      return React.createElement(
+        'div',
+        {
+          className: 'navigation-item',
+          onClick: handleClick,
+          style: { cursor: 'pointer', padding: '8px' }
+        },
+        [
+          React.createElement(
+            'span',
+            { className: 'material-icons', key: 'icon' },
+            'task'
+          ),
+          React.createElement(
+            'span',
+            { key: 'label', style: { marginLeft: '8px' } },
+            'Tareas'
+          )
+        ]
+      );
+    }
+    
+    const navWrapper = this._createComponentWrapper(NavItem, {
+      pageIdToNavigate: this._PAGE_ID
+    });
+    
+    this._extensionIds.navigation = this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().MAIN_NAVIGATION,
+      navWrapper,
+      { order: 100 }
+    );
+  },
+  
+  _registerMainPage: function() {
+    function TaskManagerPage(props) {
+      const [tasks, setTasks] = React.useState([]);
+      const [showForm, setShowForm] = React.useState(false);
+      const [editingTask, setEditingTask] = React.useState(null);
+      
+      // Función para refrescar tareas
+      const refreshTasks = React.useCallback(async () => {
+        try {
+          const currentTasks = props.plugin.publicAPI.getAllTasks();
+          setTasks(currentTasks);
+        } catch (error) {
+          console.error('Error al cargar tareas:', error);
+          setTasks([]);
+        }
+      }, [props.plugin]);
+      
+      // Cargar tareas iniciales
+      React.useEffect(() => {
+        refreshTasks();
+      }, [refreshTasks]);
+      
+      // Manejar guardado de formulario
+      const handleFormSave = async (taskData) => {
+        try {
+          if (editingTask) {
+            await props.plugin.publicAPI.updateTask(editingTask.id, taskData);
+          } else {
+            await props.plugin.publicAPI.createTask(taskData);
+          }
+          refreshTasks();
+          setShowForm(false);
+          setEditingTask(null);
+        } catch (error) {
+          console.error('Error al guardar tarea:', error);
+        }
+      };
+      
+      // Manejar cancelación de formulario
+      const handleFormCancel = () => {
+        setShowForm(false);
+        setEditingTask(null);
+      };
+      
+      // Manejar edición de tarea
+      const handleEditTask = (task) => {
+        setEditingTask(task);
+        setShowForm(true);
+      };
+      
+      // Manejar eliminación de tarea
+      const handleDeleteTask = async (taskId) => {
+        if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+          try {
+            await props.plugin.publicAPI.deleteTask(taskId);
+            refreshTasks();
+          } catch (error) {
+            console.error('Error al eliminar tarea:', error);
+          }
+        }
+      };
+      
+      // Manejar cambio de estado
+      const handleStatusChange = async (taskId, newStatus) => {
+        try {
+          await props.plugin.publicAPI.updateTask(taskId, { status: newStatus });
+          refreshTasks();
+        } catch (error) {
+          console.error('Error al cambiar estado:', error);
+        }
+      };
+      
+      return React.createElement(
+        'div',
+        { 
+          className: 'task-manager-page',
+          style: { padding: '20px' }
+        },
+        [
+          React.createElement('h1', { key: 'title' }, 'Gestor de Tareas'),
+          
+          React.createElement(
+            'button',
+            { 
+              key: 'add-btn',
+              onClick: () => setShowForm(true),
+              style: {
+                backgroundColor: 'var(--primary-color)',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                marginBottom: '20px'
+              }
+            },
+            'Nueva Tarea'
+          ),
+          
+          React.createElement(
+            'div',
+            { key: 'tasks-list', className: 'tasks-list' },
+            tasks.length === 0 ?
+              React.createElement('p', { key: 'no-tasks' }, 'No hay tareas') :
+              tasks.map(task => 
+                React.createElement(TaskItem, {
+                  key: task.id,
+                  task: task,
+                  onEdit: () => handleEditTask(task),
+                  onDelete: () => handleDeleteTask(task.id),
+                  onStatusChange: (newStatus) => handleStatusChange(task.id, newStatus)
+                })
+              )
+          ),
+          
+          // Modal de formulario
+          showForm && React.createElement(
+            'div',
+            {
+              key: 'modal',
+              className: 'modal-overlay',
+              style: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+              }
+            },
+            React.createElement(
+              'div',
+              {
+                className: 'modal-content',
+                style: {
+                  backgroundColor: 'var(--card-bg)',
+                  padding: '20px',
+                  borderRadius: '8px',
+                  maxWidth: '500px',
+                  width: '90%',
+                  maxHeight: '80vh',
+                  overflow: 'auto'
+                }
+              },
+              React.createElement(TaskForm, {
+                existingTask: editingTask,
+                onSave: handleFormSave,
+                onCancel: handleFormCancel
+              })
+            )
+          )
+        ]
+      );
+    }
+    
+    // Componente para mostrar una tarea individual
+    function TaskItem(props) {
+      const { task, onEdit, onDelete, onStatusChange } = props;
+      
+      return React.createElement(
+        'div',
+        {
+          className: 'task-item',
+          style: {
+            backgroundColor: 'var(--card-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '8px',
+            padding: '16px',
+            marginBottom: '12px'
+          }
+        },
+        [
+          React.createElement(
+            'div',
+            { key: 'header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+            [
+              React.createElement('h3', { key: 'title' }, task.title),
+              React.createElement(
+                'div',
+                { key: 'actions', style: { display: 'flex', gap: '8px' } },
+                [
+                  React.createElement(
+                    'button',
+                    { 
+                      key: 'edit',
+                      onClick: onEdit,
+                      style: { padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' }
+                    },
+                    'Editar'
+                  ),
+                  React.createElement(
+                    'button',
+                    { 
+                      key: 'delete',
+                      onClick: onDelete,
+                      style: { 
+                        padding: '4px 8px', 
+                        borderRadius: '4px', 
+                        border: '1px solid var(--danger-color)',
+                        color: 'var(--danger-color)'
+                      }
+                    },
+                    'Eliminar'
+                  )
+                ]
+              )
+            ]
+          ),
+          
+          task.description && React.createElement('p', { key: 'description' }, task.description),
+          
+          React.createElement(
+            'div',
+            { key: 'status', style: { marginTop: '12px' } },
+            [
+              React.createElement('label', { key: 'label' }, 'Estado: '),
+              React.createElement(
+                'select',
+                {
+                  key: 'select',
+                  value: task.status,
+                  onChange: (e) => onStatusChange(e.target.value),
+                  style: { padding: '4px 8px', borderRadius: '4px' }
+                },
+                Object.keys(TASK_STATUS).map(statusKey =>
+                  React.createElement(
+                    'option',
+                    { 
+                      key: TASK_STATUS[statusKey],
+                      value: TASK_STATUS[statusKey]
+                    },
+                    STATUS_LABELS[TASK_STATUS[statusKey]]
+                  )
+                )
+              )
+            ]
+          )
+        ]
+      );
+    }
+    
+    // Componente de formulario para crear/editar tareas
+    function TaskForm(props) {
+      const { existingTask, onSave, onCancel } = props;
+      
+      const [formData, setFormData] = React.useState({
+        title: '',
+        description: '',
+        status: TASK_STATUS.PENDING
+      });
+      
+      // Resetear formulario cuando cambia existingTask
+      React.useEffect(() => {
+        if (existingTask) {
+          setFormData({
+            title: existingTask.title || '',
+            description: existingTask.description || '',
+            status: existingTask.status || TASK_STATUS.PENDING
+          });
+        } else {
+          setFormData({
+            title: '',
+            description: '',
+            status: TASK_STATUS.PENDING
+          });
+        }
+      }, [existingTask]);
+      
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+      };
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        // Validación básica
+        if (!formData.title.trim()) {
+          alert('El título es obligatorio');
+          return;
+        }
+        
+        onSave(formData);
+      };
+      
+      return React.createElement(
+        'form',
+        { onSubmit: handleSubmit },
+        [
+          React.createElement('h2', { key: 'form-title' }, existingTask ? 'Editar Tarea' : 'Nueva Tarea'),
+          
+          React.createElement(
+            'div',
+            { key: 'title-field', style: { marginBottom: '16px' } },
+            [
+              React.createElement('label', { key: 'label' }, 'Título:'),
+              React.createElement(
+                'input',
+                {
+                  key: 'input',
+                  type: 'text',
+                  name: 'title',
+                  value: formData.title,
+                  onChange: handleChange,
+                  required: true,
+                  style: { 
+                    width: '100%', 
+                    padding: '8px', 
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-color)',
+                    marginTop: '4px'
+                  }
+                }
+              )
+            ]
+          ),
+          
+          React.createElement(
+            'div',
+            { key: 'description-field', style: { marginBottom: '16px' } },
+            [
+              React.createElement('label', { key: 'label' }, 'Descripción:'),
+              React.createElement(
+                'textarea',
+                {
+                  key: 'textarea',
+                  name: 'description',
+                  value: formData.description,
+                  onChange: handleChange,
+                  rows: 3,
+                  style: { 
+                    width: '100%', 
+                    padding: '8px', 
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-color)',
+                    marginTop: '4px',
+                    resize: 'vertical'
+                  }
+                }
+              )
+            ]
+          ),
+          
+          React.createElement(
+            'div',
+            { key: 'status-field', style: { marginBottom: '16px' } },
+            [
+              React.createElement('label', { key: 'label' }, 'Estado:'),
+              React.createElement(
+                'select',
+                {
+                  key: 'select',
+                  name: 'status',
+                  value: formData.status,
+                  onChange: handleChange,
+                  style: { 
+                    width: '100%', 
+                    padding: '8px', 
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-color)',
+                    marginTop: '4px'
+                  }
+                },
+                Object.keys(TASK_STATUS).map(statusKey =>
+                  React.createElement(
+                    'option',
+                    { 
+                      key: TASK_STATUS[statusKey],
+                      value: TASK_STATUS[statusKey]
+                    },
+                    STATUS_LABELS[TASK_STATUS[statusKey]]
+                  )
+                )
+              )
+            ]
+          ),
+          
+          React.createElement(
+            'div',
+            { 
+              key: 'buttons',
+              style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' }
+            },
+            [
+              React.createElement(
+                'button',
+                { 
+                  key: 'cancel',
+                  type: 'button',
+                  onClick: onCancel,
+                  style: { 
+                    padding: '8px 16px', 
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'transparent'
+                  }
+                },
+                'Cancelar'
+              ),
+              React.createElement(
+                'button',
+                { 
+                  key: 'submit',
+                  type: 'submit',
+                  style: { 
+                    padding: '8px 16px', 
+                    borderRadius: '4px',
+                    border: 'none',
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'white'
+                  }
+                },
+                existingTask ? 'Actualizar' : 'Crear'
+              )
+            ]
+          )
+        ]
+      );
+    }
+    
+    const pageWrapper = this._createComponentWrapper(TaskManagerPage);
+    
+    this._extensionIds.page = this._core.ui.registerExtension(
+      this.id,
+      this._core.ui.getExtensionZones().PLUGIN_PAGES,
+      pageWrapper,
+      {
+        order: 100,
+        props: { 
+          pageId: this._PAGE_ID 
+        }
+      }
+    );
   }
 };
 ```
