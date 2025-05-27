@@ -1,18 +1,73 @@
 /* video-scheduler/styles/DaySummaryCell.css */
 
-/* Celda resumen - minimalista */
 .video-scheduler-summary-cell {
-  vertical-align: middle;
+  vertical-align: bottom !important; /* Alinea el contenido de la celda en la parte inferior */
   text-align: center;
-  padding: 12px 8px !important;
+  padding: 0 2px 4px 2px !important; /* Padding: arriba 0, izq/der 2px, abajo 4px (este es tu margen inferior) */
   border-right: 1px solid var(--border-color);
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.video-scheduler-summary-cell span {
+.summary-videos-container {
+  display: flex;
+  justify-content: center; /* Centra el grupo de las 3 mini-columnas horizontalmente */
+  align-items: flex-end;   /* Clave: Alinea los items (pilas) en la parte inferior del contenedor flex */
+  width: 100%;
+  height: 100%;            /* Ocupa toda la altura de la celda */
+  gap: 5px;                /* Espacio horizontal ENTRE las mini-columnas */
+  margin-bottom: 10px;
+}
+
+.summary-video-item {
+  display: flex;
+  flex-direction: column-reverse; /* Apila de abajo hacia arriba */
+  align-items: center;            /* Centra emojis horizontalmente en su pila */
+  justify-content: flex-start;    /* Hace que la pila comience desde abajo (debido a column-reverse) */
+  font-size: 0.9rem;
+  line-height: 1;
+  gap: 6px;                       /* Aumentado a 2px para más separación vertical entre emojis */
+  min-width: fit-content;
+  opacity: 0.9;
+  /* La altura la gestiona el contenedor padre y align-items: flex-end */
+}
+
+.summary-video-item.empty-slot {
+  font-size: 1rem;
+  color: var(--text-color-secondary);
   display: flex;
   justify-content: center;
+  align-items: center; /* Centra el guion dentro de su espacio */
+  line-height: normal;
+  min-width: auto;
+  padding: 0 5px; /* Padding para el guion */
+  /* Para que el guion también se alinee abajo si los otros tienen contenido */
+  align-self: flex-end;
+  height: 1.2em; /* Altura aproximada de un emoji para que se alinee bien */
+}
+
+.summary-emoji {
+  display: flex; /* Usar flex para mejor centrado interno del emoji */
   align-items: center;
-  gap: 2px;
-  font-size: 1.0rem;
-  opacity: 0.95;
+  justify-content: center;
+  text-align: center;
+  margin-top: 0;
+  padding: 0;
+}
+
+
+.summary-main-status {
+  opacity: 1;
+}
+
+.summary-sub-status {
+  opacity: 0.8;
+  font-size: 0.7rem;
+}
+
+.summary-stackable-status {
+  position: relative;
+  top: -2px; 
+  opacity: 0.8;
+  font-size: 0.7rem;
 }
