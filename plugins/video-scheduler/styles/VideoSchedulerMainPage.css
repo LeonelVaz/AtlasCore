@@ -49,6 +49,10 @@
   color: var(--text-color);
   letter-spacing: -0.02em;
   text-transform: capitalize;
+  /* NUEVAS LÍNEAS / AJUSTES */
+  min-width: 235px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .page-header-controls button {
