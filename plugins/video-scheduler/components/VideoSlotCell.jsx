@@ -35,9 +35,9 @@ function VideoSlotCell(props) {
   const handleNameInputKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      e.target.blur(); 
+      e.target.blur();
     } else if (e.key === 'Escape') {
-      setCurrentName(videoData.name || ''); 
+      setCurrentName(videoData.name || '');
       e.target.blur();
     }
   };
@@ -45,56 +45,102 @@ function VideoSlotCell(props) {
   const handleDescriptionInputKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      e.target.blur(); 
+      e.target.blur();
     } else if (e.key === 'Escape') {
-      setCurrentDescription(videoData.description || ''); 
+      setCurrentDescription(videoData.description || '');
       e.target.blur();
     }
   };
-  
+
   const nameInputId = `video-name-${day}-${slotIndex}`;
   const descriptionInputId = `video-description-${day}-${slotIndex}`;
-  
-  // Mostrar "..." si el nombre está vacío, independientemente del estado.
+
   const placeholderText = currentName.trim() === '' ? '...' : '';
 
   const buildStatusDisplay = () => {
-    let statusText = STATUS_EMOJIS[videoData.status] || '';
-    if (videoData.subStatus) {
-      statusText += ` ${STATUS_EMOJIS[videoData.subStatus] || ''}`;
-    }
+    const emojiElements = [];
+
+    // 1. Sub-estados Apilables (primero en el array, aparecerán más a la izquierda)
+    // Se añaden en el orden en que están en el array, pero se pueden invertir si es necesario
     if (videoData.stackableStatuses && videoData.stackableStatuses.length > 0) {
-      videoData.stackableStatuses.forEach(stackableStatus => {
-        statusText += STATUS_EMOJIS[stackableStatus] || '';
+      videoData.stackableStatuses.forEach((stackableStatus, index) => {
+        if (STATUS_EMOJIS[stackableStatus]) {
+          emojiElements.push(
+            React.createElement('span', { 
+              key: `stackable-${index}`, 
+              className: 'status-emoji stackable-status-emoji' // Clase para posible estilo
+            }, STATUS_EMOJIS[stackableStatus])
+          );
+        }
       });
     }
-    return statusText;
+
+    // 2. Sub-estado Normal (después de los apilables)
+    if (videoData.subStatus && STATUS_EMOJIS[videoData.subStatus]) {
+      emojiElements.push(
+        React.createElement('span', { 
+          key: 'sub-status', 
+          className: 'status-emoji sub-status-emoji' // Clase para posible estilo
+        }, STATUS_EMOJIS[videoData.subStatus])
+      );
+    }
+
+    // 3. Estado Principal (último en el array, aparecerá más a la derecha)
+    if (videoData.status && STATUS_EMOJIS[videoData.status]) {
+      emojiElements.push(
+        React.createElement('span', { 
+          key: 'main-status', 
+          className: 'status-emoji main-status-emoji' // Clase para posible estilo
+        }, STATUS_EMOJIS[videoData.status])
+      );
+    } else {
+      // Fallback si no hay estado principal (debería mostrar PENDING por defecto)
+       emojiElements.push(
+        React.createElement('span', { 
+          key: 'main-status-pending-fallback', 
+          className: 'status-emoji main-status-emoji'
+        }, STATUS_EMOJIS[VIDEO_MAIN_STATUS.PENDING])
+      );
+    }
+    
+    // Si no hay emojis (ej. solo era un PENDING que no tenía emoji explícito antes),
+    // asegurar que se muestre el PENDING.
+    if (emojiElements.length === 0) {
+       emojiElements.push(
+        React.createElement('span', { 
+          key: 'main-status-empty-fallback', 
+          className: 'status-emoji main-status-emoji'
+        }, STATUS_EMOJIS[VIDEO_MAIN_STATUS.PENDING])
+      );
+    }
+
+    return emojiElements; // Devolvemos el array de elementos
   };
 
-  const isClickable = true; // Todos los estados son clickeables
+  const isClickable = true;
 
   return React.createElement(
     'td',
     { className: 'video-scheduler-slot-cell' },
     React.createElement(
       'div',
-      { className: `video-slot status-${videoData.status}` }, 
+      { className: `video-slot status-${videoData.status}` },
       [
         React.createElement('input', {
           key: nameInputId,
           id: nameInputId,
           type: 'text',
-          className: 'video-name-input', 
+          className: 'video-name-input',
           value: currentName,
           placeholder: placeholderText,
           onChange: handleNameInputChange,
           onBlur: handleNameInputBlur,
           onKeyDown: handleNameInputKeyDown,
-          onClick: (e) => e.stopPropagation() 
+          onClick: (e) => e.stopPropagation()
         }),
         React.createElement(
           'div',
-          { 
+          {
             key: `description-status-container-${day}-${slotIndex}`,
             className: 'description-status-container'
           },
@@ -103,27 +149,29 @@ function VideoSlotCell(props) {
               key: descriptionInputId,
               id: descriptionInputId,
               type: 'text',
-              className: 'video-description-input', 
+              className: 'video-description-input',
               value: currentDescription,
-              placeholder: '', // Sin placeholder para descripción por ahora
+              placeholder: '',
               onChange: handleDescriptionInputChange,
               onBlur: handleDescriptionInputBlur,
               onKeyDown: handleDescriptionInputKeyDown,
-              onClick: (e) => e.stopPropagation() 
+              onClick: (e) => e.stopPropagation()
             }),
             React.createElement(
               'div',
-              { 
+              {
                 key: `status-icons-${day}-${slotIndex}`,
-                className: 'status-container', 
-                onClick: isClickable 
+                className: 'status-container', // La clase 'status-container' ya usa flex
+                onClick: isClickable
                           ? (e) => { e.stopPropagation(); onStatusIconClick(day, slotIndex, e); }
-                          : (e) => { e.stopPropagation(); }, 
-                style: { 
+                          : (e) => { e.stopPropagation(); },
+                style: {
                     cursor: isClickable ? 'pointer' : 'default',
                 }
               },
-              buildStatusDisplay() || STATUS_EMOJIS[VIDEO_MAIN_STATUS.PENDING] // Mostrar emoji PENDING si no hay nada
+              // buildStatusDisplay() ahora devuelve un array de elementos,
+              // que React renderizará en orden.
+              buildStatusDisplay()
             )
           ]
         )
