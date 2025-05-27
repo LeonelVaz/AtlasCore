@@ -110,14 +110,14 @@
 
 ## 🔄 Prioridad Sugerida de Implementación
 
-1. **Alta Prioridad:**
+1. **Alta Prioridad:** (TERMINADO)
    - Panel de Estadísticas (es muy visual y útil)
    - Botones de acción globales en encabezado
    - BulkAddForm (muy demandado por usuarios)
 
 2. **Prioridad Media:**
    - Configuración de tasas de cambio
-   - VideoForm para detalles extendidos
+   - VideoForm para detalles extendidos (Añadir un botón casi indistigible en la casilla de cada video ubicado en el extremo arriba a la derecha de la casilla)
    - Widget de configuración
 
 3. **Prioridad Baja:**
