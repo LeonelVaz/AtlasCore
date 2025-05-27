@@ -1,83 +1,111 @@
 // video-scheduler/index.js
-import React from 'react';
-import VideoSchedulerNavItemComponent from './components/VideoSchedulerNavItem.jsx';
-import VideoSchedulerMainPageComponent from './components/VideoSchedulerMainPage.jsx';
-import { 
-  DEFAULT_SLOT_VIDEO_STRUCTURE, 
-  VIDEO_MAIN_STATUS, 
+import React from "react";
+import VideoSchedulerNavItemComponent from "./components/VideoSchedulerNavItem.jsx";
+import VideoSchedulerMainPageComponent from "./components/VideoSchedulerMainPage.jsx";
+import {
+  DEFAULT_SLOT_VIDEO_STRUCTURE,
+  VIDEO_MAIN_STATUS,
   VIDEO_SUB_STATUS,
   VIDEO_STACKABLE_STATUS,
   DEFAULT_DAILY_INCOME_STRUCTURE,
   isDateInPast,
   INVALID_PAST_STATUSES,
-  CURRENCIES // <--- AÑADIDO
-} from './utils/constants.js';
-import './styles/index.css';
+  ALL_SUPPORTED_CURRENCIES, // Usar la lista completa
+  getCurrencySymbol,
+} from "./utils/constants.js";
+import "./styles/index.css";
 
-const PLUGIN_PAGE_ID = 'videoscheduler';
-const STORAGE_KEY_DATA = 'video_scheduler_plugin_data';
+const PLUGIN_PAGE_ID = "videoscheduler";
+const STORAGE_KEY_DATA = "video_scheduler_plugin_data";
 
 export default {
-  id: 'video-scheduler',
-  name: 'Video Scheduler',
-  version: '0.6.1', // <--- VERSIÓN INCREMENTADA
-  description: 'Planificador visual de videos estilo calendario con sistema de estados avanzado y soporte multimes.',
-  author: 'Tu Nombre/Equipo',
-  minAppVersion: '0.3.0',
-  maxAppVersion: '0.9.9',
-  permissions: ['ui', 'storage'],
+  id: "video-scheduler",
+  name: "Video Scheduler",
+  version: "0.7.0", // <-- VERSIÓN INCREMENTADA por cambio mayor de moneda
+  description:
+    "Planificador visual de videos estilo calendario con sistema de estados avanzado, soporte multimes y gestión de moneda personalizable.",
+  author: "Tu Nombre/Equipo",
+  minAppVersion: "0.3.0",
+  maxAppVersion: "0.9.9",
+  permissions: ["ui", "storage"],
 
   _core: null,
   _navigationExtensionId: null,
   _pageExtensionId: null,
 
+  // Estructura de datos del plugin rediseñada
   _pluginData: {
-    videosBySlotKey: {}, 
+    videosBySlotKey: {},
     dailyIncomes: {},
     settings: {
-        currencyRates: { USD: 870, EUR: 950, ARS: 1 }, 
-        defaultCurrency: 'USD',
-    } 
+      mainUserCurrency: "USD", // Moneda principal por defecto
+      // currencyRates almacenará las tasas de las configuredIncomeCurrencies RELATIVAS a mainUserCurrency
+      // Ejemplo: si mainUserCurrency es USD, y se configura EUR y ARS:
+      // { "USD": 1, "EUR": 1.08 (1 EUR = 1.08 USD), "ARS": 0.0011 (1 ARS = 0.0011 USD) }
+      currencyRates: {
+        USD: 1, // Tasa de la moneda principal siempre es 1
+        EUR: 1.08, // Ejemplo inicial
+        ARS: 0.0011, // Ejemplo inicial
+      },
+      // Monedas que el usuario ha configurado para registrar ingresos
+      configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+    },
   },
 
-  init: function(core) {
+  init: function (core) {
     const self = this;
     return new Promise(async (resolve, reject) => {
       try {
         self._core = core;
-        if (typeof React === 'undefined') {
-            const errMsg = `[${self.id}] React no está definido.`;
-            console.error(errMsg);
-            return reject(new Error(errMsg));
+        if (typeof React === "undefined") {
+          const errMsg = `[${self.id}] React no está definido.`;
+          console.error(errMsg);
+          return reject(new Error(errMsg));
         }
         console.log(`[${self.id}] v${self.version} inicializando...`);
 
         await self._loadPluginData();
-        
+
         self.publicAPI = self._createPublicAPI(self);
         self._core.plugins.registerAPI(self.id, self.publicAPI);
 
-        // Usando una función factory para el wrapper del NavItem
-        const NavItemWrapperFactory = (Component, extraProps) => (propsFromAtlas) => 
-            React.createElement(Component, { ...propsFromAtlas, ...extraProps });
+        const NavItemWrapperFactory =
+          (Component, extraProps) => (propsFromAtlas) =>
+            React.createElement(Component, {
+              ...propsFromAtlas,
+              ...extraProps,
+            });
 
         self._navigationExtensionId = self._core.ui.registerExtension(
-            self.id, 
-            self._core.ui.getExtensionZones().MAIN_NAVIGATION, 
-            NavItemWrapperFactory(VideoSchedulerNavItemComponent, { plugin: self, core: self._core, pluginId: self.id, pageIdToNavigate: PLUGIN_PAGE_ID }),
-            { order: 150 }
+          self.id,
+          self._core.ui.getExtensionZones().MAIN_NAVIGATION,
+          NavItemWrapperFactory(VideoSchedulerNavItemComponent, {
+            plugin: self,
+            core: self._core,
+            pluginId: self.id,
+            pageIdToNavigate: PLUGIN_PAGE_ID,
+          }),
+          { order: 150 }
         );
-        
-        const PageWrapperFactory = (Component, extraProps) => (propsFromAtlas) =>
-            React.createElement(Component, { ...propsFromAtlas, ...extraProps });
+
+        const PageWrapperFactory =
+          (Component, extraProps) => (propsFromAtlas) =>
+            React.createElement(Component, {
+              ...propsFromAtlas,
+              ...extraProps,
+            });
 
         self._pageExtensionId = self._core.ui.registerExtension(
-            self.id, 
-            self._core.ui.getExtensionZones().PLUGIN_PAGES, 
-            PageWrapperFactory(VideoSchedulerMainPageComponent, { plugin: self, core: self._core, pluginId: self.id }),
-            { order: 100, props: { pageId: PLUGIN_PAGE_ID } }
+          self.id,
+          self._core.ui.getExtensionZones().PLUGIN_PAGES,
+          PageWrapperFactory(VideoSchedulerMainPageComponent, {
+            plugin: self,
+            core: self._core,
+            pluginId: self.id,
+          }),
+          { order: 100, props: { pageId: PLUGIN_PAGE_ID } }
         );
-        
+
         console.log(`[${self.id}] Plugin inicializado.`);
         resolve(true);
       } catch (error) {
@@ -87,122 +115,202 @@ export default {
     });
   },
 
-  cleanup: async function() {
+  cleanup: async function () {
     const self = this;
     console.log(`[${self.id}] Limpiando plugin...`);
     try {
-        await self._savePluginData();
-        if (self._core && self._core.ui && self._core.ui.removeAllExtensions) { // Verificar core y ui
-            self._core.ui.removeAllExtensions(self.id);
-            console.log(`[${self.id}] Extensiones UI removidas.`);
-        }
-        self._navigationExtensionId = null;
-        self._pageExtensionId = null;
-        console.log(`[${self.id}] Plugin limpiado.`);
-        return true;
+      await self._savePluginData();
+      if (self._core && self._core.ui && self._core.ui.removeAllExtensions) {
+        self._core.ui.removeAllExtensions(self.id);
+        console.log(`[${self.id}] Extensiones UI removidas.`);
+      }
+      self._navigationExtensionId = null;
+      self._pageExtensionId = null;
+      console.log(`[${self.id}] Plugin limpiado.`);
+      return true;
     } catch (error) {
-        console.error(`[${self.id}] Error en cleanup:`, error);
-        return false;
+      console.error(`[${self.id}] Error en cleanup:`, error);
+      return false;
     }
   },
-  
+
   publicAPI: {},
-  _createPublicAPI: function(self) {
+  _createPublicAPI: function (self) {
     return {
-      getMonthViewData: async (year, month) => self._internalGetMonthViewData(year, month),
-      updateVideoName: async (dateStr, slotIndex, newName) => self._internalUpdateVideoName(dateStr, slotIndex, newName),
-      updateVideoDescription: async (dateStr, slotIndex, newDescription) => self._internalUpdateVideoDescription(dateStr, slotIndex, newDescription),
-      updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses),
-      setDailyIncome: async (dateStr, incomeData) => self._internalSetDailyIncome(dateStr, incomeData),
+      getMonthViewData: async (year, month) =>
+        self._internalGetMonthViewData(year, month),
+      updateVideoName: async (dateStr, slotIndex, newName) =>
+        self._internalUpdateVideoName(dateStr, slotIndex, newName),
+      updateVideoDescription: async (dateStr, slotIndex, newDescription) =>
+        self._internalUpdateVideoDescription(
+          dateStr,
+          slotIndex,
+          newDescription
+        ),
+      updateVideoStatus: async (
+        dateStr,
+        slotIndex,
+        newStatus,
+        newSubStatus,
+        newStackableStatuses
+      ) =>
+        self._internalUpdateVideoStatus(
+          dateStr,
+          slotIndex,
+          newStatus,
+          newSubStatus,
+          newStackableStatuses
+        ),
+      setDailyIncome: async (dateStr, incomeData) =>
+        self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
-      // --- NUEVAS FUNCIONES API PARA TASAS DE CAMBIO ---
-      getCurrencyRates: async () => self._internalGetCurrencyRates(),
-      setCurrencyRates: async (newRates) => self._internalSetCurrencyRates(newRates),
-      getDefaultCurrency: async () => self._internalGetDefaultCurrency(),
-      setDefaultCurrency: async (newCurrency) => self._internalSetDefaultCurrency(newCurrency),
-      // --- FIN NUEVAS FUNCIONES API ---
+
+      // API para configuración de moneda
+      getCurrencyConfiguration: async () =>
+        self._internalGetCurrencyConfiguration(),
+      saveCurrencyConfiguration: async (
+        mainCurrency,
+        incomeCurrencies,
+        rates
+      ) =>
+        self._internalSaveCurrencyConfiguration(
+          mainCurrency,
+          incomeCurrencies,
+          rates
+        ),
+      getAllSupportedCurrencies: () => ALL_SUPPORTED_CURRENCIES, // Exponer lista completa
+      getCurrencySymbol: (currencyCode) => getCurrencySymbol(currencyCode), // Exponer helper
     };
   },
 
-  _loadPluginData: async function() {
+  _loadPluginData: async function () {
     const self = this;
-    if (!self._core || !self._core.storage) { 
-        console.warn(`[${self.id}] Core o storage no disponible en _loadPluginData.`);
-        self._pluginData = { 
-            videosBySlotKey: {},
-            dailyIncomes: {},
-            // Asegurar estructura completa de settings al inicializar por defecto
-            settings: { 
-                currencyRates: { USD: 870, EUR: 950, ARS: 1 }, 
-                defaultCurrency: 'USD' 
-            }
-        };
-        return;
+    if (!self._core || !self._core.storage) {
+      console.warn(
+        `[${self.id}] Core o storage no disponible en _loadPluginData.`
+      );
+      // Se usará el _pluginData por defecto definido en la estructura
+      return;
     }
-    const loadedData = await self._core.storage.getItem(self.id, STORAGE_KEY_DATA, {});
-    const safeLoadedData = loadedData || {}; 
-    
-    // Manejo más robusto de settings y currencyRates
+    const loadedData = await self._core.storage.getItem(
+      self.id,
+      STORAGE_KEY_DATA,
+      {}
+    );
+    const safeLoadedData = loadedData || {};
+
     const defaultSettings = {
-        currencyRates: { USD: 870, EUR: 950, ARS: 1 },
-        defaultCurrency: 'USD'
+      mainUserCurrency: "USD",
+      currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 }, // Valores iniciales de ejemplo
+      configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
     };
+
     const loadedSettings = safeLoadedData.settings || {};
+
+    // Migración / Asegurar estructura
     const finalSettings = {
-        ...defaultSettings,
-        ...loadedSettings,
-        currencyRates: {
-            ...defaultSettings.currencyRates,
-            ...(loadedSettings.currencyRates || {})
-        }
+      mainUserCurrency:
+        loadedSettings.mainUserCurrency || defaultSettings.mainUserCurrency,
+      currencyRates: {
+        ...defaultSettings.currencyRates,
+        ...(loadedSettings.currencyRates || {}),
+      },
+      configuredIncomeCurrencies:
+        Array.isArray(loadedSettings.configuredIncomeCurrencies) &&
+        loadedSettings.configuredIncomeCurrencies.length > 0
+          ? loadedSettings.configuredIncomeCurrencies
+          : defaultSettings.configuredIncomeCurrencies,
     };
-    // Asegurar que ARS siempre sea 1
-    finalSettings.currencyRates.ARS = 1;
+    // Asegurar que la tasa de la moneda principal sea 1
+    finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1;
+
+    // Asegurar que mainUserCurrency esté en configuredIncomeCurrencies
+    if (
+      !finalSettings.configuredIncomeCurrencies.includes(
+        finalSettings.mainUserCurrency
+      )
+    ) {
+      finalSettings.configuredIncomeCurrencies.push(
+        finalSettings.mainUserCurrency
+      );
+      // Si se añade, asegurar que tenga tasa (será 1)
+      if (
+        finalSettings.currencyRates[finalSettings.mainUserCurrency] ===
+        undefined
+      ) {
+        finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1;
+      }
+    }
 
     self._pluginData = {
-        videosBySlotKey: safeLoadedData.videosBySlotKey || {},
-        dailyIncomes: safeLoadedData.dailyIncomes || {},
-        settings: finalSettings
+      videosBySlotKey: safeLoadedData.videosBySlotKey || {},
+      dailyIncomes: safeLoadedData.dailyIncomes || {},
+      settings: finalSettings,
     };
-    
-    Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
+
+    Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
       const video = self._pluginData.videosBySlotKey[key];
       if (!video.stackableStatuses) {
         video.stackableStatuses = [];
       }
     });
+
+    // Corregir ingresos diarios para que usen una moneda configurada
+    const validIncomeCurrencies =
+      self._pluginData.settings.configuredIncomeCurrencies;
+    const mainCurrency = self._pluginData.settings.mainUserCurrency;
+    Object.values(self._pluginData.dailyIncomes).forEach((income) => {
+      if (!validIncomeCurrencies.includes(income.currency)) {
+        income.currency = mainCurrency; // Si la moneda no es válida, usar la principal
+      }
+    });
   },
 
-  _savePluginData: async function() {
+  _savePluginData: async function () {
     const self = this;
     if (!self._core || !self._core.storage) {
-        console.warn(`[${self.id}] Core o storage no disponible en _savePluginData.`);
-        return;
+      console.warn(
+        `[${self.id}] Core o storage no disponible en _savePluginData.`
+      );
+      return;
     }
     try {
-        // Asegurar que ARS siempre sea 1 antes de guardar
-        if (self._pluginData.settings && self._pluginData.settings.currencyRates) {
-            self._pluginData.settings.currencyRates.ARS = 1;
-        } else if (self._pluginData.settings) {
-            self._pluginData.settings.currencyRates = { USD: 870, EUR: 950, ARS: 1 };
-        } else {
-             self._pluginData.settings = { currencyRates: { USD: 870, EUR: 950, ARS: 1 }, defaultCurrency: 'USD' };
-        }
-        await self._core.storage.setItem(self.id, STORAGE_KEY_DATA, self._pluginData);
-    } catch (error) { 
-        console.error(`[${self.id}] Error al guardar datos:`, error); 
+      // Asegurar que la tasa de la moneda principal sea 1 antes de guardar
+      if (
+        self._pluginData.settings &&
+        self._pluginData.settings.currencyRates &&
+        self._pluginData.settings.mainUserCurrency
+      ) {
+        self._pluginData.settings.currencyRates[
+          self._pluginData.settings.mainUserCurrency
+        ] = 1;
+      } else {
+        //Fallback si settings no está bien formado (no debería ocurrir con _loadPluginData)
+        self._pluginData.settings = {
+          mainUserCurrency: "USD",
+          currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
+          configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+        };
+      }
+      await self._core.storage.setItem(
+        self.id,
+        STORAGE_KEY_DATA,
+        self._pluginData
+      );
+    } catch (error) {
+      console.error(`[${self.id}] Error al guardar datos:`, error);
     }
   },
 
   _getVideoSlotKey: (dateStr, slotIndex) => `${dateStr}-${slotIndex}`,
 
-  _ensureVideoSlotExists: function(dateStr, slotIndex) {
+  _ensureVideoSlotExists: function (dateStr, slotIndex) {
     const key = this._getVideoSlotKey(dateStr, slotIndex);
     if (!this._pluginData.videosBySlotKey[key]) {
-      this._pluginData.videosBySlotKey[key] = { 
-        ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
+      this._pluginData.videosBySlotKey[key] = {
+        ...DEFAULT_SLOT_VIDEO_STRUCTURE,
         id: key,
-        stackableStatuses: []
+        stackableStatuses: [],
       };
     }
     if (!this._pluginData.videosBySlotKey[key].stackableStatuses) {
@@ -210,173 +318,175 @@ export default {
     }
     return this._pluginData.videosBySlotKey[key];
   },
-  
-  _filterDataByMonth: function(year, month_idx) { 
+
+  _filterDataByMonth: function (year, month_idx) {
     const self = this;
-    const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, '0')}-`;
-    
+    const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, "0")}-`;
+
     const videosForMonth = {};
     Object.entries(self._pluginData.videosBySlotKey).forEach(([key, video]) => {
-        if (key.startsWith(monthKeyPrefix)) {
-            videosForMonth[key] = { ...video }; 
-        }
+      if (key.startsWith(monthKeyPrefix)) {
+        videosForMonth[key] = { ...video };
+      }
     });
 
     const incomesForMonth = {};
     Object.entries(self._pluginData.dailyIncomes).forEach(([key, income]) => {
-        if (key.startsWith(monthKeyPrefix)) {
-            incomesForMonth[key] = { ...income }; 
-        }
+      if (key.startsWith(monthKeyPrefix)) {
+        incomesForMonth[key] = { ...income };
+      }
     });
 
     return { videos: videosForMonth, dailyIncomes: incomesForMonth };
   },
 
-  _applySystemWarnings: function(video, dateStr) {
+  _applySystemWarnings: function (video, dateStr) {
     if (!video || !dateStr) {
       return;
     }
-
     const isPast = isDateInPast(dateStr);
-    const stackableStatuses = Array.isArray(video.stackableStatuses) ? [...video.stackableStatuses] : [];
-    const hasWarning = stackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING);
-    const hasName = video.name && video.name.trim() !== '';
-
+    const stackableStatuses = Array.isArray(video.stackableStatuses)
+      ? [...video.stackableStatuses]
+      : [];
+    const hasWarning = stackableStatuses.includes(
+      VIDEO_STACKABLE_STATUS.WARNING
+    );
+    const hasName = video.name && video.name.trim() !== "";
     let shouldHaveWarning = false;
 
-    if (isPast && INVALID_PAST_STATUSES.includes(video.status)) {
+    if (isPast && INVALID_PAST_STATUSES.includes(video.status))
       shouldHaveWarning = true;
-    }
-    if (video.status === VIDEO_MAIN_STATUS.PENDING && hasName) {
+    if (video.status === VIDEO_MAIN_STATUS.PENDING && hasName)
       shouldHaveWarning = true;
-    }
-    if (video.status === VIDEO_MAIN_STATUS.EMPTY && hasName) {
+    if (video.status === VIDEO_MAIN_STATUS.EMPTY && hasName)
       shouldHaveWarning = true;
-    }
 
+    const warningIndex = stackableStatuses.indexOf(
+      VIDEO_STACKABLE_STATUS.WARNING
+    );
     if (shouldHaveWarning && !hasWarning) {
       stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
     } else if (!shouldHaveWarning && hasWarning) {
-      const warningIndex = stackableStatuses.indexOf(VIDEO_STACKABLE_STATUS.WARNING);
-      if (warningIndex > -1) {
-        stackableStatuses.splice(warningIndex, 1);
-      }
+      if (warningIndex > -1) stackableStatuses.splice(warningIndex, 1);
     }
-    video.stackableStatuses = stackableStatuses; 
+    video.stackableStatuses = stackableStatuses;
   },
 
-  _internalGetMonthViewData: async function(year, month_idx) {
+  _internalGetMonthViewData: async function (year, month_idx) {
     const self = this;
     const daysInMonth = new Date(year, month_idx + 1, 0).getDate();
-    
-    console.log(`[${self.id}] Obteniendo datos para ${year}-${month_idx + 1} (${daysInMonth} días)`);
-    
-    let dataChanged = false; 
+    let dataChanged = false;
 
     for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${year}-${String(month_idx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
-            const key = self._getVideoSlotKey(dateStr, slotIndex);
-            if (!self._pluginData.videosBySlotKey[key]) {
-                self._pluginData.videosBySlotKey[key] = { 
-                    ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
-                    id: key,
-                    stackableStatuses: []
-                };
-                dataChanged = true;
-            } else if (!self._pluginData.videosBySlotKey[key].stackableStatuses) {
-                self._pluginData.videosBySlotKey[key].stackableStatuses = [];
-                dataChanged = true;
-            }
+      const dateStr = `${year}-${String(month_idx + 1).padStart(
+        2,
+        "0"
+      )}-${String(day).padStart(2, "0")}`;
+      for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
+        const key = self._getVideoSlotKey(dateStr, slotIndex);
+        if (!self._pluginData.videosBySlotKey[key]) {
+          self._pluginData.videosBySlotKey[key] = {
+            ...DEFAULT_SLOT_VIDEO_STRUCTURE,
+            id: key,
+            stackableStatuses: [],
+          };
+          dataChanged = true;
+        } else if (!self._pluginData.videosBySlotKey[key].stackableStatuses) {
+          self._pluginData.videosBySlotKey[key].stackableStatuses = [];
+          dataChanged = true;
         }
-        if (!self._pluginData.dailyIncomes[dateStr]) {
-            // Usar la moneda por defecto de la configuración del plugin
-            const defaultCurrency = self._pluginData.settings?.defaultCurrency || 'USD';
-            self._pluginData.dailyIncomes[dateStr] = { 
-                ...DEFAULT_DAILY_INCOME_STRUCTURE,
-                currency: defaultCurrency 
-            };
-            dataChanged = true;
-        }
+      }
+      if (!self._pluginData.dailyIncomes[dateStr]) {
+        self._pluginData.dailyIncomes[dateStr] = {
+          ...DEFAULT_DAILY_INCOME_STRUCTURE,
+          currency: self._pluginData.settings.mainUserCurrency, // Usar moneda principal por defecto para nuevos ingresos
+        };
+        dataChanged = true;
+      }
     }
 
-    const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, '0')}-`;
-    Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
-        if (!key.startsWith(monthKeyPrefix)) return; 
-        
-        const video = self._pluginData.videosBySlotKey[key];
-        const dateStr = key.substring(0, 10); 
-        const isPast = isDateInPast(dateStr);
+    const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, "0")}-`;
+    Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
+      if (!key.startsWith(monthKeyPrefix)) return;
+      const video = self._pluginData.videosBySlotKey[key];
+      const dateStr = key.substring(0, 10);
+      const isPast = isDateInPast(dateStr);
+      const originalStatus = video.status;
+      const originalSubStatus = video.subStatus;
+      const originalStackable = JSON.stringify(
+        (video.stackableStatuses || []).sort()
+      );
 
-        const originalStatus = video.status;
-        const originalSubStatus = video.subStatus;
-        const originalStackable = JSON.stringify((video.stackableStatuses || []).sort());
-
-        if (isPast) {
-          if (video.status === VIDEO_MAIN_STATUS.PENDING) {
-            video.status = VIDEO_MAIN_STATUS.EMPTY; video.name = ''; video.description = ''; video.subStatus = null; video.stackableStatuses = [];
-          }
-          if (video.status === VIDEO_MAIN_STATUS.PUBLISHED && video.subStatus === VIDEO_SUB_STATUS.SCHEDULED) {
-            video.subStatus = null;
-          }
+      if (isPast) {
+        if (video.status === VIDEO_MAIN_STATUS.PENDING) {
+          video.status = VIDEO_MAIN_STATUS.EMPTY;
+          video.name = "";
+          video.description = "";
+          video.subStatus = null;
+          video.stackableStatuses = [];
         }
-        self._applySystemWarnings(video, dateStr);
-
-        if (video.status !== originalStatus || video.subStatus !== originalSubStatus || JSON.stringify((video.stackableStatuses || []).sort()) !== originalStackable) {
-            dataChanged = true;
+        if (
+          video.status === VIDEO_MAIN_STATUS.PUBLISHED &&
+          video.subStatus === VIDEO_SUB_STATUS.SCHEDULED
+        ) {
+          video.subStatus = null;
         }
+      }
+      self._applySystemWarnings(video, dateStr);
+      if (
+        video.status !== originalStatus ||
+        video.subStatus !== originalSubStatus ||
+        JSON.stringify((video.stackableStatuses || []).sort()) !==
+          originalStackable
+      ) {
+        dataChanged = true;
+      }
     });
 
-    if (dataChanged) {
-        console.log(`[${self.id}] Guardando cambios para el mes ${year}-${month_idx + 1}`);
-        await self._savePluginData();
-    }
-    
-    return self._filterDataByMonth(year, month_idx); 
+    if (dataChanged) await self._savePluginData();
+    return self._filterDataByMonth(year, month_idx);
   },
 
-  _internalUpdateVideoName: async function(dateStr, slotIndex, newName) {
+  _internalUpdateVideoName: async function (dateStr, slotIndex, newName) {
     const self = this;
-    console.log(`[${self.id}] Actualizando nombre del video: ${dateStr}-${slotIndex} = "${newName}"`);
-    
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     const oldName = video.name;
-    video.name = newName.trim(); 
-    
+    video.name = newName.trim();
     const isPast = isDateInPast(dateStr);
-    
+
     if (isPast) {
-      if (video.status === VIDEO_MAIN_STATUS.EMPTY && video.name !== '') {
+      if (video.status === VIDEO_MAIN_STATUS.EMPTY && video.name !== "")
         video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
-        video.subStatus = null;
-      } else if (video.name === '' && oldName !== '') { 
+      else if (video.name === "" && oldName !== "") {
         video.status = VIDEO_MAIN_STATUS.EMPTY;
         video.subStatus = null;
         video.stackableStatuses = [];
       }
     } else {
-      if (video.status === VIDEO_MAIN_STATUS.PENDING && video.name !== '') {
+      if (video.status === VIDEO_MAIN_STATUS.PENDING && video.name !== "")
         video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
-        video.subStatus = null;
-      } else if (video.name === '' && oldName !== '' && video.status !== VIDEO_MAIN_STATUS.EMPTY) {
+      else if (
+        video.name === "" &&
+        oldName !== "" &&
+        video.status !== VIDEO_MAIN_STATUS.EMPTY
+      ) {
         video.status = VIDEO_MAIN_STATUS.PENDING;
         video.subStatus = null;
         video.stackableStatuses = [];
       }
     }
-
     self._applySystemWarnings(video, dateStr);
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
-    
-    console.log(`[${self.id}] Video actualizado:`, video);
     return video;
   },
 
-  _internalUpdateVideoDescription: async function(dateStr, slotIndex, newDescription) {
+  _internalUpdateVideoDescription: async function (
+    dateStr,
+    slotIndex,
+    newDescription
+  ) {
     const self = this;
-    console.log(`[${self.id}] Actualizando descripción del video: ${dateStr}-${slotIndex} = "${newDescription}"`);
-    
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     video.description = newDescription.trim();
     video.updatedAt = new Date().toISOString();
@@ -384,111 +494,140 @@ export default {
     return video;
   },
 
-  _internalUpdateVideoStatus: async function(dateStr, slotIndex, newMainStatus, newSubStatus, newStackableStatuses = []) {
+  _internalUpdateVideoStatus: async function (
+    dateStr,
+    slotIndex,
+    newMainStatus,
+    newSubStatus,
+    newStackableStatuses = []
+  ) {
     const self = this;
-    console.log(`[${self.id}] Actualizando estado del video: ${dateStr}-${slotIndex} = ${newMainStatus}/${newSubStatus}`, newStackableStatuses);
-    
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
-    
     const isPast = isDateInPast(dateStr);
-    
-    if (isPast && newMainStatus === VIDEO_MAIN_STATUS.PUBLISHED && newSubStatus === VIDEO_SUB_STATUS.SCHEDULED) {
-      newSubStatus = null; 
-    }
-    
+
+    if (
+      isPast &&
+      newMainStatus === VIDEO_MAIN_STATUS.PUBLISHED &&
+      newSubStatus === VIDEO_SUB_STATUS.SCHEDULED
+    )
+      newSubStatus = null;
     if (newMainStatus === VIDEO_MAIN_STATUS.EMPTY) {
-        video.name = '';
-        video.description = '';
-        newSubStatus = null; 
-        newStackableStatuses = []; 
+      video.name = "";
+      video.description = "";
+      newSubStatus = null;
+      newStackableStatuses = [];
     }
 
     video.status = newMainStatus;
     video.subStatus = newSubStatus;
-    
-    const userStackableStatuses = (newStackableStatuses || []).filter(status => 
-      status !== VIDEO_STACKABLE_STATUS.WARNING 
+    const userStackableStatuses = (newStackableStatuses || []).filter(
+      (status) => status !== VIDEO_STACKABLE_STATUS.WARNING
     );
     video.stackableStatuses = [...userStackableStatuses];
-    
-    self._applySystemWarnings(video, dateStr); 
-    
+    self._applySystemWarnings(video, dateStr);
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;
   },
 
-  _internalSetDailyIncome: async function(dateStr, incomeData) {
+  _internalSetDailyIncome: async function (dateStr, incomeData) {
     const self = this;
-    console.log(`[${self.id}] Estableciendo ingreso diario: ${dateStr}`, incomeData);
-    
-    const defaultCurrency = self._pluginData.settings?.defaultCurrency || 'USD';
-    self._pluginData.dailyIncomes[dateStr] = { 
-        ...DEFAULT_DAILY_INCOME_STRUCTURE,
-        currency: defaultCurrency, // Asegurar que la moneda por defecto se aplique si no viene en incomeData
-        ...(self._pluginData.dailyIncomes[dateStr] || {}), 
-        ...incomeData 
+    const mainCurrency = self._pluginData.settings.mainUserCurrency;
+    self._pluginData.dailyIncomes[dateStr] = {
+      ...DEFAULT_DAILY_INCOME_STRUCTURE,
+      currency: mainCurrency,
+      ...(self._pluginData.dailyIncomes[dateStr] || {}),
+      ...incomeData,
     };
     await self._savePluginData();
     return self._pluginData.dailyIncomes[dateStr];
   },
 
-  _internalGetDailyIncome: async function(dateStr) { 
+  _internalGetDailyIncome: async function (dateStr) {
     const self = this;
-    const defaultCurrency = self._pluginData.settings?.defaultCurrency || 'USD';
-    return self._pluginData.dailyIncomes[dateStr] || { ...DEFAULT_DAILY_INCOME_STRUCTURE, currency: defaultCurrency };
+    return (
+      self._pluginData.dailyIncomes[dateStr] || {
+        ...DEFAULT_DAILY_INCOME_STRUCTURE,
+        currency: self._pluginData.settings.mainUserCurrency,
+      }
+    );
   },
 
-  // --- NUEVAS FUNCIONES INTERNAS PARA TASAS DE CAMBIO ---
-  _internalGetCurrencyRates: async function() {
+  // --- Nuevas funciones internas para la configuración de moneda ---
+  _internalGetCurrencyConfiguration: async function () {
     const self = this;
-    // Devolver una copia para evitar mutación externa
-    return { ...(self._pluginData.settings?.currencyRates || { USD: 870, EUR: 950, ARS: 1 }) };
+    // Devolver una copia profunda para evitar mutación externa
+    return JSON.parse(
+      JSON.stringify({
+        mainUserCurrency: self._pluginData.settings.mainUserCurrency,
+        configuredIncomeCurrencies:
+          self._pluginData.settings.configuredIncomeCurrencies,
+        currencyRates: self._pluginData.settings.currencyRates,
+      })
+    );
   },
 
-  _internalSetCurrencyRates: async function(newRates) {
+  _internalSaveCurrencyConfiguration: async function (
+    mainCurrency,
+    incomeCurrencies,
+    rates
+  ) {
     const self = this;
-    console.log(`[${self.id}] Estableciendo nuevas tasas de cambio:`, newRates);
-    
-    // Validar que las tasas sean números y ARS sea 1
-    const validatedRates = {};
-    CURRENCIES.forEach(currency => {
-        if (currency === 'ARS') {
-            validatedRates.ARS = 1;
-        } else if (newRates && typeof newRates[currency] === 'number' && newRates[currency] > 0) {
-            validatedRates[currency] = newRates[currency];
-        } else {
-            // Usar valor existente o por defecto si el nuevo es inválido
-            validatedRates[currency] = self._pluginData.settings?.currencyRates?.[currency] || (currency === 'USD' ? 870 : 950);
-        }
+    console.log(`[${self.id}] Guardando configuración de moneda:`, {
+      mainCurrency,
+      incomeCurrencies,
+      rates,
     });
 
-    if (!self._pluginData.settings) {
-        self._pluginData.settings = { currencyRates: { USD: 870, EUR: 950, ARS: 1 }, defaultCurrency: 'USD' };
+    if (!ALL_SUPPORTED_CURRENCIES.find((c) => c.code === mainCurrency)) {
+      console.error(`[${self.id}] Moneda principal inválida: ${mainCurrency}`);
+      // Podrías lanzar un error o usar un default
+      return self._pluginData.settings;
     }
+    self._pluginData.settings.mainUserCurrency = mainCurrency;
+
+    const validatedIncomeCurrencies = incomeCurrencies.filter((code) =>
+      ALL_SUPPORTED_CURRENCIES.find((c) => c.code === code)
+    );
+    if (!validatedIncomeCurrencies.includes(mainCurrency)) {
+      validatedIncomeCurrencies.push(mainCurrency); // Asegurar que la moneda principal esté
+    }
+    self._pluginData.settings.configuredIncomeCurrencies = [
+      ...new Set(validatedIncomeCurrencies),
+    ]; // Evitar duplicados
+
+    const validatedRates = {};
+    self._pluginData.settings.configuredIncomeCurrencies.forEach((code) => {
+      if (code === mainCurrency) {
+        validatedRates[code] = 1;
+      } else if (rates && typeof rates[code] === "number" && rates[code] > 0) {
+        validatedRates[code] = rates[code];
+      } else {
+        // Si no hay tasa válida, intentar mantener la anterior o un valor por defecto si es nueva
+        validatedRates[code] =
+          self._pluginData.settings.currencyRates[code] || 1; // Default a 1 si es una nueva moneda sin tasa
+        console.warn(
+          `[${self.id}] Tasa para ${code} inválida o no provista, usando ${validatedRates[code]}`
+        );
+      }
+    });
     self._pluginData.settings.currencyRates = validatedRates;
-    await self._savePluginData();
-    return self._pluginData.settings.currencyRates;
-  },
 
-  _internalGetDefaultCurrency: async function() {
-    const self = this;
-    return self._pluginData.settings?.defaultCurrency || 'USD';
-  },
-
-  _internalSetDefaultCurrency: async function(newCurrency) {
-    const self = this;
-    console.log(`[${self.id}] Estableciendo moneda por defecto:`, newCurrency);
-    if (CURRENCIES.includes(newCurrency)) {
-        if (!self._pluginData.settings) {
-            self._pluginData.settings = { currencyRates: { USD: 870, EUR: 950, ARS: 1 }, defaultCurrency: 'USD' };
+    // Limpiar tasas de monedas que ya no están configuradas (excepto la principal)
+    Object.keys(self._pluginData.settings.currencyRates).forEach(
+      (rateCurrency) => {
+        if (
+          rateCurrency !== mainCurrency &&
+          !self._pluginData.settings.configuredIncomeCurrencies.includes(
+            rateCurrency
+          )
+        ) {
+          delete self._pluginData.settings.currencyRates[rateCurrency];
         }
-        self._pluginData.settings.defaultCurrency = newCurrency;
-        await self._savePluginData();
-        return self._pluginData.settings.defaultCurrency;
-    }
-    console.warn(`[${self.id}] Intento de establecer moneda por defecto inválida: ${newCurrency}`);
-    return self._pluginData.settings?.defaultCurrency || 'USD';
-  }
-  // --- FIN NUEVAS FUNCIONES INTERNAS ---
+      }
+    );
+
+    await self._savePluginData();
+    return self._pluginData.settings;
+  },
 };
