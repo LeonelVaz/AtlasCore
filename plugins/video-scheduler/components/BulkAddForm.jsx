@@ -204,7 +204,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     {
       ref: popupRef,
       className: 'bulk-add-form-modal',
-      style: styleProps
+      style: styleProps // Permite posicionamiento si es necesario, aunque por defecto es centrado
     },
     [
       React.createElement('h3', { key: 'title' }, 'Añadir Videos en Lote'),

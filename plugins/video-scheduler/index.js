@@ -19,7 +19,7 @@ const STORAGE_KEY_DATA = 'video_scheduler_plugin_data';
 export default {
   id: 'video-scheduler',
   name: 'Video Scheduler',
-  version: '0.5.0', 
+  version: '0.5.1', // Incremento de versión por cambios
   description: 'Planificador visual de videos estilo calendario con sistema de estados avanzado.',
   author: 'Tu Nombre/Equipo',
   minAppVersion: '0.3.0',
@@ -56,11 +56,26 @@ export default {
         self.publicAPI = self._createPublicAPI(self);
         self._core.plugins.registerAPI(self.id, self.publicAPI);
 
-        const NavWrapper = p => React.createElement(VideoSchedulerNavItemComponent, {...p, plugin:self, core:self._core, pluginId:self.id, pageIdToNavigate: PLUGIN_PAGE_ID});
-        self._navigationExtensionId = self._core.ui.registerExtension(self.id, self._core.ui.getExtensionZones().MAIN_NAVIGATION, NavWrapper, {order:150});
+        // Usando una función factory para el wrapper del NavItem
+        const NavItemWrapperFactory = (Component, extraProps) => (propsFromAtlas) => 
+            React.createElement(Component, { ...propsFromAtlas, ...extraProps });
+
+        self._navigationExtensionId = self._core.ui.registerExtension(
+            self.id, 
+            self._core.ui.getExtensionZones().MAIN_NAVIGATION, 
+            NavItemWrapperFactory(VideoSchedulerNavItemComponent, { plugin: self, core: self._core, pluginId: self.id, pageIdToNavigate: PLUGIN_PAGE_ID }),
+            { order: 150 }
+        );
         
-        const PageWrapper = p => React.createElement(VideoSchedulerMainPageComponent, {...p, plugin:self, core:self._core, pluginId:self.id});
-        self._pageExtensionId = self._core.ui.registerExtension(self.id, self._core.ui.getExtensionZones().PLUGIN_PAGES, PageWrapper, {order:100, props:{pageId:PLUGIN_PAGE_ID}});
+        const PageWrapperFactory = (Component, extraProps) => (propsFromAtlas) =>
+            React.createElement(Component, { ...propsFromAtlas, ...extraProps });
+
+        self._pageExtensionId = self._core.ui.registerExtension(
+            self.id, 
+            self._core.ui.getExtensionZones().PLUGIN_PAGES, 
+            PageWrapperFactory(VideoSchedulerMainPageComponent, { plugin: self, core: self._core, pluginId: self.id }),
+            { order: 100, props: { pageId: PLUGIN_PAGE_ID } }
+        );
         
         console.log(`[${self.id}] Plugin inicializado.`);
         resolve(true);
@@ -76,7 +91,7 @@ export default {
     console.log(`[${self.id}] Limpiando plugin...`);
     try {
         await self._savePluginData();
-        if (self._core.ui.removeAllExtensions) {
+        if (self._core && self._core.ui && self._core.ui.removeAllExtensions) { // Verificar core y ui
             self._core.ui.removeAllExtensions(self.id);
             console.log(`[${self.id}] Extensiones UI removidas.`);
         }
@@ -99,23 +114,31 @@ export default {
       updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses),
       setDailyIncome: async (dateStr, incomeData) => self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
-      bulkCreateVideos: async (schedule) => self._internalBulkCreateVideos(schedule),
-      getVideoStats: (monthData) => self._internalGetVideoStats(monthData),
-      getIncomeStats: (monthData) => self._internalGetIncomeStats(monthData)
+      // bulkCreateVideos: async (schedule) => self._internalBulkCreateVideos(schedule), // Ya implementado en VideoSchedulerMainPage
+      // getVideoStats: (monthData) => self._internalGetVideoStats(monthData), // Usado internamente o por StatsPanel
+      // getIncomeStats: (monthData) => self._internalGetIncomeStats(monthData) // Usado internamente o por StatsPanel
     };
   },
 
   _loadPluginData: async function() {
     const self = this;
+    if (!self._core || !self._core.storage) { // Verificar core y storage
+        console.warn(`[${self.id}] Core o storage no disponible en _loadPluginData.`);
+        self._pluginData = { // Datos por defecto si no se puede cargar
+            videosBySlotKey: {},
+            dailyIncomes: {},
+            settings: { currencyRates: { USD: 870, EUR: 950, ARS: 1 }, defaultCurrency: 'USD' }
+        };
+        return;
+    }
     const loadedData = await self._core.storage.getItem(self.id, STORAGE_KEY_DATA, {});
-    const safeLoadedData = loadedData || {};
+    const safeLoadedData = loadedData || {}; // Asegurar que no sea null/undefined
     self._pluginData = {
         videosBySlotKey: safeLoadedData.videosBySlotKey || {},
         dailyIncomes: safeLoadedData.dailyIncomes || {},
-        settings: { ...self._pluginData.settings, ...(safeLoadedData.settings || {}) }
+        settings: { ...(self._pluginData.settings || {}), ...(safeLoadedData.settings || {}) }
     };
     
-    // Migrar datos existentes para añadir stackableStatuses si no existen
     Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
       const video = self._pluginData.videosBySlotKey[key];
       if (!video.stackableStatuses) {
@@ -127,6 +150,7 @@ export default {
   _savePluginData: async function() {
     const self = this;
     if (!self._core || !self._core.storage) {
+        console.warn(`[${self.id}] Core o storage no disponible en _savePluginData.`);
         return;
     }
     try {
@@ -147,186 +171,161 @@ export default {
         stackableStatuses: []
       };
     }
-    // Asegurar que stackableStatuses existe
     if (!this._pluginData.videosBySlotKey[key].stackableStatuses) {
       this._pluginData.videosBySlotKey[key].stackableStatuses = [];
     }
     return this._pluginData.videosBySlotKey[key];
   },
-
-  // Función para filtrar datos por mes específico
-  _filterDataByMonth: function(year, month) {
+  
+  _filterDataByMonth: function(year, month_idx) { // Asegurar que este método solo filtra y no modifica
     const self = this;
-    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, '0')}-`;
     
-    const filteredVideos = {};
-    const filteredIncomes = {};
-    
-    // Filtrar videos por mes
+    const videosForMonth = {};
     Object.entries(self._pluginData.videosBySlotKey).forEach(([key, video]) => {
-      if (key.startsWith(monthKey)) {
-        filteredVideos[key] = video;
-      }
+        if (key.startsWith(monthKeyPrefix)) {
+            videosForMonth[key] = { ...video }; // Devolver copia para evitar mutaciones inesperadas
+        }
     });
-    
-    // Filtrar ingresos por mes
+
+    const incomesForMonth = {};
     Object.entries(self._pluginData.dailyIncomes).forEach(([key, income]) => {
-      if (key.startsWith(monthKey)) {
-        filteredIncomes[key] = income;
-      }
+        if (key.startsWith(monthKeyPrefix)) {
+            incomesForMonth[key] = { ...income }; // Devolver copia
+        }
     });
-    
-    return {
-      videos: filteredVideos,
-      dailyIncomes: filteredIncomes
-    };
+
+    return { videos: videosForMonth, dailyIncomes: incomesForMonth };
   },
 
-  // Función para aplicar alertas de sistema automáticas
+
   _applySystemWarnings: function(video, dateStr) {
     if (!video || !dateStr) {
       return;
     }
 
     const isPast = isDateInPast(dateStr);
-    const stackableStatuses = [...(video.stackableStatuses || [])];
+    // Asegurar que stackableStatuses es un array, incluso si es undefined inicialmente
+    const stackableStatuses = Array.isArray(video.stackableStatuses) ? [...video.stackableStatuses] : [];
     const hasWarning = stackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING);
     const hasName = video.name && video.name.trim() !== '';
 
     let shouldHaveWarning = false;
 
-    // Verificar problemas de tiempo pasado
     if (isPast && INVALID_PAST_STATUSES.includes(video.status)) {
       shouldHaveWarning = true;
     }
-
-    // Verificar inconsistencias lógicas de nombre vs estado
     if (video.status === VIDEO_MAIN_STATUS.PENDING && hasName) {
-      // PENDING con nombre → debería ser DEVELOPMENT
       shouldHaveWarning = true;
     }
-    
     if (video.status === VIDEO_MAIN_STATUS.EMPTY && hasName) {
-      // EMPTY con nombre → no tiene sentido
       shouldHaveWarning = true;
     }
 
-    // Aplicar o quitar warning según sea necesario
     if (shouldHaveWarning && !hasWarning) {
-      // Añadir warning
       stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
-      video.stackableStatuses = stackableStatuses;
     } else if (!shouldHaveWarning && hasWarning) {
-      // Quitar warning
       const warningIndex = stackableStatuses.indexOf(VIDEO_STACKABLE_STATUS.WARNING);
       if (warningIndex > -1) {
         stackableStatuses.splice(warningIndex, 1);
-        video.stackableStatuses = stackableStatuses;
       }
     }
+    video.stackableStatuses = stackableStatuses; // Asignar el array modificado
   },
 
   _internalGetMonthViewData: async function(year, month_idx) {
     const self = this;
     const daysInMonth = new Date(year, month_idx + 1, 0).getDate();
     
-    // Asegurar que existen todos los slots del mes
+    let dataChanged = false; // Flag para rastrear si es necesario guardar
+
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month_idx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
-            self._ensureVideoSlotExists(dateStr, slotIndex);
+            const key = self._getVideoSlotKey(dateStr, slotIndex);
+            if (!self._pluginData.videosBySlotKey[key]) {
+                self._pluginData.videosBySlotKey[key] = { 
+                    ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
+                    id: key,
+                    stackableStatuses: []
+                };
+                dataChanged = true;
+            } else if (!self._pluginData.videosBySlotKey[key].stackableStatuses) {
+                // Asegurar que los videos existentes tengan stackableStatuses
+                self._pluginData.videosBySlotKey[key].stackableStatuses = [];
+                dataChanged = true;
+            }
         }
         if (!self._pluginData.dailyIncomes[dateStr]) {
             self._pluginData.dailyIncomes[dateStr] = { ...DEFAULT_DAILY_INCOME_STRUCTURE };
+            dataChanged = true;
         }
     }
 
-    let changedByTransition = false;
-
-    // Aplicar transiciones automáticas basadas en tiempo SOLO para el mes solicitado
-    const monthKey = `${year}-${String(month_idx + 1).padStart(2, '0')}`;
+    // Aplicar transiciones y warnings
+    const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, '0')}-`;
     Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
-        // Solo procesar videos del mes solicitado
-        if (!key.startsWith(monthKey)) return;
+        if (!key.startsWith(monthKeyPrefix)) return; // Solo procesar el mes actual
         
         const video = self._pluginData.videosBySlotKey[key];
-        const dateStr = key.split('-').slice(0, 3).join('-');
+        const dateStr = key.substring(0, 10); // "YYYY-MM-DD"
         const isPast = isDateInPast(dateStr);
 
+        const originalStatus = video.status;
+        const originalSubStatus = video.subStatus;
+        const originalStackable = JSON.stringify((video.stackableStatuses || []).sort());
+
         if (isPast) {
-          // Transición: PENDING → EMPTY en tiempo pasado
           if (video.status === VIDEO_MAIN_STATUS.PENDING) {
-            video.status = VIDEO_MAIN_STATUS.EMPTY;
-            video.name = '';
-            video.description = '';
-            video.subStatus = null;
-            video.stackableStatuses = [];
-            changedByTransition = true;
+            video.status = VIDEO_MAIN_STATUS.EMPTY; video.name = ''; video.description = ''; video.subStatus = null; video.stackableStatuses = [];
           }
-          
-          // Transición: PUBLISHED+SCHEDULED → PUBLISHED en tiempo pasado
           if (video.status === VIDEO_MAIN_STATUS.PUBLISHED && video.subStatus === VIDEO_SUB_STATUS.SCHEDULED) {
             video.subStatus = null;
-            changedByTransition = true;
           }
         }
-
-        // Aplicar warnings automáticos
-        const oldStackableStatuses = [...(video.stackableStatuses || [])];
         self._applySystemWarnings(video, dateStr);
-        
-        // Verificar si cambiaron los stackable statuses
-        const newStackableStatuses = video.stackableStatuses || [];
-        if (JSON.stringify(oldStackableStatuses.sort()) !== JSON.stringify(newStackableStatuses.sort())) {
-          changedByTransition = true;
+
+        if (video.status !== originalStatus || video.subStatus !== originalSubStatus || JSON.stringify((video.stackableStatuses || []).sort()) !== originalStackable) {
+            dataChanged = true;
         }
     });
 
-    if (changedByTransition) {
+    if (dataChanged) {
         await self._savePluginData();
     }
     
-    // Retornar solo los datos filtrados del mes solicitado
-    return self._filterDataByMonth(year, month_idx);
+    return self._filterDataByMonth(year, month_idx); // Retorna solo los datos filtrados del mes
   },
 
   _internalUpdateVideoName: async function(dateStr, slotIndex, newName) {
     const self = this;
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     const oldName = video.name;
-    video.name = newName;
+    video.name = newName.trim(); // Guardar trim
     
     const isPast = isDateInPast(dateStr);
     
     if (isPast) {
-      // En tiempo pasado: EMPTY + nombre → DEVELOPMENT + WARNING
-      if (video.status === VIDEO_MAIN_STATUS.EMPTY && newName.trim() !== '') {
+      if (video.status === VIDEO_MAIN_STATUS.EMPTY && video.name !== '') {
         video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
         video.subStatus = null;
-        // Añadir warning automáticamente
-        if (!video.stackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING)) {
-          video.stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
-        }
-      } else if (newName.trim() === '' && oldName.trim() !== '') {
+      } else if (video.name === '' && oldName !== '') { // Si se borra el nombre
         video.status = VIDEO_MAIN_STATUS.EMPTY;
         video.subStatus = null;
-        video.stackableStatuses = []; // Limpiar todos los sub-estados apilables
+        video.stackableStatuses = [];
       }
     } else {
-      // En tiempo futuro: comportamiento normal
-      if (video.status === VIDEO_MAIN_STATUS.PENDING && newName.trim() !== '') {
+      if (video.status === VIDEO_MAIN_STATUS.PENDING && video.name !== '') {
         video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
         video.subStatus = null;
-      } else if (newName.trim() === '' && oldName.trim() !== '' && video.status !== VIDEO_MAIN_STATUS.EMPTY) {
+      } else if (video.name === '' && oldName !== '' && video.status !== VIDEO_MAIN_STATUS.EMPTY) {
         video.status = VIDEO_MAIN_STATUS.PENDING;
         video.subStatus = null;
-        video.stackableStatuses = []; // Limpiar todos los sub-estados apilables
+        video.stackableStatuses = [];
       }
     }
 
-    // Aplicar warnings automáticos para detectar inconsistencias lógicas
     self._applySystemWarnings(video, dateStr);
-    
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;
@@ -335,7 +334,7 @@ export default {
   _internalUpdateVideoDescription: async function(dateStr, slotIndex, newDescription) {
     const self = this;
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
-    video.description = newDescription;
+    video.description = newDescription.trim();
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;
@@ -347,36 +346,31 @@ export default {
     
     const isPast = isDateInPast(dateStr);
     
-    // En tiempo pasado, verificar si se está tratando de poner PUBLISHED+SCHEDULED
     if (isPast && newMainStatus === VIDEO_MAIN_STATUS.PUBLISHED && newSubStatus === VIDEO_SUB_STATUS.SCHEDULED) {
-      newSubStatus = null;
+      newSubStatus = null; // No puede estar "scheduled" en el pasado
+    }
+    
+    // Si se cambia a EMPTY, limpiar nombre y descripción
+    if (newMainStatus === VIDEO_MAIN_STATUS.EMPTY) {
+        video.name = '';
+        video.description = '';
+        newSubStatus = null; // EMPTY no tiene substatus
+        newStackableStatuses = []; // EMPTY no tiene stackable statuses
     }
 
-    // Validar transición desde EMPTY (ahora permitida)
-    if (video.status === VIDEO_MAIN_STATUS.EMPTY && 
-        newMainStatus !== VIDEO_MAIN_STATUS.PENDING && 
-        newMainStatus !== VIDEO_MAIN_STATUS.EMPTY) {
-      // Transición permitida, no hacer nada
-    }
 
     video.status = newMainStatus;
     video.subStatus = newSubStatus;
     
-    // Manejar sub-estados apilables
-    // Filtrar warnings automáticos del usuario y mantener solo los que el usuario puede controlar
     const userStackableStatuses = (newStackableStatuses || []).filter(status => 
-      status !== VIDEO_STACKABLE_STATUS.WARNING
+      status !== VIDEO_STACKABLE_STATUS.WARNING // El usuario no gestiona WARNING directamente
     );
-    
-    // Establecer los estados que el usuario eligió
     video.stackableStatuses = [...userStackableStatuses];
     
-    // Aplicar warnings automáticos después de la actualización
-    self._applySystemWarnings(video, dateStr);
+    self._applySystemWarnings(video, dateStr); // Aplicar warnings de sistema DESPUÉS de los cambios del usuario
     
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
-    
     return video;
   },
 
@@ -391,136 +385,8 @@ export default {
     return self._pluginData.dailyIncomes[dateStr];
   },
 
-  _internalGetDailyIncome: async function(dateStr) {
+  _internalGetDailyIncome: async function(dateStr) { // Este método es realmente síncrono con los datos cargados
     const self = this;
-    return self._pluginData.dailyIncomes[dateStr] || null;
-  },
-
-  _internalBulkCreateVideos: async function(schedule) {
-    const self = this;
-    const results = [];
-    
-    try {
-      for (const item of schedule) {
-        const video = self._ensureVideoSlotExists(item.dateStr, item.slotIndex);
-        video.name = item.name;
-        video.status = item.status || VIDEO_MAIN_STATUS.DEVELOPMENT;
-        video.description = item.description || '';
-        video.updatedAt = new Date().toISOString();
-        
-        // Aplicar warnings automáticos
-        self._applySystemWarnings(video, item.dateStr);
-        
-        results.push(video);
-      }
-      
-      await self._savePluginData();
-      return results;
-    } catch (error) {
-      console.error(`[${self.id}] Error en bulk create:`, error);
-      throw error;
-    }
-  },
-
-  _internalGetVideoStats: function(monthData) {
-    const self = this;
-    const stats = {
-      [VIDEO_MAIN_STATUS.PENDING]: 0,
-      [VIDEO_MAIN_STATUS.EMPTY]: 0,
-      [VIDEO_MAIN_STATUS.DEVELOPMENT]: 0,
-      [VIDEO_MAIN_STATUS.PRODUCTION]: 0,
-      [VIDEO_MAIN_STATUS.PUBLISHED]: 0,
-      [VIDEO_SUB_STATUS.REC]: 0,
-      [VIDEO_SUB_STATUS.EDITING]: 0,
-      [VIDEO_SUB_STATUS.THUMBNAIL]: 0,
-      [VIDEO_SUB_STATUS.SCHEDULING_POST]: 0,
-      [VIDEO_SUB_STATUS.SCHEDULED]: 0,
-      [VIDEO_STACKABLE_STATUS.QUESTION]: 0,
-      [VIDEO_STACKABLE_STATUS.WARNING]: 0,
-      total: 0,
-      withAlerts: 0,
-      withQuestions: 0
-    };
-
-    // IMPORTANTE: Solo contar videos de los datos filtrados por mes
-    if (monthData && monthData.videos) {
-      Object.values(monthData.videos).forEach(video => {
-        stats.total++;
-        
-        if (video.status) {
-          stats[video.status]++;
-        }
-        
-        if (video.subStatus) {
-          stats[video.subStatus]++;
-        }
-        
-        if (video.stackableStatuses && Array.isArray(video.stackableStatuses)) {
-          video.stackableStatuses.forEach(status => {
-            if (stats[status] !== undefined) {
-              stats[status]++;
-            }
-            
-            if (status === VIDEO_STACKABLE_STATUS.WARNING) {
-              stats.withAlerts++;
-            }
-            if (status === VIDEO_STACKABLE_STATUS.QUESTION) {
-              stats.withQuestions++;
-            }
-          });
-        }
-      });
-    }
-
-    return stats;
-  },
-
-  _internalGetIncomeStats: function(monthData) {
-    const self = this;
-    const incomeStats = {
-      totalByCurrency: {},
-      totalInARS: 0,
-      paidByCurrency: {},
-      pendingByCurrency: {},
-      totalPaidInARS: 0,
-      totalPendingInARS: 0
-    };
-
-    const exchangeRates = self._pluginData?.settings?.currencyRates || {
-      USD: 870, EUR: 950, ARS: 1
-    };
-
-    // IMPORTANTE: Solo contar ingresos de los datos filtrados por mes
-    if (monthData && monthData.dailyIncomes) {
-      Object.values(monthData.dailyIncomes).forEach(income => {
-        if (income && income.amount > 0) {
-          const currency = income.currency || 'USD';
-          const amount = parseFloat(income.amount) || 0;
-          const rate = exchangeRates[currency] || 1;
-          
-          if (!incomeStats.totalByCurrency[currency]) {
-            incomeStats.totalByCurrency[currency] = 0;
-          }
-          incomeStats.totalByCurrency[currency] += amount;
-          incomeStats.totalInARS += amount * rate;
-          
-          if (income.status === 'paid') {
-            if (!incomeStats.paidByCurrency[currency]) {
-              incomeStats.paidByCurrency[currency] = 0;
-            }
-            incomeStats.paidByCurrency[currency] += amount;
-            incomeStats.totalPaidInARS += amount * rate;
-          } else {
-            if (!incomeStats.pendingByCurrency[currency]) {
-              incomeStats.pendingByCurrency[currency] = 0;
-            }
-            incomeStats.pendingByCurrency[currency] += amount;
-            incomeStats.totalPendingInARS += amount * rate;
-          }
-        }
-      });
-    }
-
-    return incomeStats;
+    return self._pluginData.dailyIncomes[dateStr] || { ...DEFAULT_DAILY_INCOME_STRUCTURE };
   },
 };

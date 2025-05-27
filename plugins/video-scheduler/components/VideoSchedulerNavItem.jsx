@@ -14,14 +14,30 @@ function VideoSchedulerNavItem(props) {
   };
 
   return (
-    <div
-      className='video-scheduler-nav-item'
-      onClick={handleClick}
-      style={{ cursor: 'pointer', padding: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}
-    >
-      <span style={{ fontSize: '1.2em' }}>🎬</span>
-      <span>{plugin.name || 'Video Scheduler'}</span>
-    </div>
+    // El div ya tiene la clase 'video-scheduler-nav-item' aplicada desde index.js si se usa la factoría
+    // Si se usa directamente, la clase se puede añadir aquí. Por consistencia, lo dejo.
+    React.createElement(
+        'div',
+        {
+          className: 'video-scheduler-nav-item', // Se puede aplicar estilo global en el CSS del plugin
+          onClick: handleClick
+        },
+        [
+          React.createElement(
+            'span',
+            { 
+              key: 'icon',
+              className: 'material-icons video-scheduler-nav-icon' // Clase para el icono
+            },
+            'movie' // Icono de Material Icons
+          ),
+          React.createElement(
+            'span',
+            { key: 'label' },
+            plugin.name || 'Video Scheduler'
+          )
+        ]
+      )
   );
 }
 

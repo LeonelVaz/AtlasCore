@@ -16,7 +16,6 @@
   max-height: 85vh;
   overflow-y: auto;
   z-index: 1050;
-  backdrop-filter: blur(12px);
 }
 
 .bulk-add-form-modal h3 {

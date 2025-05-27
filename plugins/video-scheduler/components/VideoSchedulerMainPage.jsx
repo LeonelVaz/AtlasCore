@@ -34,16 +34,15 @@ function VideoSchedulerMainPage(props) {
   const incomePopupConfig = {
     width: 320,
     height: 300,
-    margin: 10, // Margen general de seguridad respecto a los bordes del wrapper
-    gapToCell: 10 // Espacio deseado entre la celda y el popup cuando se posiciona a un lado
+    margin: 10, 
+    gapToCell: 10 
   };
 
-  // Configuración para el popup StatusSelector
   const statusSelectorPopupConfig = {
-    width: 220,  // Ancho del StatusSelector
-    height: 250, // Alto ESTIMADO del StatusSelector (puede variar con el contenido)
-    margin: 10,  // Margen respecto a los bordes del wrapper
-    gapToIcon: 10 // Espacio deseado entre el icono y el popup
+    width: 220, 
+    height: 280, // Ajustado ligeramente para más contenido
+    margin: 10,  
+    gapToIcon: 10 
   };
 
   const findScrollContainer = () => {
@@ -53,7 +52,7 @@ function VideoSchedulerMainPage(props) {
     const appContent = document.querySelector('.app-content');
     if (appContent) return appContent;
     
-    return document.documentElement;
+    return document.documentElement; // Fallback al body/html
   };
 
   React.useEffect(() => {
@@ -67,20 +66,26 @@ function VideoSchedulerMainPage(props) {
     };
 
     const scrollContainer = findScrollContainer();
-    if (scrollContainer === document.documentElement) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-    } else {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    // Asegurarse de que scrollContainer no sea null y tenga addEventListener
+    if (scrollContainer && scrollContainer.addEventListener) {
+        if (scrollContainer === document.documentElement || scrollContainer === document.body) {
+            window.addEventListener('scroll', handleScroll, { passive: true });
+        } else {
+            scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+        }
     }
-
+    
     return () => {
-      if (scrollContainer === document.documentElement) {
-        window.removeEventListener('scroll', handleScroll);
-      } else {
-        scrollContainer.removeEventListener('scroll', handleScroll);
-      }
+        if (scrollContainer && scrollContainer.removeEventListener) {
+            if (scrollContainer === document.documentElement || scrollContainer === document.body) {
+                window.removeEventListener('scroll', handleScroll);
+            } else {
+                scrollContainer.removeEventListener('scroll', handleScroll);
+            }
+        }
     };
   }, [showIncomeForm, showStatusSelector]);
+
 
   const refreshCalendarDataSilently = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
@@ -156,54 +161,38 @@ function VideoSchedulerMainPage(props) {
     
     const { 
         width: popupWidth, 
-        height: popupHeightEstimate, // Es una estimación, la altura real puede variar
+        height: popupHeightEstimate,
         margin: popupMargin, 
         gapToIcon 
     } = statusSelectorPopupConfig;
     
-    // --- Posición Horizontal ---
-    // Prioridad 1: A la derecha del icono
     let finalLeft = (iconRect.right - wrapperRect.left) + gapToIcon;
-    
-    // Si se sale por la derecha, intentar a la izquierda
     if (finalLeft + popupWidth > wrapper.clientWidth - popupMargin) {
       finalLeft = (iconRect.left - wrapperRect.left) - popupWidth - gapToIcon;
     }
-    // Si sigue saliéndose por la izquierda (o la posición izquierda no es viable)
     if (finalLeft < popupMargin) {
-      // Si cabía a la derecha pero se ajustó a la izquierda y aun así no cabe,
-      // o si directamente no cabe a la izquierda, intentar pegarlo al borde derecho del wrapper.
       finalLeft = wrapper.clientWidth - popupWidth - popupMargin;
-      // Si el popup es más ancho que el wrapper, pegarlo al borde izquierdo.
       if (finalLeft < popupMargin) {
         finalLeft = popupMargin;
       }
     }
-    // Asegurar que si es más ancho que el wrapper, se alinee a la izquierda con margen.
     if (popupWidth > wrapper.clientWidth - 2 * popupMargin) {
         finalLeft = popupMargin;
     }
 
-    // --- Posición Vertical ---
-    // Idealmente, el centro del popup se alinea con el centro del icono.
     let finalTop = (iconRect.top - wrapperRect.top) + (iconRect.height / 2) - (popupHeightEstimate / 2);
-    
     const header = wrapper.querySelector('.page-header-controls');
     const headerHeight = header ? header.offsetHeight : 0;
-    const minTopPosition = headerHeight + popupMargin; // No solapar el header
-    const maxBottomEdgeOfPopup = wrapper.clientHeight - popupMargin; // Límite inferior del wrapper
+    const minTopPosition = headerHeight + popupMargin;
+    const maxBottomEdgeOfPopup = wrapper.clientHeight - popupMargin;
 
-    // Ajustar para no salirse por arriba
     if (finalTop < minTopPosition) {
       finalTop = minTopPosition;
     }
-    // Ajustar para no salirse por abajo
     if (finalTop + popupHeightEstimate > maxBottomEdgeOfPopup) {
       finalTop = maxBottomEdgeOfPopup - popupHeightEstimate;
-      // Si después de ajustar al fondo, queda por encima del mínimo, está bien.
-      // Pero si el popup es muy alto para el espacio disponible, podría irse por encima del minTop.
       if (finalTop < minTopPosition) {
-          finalTop = minTopPosition; // Priorizar no salirse por arriba. El popup podría cortarse si es muy alto.
+          finalTop = minTopPosition;
       }
     }
 
@@ -212,7 +201,7 @@ function VideoSchedulerMainPage(props) {
         position: { top: finalTop, left: finalLeft }
     });
     setShowStatusSelector(true);
-    setShowIncomeForm(false); // Cerrar el otro popup si estuviera abierto
+    setShowIncomeForm(false); 
     setIncomeFormContext(null);
   };
 
@@ -258,9 +247,13 @@ function VideoSchedulerMainPage(props) {
     const header = wrapper.querySelector('.page-header-controls');
     const headerHeight = header ? header.offsetHeight : 0;
     
-    const statsPanelPlaceholderHeight = 60; 
+    // Considerar la altura del panel de estadísticas inferior si está visible
+    // Esta es una estimación, idealmente se debería obtener dinámicamente.
+    const footerStatsPanel = wrapper.querySelector('.stats-tab-content'); // Se usa .stats-tab-content para el panel inferior ahora
+    const footerStatsPanelHeight = footerStatsPanel ? footerStatsPanel.offsetHeight : 0;
+    
     const minTopPosition = headerHeight + margin;
-    const maxBottomEdgeOfPopup = wrapper.clientHeight - statsPanelPlaceholderHeight - margin;
+    const maxBottomEdgeOfPopup = wrapper.clientHeight - footerStatsPanelHeight - margin;
 
     let finalLeft = cellLeft - popupWidth - gapToCell;
     if (finalLeft < margin) {
@@ -276,7 +269,7 @@ function VideoSchedulerMainPage(props) {
     let finalTop = cellTop;
     if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
         finalTop = cellRect.bottom - wrapperRect.top - popupHeight;
-        if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
+        if (finalTop + popupHeight > maxBottomEdgeOfPopup) { // Re-check
             finalTop = maxBottomEdgeOfPopup - popupHeight;
         }
     }
@@ -294,7 +287,7 @@ function VideoSchedulerMainPage(props) {
         }
     });
     setShowIncomeForm(true);
-    setShowStatusSelector(false); // Cerrar el otro popup
+    setShowStatusSelector(false); 
     setStatusSelectorContext(null);
   };
 
@@ -311,15 +304,19 @@ function VideoSchedulerMainPage(props) {
       for (const item of schedule) {
         const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(item.day).padStart(2, '0')}`;
         await plugin.publicAPI.updateVideoName(dateStr, item.slotIndex, item.name);
-        if (item.status !== VIDEO_MAIN_STATUS.PENDING) {
-          await plugin.publicAPI.updateVideoStatus(dateStr, item.slotIndex, item.status, null, []);
+        if (item.status !== VIDEO_MAIN_STATUS.PENDING) { // Asegurar que no se actualice a PENDING si ya tiene nombre
+            const videoData = await plugin.publicAPI.updateVideoStatus(dateStr, item.slotIndex, item.status, null, []);
+            // Si la descripción está en el item, actualizarla también
+            if (item.description !== undefined) {
+                await plugin.publicAPI.updateVideoDescription(dateStr, item.slotIndex, item.description);
+            }
         }
       }
       refreshCalendarDataSilently();
       setShowBulkAddForm(false);
     } catch (error) {
       console.error('Error al crear videos en lote:', error);
-      throw error;
+      throw error; // Relanzar para que el formulario de BulkAdd pueda manejarlo
     }
   };
   
@@ -338,7 +335,6 @@ function VideoSchedulerMainPage(props) {
   );
 
   const tableBodyRows = [];
-  // Asegurarse que monthData y sus propiedades necesarias existan antes de iterar
   if (!isLoading && monthData && monthData.videos && monthData.dailyIncomes) {
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -349,14 +345,14 @@ function VideoSchedulerMainPage(props) {
           return monthData.videos[videoKey] || {
             ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
             id: videoKey, 
-            status: VIDEO_MAIN_STATUS.PENDING,
+            status: VIDEO_MAIN_STATUS.PENDING, // Estado por defecto
             stackableStatuses: []
           };
       });
       const currentDailyIncome = monthData.dailyIncomes[dateStr] || null;
 
       tableBodyRows.push(
-        React.createElement('tr', {key: `day-row-${day}`}, [
+        React.createElement('tr', {key: `day-row-${day}`, className: 'calendar-row'}, [ // Añadida clase para hover
           React.createElement(DayCell, {key: `daycell-${day}`, dayNumber: day, dayName: dayName}),
           videosForDay.map((video, slotIndex) => 
             React.createElement(VideoSlotCell, {
@@ -415,7 +411,7 @@ function VideoSchedulerMainPage(props) {
           React.createElement('table', {key: 'calendar-grid', className: 'calendar-grid'}, [tableHeader, tableBody])
         ]),
         
-        showStatusSelector && statusSelectorContext && statusSelectorContext.video && React.createElement(StatusSelector, { // AÑADIDA LA CONDICIÓN statusSelectorContext.video
+        showStatusSelector && statusSelectorContext && statusSelectorContext.video && React.createElement(StatusSelector, {
           key: 'status-selector-instance',
           currentMainStatus: statusSelectorContext.video.status,
           currentSubStatus: statusSelectorContext.video.subStatus,
@@ -442,7 +438,7 @@ function VideoSchedulerMainPage(props) {
 
         showStatsPanel && React.createElement(StatsPanel, {
           key: 'stats-panel-instance',
-          monthData: monthData,
+          monthData: monthData, // Se pasa monthData completo, StatsPanel filtrará si es necesario
           currentDate: currentDate,
           plugin: plugin,
           onClose: () => setShowStatsPanel(false)
@@ -454,14 +450,13 @@ function VideoSchedulerMainPage(props) {
           plugin: plugin,
           onSave: handleBulkAddSave,
           onCancel: () => setShowBulkAddForm(false),
-          styleProps: {}
+          styleProps: { /* Para centrar por defecto, no se necesitan props de posición aquí */ }
         })
       ]),
       
-      // Panel de estadísticas compartido inferior usando el mismo componente completo
       !isLoading && React.createElement(StatsOverviewPanel, {
         key: 'footer-stats-panel',
-        monthData: monthData,
+        monthData: monthData, // Se pasa monthData completo
         currentDate: currentDate,
         plugin: plugin,
         compact: false // Usar el modo completo para mostrar todas las estadísticas

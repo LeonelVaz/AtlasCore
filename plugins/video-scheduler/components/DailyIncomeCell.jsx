@@ -10,7 +10,7 @@ function formatCurrency(amount, currency) {
 function DailyIncomeCell({ day, dailyIncomeData, onIncomeCellClick }) {
   const incomeExists = dailyIncomeData && dailyIncomeData.amount > 0;
   let cellClassName = 'video-scheduler-income-cell';
-  let displayText = '+ Ingreso'; 
+  let displayText; 
   let payerText = '';
 
   if (incomeExists) {
@@ -22,6 +22,7 @@ function DailyIncomeCell({ day, dailyIncomeData, onIncomeCellClick }) {
       cellClassName += ' income-pending';
     }
   } else {
+    displayText = 'Ingreso'; // Texto base, el "+" se añade con CSS
     cellClassName += ' income-empty';
   }
 

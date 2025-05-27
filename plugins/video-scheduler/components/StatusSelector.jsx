@@ -34,12 +34,19 @@ function StatusSelector(props) {
   const handleMainStatusSelect = (newMainStatus) => {
     const validSubStatusesForNewMain = VALID_SUB_STATUSES_FOR_MAIN[newMainStatus] || [];
     let newSub = null;
+    // Solo mantener el subestado si el estado principal no cambia Y el subestado actual es válido para ese principal
     if (newMainStatus === currentMainStatus && validSubStatusesForNewMain.includes(currentSubStatus)) {
       newSub = currentSubStatus;
+    } else if (validSubStatusesForNewMain.length > 0) {
+      // Opcional: Si se cambia a un estado principal que tiene subestados, se podría auto-seleccionar el primero,
+      // o dejarlo en null para que el usuario elija. Por ahora, se deja en null.
+      // newSub = validSubStatusesForNewMain[0]; // Ejemplo de auto-selección
     }
+    
     // Mantener los sub-estados apilables
     onStatusChange(newMainStatus, newSub, currentStackableStatuses);
   };
+
 
   const handleSubStatusSelect = (subStatus) => {
     const validSubStatuses = VALID_SUB_STATUSES_FOR_MAIN[currentMainStatus] || [];
@@ -141,12 +148,13 @@ function StatusSelector(props) {
               },
               `${STATUS_EMOJIS[VIDEO_STACKABLE_STATUS.QUESTION]} Marcar para revisar`
             ),
-            // Mostrar WARNING solo como información (no clickeable)
+            // Mostrar WARNING solo como información (no clickeable por el usuario desde aquí)
             currentStackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING) && React.createElement(
               'div',
               {
                 key: VIDEO_STACKABLE_STATUS.WARNING,
-                className: 'status-info-display'
+                className: 'status-info-display status-option-button', // reusar estilo pero no funcionalidad de click
+                style: { cursor: 'default', background: 'rgba(var(--warning-color-rgb), 0.1)', color: 'var(--warning-color)' }
               },
               `${STATUS_EMOJIS[VIDEO_STACKABLE_STATUS.WARNING]} Alerta del sistema`
             )

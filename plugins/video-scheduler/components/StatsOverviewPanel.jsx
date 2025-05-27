@@ -151,7 +151,7 @@ function StatsOverviewPanel({ monthData, currentDate, plugin, compact = false })
   };
 
   // Si es modo compacto (para el panel inferior), usar diseño más simple
-  if (compact) {
+  if (compact) { // NOTA: Este modo compacto no se usa según el código de VideoSchedulerMainPage, pero se mantiene por si se decide usar en el futuro.
     const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long' });
     
     return React.createElement(
@@ -268,12 +268,12 @@ function StatsOverviewPanel({ monthData, currentDate, plugin, compact = false })
                             React.createElement(
                               'span',
                               { key: 'paid', className: 'income-paid' },
-                              `✅ ${formatCurrency(incomeStats.totalPaid)}`
+                              `✅ ${formatCurrency(incomeStats.totalPaidInARS, 'ARS')}` // Especificar moneda
                             ),
                             React.createElement(
                               'span',
                               { key: 'pending', className: 'income-pending' },
-                              `⏳ ${formatCurrency(incomeStats.totalPending)}`
+                              `⏳ ${formatCurrency(incomeStats.totalPendingInARS, 'ARS')}` // Especificar moneda
                             )
                           ]
                         )
@@ -289,10 +289,10 @@ function StatsOverviewPanel({ monthData, currentDate, plugin, compact = false })
     );
   }
 
-  // Modo completo (para el panel avanzado)
+  // Modo completo (para el panel avanzado o el panel inferior si compact=false)
   return React.createElement(
     'div',
-    { className: 'stats-tab-content' },
+    { className: 'stats-tab-content' }, // Esta clase se usa para el contenido de las pestañas y también para el panel inferior.
     [
       React.createElement(
         'div',

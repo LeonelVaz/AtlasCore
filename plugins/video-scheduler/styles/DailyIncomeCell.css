@@ -10,6 +10,7 @@
   background: var(--bg-color);
   font-size: 0.75rem;
   font-weight: 500;
+  border-left: 1px solid var(--border-color) !important; /* Asegurar borde izquierdo */
 }
 
 .video-scheduler-income-cell:hover {
@@ -22,15 +23,16 @@
 }
 
 .video-scheduler-income-cell.income-empty .income-amount-text::before {
-  content: "+ ";
+  content: "+ "; /* Solo un "+" aquí */
   color: var(--primary-color);
+  font-weight: bold;
 }
 
 .video-scheduler-income-cell.income-pending {
   background: var(--warning-color) !important;
   color: white !important;
   border-radius: 4px;
-  margin: 2px;
+  margin: 2px; /* Para que el borde redondeado se vea bien */
 }
 
 .video-scheduler-income-cell.income-paid {

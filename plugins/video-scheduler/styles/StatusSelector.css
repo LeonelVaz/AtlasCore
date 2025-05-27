@@ -2,16 +2,16 @@
 
 /* Popup selector de estado - minimalista con position absolute */
 .status-selector-popup {
-  position: absolute; /* Cambiado de fixed a absolute */
+  position: absolute; 
   background: var(--modal-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);
   border-radius: 8px;
   color: var(--text-color);
   padding: 16px;
-  z-index: 1050;
+  z-index: 1050; /* Encima del calendario, debajo de modales principales */
   min-width: 200px;
-  backdrop-filter: blur(12px);
+  /* backdrop-filter: blur(12px); Opcional, puede interferir con otros popups */
 }
 
 .status-selector-popup h4 {
@@ -72,6 +72,14 @@
   font-weight: 500;
 }
 
+.status-selector-popup .status-info-display { /* Para el warning no clickeable */
+  background: rgba(var(--warning-color-rgb), 0.05);
+  color: var(--warning-color);
+  border: 1px solid rgba(var(--warning-color-rgb), 0.3);
+  font-style: italic;
+}
+
+
 .status-selector-popup .status-selector-cancel-button {
   background: transparent;
   color: var(--text-color-secondary);
@@ -83,6 +91,7 @@
   transition: all 0.2s ease;
   font-size: 0.75rem;
   font-weight: 400;
+  margin-top: 8px; /* Espacio antes del botón cerrar */
 }
 
 .status-selector-popup .status-selector-cancel-button:hover {

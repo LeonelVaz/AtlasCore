@@ -1,6 +1,6 @@
 // video-scheduler/components/VideoSlotCell.jsx
 import React from 'react';
-import { STATUS_EMOJIS, VIDEO_MAIN_STATUS, VIDEO_STACKABLE_STATUS } from '../utils/constants.js';
+import { STATUS_EMOJIS, VIDEO_MAIN_STATUS } from '../utils/constants.js';
 
 function VideoSlotCell(props) {
   const { day, slotIndex, videoData, onNameChange, onStatusIconClick, onDescriptionChange } = props;
@@ -54,29 +54,24 @@ function VideoSlotCell(props) {
   
   const nameInputId = `video-name-${day}-${slotIndex}`;
   const descriptionInputId = `video-description-${day}-${slotIndex}`;
-  const placeholderText = videoData.status === VIDEO_MAIN_STATUS.EMPTY ? '...' : '';
+  
+  // Mostrar "..." si el nombre está vacío, independientemente del estado.
+  const placeholderText = currentName.trim() === '' ? '...' : '';
 
-  // Construir el texto de estado con sub-estados apilables
   const buildStatusDisplay = () => {
     let statusText = STATUS_EMOJIS[videoData.status] || '';
-    
-    // Añadir sub-estado normal si existe
     if (videoData.subStatus) {
       statusText += ` ${STATUS_EMOJIS[videoData.subStatus] || ''}`;
     }
-    
-    // Añadir sub-estados apilables si existen
     if (videoData.stackableStatuses && videoData.stackableStatuses.length > 0) {
       videoData.stackableStatuses.forEach(stackableStatus => {
         statusText += STATUS_EMOJIS[stackableStatus] || '';
       });
     }
-    
     return statusText;
   };
 
-  // Ahora todos los estados son clickeables - el usuario tiene control total
-  const isClickable = true;
+  const isClickable = true; // Todos los estados son clickeables
 
   return React.createElement(
     'td',
@@ -110,7 +105,7 @@ function VideoSlotCell(props) {
               type: 'text',
               className: 'video-description-input', 
               value: currentDescription,
-              placeholder: '',
+              placeholder: '', // Sin placeholder para descripción por ahora
               onChange: handleDescriptionInputChange,
               onBlur: handleDescriptionInputBlur,
               onKeyDown: handleDescriptionInputKeyDown,
@@ -128,7 +123,7 @@ function VideoSlotCell(props) {
                     cursor: isClickable ? 'pointer' : 'default',
                 }
               },
-              buildStatusDisplay()
+              buildStatusDisplay() || STATUS_EMOJIS[VIDEO_MAIN_STATUS.PENDING] // Mostrar emoji PENDING si no hay nada
             )
           ]
         )

@@ -64,8 +64,8 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
   React.useEffect(() => {
     const updateCurrentStats = async () => {
       const data = await loadStatsForDate(currentStatsDate);
-      const filteredData = filterDataByMonth(data, currentStatsDate.getFullYear(), currentStatsDate.getMonth());
-      setCurrentStatsData(filteredData);
+      // No es necesario filtrar aquí si loadStatsForDate ya devuelve datos solo del mes
+      setCurrentStatsData(data);
     };
     updateCurrentStats();
   }, [currentStatsDate, loadStatsForDate]);
@@ -75,112 +75,12 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     if (compareMode) {
       const updateCompareStats = async () => {
         const data = await loadStatsForDate(compareDate);
-        const filteredData = filterDataByMonth(data, compareDate.getFullYear(), compareDate.getMonth());
-        setCompareStatsData(filteredData);
+        setCompareStatsData(data);
       };
       updateCompareStats();
     }
   }, [compareMode, compareDate, loadStatsForDate]);
 
-  // Calcular estadísticas de videos (solo del mes específico)
-  const calculateVideoStats = (data) => {
-    const stats = {
-      [VIDEO_MAIN_STATUS.PENDING]: 0,
-      [VIDEO_MAIN_STATUS.EMPTY]: 0,
-      [VIDEO_MAIN_STATUS.DEVELOPMENT]: 0,
-      [VIDEO_MAIN_STATUS.PRODUCTION]: 0,
-      [VIDEO_MAIN_STATUS.PUBLISHED]: 0,
-      [VIDEO_SUB_STATUS.REC]: 0,
-      [VIDEO_SUB_STATUS.EDITING]: 0,
-      [VIDEO_SUB_STATUS.THUMBNAIL]: 0,
-      [VIDEO_SUB_STATUS.SCHEDULING_POST]: 0,
-      [VIDEO_SUB_STATUS.SCHEDULED]: 0,
-      [VIDEO_STACKABLE_STATUS.QUESTION]: 0,
-      [VIDEO_STACKABLE_STATUS.WARNING]: 0,
-      total: 0,
-      withAlerts: 0,
-      withQuestions: 0
-    };
-
-    if (data && data.videos) {
-      Object.values(data.videos).forEach(video => {
-        stats.total++;
-        
-        if (video.status) {
-          stats[video.status]++;
-        }
-        
-        if (video.subStatus) {
-          stats[video.subStatus]++;
-        }
-        
-        if (video.stackableStatuses && Array.isArray(video.stackableStatuses)) {
-          video.stackableStatuses.forEach(status => {
-            if (stats[status] !== undefined) {
-              stats[status]++;
-            }
-            
-            if (status === VIDEO_STACKABLE_STATUS.WARNING) {
-              stats.withAlerts++;
-            }
-            if (status === VIDEO_STACKABLE_STATUS.QUESTION) {
-              stats.withQuestions++;
-            }
-          });
-        }
-      });
-    }
-
-    return stats;
-  };
-
-  // Calcular estadísticas de ingresos (solo del mes específico)
-  const calculateIncomeStats = (data) => {
-    const incomeStats = {
-      totalByCurrency: {},
-      totalInARS: 0,
-      paidByCurrency: {},
-      pendingByCurrency: {},
-      totalPaidInARS: 0,
-      totalPendingInARS: 0
-    };
-
-    const exchangeRates = plugin._pluginData?.settings?.currencyRates || {
-      USD: 870, EUR: 950, ARS: 1
-    };
-
-    if (data && data.dailyIncomes) {
-      Object.values(data.dailyIncomes).forEach(income => {
-        if (income && income.amount > 0) {
-          const currency = income.currency || 'USD';
-          const amount = parseFloat(income.amount) || 0;
-          const rate = exchangeRates[currency] || 1;
-          
-          if (!incomeStats.totalByCurrency[currency]) {
-            incomeStats.totalByCurrency[currency] = 0;
-          }
-          incomeStats.totalByCurrency[currency] += amount;
-          incomeStats.totalInARS += amount * rate;
-          
-          if (income.status === 'paid') {
-            if (!incomeStats.paidByCurrency[currency]) {
-              incomeStats.paidByCurrency[currency] = 0;
-            }
-            incomeStats.paidByCurrency[currency] += amount;
-            incomeStats.totalPaidInARS += amount * rate;
-          } else {
-            if (!incomeStats.pendingByCurrency[currency]) {
-              incomeStats.pendingByCurrency[currency] = 0;
-            }
-            incomeStats.pendingByCurrency[currency] += amount;
-            incomeStats.totalPendingInARS += amount * rate;
-          }
-        }
-      });
-    }
-
-    return incomeStats;
-  };
 
   const handlePrevMonth = () => {
     setCurrentStatsDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
@@ -190,10 +90,67 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     setCurrentStatsDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   };
 
+  // Las funciones calculateVideoStats y calculateIncomeStats se pueden remover si StatsOverviewPanel las maneja internamente
+  // o se pueden pasar como props si son necesarias para gráficos o comparaciones específicas.
+  // Por ahora, las dejo aquí ya que las pestañas de gráficos y comparación las usan directamente.
+  
+  const calculateVideoStats = (data) => {
+    const stats = {
+      [VIDEO_MAIN_STATUS.PENDING]: 0, [VIDEO_MAIN_STATUS.EMPTY]: 0, [VIDEO_MAIN_STATUS.DEVELOPMENT]: 0,
+      [VIDEO_MAIN_STATUS.PRODUCTION]: 0, [VIDEO_MAIN_STATUS.PUBLISHED]: 0,
+      [VIDEO_SUB_STATUS.REC]: 0, [VIDEO_SUB_STATUS.EDITING]: 0, [VIDEO_SUB_STATUS.THUMBNAIL]: 0,
+      [VIDEO_SUB_STATUS.SCHEDULING_POST]: 0, [VIDEO_SUB_STATUS.SCHEDULED]: 0,
+      [VIDEO_STACKABLE_STATUS.QUESTION]: 0, [VIDEO_STACKABLE_STATUS.WARNING]: 0,
+      total: 0, withAlerts: 0, withQuestions: 0
+    };
+    if (data && data.videos) {
+      Object.values(data.videos).forEach(video => {
+        stats.total++;
+        if (video.status) stats[video.status]++;
+        if (video.subStatus) stats[video.subStatus]++;
+        if (video.stackableStatuses) {
+          video.stackableStatuses.forEach(s => {
+            if (stats[s] !== undefined) stats[s]++;
+            if (s === VIDEO_STACKABLE_STATUS.WARNING) stats.withAlerts++;
+            if (s === VIDEO_STACKABLE_STATUS.QUESTION) stats.withQuestions++;
+          });
+        }
+      });
+    }
+    return stats;
+  };
+
+  const calculateIncomeStats = (data) => {
+    const incomeStats = {
+      totalByCurrency: {}, totalInARS: 0, paidByCurrency: {}, pendingByCurrency: {},
+      totalPaidInARS: 0, totalPendingInARS: 0
+    };
+    const exchangeRates = plugin._pluginData?.settings?.currencyRates || { USD: 870, EUR: 950, ARS: 1 };
+    if (data && data.dailyIncomes) {
+      Object.values(data.dailyIncomes).forEach(income => {
+        if (income && income.amount > 0) {
+          const currency = income.currency || 'USD';
+          const amount = parseFloat(income.amount) || 0;
+          const rate = exchangeRates[currency] || 1;
+          incomeStats.totalByCurrency[currency] = (incomeStats.totalByCurrency[currency] || 0) + amount;
+          incomeStats.totalInARS += amount * rate;
+          if (income.status === 'paid') {
+            incomeStats.paidByCurrency[currency] = (incomeStats.paidByCurrency[currency] || 0) + amount;
+            incomeStats.totalPaidInARS += amount * rate;
+          } else {
+            incomeStats.pendingByCurrency[currency] = (incomeStats.pendingByCurrency[currency] || 0) + amount;
+            incomeStats.totalPendingInARS += amount * rate;
+          }
+        }
+      });
+    }
+    return incomeStats;
+  };
+
   const videoStats = calculateVideoStats(currentStatsData);
   const incomeStats = calculateIncomeStats(currentStatsData);
-  const compareVideoStats = compareMode ? calculateVideoStats(compareStatsData) : null;
-  const compareIncomeStats = compareMode ? calculateIncomeStats(compareStatsData) : null;
+  const compareVideoStats = compareMode && compareStatsData ? calculateVideoStats(compareStatsData) : null;
+  const compareIncomeStats = compareMode && compareStatsData ? calculateIncomeStats(compareStatsData) : null;
   
   const monthName = currentStatsDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
   const compareMonthName = compareDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
@@ -254,7 +211,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
           className: `stats-tab ${activeTab === tab.id ? 'active' : ''}`,
           onClick: () => {
             setActiveTab(tab.id);
-            if (tab.id === 'compare') {
+            if (tab.id === 'compare' && !compareMode) { // Activar compareMode solo si no está ya activo
               setCompareMode(true);
             }
           }
@@ -279,7 +236,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
 
     return React.createElement(
       'div',
-      { className: 'stats-tab-content charts-content' },
+      { className: 'charts-content' }, // No necesita ser 'stats-tab-content' aquí, ya que se renderiza dentro del contenedor principal de pestañas
       React.createElement(
         'div',
         { className: 'charts-grid' },
@@ -330,14 +287,14 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     if (!compareStatsData) {
       return React.createElement(
         'div', 
-        { className: 'stats-tab-content compare-content' },
-        React.createElement('div', { className: 'loading-compare' }, 'Cargando datos de comparación...')
+        { className: 'compare-content loading-compare' }, // No necesita ser 'stats-tab-content' aquí
+        'Cargando datos de comparación...'
       );
     }
 
     const calculateDifference = (current, compare) => {
       const diff = current - compare;
-      const percentage = compare > 0 ? Math.round((diff / compare) * 100) : 0;
+      const percentage = compare > 0 ? Math.round((diff / compare) * 100) : (current > 0 ? 100 : 0); // Evitar Infinity si compare es 0
       return { diff, percentage };
     };
 
@@ -347,7 +304,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
       [VIDEO_MAIN_STATUS.PUBLISHED]: 'Publicado'
     }).map(([status, label]) => {
       const current = videoStats[status];
-      const compare = compareVideoStats[status];
+      const compare = compareVideoStats ? compareVideoStats[status] : 0;
       const { diff, percentage } = calculateDifference(current, compare);
       
       return React.createElement(
@@ -372,7 +329,9 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     });
 
     const incomeDiffResult = (() => {
-      const { diff, percentage } = calculateDifference(incomeStats.totalInARS, compareIncomeStats.totalInARS);
+      const currentTotal = incomeStats.totalInARS;
+      const compareTotal = compareIncomeStats ? compareIncomeStats.totalInARS : 0;
+      const { diff, percentage } = calculateDifference(currentTotal, compareTotal);
       return React.createElement(
         'span',
         { 
@@ -384,7 +343,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
 
     return React.createElement(
       'div',
-      { className: 'stats-tab-content compare-content' },
+      { className: 'compare-content' }, // No necesita ser 'stats-tab-content' aquí
       [
         React.createElement(
           'div',
@@ -396,8 +355,10 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
               type: 'month',
               value: `${compareDate.getFullYear()}-${String(compareDate.getMonth() + 1).padStart(2, '0')}`,
               onChange: (e) => {
-                const [year, month] = e.target.value.split('-');
-                setCompareDate(new Date(parseInt(year), parseInt(month) - 1, 1));
+                const [year, monthVal] = e.target.value.split('-');
+                if (year && monthVal) {
+                  setCompareDate(new Date(parseInt(year), parseInt(monthVal) - 1, 1));
+                }
               }
             })
           ]
@@ -439,7 +400,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
                       { key: 'compare-month-income', className: 'month-income compare' },
                       [
                         React.createElement('span', { key: 'compare-month-label' }, compareMonthName),
-                        React.createElement('span', { key: 'compare-month-amount' }, formatCurrency(compareIncomeStats.totalInARS))
+                        React.createElement('span', { key: 'compare-month-amount' }, formatCurrency(compareIncomeStats ? compareIncomeStats.totalInARS : 0))
                       ]
                     ),
                     React.createElement(
@@ -464,7 +425,7 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
         monthData: currentStatsData,
         currentDate: currentStatsDate,
         plugin: plugin,
-        compact: false
+        compact: false // Usar el modo completo
       });
     } else if (activeTab === 'charts') {
       return renderChartsTab();
@@ -476,11 +437,11 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
 
   return React.createElement(
     'div',
-    { className: 'video-scheduler-stats-panel advanced' },
+    { className: 'video-scheduler-stats-panel advanced' }, // Esta es la clase del overlay
     [
-      React.createElement(
+      React.createElement( // Este es el contenido del modal
         'div',
-        { key: 'stats-content', className: 'stats-panel-content' },
+        { key: 'stats-content', className: 'stats-panel-content' }, 
         [
           React.createElement(
             'div',
@@ -522,8 +483,9 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
               )
             ]
           ),
-          React.createElement('div', { key: 'tab-buttons-container' }, renderTabButtons()),
-          React.createElement('div', { key: 'active-tab-content' }, renderActiveTabContent())
+          React.createElement('div', { key: 'tab-buttons-container', className: 'stats-tab-buttons-container' }, renderTabButtons()),
+          // Este div es el que debe tener scroll si el contenido es muy largo
+          React.createElement('div', { key: 'active-tab-content-container', className: 'active-tab-content-container' }, renderActiveTabContent())
         ]
       )
     ]

@@ -49,59 +49,62 @@ export const STATUS_EMOJIS = {
   [VIDEO_SUB_STATUS.THUMBNAIL]: "✏️",
   [VIDEO_SUB_STATUS.SCHEDULING_POST]: "🕰️",
   [VIDEO_SUB_STATUS.SCHEDULED]: "🌐",
-  // Nuevos sub-estados apilables
   [VIDEO_STACKABLE_STATUS.QUESTION]: "❓",
   [VIDEO_STACKABLE_STATUS.WARNING]: "❗",
 };
 
-// Estructura actualizada para incluir sub-estados apilables
 export const DEFAULT_SLOT_VIDEO_STRUCTURE = {
-  id: null, // Se generará como 'day-slotIndex'
+  id: null,
   name: '',
   description: '',
   status: VIDEO_MAIN_STATUS.PENDING,
   subStatus: null,
-  stackableStatuses: [], // Array para sub-estados apilables [❓, ❗]
+  stackableStatuses: [], 
+  createdAt: null, // Opcional: para rastrear cuándo se creó
+  updatedAt: null  // Opcional: para rastrear última modificación
 };
 
 export const DEFAULT_DAILY_INCOME_STRUCTURE = {
   amount: 0,
-  currency: 'USD', // Moneda por defecto
+  currency: 'USD', 
   payer: '',
   status: 'pending' // 'pending' o 'paid'
 };
 
-export const CURRENCIES = ['USD', 'EUR', 'ARS']; // Simple array para selectores
+export const CURRENCIES = ['USD', 'EUR', 'ARS']; 
 
-// Función helper para verificar si una fecha está en el pasado
 export const isDateInPast = (dateStr) => {
   try {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); // Compara solo con el inicio del día actual
     
-    const [year, month, day] = dateStr.split('-').map(Number);
-    if (!year || !month || !day) {
-      return false;
-    }
-    
-    const checkDate = new Date(year, month - 1, day);
-    checkDate.setHours(0, 0, 0, 0);
+    // Asegurarse que dateStr esté en formato YYYY-MM-DD
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return false; // Formato inválido
+
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10); // Mes es 1-12
+    const day = parseInt(parts[2], 10);
+
+    if (isNaN(year) || isNaN(month) || isNaN(day)) return false; // Partes no numéricas
+
+    const checkDate = new Date(year, month - 1, day); // Mes en Date es 0-11
+    checkDate.setHours(0, 0, 0, 0); 
     
     return checkDate < today;
   } catch (error) {
     console.error('Error en isDateInPast:', error, 'dateStr:', dateStr);
-    return false;
+    return false; // Considerar como no pasado en caso de error
   }
 };
 
-// Estados que tienen sentido en el pasado
 export const VALID_PAST_STATUSES = [
   VIDEO_MAIN_STATUS.EMPTY,
-  VIDEO_MAIN_STATUS.PUBLISHED
+  VIDEO_MAIN_STATUS.PUBLISHED // Un video publicado puede estar en el pasado
 ];
 
-// Estados que NO tienen sentido en el pasado (deberían tener ❗)
 export const INVALID_PAST_STATUSES = [
   VIDEO_MAIN_STATUS.DEVELOPMENT,
-  VIDEO_MAIN_STATUS.PRODUCTION
+  VIDEO_MAIN_STATUS.PRODUCTION,
+  // PENDING se maneja por transición automática a EMPTY en el pasado
 ];
