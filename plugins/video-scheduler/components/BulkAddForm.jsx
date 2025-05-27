@@ -8,9 +8,9 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     startNumber: 1,
     videoCount: 5,
     startYear: currentDate.getFullYear(),
-    startMonth: currentDate.getMonth(),
+    startMonth: currentDate.getMonth(), // Esto es un número (0-11)
     startDay: 1,
-    timeSlot: 0, // 0=7am, 1=15pm, 2=22pm
+    timeSlot: 0, // 0=7am, 1=15pm, 2=22pm. Esto es un número.
     frequency: 'daily', // 'daily' o 'weekly'
     dailyInterval: 1, // Para frecuencia diaria: cada X días
     weeklyDays: [], // Para frecuencia semanal: días de la semana [0-6]
@@ -38,9 +38,9 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
   ];
 
   // Generar opciones de año (actual +/- 2 años)
-  const currentYear = new Date().getFullYear();
+  const currentYearForOptions = new Date().getFullYear(); // Renombrado para evitar confusión con el 'currentYear' del default
   const yearOptions = [];
-  for (let year = currentYear - 1; year <= currentYear + 2; year++) {
+  for (let year = currentYearForOptions - 1; year <= currentYearForOptions + 2; year++) {
     yearOptions.push({ value: year, label: year.toString() });
   }
 
@@ -60,9 +60,11 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     { value: 11, label: 'Diciembre' }
   ];
 
-  // ⚠️ PROBLEMA 2 SOLUCIONADO: Calcular días del mes seleccionado dinámicamente
   const daysInSelectedMonth = React.useMemo(() => {
-    return new Date(formData.startYear, formData.startMonth + 1, 0).getDate();
+    // Asegurarse de que formData.startYear y formData.startMonth sean números aquí
+    const year = Number(formData.startYear);
+    const month = Number(formData.startMonth);
+    return new Date(year, month + 1, 0).getDate();
   }, [formData.startYear, formData.startMonth]);
 
   // Generar opciones de día basadas en el mes seleccionado
@@ -106,13 +108,13 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     };
   }, [onCancel]);
 
-  // ⚠️ PROBLEMA 2 SOLUCIONADO: Ajustar día cuando cambia el mes/año
+  // Ajustar día cuando cambia el mes/año
   React.useEffect(() => {
-    if (formData.startDay > daysInSelectedMonth) {
-      console.log(`[BulkAdd] Ajustando día ${formData.startDay} a ${daysInSelectedMonth} para ${monthOptions[formData.startMonth].label} ${formData.startYear}`);
+    if (Number(formData.startDay) > daysInSelectedMonth) {
+      console.log(`[BulkAdd] Ajustando día ${formData.startDay} a ${daysInSelectedMonth} para ${monthOptions[Number(formData.startMonth)].label} ${formData.startYear}`);
       setFormData(prev => ({
         ...prev,
-        startDay: daysInSelectedMonth
+        startDay: daysInSelectedMonth // daysInSelectedMonth ya es un número
       }));
     }
   }, [formData.startYear, formData.startMonth, formData.startDay, daysInSelectedMonth]);
@@ -120,21 +122,31 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
   const handleInputChange = (field) => (e) => {
     let value = e.target.value;
     
-    // Convertir a número si es un campo numérico
-    if (e.target.type === 'number') {
+    // Campos que deben ser numéricos, independientemente del tipo de input
+    const numericFields = [
+      'startNumber', 'videoCount', 
+      'startYear', 'startMonth', 'startDay', 
+      'timeSlot', 'dailyInterval'
+    ];
+
+    if (numericFields.includes(field)) {
       value = parseInt(value, 10);
-      // Validar que el valor sea válido
       if (isNaN(value)) {
-        value = field === 'startNumber' ? 1 : 
-               field === 'videoCount' ? 1 :
-               field === 'startDay' ? 1 :
-               field === 'startYear' ? currentYear :
-               field === 'startMonth' ? 0 :
-               field === 'dailyInterval' ? 1 : 0;
+        // Reestablecer a un valor por defecto seguro si parseInt falla
+        switch (field) {
+          case 'startNumber': value = 1; break;
+          case 'videoCount': value = 1; break;
+          case 'startDay': value = 1; break;
+          case 'startYear': value = currentYearForOptions; break;
+          case 'startMonth': value = 0; break;
+          case 'timeSlot': value = 0; break;
+          case 'dailyInterval': value = 1; break;
+          default: value = 0;
+        }
       }
     }
     
-    console.log(`[BulkAdd] Campo ${field} cambiado a:`, value);
+    console.log(`[BulkAdd] Campo ${field} cambiado a:`, value, `(tipo: ${typeof value})`);
     
     setFormData(prev => ({
       ...prev,
@@ -146,7 +158,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     setFormData(prev => {
       const newWeeklyDays = prev.weeklyDays.includes(dayValue)
         ? prev.weeklyDays.filter(d => d !== dayValue)
-        : [...prev.weeklyDays, dayValue].sort();
+        : [...prev.weeklyDays, dayValue].sort((a, b) => a - b); // Asegurar orden numérico
       
       return {
         ...prev,
@@ -159,7 +171,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     setFormData(prev => {
       const newTimeSlots = prev.weeklyTimeSlots.includes(slotValue)
         ? prev.weeklyTimeSlots.filter(s => s !== slotValue)
-        : [...prev.weeklyTimeSlots, slotValue].sort();
+        : [...prev.weeklyTimeSlots, slotValue].sort((a, b) => a - b); // Asegurar orden numérico
       
       return {
         ...prev,
@@ -174,21 +186,16 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     let nextMonth = currentMonth;
     let nextYear = currentYear;
     
-    // Obtener días en el mes actual
     let daysInMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
     
-    // Si excede el mes actual, avanzar al siguiente mes
     while (nextDay > daysInMonth) {
       nextDay -= daysInMonth;
       nextMonth++;
       
-      // Si excede el año, avanzar al siguiente año
       if (nextMonth > 11) {
         nextMonth = 0;
         nextYear++;
       }
-      
-      // Obtener días en el nuevo mes
       daysInMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
     }
     
@@ -198,8 +205,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
   const generateVideoSchedule = () => {
     const schedule = [];
     
-    // Validaciones básicas
-    if (!formData.baseName.trim() || formData.videoCount < 1) {
+    if (!formData.baseName.trim() || Number(formData.videoCount) < 1) {
       return schedule;
     }
     
@@ -208,25 +214,31 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
       daysInSelectedMonth: daysInSelectedMonth
     });
     
+    // Asegurar que los valores numéricos de formData sean realmente números
+    const numStartYear = Number(formData.startYear);
+    const numStartMonth = Number(formData.startMonth);
+    const numStartDay = Number(formData.startDay);
+    const numTimeSlot = Number(formData.timeSlot);
+    const numVideoCount = Number(formData.videoCount);
+    const numDailyInterval = Number(formData.dailyInterval);
+
     if (formData.frequency === 'daily') {
-      // Frecuencia diaria - LÓGICA MULTIMES
       let videosCreated = 0;
-      let currentYear = formData.startYear;
-      let currentMonth = formData.startMonth;
-      let currentDay = Math.max(1, Math.min(formData.startDay, daysInSelectedMonth));
-      const interval = Math.max(1, Math.min(formData.dailyInterval, 7));
+      let currentYear = numStartYear;
+      let currentMonth = numStartMonth;
+      let currentDay = Math.max(1, Math.min(numStartDay, daysInSelectedMonth));
+      const interval = Math.max(1, Math.min(numDailyInterval, 7));
       
       console.log(`[BulkAdd] Generando videos diarios multimes:`, {
         startYear: currentYear,
         startMonth: currentMonth,
         startDay: currentDay,
         interval: interval,
-        videoCount: formData.videoCount,
+        videoCount: numVideoCount,
         daysInStartMonth: daysInSelectedMonth
       });
       
-      while (videosCreated < formData.videoCount) {
-        // Crear el video para la fecha actual
+      while (videosCreated < numVideoCount) {
         const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
         
         schedule.push({
@@ -234,18 +246,16 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
           month: currentMonth,
           day: currentDay,
           dateStr: dateStr,
-          slotIndex: formData.timeSlot,
-          name: `${formData.baseName.trim()} ${formData.startNumber + videosCreated}`,
+          slotIndex: numTimeSlot,
+          name: `${formData.baseName.trim()} ${Number(formData.startNumber) + videosCreated}`,
           status: VIDEO_MAIN_STATUS.DEVELOPMENT,
           description: ''
         });
         
         console.log(`[BulkAdd] Video ${videosCreated + 1}: ${dateStr} (${monthOptions[currentMonth].label})`);
-        
         videosCreated++;
         
-        // Calcular la siguiente fecha
-        if (videosCreated < formData.videoCount) {
+        if (videosCreated < numVideoCount) {
           const nextDate = getNextDate(currentYear, currentMonth, currentDay, interval);
           currentYear = nextDate.year;
           currentMonth = nextDate.month;
@@ -254,15 +264,14 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
       }
       
     } else if (formData.frequency === 'weekly') {
-      // Frecuencia semanal - LÓGICA MULTIMES
       if (formData.weeklyDays.length === 0 || formData.weeklyTimeSlots.length === 0) {
         return schedule;
       }
       
       let videosCreated = 0;
-      let currentYear = formData.startYear;
-      let currentMonth = formData.startMonth;
-      let currentDay = Math.max(1, Math.min(formData.startDay, daysInSelectedMonth));
+      let currentYear = numStartYear;
+      let currentMonth = numStartMonth;
+      let currentDay = Math.max(1, Math.min(numStartDay, daysInSelectedMonth));
       
       console.log(`[BulkAdd] Generando videos semanales multimes:`, {
         startYear: currentYear,
@@ -270,23 +279,20 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
         startDay: currentDay,
         weeklyDays: formData.weeklyDays,
         timeSlots: formData.weeklyTimeSlots,
-        videoCount: formData.videoCount,
+        videoCount: numVideoCount,
         daysInStartMonth: daysInSelectedMonth
       });
       
-      // Buscar días que coincidan con los días de la semana seleccionados
-      let iterationsLimit = formData.videoCount * 10; // Límite de seguridad
+      let iterationsLimit = numVideoCount * 10; 
       let iterations = 0;
       
-      while (videosCreated < formData.videoCount && iterations < iterationsLimit) {
+      while (videosCreated < numVideoCount && iterations < iterationsLimit) {
         iterations++;
-        
         const dayOfWeek = new Date(currentYear, currentMonth, currentDay).getDay();
         
         if (formData.weeklyDays.includes(dayOfWeek)) {
-          // Este día está en los días seleccionados
-          formData.weeklyTimeSlots.forEach(timeSlot => {
-            if (videosCreated < formData.videoCount) {
+          formData.weeklyTimeSlots.forEach(timeSlot => { // timeSlot ya es número aquí
+            if (videosCreated < numVideoCount) {
               const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
               
               schedule.push({
@@ -294,8 +300,8 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                 month: currentMonth,
                 day: currentDay,
                 dateStr: dateStr,
-                slotIndex: timeSlot,
-                name: `${formData.baseName.trim()} ${formData.startNumber + videosCreated}`,
+                slotIndex: timeSlot, // Usar directamente el valor numérico
+                name: `${formData.baseName.trim()} ${Number(formData.startNumber) + videosCreated}`,
                 status: VIDEO_MAIN_STATUS.DEVELOPMENT,
                 description: ''
               });
@@ -306,7 +312,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
           });
         }
         
-        // Avanzar al siguiente día
         const nextDate = getNextDate(currentYear, currentMonth, currentDay, 1);
         currentYear = nextDate.year;
         currentMonth = nextDate.month;
@@ -321,52 +326,46 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validaciones
+    const numVideoCount = Number(formData.videoCount);
+    const numStartDay = Number(formData.startDay);
+    const numDailyInterval = Number(formData.dailyInterval);
+
     if (!formData.baseName.trim()) {
       alert('El nombre base es obligatorio');
       return;
     }
-    
-    if (formData.videoCount < 1 || formData.videoCount > 100) {
+    if (numVideoCount < 1 || numVideoCount > 100) {
       alert('La cantidad de videos debe estar entre 1 y 100');
       return;
     }
-    
-    if (formData.startDay < 1 || formData.startDay > daysInSelectedMonth) {
+    if (numStartDay < 1 || numStartDay > daysInSelectedMonth) {
       alert(`El día de inicio debe estar entre 1 y ${daysInSelectedMonth}`);
       return;
     }
-    
-    if (formData.frequency === 'daily' && (formData.dailyInterval < 1 || formData.dailyInterval > 7)) {
+    if (formData.frequency === 'daily' && (numDailyInterval < 1 || numDailyInterval > 7)) {
       alert('El intervalo diario debe estar entre 1 y 7 días');
       return;
     }
-    
     if (formData.frequency === 'weekly' && formData.weeklyDays.length === 0) {
       alert('Selecciona al menos un día de la semana');
       return;
     }
-    
     if (formData.frequency === 'weekly' && formData.weeklyTimeSlots.length === 0) {
       alert('Selecciona al menos un horario');
       return;
     }
     
-    // Generar programación
     const schedule = generateVideoSchedule();
-    
     if (schedule.length === 0) {
       alert('No se pueden crear videos con la configuración actual');
       return;
     }
     
-    // Agrupar por meses para mostrar en el mensaje de confirmación
     const monthsInvolved = [...new Set(schedule.map(item => `${monthOptions[item.month].label} ${item.year}`))];
     const monthsText = monthsInvolved.length > 1 ? 
       `abarcando ${monthsInvolved.join(', ')}` : 
       `en ${monthsInvolved[0]}`;
     
-    // Confirmar antes de crear
     const confirmMessage = `Se crearán ${schedule.length} videos ${monthsText}.\n\n¿Continuar?`;
     if (!confirm(confirmMessage)) {
       return;
@@ -382,7 +381,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
 
   const previewSchedule = generateVideoSchedule();
   
-  // Agrupar vista previa por meses
   const groupedPreview = previewSchedule.reduce((acc, item) => {
     const monthKey = `${item.year}-${item.month}`;
     if (!acc[monthKey]) {
@@ -432,23 +430,19 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
             'div',
             { key: 'form-content', className: 'bulk-add-form-content' },
             [
-              // Layout horizontal de dos columnas
               React.createElement(
                 'div',
                 { key: 'main-layout', className: 'bulk-add-main-layout' },
                 [
-                  // Columna izquierda - Configuración
                   React.createElement(
                     'div',
                     { key: 'left-column', className: 'bulk-add-left-column' },
                     [
-                      // Información básica
                       React.createElement(
                         'div',
                         { key: 'basic-info', className: 'form-section' },
                         [
                           React.createElement('h4', { key: 'section-title' }, 'Información Básica'),
-                          
                           React.createElement(
                             'div',
                             { key: 'base-name', className: 'form-group' },
@@ -464,7 +458,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                               })
                             ]
                           ),
-                          
                           React.createElement(
                             'div',
                             { key: 'number-fields', className: 'form-row-compact' },
@@ -476,7 +469,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                   React.createElement('label', { key: 'label' }, 'Desde #:'),
                                   React.createElement('input', {
                                     key: 'input',
-                                    type: 'number',
+                                    type: 'number', // Esto ayuda, pero el parseo explícito es más robusto
                                     value: formData.startNumber,
                                     onChange: handleInputChange('startNumber'),
                                     min: 1,
@@ -484,7 +477,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                   })
                                 ]
                               ),
-                              
                               React.createElement(
                                 'div',
                                 { key: 'video-count', className: 'form-group' },
@@ -504,8 +496,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                           )
                         ]
                       ),
-                      
-                      // Fecha de inicio
                       React.createElement(
                         'div',
                         { key: 'start-date', className: 'form-section' },
@@ -514,9 +504,9 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                           React.createElement(
                             'div',
                             { key: 'date-info', className: 'date-info' },
-                            `${monthOptions[formData.startMonth].label} tiene ${daysInSelectedMonth} días`
+                            // Asegurar que formData.startMonth sea número para el índice
+                            `${monthOptions[Number(formData.startMonth)].label} tiene ${daysInSelectedMonth} días`
                           ),
-                          
                           React.createElement(
                             'div',
                             { key: 'date-fields', className: 'form-row-compact' },
@@ -530,7 +520,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                     'select',
                                     {
                                       key: 'select',
-                                      value: formData.startYear,
+                                      value: formData.startYear, // value será número debido a la inicialización y handleInputChange
                                       onChange: handleInputChange('startYear')
                                     },
                                     yearOptions.map(option =>
@@ -542,7 +532,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                   )
                                 ]
                               ),
-                              
                               React.createElement(
                                 'div',
                                 { key: 'start-month', className: 'form-group' },
@@ -552,19 +541,18 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                     'select',
                                     {
                                       key: 'select',
-                                      value: formData.startMonth,
+                                      value: formData.startMonth, // value será número
                                       onChange: handleInputChange('startMonth')
                                     },
                                     monthOptions.map(option =>
                                       React.createElement('option', {
                                         key: option.value,
-                                        value: option.value
+                                        value: option.value 
                                       }, option.label)
                                     )
                                   )
                                 ]
                               ),
-                              
                               React.createElement(
                                 'div',
                                 { key: 'start-day', className: 'form-group' },
@@ -574,7 +562,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                     'select',
                                     {
                                       key: 'select',
-                                      value: formData.startDay,
+                                      value: formData.startDay, // value será número
                                       onChange: handleInputChange('startDay')
                                     },
                                     dayOptions.map(option =>
@@ -590,14 +578,11 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                           )
                         ]
                       ),
-                      
-                      // Frecuencia
                       React.createElement(
                         'div',
                         { key: 'frequency', className: 'form-section' },
                         [
                           React.createElement('h4', { key: 'section-title' }, 'Frecuencia'),
-                          
                           React.createElement(
                             'div',
                             { key: 'frequency-type', className: 'form-group' },
@@ -607,7 +592,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                 'select',
                                 {
                                   key: 'select',
-                                  value: formData.frequency,
+                                  value: formData.frequency, // string
                                   onChange: handleInputChange('frequency')
                                 },
                                 [
@@ -617,8 +602,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                               )
                             ]
                           ),
-                          
-                          // Opciones para frecuencia diaria
                           formData.frequency === 'daily' && React.createElement(
                             'div',
                             { key: 'daily-options', className: 'frequency-options' },
@@ -634,14 +617,13 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                     React.createElement('input', {
                                       key: 'input',
                                       type: 'number',
-                                      value: formData.dailyInterval,
+                                      value: formData.dailyInterval, // value será número
                                       onChange: handleInputChange('dailyInterval'),
                                       min: 1,
                                       max: 7
                                     })
                                   ]
                                 ),
-                                
                                 React.createElement(
                                   'div',
                                   { key: 'time-slot', className: 'form-group' },
@@ -651,7 +633,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                       'select',
                                       {
                                         key: 'select',
-                                        value: formData.timeSlot,
+                                        value: formData.timeSlot, // value será número
                                         onChange: handleInputChange('timeSlot')
                                       },
                                       timeSlotOptions.map(option =>
@@ -666,8 +648,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                               ]
                             )
                           ),
-                          
-                          // Opciones para frecuencia semanal
                           formData.frequency === 'weekly' && React.createElement(
                             'div',
                             { key: 'weekly-options', className: 'frequency-options' },
@@ -689,7 +669,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                             key: 'checkbox',
                                             type: 'checkbox',
                                             checked: formData.weeklyDays.includes(day.value),
-                                            onChange: () => handleWeeklyDayToggle(day.value)
+                                            onChange: () => handleWeeklyDayToggle(day.value) // day.value es número
                                           }),
                                           React.createElement('span', { key: 'label' }, day.label)
                                         ]
@@ -698,7 +678,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                   )
                                 ]
                               ),
-                              
                               React.createElement(
                                 'div',
                                 { key: 'weekly-time-slots', className: 'form-group' },
@@ -716,7 +695,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                             key: 'checkbox',
                                             type: 'checkbox',
                                             checked: formData.weeklyTimeSlots.includes(option.value),
-                                            onChange: () => handleWeeklyTimeSlotToggle(option.value)
+                                            onChange: () => handleWeeklyTimeSlotToggle(option.value) // option.value es número
                                           }),
                                           React.createElement('span', { key: 'label' }, option.label)
                                         ]
@@ -731,8 +710,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                       )
                     ]
                   ),
-                  
-                  // Columna derecha - Vista previa
                   React.createElement(
                     'div',
                     { key: 'right-column', className: 'bulk-add-right-column' },
@@ -791,7 +768,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                           React.createElement(
                                             'div',
                                             { key: 'time', className: 'preview-time-compact' },
-                                            timeSlotOptions[item.slotIndex].label
+                                            timeSlotOptions[item.slotIndex].label // item.slotIndex debe ser número
                                           ),
                                           React.createElement(
                                             'div',
@@ -826,8 +803,6 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
               )
             ]
           ),
-          
-          // Botones de acción
           React.createElement(
             'div',
             { key: 'actions', className: 'form-actions' },
