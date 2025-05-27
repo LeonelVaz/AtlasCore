@@ -6,6 +6,8 @@ import DaySummaryCell from './DaySummaryCell.jsx';
 import DailyIncomeCell from './DailyIncomeCell.jsx';
 import StatusSelector from './StatusSelector.jsx';
 import DailyIncomeForm from './DailyIncomeForm.jsx';
+import StatsPanel from './StatsPanel.jsx';
+import BulkAddForm from './BulkAddForm.jsx';
 import { VIDEO_MAIN_STATUS, DEFAULT_SLOT_VIDEO_STRUCTURE } from '../utils/constants.js';
 
 function getMonthDetails(year, month) { // month es 0-11
@@ -25,6 +27,8 @@ function VideoSchedulerMainPage(props) {
   const [statusSelectorContext, setStatusSelectorContext] = React.useState(null);
   const [showIncomeForm, setShowIncomeForm] = React.useState(false);
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
+  const [showStatsPanel, setShowStatsPanel] = React.useState(false);
+  const [showBulkAddForm, setShowBulkAddForm] = React.useState(false);
 
   const incomePopupConfig = {
     width: 320,
@@ -300,6 +304,23 @@ function VideoSchedulerMainPage(props) {
     setShowIncomeForm(false);
     setIncomeFormContext(null);
   };
+
+  const handleBulkAddSave = async (schedule) => {
+    try {
+      for (const item of schedule) {
+        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(item.day).padStart(2, '0')}`;
+        await plugin.publicAPI.updateVideoName(dateStr, item.slotIndex, item.name);
+        if (item.status !== VIDEO_MAIN_STATUS.PENDING) {
+          await plugin.publicAPI.updateVideoStatus(dateStr, item.slotIndex, item.status, null, []);
+        }
+      }
+      refreshCalendarDataSilently();
+      setShowBulkAddForm(false);
+    } catch (error) {
+      console.error('Error al crear videos en lote:', error);
+      throw error;
+    }
+  };
   
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); 
@@ -369,7 +390,24 @@ function VideoSchedulerMainPage(props) {
             React.createElement('button', {key: 'next-month', onClick: handleNextMonth}, 'Mes Siguiente →')
           ]),
           React.createElement('div', {key: 'global-actions', className: 'video-scheduler-global-actions'}, [
-            /* Futuros botones globales */
+            React.createElement(
+              'button',
+              { 
+                key: 'bulk-add-btn',
+                className: 'global-action-button',
+                onClick: () => setShowBulkAddForm(true)
+              },
+              '📋 Añadir en Lote'
+            ),
+            React.createElement(
+              'button',
+              { 
+                key: 'stats-btn',
+                className: 'global-action-button',
+                onClick: () => setShowStatsPanel(true)
+              },
+              '📊 Estadísticas'
+            )
           ])
         ]),
         React.createElement('div', {key: 'calendar-container', className: 'calendar-container'}, [
@@ -388,6 +426,7 @@ function VideoSchedulerMainPage(props) {
           },
           styleProps: statusSelectorContext.position
         }),
+
         showIncomeForm && incomeFormContext && React.createElement(DailyIncomeForm, {
           key: 'income-form-instance',
           day: incomeFormContext.day,
@@ -398,6 +437,23 @@ function VideoSchedulerMainPage(props) {
             setIncomeFormContext(null);
           },
           styleProps: incomeFormContext.position
+        }),
+
+        showStatsPanel && React.createElement(StatsPanel, {
+          key: 'stats-panel-instance',
+          monthData: monthData,
+          currentDate: currentDate,
+          plugin: plugin,
+          onClose: () => setShowStatsPanel(false)
+        }),
+
+        showBulkAddForm && React.createElement(BulkAddForm, {
+          key: 'bulk-add-form-instance',
+          currentDate: currentDate,
+          plugin: plugin,
+          onSave: handleBulkAddSave,
+          onCancel: () => setShowBulkAddForm(false),
+          styleProps: {}
         })
       ]),
       React.createElement('div', {key: 'stats-panel', className: 'video-stats-panel-placeholder'}, 'Panel de Estadísticas (Próximamente)')

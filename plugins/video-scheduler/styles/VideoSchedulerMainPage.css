@@ -72,6 +72,33 @@
   border-color: var(--primary-color);
 }
 
+/* Acciones globales */
+.video-scheduler-global-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.global-action-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.global-action-button:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.3);
+}
+
 /* Contenedor del calendario - SIN OVERFLOW, altura automática */
 .calendar-container {
   flex: 1;

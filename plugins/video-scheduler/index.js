@@ -99,6 +99,9 @@ export default {
       updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses),
       setDailyIncome: async (dateStr, incomeData) => self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
+      bulkCreateVideos: async (schedule) => self._internalBulkCreateVideos(schedule),
+      getVideoStats: (monthData) => self._internalGetVideoStats(monthData),
+      getIncomeStats: (monthData) => self._internalGetIncomeStats(monthData)
     };
   },
 
@@ -361,5 +364,131 @@ export default {
   _internalGetDailyIncome: async function(dateStr) {
     const self = this;
     return self._pluginData.dailyIncomes[dateStr] || null;
+  },
+
+  _internalBulkCreateVideos: async function(schedule) {
+    const self = this;
+    const results = [];
+    
+    try {
+      for (const item of schedule) {
+        const video = self._ensureVideoSlotExists(item.dateStr, item.slotIndex);
+        video.name = item.name;
+        video.status = item.status || VIDEO_MAIN_STATUS.DEVELOPMENT;
+        video.description = item.description || '';
+        video.updatedAt = new Date().toISOString();
+        
+        // Aplicar warnings automáticos
+        self._applySystemWarnings(video, item.dateStr);
+        
+        results.push(video);
+      }
+      
+      await self._savePluginData();
+      return results;
+    } catch (error) {
+      console.error(`[${self.id}] Error en bulk create:`, error);
+      throw error;
+    }
+  },
+
+  _internalGetVideoStats: function(monthData) {
+    const self = this;
+    const stats = {
+      [VIDEO_MAIN_STATUS.PENDING]: 0,
+      [VIDEO_MAIN_STATUS.EMPTY]: 0,
+      [VIDEO_MAIN_STATUS.DEVELOPMENT]: 0,
+      [VIDEO_MAIN_STATUS.PRODUCTION]: 0,
+      [VIDEO_MAIN_STATUS.PUBLISHED]: 0,
+      [VIDEO_SUB_STATUS.REC]: 0,
+      [VIDEO_SUB_STATUS.EDITING]: 0,
+      [VIDEO_SUB_STATUS.THUMBNAIL]: 0,
+      [VIDEO_SUB_STATUS.SCHEDULING_POST]: 0,
+      [VIDEO_SUB_STATUS.SCHEDULED]: 0,
+      [VIDEO_STACKABLE_STATUS.QUESTION]: 0,
+      [VIDEO_STACKABLE_STATUS.WARNING]: 0,
+      total: 0,
+      withAlerts: 0,
+      withQuestions: 0
+    };
+
+    if (monthData && monthData.videos) {
+      Object.values(monthData.videos).forEach(video => {
+        stats.total++;
+        
+        if (video.status) {
+          stats[video.status]++;
+        }
+        
+        if (video.subStatus) {
+          stats[video.subStatus]++;
+        }
+        
+        if (video.stackableStatuses && Array.isArray(video.stackableStatuses)) {
+          video.stackableStatuses.forEach(status => {
+            if (stats[status] !== undefined) {
+              stats[status]++;
+            }
+            
+            if (status === VIDEO_STACKABLE_STATUS.WARNING) {
+              stats.withAlerts++;
+            }
+            if (status === VIDEO_STACKABLE_STATUS.QUESTION) {
+              stats.withQuestions++;
+            }
+          });
+        }
+      });
+    }
+
+    return stats;
+  },
+
+  _internalGetIncomeStats: function(monthData) {
+    const self = this;
+    const incomeStats = {
+      totalByCurrency: {},
+      totalInARS: 0,
+      paidByCurrency: {},
+      pendingByCurrency: {},
+      totalPaidInARS: 0,
+      totalPendingInARS: 0
+    };
+
+    const exchangeRates = self._pluginData?.settings?.currencyRates || {
+      USD: 870, EUR: 950, ARS: 1
+    };
+
+    if (monthData && monthData.dailyIncomes) {
+      Object.values(monthData.dailyIncomes).forEach(income => {
+        if (income && income.amount > 0) {
+          const currency = income.currency || 'USD';
+          const amount = parseFloat(income.amount) || 0;
+          const rate = exchangeRates[currency] || 1;
+          
+          if (!incomeStats.totalByCurrency[currency]) {
+            incomeStats.totalByCurrency[currency] = 0;
+          }
+          incomeStats.totalByCurrency[currency] += amount;
+          incomeStats.totalInARS += amount * rate;
+          
+          if (income.status === 'paid') {
+            if (!incomeStats.paidByCurrency[currency]) {
+              incomeStats.paidByCurrency[currency] = 0;
+            }
+            incomeStats.paidByCurrency[currency] += amount;
+            incomeStats.totalPaidInARS += amount * rate;
+          } else {
+            if (!incomeStats.pendingByCurrency[currency]) {
+              incomeStats.pendingByCurrency[currency] = 0;
+            }
+            incomeStats.pendingByCurrency[currency] += amount;
+            incomeStats.totalPendingInARS += amount * rate;
+          }
+        }
+      });
+    }
+
+    return incomeStats;
   },
 };
