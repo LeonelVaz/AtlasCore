@@ -19,8 +19,8 @@ const STORAGE_KEY_DATA = 'video_scheduler_plugin_data';
 export default {
   id: 'video-scheduler',
   name: 'Video Scheduler',
-  version: '0.5.1', // Incremento de versión por cambios
-  description: 'Planificador visual de videos estilo calendario con sistema de estados avanzado.',
+  version: '0.6.0', // Incremento de versión por cambios multimes
+  description: 'Planificador visual de videos estilo calendario con sistema de estados avanzado y soporte multimes.',
   author: 'Tu Nombre/Equipo',
   minAppVersion: '0.3.0',
   maxAppVersion: '0.9.9',
@@ -114,9 +114,6 @@ export default {
       updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses),
       setDailyIncome: async (dateStr, incomeData) => self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
-      // bulkCreateVideos: async (schedule) => self._internalBulkCreateVideos(schedule), // Ya implementado en VideoSchedulerMainPage
-      // getVideoStats: (monthData) => self._internalGetVideoStats(monthData), // Usado internamente o por StatsPanel
-      // getIncomeStats: (monthData) => self._internalGetIncomeStats(monthData) // Usado internamente o por StatsPanel
     };
   },
 
@@ -198,7 +195,6 @@ export default {
     return { videos: videosForMonth, dailyIncomes: incomesForMonth };
   },
 
-
   _applySystemWarnings: function(video, dateStr) {
     if (!video || !dateStr) {
       return;
@@ -233,12 +229,16 @@ export default {
     video.stackableStatuses = stackableStatuses; // Asignar el array modificado
   },
 
+  // ⚠️ PROBLEMA 1 SOLUCIONADO: Mejorar _internalGetMonthViewData para manejar cualquier mes
   _internalGetMonthViewData: async function(year, month_idx) {
     const self = this;
     const daysInMonth = new Date(year, month_idx + 1, 0).getDate();
     
+    console.log(`[${self.id}] Obteniendo datos para ${year}-${month_idx + 1} (${daysInMonth} días)`);
+    
     let dataChanged = false; // Flag para rastrear si es necesario guardar
 
+    // Crear slots de video para todos los días del mes solicitado
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month_idx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
@@ -256,16 +256,17 @@ export default {
                 dataChanged = true;
             }
         }
+        // Crear ingreso diario si no existe
         if (!self._pluginData.dailyIncomes[dateStr]) {
             self._pluginData.dailyIncomes[dateStr] = { ...DEFAULT_DAILY_INCOME_STRUCTURE };
             dataChanged = true;
         }
     }
 
-    // Aplicar transiciones y warnings
+    // Aplicar transiciones y warnings para el mes específico
     const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, '0')}-`;
     Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
-        if (!key.startsWith(monthKeyPrefix)) return; // Solo procesar el mes actual
+        if (!key.startsWith(monthKeyPrefix)) return; // Solo procesar el mes solicitado
         
         const video = self._pluginData.videosBySlotKey[key];
         const dateStr = key.substring(0, 10); // "YYYY-MM-DD"
@@ -291,6 +292,7 @@ export default {
     });
 
     if (dataChanged) {
+        console.log(`[${self.id}] Guardando cambios para el mes ${year}-${month_idx + 1}`);
         await self._savePluginData();
     }
     
@@ -299,6 +301,8 @@ export default {
 
   _internalUpdateVideoName: async function(dateStr, slotIndex, newName) {
     const self = this;
+    console.log(`[${self.id}] Actualizando nombre del video: ${dateStr}-${slotIndex} = "${newName}"`);
+    
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     const oldName = video.name;
     video.name = newName.trim(); // Guardar trim
@@ -328,11 +332,15 @@ export default {
     self._applySystemWarnings(video, dateStr);
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
+    
+    console.log(`[${self.id}] Video actualizado:`, video);
     return video;
   },
 
   _internalUpdateVideoDescription: async function(dateStr, slotIndex, newDescription) {
     const self = this;
+    console.log(`[${self.id}] Actualizando descripción del video: ${dateStr}-${slotIndex} = "${newDescription}"`);
+    
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     video.description = newDescription.trim();
     video.updatedAt = new Date().toISOString();
@@ -342,6 +350,8 @@ export default {
 
   _internalUpdateVideoStatus: async function(dateStr, slotIndex, newMainStatus, newSubStatus, newStackableStatuses = []) {
     const self = this;
+    console.log(`[${self.id}] Actualizando estado del video: ${dateStr}-${slotIndex} = ${newMainStatus}/${newSubStatus}`, newStackableStatuses);
+    
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     
     const isPast = isDateInPast(dateStr);
@@ -357,7 +367,6 @@ export default {
         newSubStatus = null; // EMPTY no tiene substatus
         newStackableStatuses = []; // EMPTY no tiene stackable statuses
     }
-
 
     video.status = newMainStatus;
     video.subStatus = newSubStatus;
@@ -376,6 +385,8 @@ export default {
 
   _internalSetDailyIncome: async function(dateStr, incomeData) {
     const self = this;
+    console.log(`[${self.id}] Estableciendo ingreso diario: ${dateStr}`, incomeData);
+    
     self._pluginData.dailyIncomes[dateStr] = { 
         ...DEFAULT_DAILY_INCOME_STRUCTURE, 
         ...(self._pluginData.dailyIncomes[dateStr] || {}), 

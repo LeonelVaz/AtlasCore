@@ -299,25 +299,73 @@ function VideoSchedulerMainPage(props) {
     setIncomeFormContext(null);
   };
 
+  // NUEVA FUNCIÓN: Manejar guardado de videos en lote multimes
   const handleBulkAddSave = async (schedule) => {
     try {
-      for (const item of schedule) {
-        const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(item.day).padStart(2, '0')}`;
-        await plugin.publicAPI.updateVideoName(dateStr, item.slotIndex, item.name);
-        if (item.status !== VIDEO_MAIN_STATUS.PENDING) { // Asegurar que no se actualice a PENDING si ya tiene nombre
-            const videoData = await plugin.publicAPI.updateVideoStatus(dateStr, item.slotIndex, item.status, null, []);
-            // Si la descripción está en el item, actualizarla también
-            if (item.description !== undefined) {
-                await plugin.publicAPI.updateVideoDescription(dateStr, item.slotIndex, item.description);
-            }
+      console.log(`[VideoSchedulerMainPage] Procesando ${schedule.length} videos en lote multimes`);
+      
+      // Agrupar por mes para procesamiento eficiente
+      const monthGroups = schedule.reduce((acc, item) => {
+        const monthKey = `${item.year}-${item.month}`;
+        if (!acc[monthKey]) {
+          acc[monthKey] = [];
+        }
+        acc[monthKey].push(item);
+        return acc;
+      }, {});
+      
+      console.log(`[VideoSchedulerMainPage] Videos agrupados en ${Object.keys(monthGroups).length} meses:`, monthGroups);
+      
+      // Procesar cada grupo de mes
+      for (const [monthKey, monthVideos] of Object.entries(monthGroups)) {
+        console.log(`[VideoSchedulerMainPage] Procesando mes ${monthKey} con ${monthVideos.length} videos`);
+        
+        for (const item of monthVideos) {
+          console.log(`[VideoSchedulerMainPage] Creando video: ${item.dateStr} slot ${item.slotIndex} - ${item.name}`);
+          
+          // Actualizar nombre del video
+          await plugin.publicAPI.updateVideoName(item.dateStr, item.slotIndex, item.name);
+          
+          // Actualizar estado si es diferente de PENDING
+          if (item.status !== VIDEO_MAIN_STATUS.PENDING) {
+            await plugin.publicAPI.updateVideoStatus(item.dateStr, item.slotIndex, item.status, null, []);
+          }
+          
+          // Actualizar descripción si existe
+          if (item.description !== undefined && item.description !== '') {
+            await plugin.publicAPI.updateVideoDescription(item.dateStr, item.slotIndex, item.description);
+          }
         }
       }
+      
+      // Refrescar solo el mes actual (los otros meses se cargarán cuando el usuario navegue a ellos)
       refreshCalendarDataSilently();
       setShowBulkAddForm(false);
+      
+      console.log(`[VideoSchedulerMainPage] Completado: ${schedule.length} videos creados exitosamente`);
+      
+      // Mostrar mensaje de éxito
+      const monthsInvolved = [...new Set(schedule.map(item => `${getMonthName(item.month)} ${item.year}`))];
+      const monthsText = monthsInvolved.length > 1 ? 
+        `en ${monthsInvolved.join(', ')}` : 
+        `en ${monthsInvolved[0]}`;
+      
+      alert(`✅ ${schedule.length} videos creados exitosamente ${monthsText}`);
+      
     } catch (error) {
-      console.error('Error al crear videos en lote:', error);
+      console.error('Error al crear videos en lote multimes:', error);
+      alert('❌ Error al crear los videos. Revisa la consola para más detalles.');
       throw error; // Relanzar para que el formulario de BulkAdd pueda manejarlo
     }
+  };
+
+  // Función auxiliar para obtener nombre del mes
+  const getMonthName = (monthIndex) => {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return months[monthIndex] || 'Mes desconocido';
   };
   
   const year = currentDate.getFullYear();
@@ -451,7 +499,7 @@ function VideoSchedulerMainPage(props) {
           key: 'bulk-add-form-instance',
           currentDate: currentDate,
           plugin: plugin,
-          onSave: handleBulkAddSave,
+          onSave: handleBulkAddSave, // NUEVA FUNCIÓN MULTIMES
           onCancel: () => setShowBulkAddForm(false),
           styleProps: { /* Para centrar por defecto, no se necesitan props de posición aquí */ }
         })

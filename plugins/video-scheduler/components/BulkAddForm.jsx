@@ -7,6 +7,8 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     baseName: '',
     startNumber: 1,
     videoCount: 5,
+    startYear: currentDate.getFullYear(),
+    startMonth: currentDate.getMonth(),
     startDay: 1,
     timeSlot: 0, // 0=7am, 1=15pm, 2=22pm
     frequency: 'daily', // 'daily' o 'weekly'
@@ -35,12 +37,42 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     { value: 6, label: 'Sáb' }
   ];
 
-  // Obtener días del mes actual
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const dayOptions = [];
-  for (let i = 1; i <= daysInMonth; i++) {
-    dayOptions.push({ value: i, label: i.toString() });
+  // Generar opciones de año (actual +/- 2 años)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = [];
+  for (let year = currentYear - 1; year <= currentYear + 2; year++) {
+    yearOptions.push({ value: year, label: year.toString() });
   }
+
+  // Generar opciones de mes
+  const monthOptions = [
+    { value: 0, label: 'Enero' },
+    { value: 1, label: 'Febrero' },
+    { value: 2, label: 'Marzo' },
+    { value: 3, label: 'Abril' },
+    { value: 4, label: 'Mayo' },
+    { value: 5, label: 'Junio' },
+    { value: 6, label: 'Julio' },
+    { value: 7, label: 'Agosto' },
+    { value: 8, label: 'Septiembre' },
+    { value: 9, label: 'Octubre' },
+    { value: 10, label: 'Noviembre' },
+    { value: 11, label: 'Diciembre' }
+  ];
+
+  // ⚠️ PROBLEMA 2 SOLUCIONADO: Calcular días del mes seleccionado dinámicamente
+  const daysInSelectedMonth = React.useMemo(() => {
+    return new Date(formData.startYear, formData.startMonth + 1, 0).getDate();
+  }, [formData.startYear, formData.startMonth]);
+
+  // Generar opciones de día basadas en el mes seleccionado
+  const dayOptions = React.useMemo(() => {
+    const options = [];
+    for (let i = 1; i <= daysInSelectedMonth; i++) {
+      options.push({ value: i, label: i.toString() });
+    }
+    return options;
+  }, [daysInSelectedMonth]);
 
   // Manejar clicks fuera del modal
   React.useEffect(() => {
@@ -74,6 +106,17 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     };
   }, [onCancel]);
 
+  // ⚠️ PROBLEMA 2 SOLUCIONADO: Ajustar día cuando cambia el mes/año
+  React.useEffect(() => {
+    if (formData.startDay > daysInSelectedMonth) {
+      console.log(`[BulkAdd] Ajustando día ${formData.startDay} a ${daysInSelectedMonth} para ${monthOptions[formData.startMonth].label} ${formData.startYear}`);
+      setFormData(prev => ({
+        ...prev,
+        startDay: daysInSelectedMonth
+      }));
+    }
+  }, [formData.startYear, formData.startMonth, formData.startDay, daysInSelectedMonth]);
+
   const handleInputChange = (field) => (e) => {
     let value = e.target.value;
     
@@ -85,9 +128,13 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
         value = field === 'startNumber' ? 1 : 
                field === 'videoCount' ? 1 :
                field === 'startDay' ? 1 :
+               field === 'startYear' ? currentYear :
+               field === 'startMonth' ? 0 :
                field === 'dailyInterval' ? 1 : 0;
       }
     }
+    
+    console.log(`[BulkAdd] Campo ${field} cambiado a:`, value);
     
     setFormData(prev => ({
       ...prev,
@@ -121,68 +168,153 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
     });
   };
 
+  // Función para avanzar a la siguiente fecha válida
+  const getNextDate = (currentYear, currentMonth, currentDay, interval) => {
+    let nextDay = currentDay + interval;
+    let nextMonth = currentMonth;
+    let nextYear = currentYear;
+    
+    // Obtener días en el mes actual
+    let daysInMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+    
+    // Si excede el mes actual, avanzar al siguiente mes
+    while (nextDay > daysInMonth) {
+      nextDay -= daysInMonth;
+      nextMonth++;
+      
+      // Si excede el año, avanzar al siguiente año
+      if (nextMonth > 11) {
+        nextMonth = 0;
+        nextYear++;
+      }
+      
+      // Obtener días en el nuevo mes
+      daysInMonth = new Date(nextYear, nextMonth + 1, 0).getDate();
+    }
+    
+    return { year: nextYear, month: nextMonth, day: nextDay };
+  };
+
   const generateVideoSchedule = () => {
     const schedule = [];
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
     
     // Validaciones básicas
     if (!formData.baseName.trim() || formData.videoCount < 1) {
       return schedule;
     }
     
+    console.log(`[BulkAdd] Generando programación con datos:`, {
+      ...formData,
+      daysInSelectedMonth: daysInSelectedMonth
+    });
+    
     if (formData.frequency === 'daily') {
-      // Frecuencia diaria - LÓGICA CORREGIDA
+      // Frecuencia diaria - LÓGICA MULTIMES
       let videosCreated = 0;
-      let currentDay = Math.max(1, Math.min(formData.startDay, daysInMonth));
+      let currentYear = formData.startYear;
+      let currentMonth = formData.startMonth;
+      let currentDay = Math.max(1, Math.min(formData.startDay, daysInSelectedMonth));
       const interval = Math.max(1, Math.min(formData.dailyInterval, 7));
       
-      while (videosCreated < formData.videoCount && currentDay <= daysInMonth) {
+      console.log(`[BulkAdd] Generando videos diarios multimes:`, {
+        startYear: currentYear,
+        startMonth: currentMonth,
+        startDay: currentDay,
+        interval: interval,
+        videoCount: formData.videoCount,
+        daysInStartMonth: daysInSelectedMonth
+      });
+      
+      while (videosCreated < formData.videoCount) {
+        // Crear el video para la fecha actual
+        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+        
         schedule.push({
+          year: currentYear,
+          month: currentMonth,
           day: currentDay,
+          dateStr: dateStr,
           slotIndex: formData.timeSlot,
           name: `${formData.baseName.trim()} ${formData.startNumber + videosCreated}`,
           status: VIDEO_MAIN_STATUS.DEVELOPMENT,
           description: ''
         });
         
+        console.log(`[BulkAdd] Video ${videosCreated + 1}: ${dateStr} (${monthOptions[currentMonth].label})`);
+        
         videosCreated++;
-        currentDay += interval;
+        
+        // Calcular la siguiente fecha
+        if (videosCreated < formData.videoCount) {
+          const nextDate = getNextDate(currentYear, currentMonth, currentDay, interval);
+          currentYear = nextDate.year;
+          currentMonth = nextDate.month;
+          currentDay = nextDate.day;
+        }
       }
       
     } else if (formData.frequency === 'weekly') {
-      // Frecuencia semanal
+      // Frecuencia semanal - LÓGICA MULTIMES
       if (formData.weeklyDays.length === 0 || formData.weeklyTimeSlots.length === 0) {
         return schedule;
       }
       
       let videosCreated = 0;
-      let currentDay = Math.max(1, Math.min(formData.startDay, daysInMonth));
+      let currentYear = formData.startYear;
+      let currentMonth = formData.startMonth;
+      let currentDay = Math.max(1, Math.min(formData.startDay, daysInSelectedMonth));
+      
+      console.log(`[BulkAdd] Generando videos semanales multimes:`, {
+        startYear: currentYear,
+        startMonth: currentMonth,
+        startDay: currentDay,
+        weeklyDays: formData.weeklyDays,
+        timeSlots: formData.weeklyTimeSlots,
+        videoCount: formData.videoCount,
+        daysInStartMonth: daysInSelectedMonth
+      });
       
       // Buscar días que coincidan con los días de la semana seleccionados
-      while (videosCreated < formData.videoCount && currentDay <= daysInMonth) {
-        const dayOfWeek = new Date(year, month, currentDay).getDay();
+      let iterationsLimit = formData.videoCount * 10; // Límite de seguridad
+      let iterations = 0;
+      
+      while (videosCreated < formData.videoCount && iterations < iterationsLimit) {
+        iterations++;
+        
+        const dayOfWeek = new Date(currentYear, currentMonth, currentDay).getDay();
         
         if (formData.weeklyDays.includes(dayOfWeek)) {
           // Este día está en los días seleccionados
           formData.weeklyTimeSlots.forEach(timeSlot => {
             if (videosCreated < formData.videoCount) {
+              const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+              
               schedule.push({
+                year: currentYear,
+                month: currentMonth,
                 day: currentDay,
+                dateStr: dateStr,
                 slotIndex: timeSlot,
                 name: `${formData.baseName.trim()} ${formData.startNumber + videosCreated}`,
                 status: VIDEO_MAIN_STATUS.DEVELOPMENT,
                 description: ''
               });
+              
+              console.log(`[BulkAdd] Video ${videosCreated + 1}: ${dateStr} (${monthOptions[currentMonth].label}), slot ${timeSlot}`);
               videosCreated++;
             }
           });
         }
         
-        currentDay++;
+        // Avanzar al siguiente día
+        const nextDate = getNextDate(currentYear, currentMonth, currentDay, 1);
+        currentYear = nextDate.year;
+        currentMonth = nextDate.month;
+        currentDay = nextDate.day;
       }
     }
     
+    console.log(`[BulkAdd] Videos totales creados: ${schedule.length}`);
     return schedule;
   };
 
@@ -195,13 +327,13 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
       return;
     }
     
-    if (formData.videoCount < 1 || formData.videoCount > 50) {
-      alert('La cantidad de videos debe estar entre 1 y 50');
+    if (formData.videoCount < 1 || formData.videoCount > 100) {
+      alert('La cantidad de videos debe estar entre 1 y 100');
       return;
     }
     
-    if (formData.startDay < 1 || formData.startDay > daysInMonth) {
-      alert(`El día de inicio debe estar entre 1 y ${daysInMonth}`);
+    if (formData.startDay < 1 || formData.startDay > daysInSelectedMonth) {
+      alert(`El día de inicio debe estar entre 1 y ${daysInSelectedMonth}`);
       return;
     }
     
@@ -228,9 +360,14 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
       return;
     }
     
+    // Agrupar por meses para mostrar en el mensaje de confirmación
+    const monthsInvolved = [...new Set(schedule.map(item => `${monthOptions[item.month].label} ${item.year}`))];
+    const monthsText = monthsInvolved.length > 1 ? 
+      `abarcando ${monthsInvolved.join(', ')}` : 
+      `en ${monthsInvolved[0]}`;
+    
     // Confirmar antes de crear
-    const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-    const confirmMessage = `Se crearán ${schedule.length} videos en ${monthName}.\n\n¿Continuar?`;
+    const confirmMessage = `Se crearán ${schedule.length} videos ${monthsText}.\n\n¿Continuar?`;
     if (!confirm(confirmMessage)) {
       return;
     }
@@ -244,7 +381,21 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
   };
 
   const previewSchedule = generateVideoSchedule();
-  const monthName = currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+  
+  // Agrupar vista previa por meses
+  const groupedPreview = previewSchedule.reduce((acc, item) => {
+    const monthKey = `${item.year}-${item.month}`;
+    if (!acc[monthKey]) {
+      acc[monthKey] = {
+        year: item.year,
+        month: item.month,
+        monthName: `${monthOptions[item.month].label} ${item.year}`,
+        videos: []
+      };
+    }
+    acc[monthKey].videos.push(item);
+    return acc;
+  }, {});
 
   return React.createElement(
     'div',
@@ -262,7 +413,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
           'div',
           { key: 'header', className: 'bulk-add-form-header' },
           [
-            React.createElement('h3', { key: 'title' }, '📋 Añadir Videos en Lote'),
+            React.createElement('h3', { key: 'title' }, '📋 Añadir Videos en Lote (Multimes)'),
             React.createElement(
               'button',
               {
@@ -345,8 +496,72 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                     value: formData.videoCount,
                                     onChange: handleInputChange('videoCount'),
                                     min: 1,
-                                    max: 50
+                                    max: 100
                                   })
+                                ]
+                              )
+                            ]
+                          )
+                        ]
+                      ),
+                      
+                      // Fecha de inicio
+                      React.createElement(
+                        'div',
+                        { key: 'start-date', className: 'form-section' },
+                        [
+                          React.createElement('h4', { key: 'section-title' }, 'Fecha de Inicio'),
+                          React.createElement(
+                            'div',
+                            { key: 'date-info', className: 'date-info' },
+                            `${monthOptions[formData.startMonth].label} tiene ${daysInSelectedMonth} días`
+                          ),
+                          
+                          React.createElement(
+                            'div',
+                            { key: 'date-fields', className: 'form-row-compact' },
+                            [
+                              React.createElement(
+                                'div',
+                                { key: 'start-year', className: 'form-group' },
+                                [
+                                  React.createElement('label', { key: 'label' }, 'Año:'),
+                                  React.createElement(
+                                    'select',
+                                    {
+                                      key: 'select',
+                                      value: formData.startYear,
+                                      onChange: handleInputChange('startYear')
+                                    },
+                                    yearOptions.map(option =>
+                                      React.createElement('option', {
+                                        key: option.value,
+                                        value: option.value
+                                      }, option.label)
+                                    )
+                                  )
+                                ]
+                              ),
+                              
+                              React.createElement(
+                                'div',
+                                { key: 'start-month', className: 'form-group' },
+                                [
+                                  React.createElement('label', { key: 'label' }, 'Mes:'),
+                                  React.createElement(
+                                    'select',
+                                    {
+                                      key: 'select',
+                                      value: formData.startMonth,
+                                      onChange: handleInputChange('startMonth')
+                                    },
+                                    monthOptions.map(option =>
+                                      React.createElement('option', {
+                                        key: option.value,
+                                        value: option.value
+                                      }, option.label)
+                                    )
+                                  )
                                 ]
                               ),
                               
@@ -354,7 +569,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                                 'div',
                                 { key: 'start-day', className: 'form-group' },
                                 [
-                                  React.createElement('label', { key: 'label' }, 'Día inicio:'),
+                                  React.createElement('label', { key: 'label' }, 'Día:'),
                                   React.createElement(
                                     'select',
                                     {
@@ -528,7 +743,7 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                         React.createElement(
                           'h4', 
                           { key: 'section-title' }, 
-                          `Vista Previa - ${monthName}`
+                          'Vista Previa Multimes'
                         ),
                         React.createElement(
                           'div',
@@ -539,47 +754,64 @@ function BulkAddForm({ currentDate, onSave, onCancel, styleProps, plugin }) {
                               { key: 'count', className: 'preview-count' },
                               `${previewSchedule.length} videos`
                             ),
-                            previewSchedule.length > 0 && React.createElement(
+                            Object.keys(groupedPreview).length > 0 && React.createElement(
                               'span',
-                              { key: 'range', className: 'preview-range' },
-                              `Días ${Math.min(...previewSchedule.map(v => v.day))} - ${Math.max(...previewSchedule.map(v => v.day))}`
+                              { key: 'months', className: 'preview-months' },
+                              `${Object.keys(groupedPreview).length} mes${Object.keys(groupedPreview).length > 1 ? 'es' : ''}`
                             )
                           ]
                         ),
                         React.createElement(
                           'div',
                           { key: 'preview-list', className: 'preview-list-horizontal' },
-                          previewSchedule.length > 0 ? 
-                            previewSchedule.slice(0, 12).map((item, index) => 
+                          Object.keys(groupedPreview).length > 0 ? 
+                            Object.values(groupedPreview).map((monthGroup, monthIndex) =>
                               React.createElement(
                                 'div',
-                                { key: index, className: 'preview-item-compact' },
+                                { key: `month-${monthIndex}`, className: 'preview-month-group' },
                                 [
                                   React.createElement(
                                     'div',
-                                    { key: 'day', className: 'preview-day-compact' },
-                                    item.day
+                                    { key: 'month-header', className: 'preview-month-header' },
+                                    `${monthGroup.monthName} (${monthGroup.videos.length})`
                                   ),
                                   React.createElement(
                                     'div',
-                                    { key: 'time', className: 'preview-time-compact' },
-                                    timeSlotOptions[item.slotIndex].label
-                                  ),
-                                  React.createElement(
-                                    'div',
-                                    { key: 'name', className: 'preview-name-compact' },
-                                    item.name
+                                    { key: 'month-videos', className: 'preview-month-videos' },
+                                    monthGroup.videos.slice(0, 6).map((item, index) => 
+                                      React.createElement(
+                                        'div',
+                                        { key: index, className: 'preview-item-compact' },
+                                        [
+                                          React.createElement(
+                                            'div',
+                                            { key: 'day', className: 'preview-day-compact' },
+                                            item.day
+                                          ),
+                                          React.createElement(
+                                            'div',
+                                            { key: 'time', className: 'preview-time-compact' },
+                                            timeSlotOptions[item.slotIndex].label
+                                          ),
+                                          React.createElement(
+                                            'div',
+                                            { key: 'name', className: 'preview-name-compact' },
+                                            item.name
+                                          )
+                                        ]
+                                      )
+                                    ).concat(
+                                      monthGroup.videos.length > 6 ? 
+                                        [React.createElement(
+                                          'div', 
+                                          { key: 'more', className: 'preview-more-compact' }, 
+                                          `+${monthGroup.videos.length - 6} más`
+                                        )] : 
+                                        []
+                                    )
                                   )
                                 ]
                               )
-                            ).concat(
-                              previewSchedule.length > 12 ? 
-                                [React.createElement(
-                                  'div', 
-                                  { key: 'more', className: 'preview-more-compact' }, 
-                                  `+${previewSchedule.length - 12} más`
-                                )] : 
-                                []
                             ) :
                             [React.createElement(
                               'div', 

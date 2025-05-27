@@ -131,6 +131,19 @@
   border-radius: 2px;
 }
 
+/* Información de fecha - NUEVO */
+.date-info {
+  background: rgba(var(--info-color-rgb), 0.1);
+  border: 1px solid rgba(var(--info-color-rgb), 0.2);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  color: var(--info-color);
+  text-align: center;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
 /* Grupos de campos - Más compactos */
 .form-group {
   margin-bottom: 12px; /* Menos espacio */
@@ -180,7 +193,7 @@
 /* Filas compactas para campos pequeños */
 .form-row-compact {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Tres columnas para los números */
+  grid-template-columns: repeat(3, 1fr); /* Tres columnas para los números/fechas */
   gap: 12px;
   margin-bottom: 12px;
 }
@@ -270,13 +283,13 @@
   font-size: 0.875rem;
 }
 
-.preview-range {
+.preview-months {
   font-size: 0.75rem;
-  color: var(--text-color-secondary);
+  color: var(--info-color);
   font-style: italic;
 }
 
-/* Lista de vista previa horizontal */
+/* Lista de vista previa horizontal multimes */
 .preview-list-horizontal {
   flex: 1;
   background: var(--bg-color-secondary);
@@ -286,7 +299,32 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px; /* Menos espacio entre items */
+  gap: 12px; /* Espacio entre grupos de meses */
+}
+
+/* Grupo de mes en la vista previa */
+.preview-month-group {
+  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  border-radius: 6px;
+  background: rgba(var(--primary-color-rgb), 0.02);
+  overflow: hidden;
+}
+
+.preview-month-header {
+  background: rgba(var(--primary-color-rgb), 0.1);
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  text-align: center;
+}
+
+.preview-month-videos {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px; /* Muy poco espacio entre videos del mismo mes */
 }
 
 .preview-item-compact {
@@ -294,12 +332,12 @@
   grid-template-columns: 30px 40px 1fr; /* Día, hora, nombre */
   gap: 8px;
   align-items: center;
-  padding: 4px 8px; /* Muy compacto */
+  padding: 3px 6px; /* Muy compacto */
   background: var(--bg-color);
-  border-radius: 4px;
+  border-radius: 3px;
   border: 1px solid rgba(var(--border-color-rgb), 0.3);
   transition: all 0.2s ease;
-  font-size: 0.75rem; /* Más pequeño */
+  font-size: 0.7rem; /* Más pequeño */
 }
 
 .preview-item-compact:hover {
@@ -313,7 +351,7 @@
   text-align: center;
   background: rgba(var(--primary-color-rgb), 0.1);
   border-radius: 3px;
-  padding: 2px 4px;
+  padding: 2px 3px;
 }
 
 .preview-time-compact {
@@ -322,8 +360,8 @@
   text-align: center;
   background: rgba(var(--text-color-secondary-rgb), 0.1);
   border-radius: 3px;
-  padding: 2px 4px;
-  font-size: 0.6875rem;
+  padding: 2px 3px;
+  font-size: 0.65rem;
 }
 
 .preview-name-compact {
@@ -340,20 +378,19 @@
   color: var(--info-color);
   background: rgba(var(--info-color-rgb), 0.05);
   border: 1px solid rgba(var(--info-color-rgb), 0.2);
-  border-radius: 4px;
-  padding: 6px;
-  margin-top: 4px;
+  border-radius: 3px;
+  padding: 4px;
+  margin-top: 2px;
 }
 
 .preview-empty-compact {
-  grid-column: 1 / -1;
   text-align: center;
   color: var(--text-color-secondary);
   font-style: italic;
   padding: 20px;
   background: rgba(var(--warning-color-rgb), 0.05);
   border: 1px solid rgba(var(--warning-color-rgb), 0.2);
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 /* Botones de acción */
