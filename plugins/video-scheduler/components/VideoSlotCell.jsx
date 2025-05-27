@@ -75,8 +75,8 @@ function VideoSlotCell(props) {
     return statusText;
   };
 
-  // EMPTY ya no está disabled - el usuario puede cambiarlo
-  const isClickable = videoData.status !== VIDEO_MAIN_STATUS.PENDING;
+  // Ahora todos los estados son clickeables - el usuario tiene control total
+  const isClickable = true;
 
   return React.createElement(
     'td',

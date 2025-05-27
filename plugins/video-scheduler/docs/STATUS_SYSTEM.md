@@ -11,7 +11,9 @@ Cada video tiene un **estado principal** representado por un emoji de color:
 ### 📅 **PENDING (Pendiente)**
 - **Qué significa**: El horario está reservado pero aún no decidiste qué video hacer
 - **Cuándo aparece**: Es el estado inicial de todos los slots
-- **Qué puedes hacer**: Escribir el nombre del video (automáticamente cambia a Development)
+- **Qué puedes hacer**: 
+  - Escribir el nombre del video (automáticamente cambia a Development)
+  - **Hacer click para cambiarlo manualmente** a cualquier otro estado
 
 ### ⬜ **EMPTY (Vacío)**  
 - **Qué significa**: No habrá video en este horario
@@ -67,7 +69,12 @@ Estos son **especiales** porque se pueden combinar con cualquier estado:
 - **Cuándo aparece**: 
   - Un video en desarrollo/producción pasa a fecha pasada sin actualizar
   - Pones estados ilógicos en fechas pasadas
-- **Ejemplo**: 🟦☕❗ = "El sistema detectó que este video en grabación ya pasó de fecha"
+  - **📅❗ PENDING con nombre**: Tienes nombre escrito pero el estado sigue siendo "pendiente"
+  - **⬜❗ EMPTY con nombre**: Tienes nombre escrito pero el estado dice "no programar"
+- **Ejemplos**: 
+  - 🟦☕❗ = "El sistema detectó que este video en grabación ya pasó de fecha"
+  - 📅❗ = "Tienes nombre pero el estado sigue en pendiente"
+  - ⬜❗ = "Tienes nombre pero el estado dice 'no programar'"
 
 ## Cómo Funciona en Tiempo Pasado
 
@@ -81,6 +88,15 @@ Estos son **especiales** porque se pueden combinar con cualquier estado:
 
 ### Lo que técnicamente puedes poner pero no tiene sentido:
 - **🟦 DEVELOPMENT** o **🟨 PRODUCTION**: El sistema te avisará con ❗ pero no te lo impedirá
+
+## Control Total del Usuario
+
+**Importante**: Puedes hacer **click en cualquier emoji de estado** para cambiarlo manualmente, incluyendo:
+- 📅 PENDING - Ahora también es clickeable
+- ⬜ EMPTY - Siempre fue clickeable  
+- 🟦 🟨 🟩 - Todos clickeables
+
+El sistema **nunca te bloquea**, solo te informa con ❗ cuando algo puede necesitar atención.
 
 ## Transiciones Automáticas del Sistema
 
@@ -97,6 +113,10 @@ Estos son **especiales** porque se pueden combinar con cualquier estado:
 1. Escribir nombre en **⬜** → **🟦❗** (Development + alerta porque no tiene sentido en el pasado)
 2. Borrar nombre completamente → **⬜**
 
+### Alertas automáticas por inconsistencias:
+1. **📅 con nombre** → **📅❗** (debería ser 🟦)
+2. **⬜ con nombre** → **⬜❗** (no tiene sentido)
+
 ## Ejemplos Prácticos
 
 ### Progresión normal de un video:
@@ -110,15 +130,18 @@ Estos son **especiales** porque se pueden combinar con cualquier estado:
 ### Situaciones con sub-estados apilables:
 - **🟨💻❓**: "Estoy editando pero no recuerdo en qué parte iba"
 - **🟦☕❗**: "El sistema me avisa que este video 'en grabación' ya pasó de fecha"
+- **📅❗**: "Tengo nombre escrito pero el estado sigue en pendiente"
+- **⬜❗**: "Tengo nombre escrito pero el estado dice 'no programar'"
 - **🟩🌐❓**: "Está programado pero tengo dudas sobre algo"
 - **🟨✏️❓❗**: "Tengo dudas sobre el thumbnail Y el sistema detectó algo raro"
 
 ## Consejos de Uso
 
-1. **No tengas miedo de experimentar**: Puedes cambiar los estados cuando quieras
+1. **No tengas miedo de experimentar**: Puedes cambiar los estados cuando quieras - **todos son clickeables**
 2. **Usa ❓ cuando tengas dudas**: Es mejor marcarlo que olvidarlo
 3. **Presta atención a ❗**: El sistema te está avisando algo importante
 4. **Los estados en tiempo pasado**: Solo ⬜ EMPTY y 🟩 PUBLISHED tienen sentido real
 5. **🟩🌐 vs 🟩**: El primero es "programado para publicarse", el segundo es "ya publicado"
+6. **Control total**: Puedes hacer click en 📅 PENDING para cambiarlo manualmente si necesitas
 
 El sistema está diseñado para ser **flexible y no invasivo**: nunca te bloquea, solo te informa visualmente del estado de tus videos y hace transiciones automáticas lógicas cuando cambia el tiempo.

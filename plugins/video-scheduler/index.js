@@ -160,21 +160,37 @@ export default {
     const isPast = isDateInPast(dateStr);
     const stackableStatuses = [...(video.stackableStatuses || [])];
     const hasWarning = stackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING);
+    const hasName = video.name && video.name.trim() !== '';
 
+    let shouldHaveWarning = false;
+
+    // Verificar problemas de tiempo pasado
     if (isPast && INVALID_PAST_STATUSES.includes(video.status)) {
-      // Añadir warning si no lo tiene
-      if (!hasWarning) {
-        stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
+      shouldHaveWarning = true;
+    }
+
+    // Verificar inconsistencias lógicas de nombre vs estado
+    if (video.status === VIDEO_MAIN_STATUS.PENDING && hasName) {
+      // PENDING con nombre → debería ser DEVELOPMENT
+      shouldHaveWarning = true;
+    }
+    
+    if (video.status === VIDEO_MAIN_STATUS.EMPTY && hasName) {
+      // EMPTY con nombre → no tiene sentido
+      shouldHaveWarning = true;
+    }
+
+    // Aplicar o quitar warning según sea necesario
+    if (shouldHaveWarning && !hasWarning) {
+      // Añadir warning
+      stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
+      video.stackableStatuses = stackableStatuses;
+    } else if (!shouldHaveWarning && hasWarning) {
+      // Quitar warning
+      const warningIndex = stackableStatuses.indexOf(VIDEO_STACKABLE_STATUS.WARNING);
+      if (warningIndex > -1) {
+        stackableStatuses.splice(warningIndex, 1);
         video.stackableStatuses = stackableStatuses;
-      }
-    } else {
-      // Quitar warning si lo tiene y ya no es necesario
-      if (hasWarning) {
-        const warningIndex = stackableStatuses.indexOf(VIDEO_STACKABLE_STATUS.WARNING);
-        if (warningIndex > -1) {
-          stackableStatuses.splice(warningIndex, 1);
-          video.stackableStatuses = stackableStatuses;
-        }
       }
     }
   },
@@ -275,7 +291,7 @@ export default {
       }
     }
 
-    // Aplicar warnings automáticos
+    // Aplicar warnings automáticos para detectar inconsistencias lógicas
     self._applySystemWarnings(video, dateStr);
     
     video.updatedAt = new Date().toISOString();
