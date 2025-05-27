@@ -84,7 +84,7 @@ function VideoSchedulerMainPage(props) {
       const data = await plugin.publicAPI.getMonthViewData(year, month);
       setMonthData(data);
     }
-  }, [plugin, currentDate, pluginId]);
+  }, [plugin, currentDate]);
 
   const refreshCalendarData = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
@@ -134,14 +134,16 @@ function VideoSchedulerMainPage(props) {
     const videoKey = `${dateStr}-${slotIndex}`;
     
     if (!monthData || !monthData.videos) {
-        console.warn(`[${pluginId}] Month data or videos not available for status icon click.`);
         return;
     }
-    const video = monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey};
+    const video = monthData.videos[videoKey] || {
+      ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
+      id: videoKey,
+      stackableStatuses: []
+    };
     
     const wrapper = event.currentTarget.closest('.video-scheduler-main-content-wrapper');
     if (!wrapper) {
-        console.warn(`[${pluginId}] Wrapper for popup not found.`);
         return;
     }
     const iconRect = event.currentTarget.getBoundingClientRect();
@@ -209,30 +211,27 @@ function VideoSchedulerMainPage(props) {
     setIncomeFormContext(null);
   };
 
-  const handleStatusChange = async (newMainStatus, newSubStatus) => {
-    if (statusSelectorContext && statusSelectorContext.video) { // Verificación robusta
+  const handleStatusChange = async (newMainStatus, newSubStatus, newStackableStatuses = []) => {
+    if (statusSelectorContext && statusSelectorContext.video) {
       const { day, slotIndex } = statusSelectorContext;
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       
-      await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus);
+      await plugin.publicAPI.updateVideoStatus(dateStr, slotIndex, newMainStatus, newSubStatus, newStackableStatuses);
       
-      // Actualizar el estado local del popup para reflejo inmediato (si el popup no se cierra)
       setStatusSelectorContext(prev => {
-        // Si prev o prev.video es null/undefined, devolver prev para evitar errores.
         if (!prev || !prev.video) return prev; 
         return {
           ...prev,
           video: {
-            ...prev.video, // Usar el video anterior como base
+            ...prev.video,
             status: newMainStatus,
-            subStatus: newSubStatus
+            subStatus: newSubStatus,
+            stackableStatuses: newStackableStatuses
           }
         };
       });
       
-      refreshCalendarDataSilently(); // Refrescar los datos de la tabla principal
-    } else {
-        console.warn(`[${pluginId}] handleStatusChange llamado con contexto inválido:`, statusSelectorContext);
+      refreshCalendarDataSilently();
     }
   };
 
@@ -325,7 +324,12 @@ function VideoSchedulerMainPage(props) {
       const dayName = WEEKDAY_NAMES[dayDate.getDay()];
       const videosForDay = [0, 1, 2].map(slotIndex => {
           const videoKey = `${dateStr}-${slotIndex}`;
-          return monthData.videos[videoKey] || {...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey, status: VIDEO_MAIN_STATUS.PENDING };
+          return monthData.videos[videoKey] || {
+            ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
+            id: videoKey, 
+            status: VIDEO_MAIN_STATUS.PENDING,
+            stackableStatuses: []
+          };
       });
       const currentDailyIncome = monthData.dailyIncomes[dateStr] || null;
 
@@ -376,6 +380,7 @@ function VideoSchedulerMainPage(props) {
           key: 'status-selector-instance',
           currentMainStatus: statusSelectorContext.video.status,
           currentSubStatus: statusSelectorContext.video.subStatus,
+          currentStackableStatuses: statusSelectorContext.video.stackableStatuses || [],
           onStatusChange: handleStatusChange,
           onCancel: () => {
             setShowStatusSelector(false);

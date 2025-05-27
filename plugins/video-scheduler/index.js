@@ -2,7 +2,15 @@
 import React from 'react';
 import VideoSchedulerNavItemComponent from './components/VideoSchedulerNavItem.jsx';
 import VideoSchedulerMainPageComponent from './components/VideoSchedulerMainPage.jsx';
-import { DEFAULT_SLOT_VIDEO_STRUCTURE, VIDEO_MAIN_STATUS, DEFAULT_DAILY_INCOME_STRUCTURE } from './utils/constants.js';
+import { 
+  DEFAULT_SLOT_VIDEO_STRUCTURE, 
+  VIDEO_MAIN_STATUS, 
+  VIDEO_SUB_STATUS,
+  VIDEO_STACKABLE_STATUS,
+  DEFAULT_DAILY_INCOME_STRUCTURE,
+  isDateInPast,
+  INVALID_PAST_STATUSES
+} from './utils/constants.js';
 import './styles/index.css';
 
 const PLUGIN_PAGE_ID = 'videoscheduler';
@@ -11,8 +19,8 @@ const STORAGE_KEY_DATA = 'video_scheduler_plugin_data';
 export default {
   id: 'video-scheduler',
   name: 'Video Scheduler',
-  version: '0.4.2', 
-  description: 'Planificador visual de videos estilo calendario vanilla.',
+  version: '0.5.0', 
+  description: 'Planificador visual de videos estilo calendario con sistema de estados avanzado.',
   author: 'Tu Nombre/Equipo',
   minAppVersion: '0.3.0',
   maxAppVersion: '0.9.9',
@@ -88,7 +96,7 @@ export default {
       getMonthViewData: async (year, month) => self._internalGetMonthViewData(year, month),
       updateVideoName: async (dateStr, slotIndex, newName) => self._internalUpdateVideoName(dateStr, slotIndex, newName),
       updateVideoDescription: async (dateStr, slotIndex, newDescription) => self._internalUpdateVideoDescription(dateStr, slotIndex, newDescription),
-      updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus),
+      updateVideoStatus: async (dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses) => self._internalUpdateVideoStatus(dateStr, slotIndex, newStatus, newSubStatus, newStackableStatuses),
       setDailyIncome: async (dateStr, incomeData) => self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
     };
@@ -103,18 +111,26 @@ export default {
         dailyIncomes: safeLoadedData.dailyIncomes || {},
         settings: { ...self._pluginData.settings, ...(safeLoadedData.settings || {}) }
     };
-    console.log(`[${self.id}] Datos cargados desde storage.`, JSON.parse(JSON.stringify(self._pluginData)));
+    
+    // Migrar datos existentes para añadir stackableStatuses si no existen
+    Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
+      const video = self._pluginData.videosBySlotKey[key];
+      if (!video.stackableStatuses) {
+        video.stackableStatuses = [];
+      }
+    });
   },
+
   _savePluginData: async function() {
     const self = this;
     if (!self._core || !self._core.storage) {
-        console.warn(`[${self.id}] Core o storage no disponible. No se pudo guardar.`);
         return;
     }
     try {
         await self._core.storage.setItem(self.id, STORAGE_KEY_DATA, self._pluginData);
-        console.log(`[${self.id}] Datos guardados en storage.`);
-    } catch (error) { console.error(`[${self.id}] Error al guardar datos:`, error); }
+    } catch (error) { 
+        console.error(`[${self.id}] Error al guardar datos:`, error); 
+    }
   },
 
   _getVideoSlotKey: (dateStr, slotIndex) => `${dateStr}-${slotIndex}`,
@@ -122,14 +138,52 @@ export default {
   _ensureVideoSlotExists: function(dateStr, slotIndex) {
     const key = this._getVideoSlotKey(dateStr, slotIndex);
     if (!this._pluginData.videosBySlotKey[key]) {
-      this._pluginData.videosBySlotKey[key] = { ...DEFAULT_SLOT_VIDEO_STRUCTURE, id: key };
+      this._pluginData.videosBySlotKey[key] = { 
+        ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
+        id: key,
+        stackableStatuses: []
+      };
+    }
+    // Asegurar que stackableStatuses existe
+    if (!this._pluginData.videosBySlotKey[key].stackableStatuses) {
+      this._pluginData.videosBySlotKey[key].stackableStatuses = [];
     }
     return this._pluginData.videosBySlotKey[key];
+  },
+
+  // Función para aplicar alertas de sistema automáticas
+  _applySystemWarnings: function(video, dateStr) {
+    if (!video || !dateStr) {
+      return;
+    }
+
+    const isPast = isDateInPast(dateStr);
+    const stackableStatuses = [...(video.stackableStatuses || [])];
+    const hasWarning = stackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING);
+
+    if (isPast && INVALID_PAST_STATUSES.includes(video.status)) {
+      // Añadir warning si no lo tiene
+      if (!hasWarning) {
+        stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
+        video.stackableStatuses = stackableStatuses;
+      }
+    } else {
+      // Quitar warning si lo tiene y ya no es necesario
+      if (hasWarning) {
+        const warningIndex = stackableStatuses.indexOf(VIDEO_STACKABLE_STATUS.WARNING);
+        if (warningIndex > -1) {
+          stackableStatuses.splice(warningIndex, 1);
+          video.stackableStatuses = stackableStatuses;
+        }
+      }
+    }
   },
 
   _internalGetMonthViewData: async function(year, month_idx) {
     const self = this;
     const daysInMonth = new Date(year, month_idx + 1, 0).getDate();
+    
+    // Asegurar que existen todos los slots del mes
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month_idx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
@@ -139,22 +193,48 @@ export default {
             self._pluginData.dailyIncomes[dateStr] = { ...DEFAULT_DAILY_INCOME_STRUCTURE };
         }
     }
-    const today = new Date(); today.setHours(0,0,0,0);
+
     let changedByTransition = false;
+
+    // Aplicar transiciones automáticas basadas en tiempo
     Object.keys(self._pluginData.videosBySlotKey).forEach(key => {
         const video = self._pluginData.videosBySlotKey[key];
-        if (video.status === VIDEO_MAIN_STATUS.PENDING) {
-            const [videoYear, videoMonth, videoDay] = key.split('-').slice(0,3).map(Number);
-            const videoDate = new Date(videoYear, videoMonth - 1, videoDay);
-            if (videoDate < today) {
-                video.status = VIDEO_MAIN_STATUS.EMPTY; video.name = ''; video.description = '';
-                changedByTransition = true;
-            }
+        const dateStr = key.split('-').slice(0, 3).join('-');
+        const isPast = isDateInPast(dateStr);
+
+        if (isPast) {
+          // Transición: PENDING → EMPTY en tiempo pasado
+          if (video.status === VIDEO_MAIN_STATUS.PENDING) {
+            video.status = VIDEO_MAIN_STATUS.EMPTY;
+            video.name = '';
+            video.description = '';
+            video.subStatus = null;
+            video.stackableStatuses = [];
+            changedByTransition = true;
+          }
+          
+          // Transición: PUBLISHED+SCHEDULED → PUBLISHED en tiempo pasado
+          if (video.status === VIDEO_MAIN_STATUS.PUBLISHED && video.subStatus === VIDEO_SUB_STATUS.SCHEDULED) {
+            video.subStatus = null;
+            changedByTransition = true;
+          }
+        }
+
+        // Aplicar warnings automáticos
+        const oldStackableStatuses = [...(video.stackableStatuses || [])];
+        self._applySystemWarnings(video, dateStr);
+        
+        // Verificar si cambiaron los stackable statuses
+        const newStackableStatuses = video.stackableStatuses || [];
+        if (JSON.stringify(oldStackableStatuses.sort()) !== JSON.stringify(newStackableStatuses.sort())) {
+          changedByTransition = true;
         }
     });
+
     if (changedByTransition) {
         await self._savePluginData();
     }
+    
     return { 
         videos: { ...self._pluginData.videosBySlotKey }, 
         dailyIncomes: { ...self._pluginData.dailyIncomes }
@@ -166,11 +246,38 @@ export default {
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
     const oldName = video.name;
     video.name = newName;
-    if (video.status === VIDEO_MAIN_STATUS.PENDING && newName.trim() !== '') {
-      video.status = VIDEO_MAIN_STATUS.DEVELOPMENT; video.subStatus = null;
-    } else if (newName.trim() === '' && oldName.trim() !== '' && video.status !== VIDEO_MAIN_STATUS.EMPTY) {
-      video.status = VIDEO_MAIN_STATUS.PENDING; video.subStatus = null;
+    
+    const isPast = isDateInPast(dateStr);
+    
+    if (isPast) {
+      // En tiempo pasado: EMPTY + nombre → DEVELOPMENT + WARNING
+      if (video.status === VIDEO_MAIN_STATUS.EMPTY && newName.trim() !== '') {
+        video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
+        video.subStatus = null;
+        // Añadir warning automáticamente
+        if (!video.stackableStatuses.includes(VIDEO_STACKABLE_STATUS.WARNING)) {
+          video.stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
+        }
+      } else if (newName.trim() === '' && oldName.trim() !== '') {
+        video.status = VIDEO_MAIN_STATUS.EMPTY;
+        video.subStatus = null;
+        video.stackableStatuses = []; // Limpiar todos los sub-estados apilables
+      }
+    } else {
+      // En tiempo futuro: comportamiento normal
+      if (video.status === VIDEO_MAIN_STATUS.PENDING && newName.trim() !== '') {
+        video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
+        video.subStatus = null;
+      } else if (newName.trim() === '' && oldName.trim() !== '' && video.status !== VIDEO_MAIN_STATUS.EMPTY) {
+        video.status = VIDEO_MAIN_STATUS.PENDING;
+        video.subStatus = null;
+        video.stackableStatuses = []; // Limpiar todos los sub-estados apilables
+      }
     }
+
+    // Aplicar warnings automáticos
+    self._applySystemWarnings(video, dateStr);
+    
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;
@@ -185,17 +292,42 @@ export default {
     return video;
   },
 
-  _internalUpdateVideoStatus: async function(dateStr, slotIndex, newMainStatus, newSubStatus) {
+  _internalUpdateVideoStatus: async function(dateStr, slotIndex, newMainStatus, newSubStatus, newStackableStatuses = []) {
     const self = this;
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
-    if (video.status === VIDEO_MAIN_STATUS.EMPTY && newMainStatus !== VIDEO_MAIN_STATUS.PENDING && newMainStatus !== VIDEO_MAIN_STATUS.EMPTY) {
-        console.warn(`[${self.id}] Un slot EMPTY solo puede cambiar a PENDING o seguir EMPTY.`);
-        return video; 
+    
+    const isPast = isDateInPast(dateStr);
+    
+    // En tiempo pasado, verificar si se está tratando de poner PUBLISHED+SCHEDULED
+    if (isPast && newMainStatus === VIDEO_MAIN_STATUS.PUBLISHED && newSubStatus === VIDEO_SUB_STATUS.SCHEDULED) {
+      newSubStatus = null;
     }
+
+    // Validar transición desde EMPTY (ahora permitida)
+    if (video.status === VIDEO_MAIN_STATUS.EMPTY && 
+        newMainStatus !== VIDEO_MAIN_STATUS.PENDING && 
+        newMainStatus !== VIDEO_MAIN_STATUS.EMPTY) {
+      // Transición permitida, no hacer nada
+    }
+
     video.status = newMainStatus;
     video.subStatus = newSubStatus;
+    
+    // Manejar sub-estados apilables
+    // Filtrar warnings automáticos del usuario y mantener solo los que el usuario puede controlar
+    const userStackableStatuses = (newStackableStatuses || []).filter(status => 
+      status !== VIDEO_STACKABLE_STATUS.WARNING
+    );
+    
+    // Establecer los estados que el usuario eligió
+    video.stackableStatuses = [...userStackableStatuses];
+    
+    // Aplicar warnings automáticos después de la actualización
+    self._applySystemWarnings(video, dateStr);
+    
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
+    
     return video;
   },
 
@@ -208,5 +340,10 @@ export default {
     };
     await self._savePluginData();
     return self._pluginData.dailyIncomes[dateStr];
+  },
+
+  _internalGetDailyIncome: async function(dateStr) {
+    const self = this;
+    return self._pluginData.dailyIncomes[dateStr] || null;
   },
 };

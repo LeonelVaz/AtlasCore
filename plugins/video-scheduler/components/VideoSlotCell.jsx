@@ -1,6 +1,6 @@
 // video-scheduler/components/VideoSlotCell.jsx
 import React from 'react';
-import { STATUS_EMOJIS, VIDEO_MAIN_STATUS } from '../utils/constants.js';
+import { STATUS_EMOJIS, VIDEO_MAIN_STATUS, VIDEO_STACKABLE_STATUS } from '../utils/constants.js';
 
 function VideoSlotCell(props) {
   const { day, slotIndex, videoData, onNameChange, onStatusIconClick, onDescriptionChange } = props;
@@ -56,6 +56,28 @@ function VideoSlotCell(props) {
   const descriptionInputId = `video-description-${day}-${slotIndex}`;
   const placeholderText = videoData.status === VIDEO_MAIN_STATUS.EMPTY ? 'Vacío (No programar)' : '';
 
+  // Construir el texto de estado con sub-estados apilables
+  const buildStatusDisplay = () => {
+    let statusText = STATUS_EMOJIS[videoData.status] || '';
+    
+    // Añadir sub-estado normal si existe
+    if (videoData.subStatus) {
+      statusText += ` ${STATUS_EMOJIS[videoData.subStatus] || ''}`;
+    }
+    
+    // Añadir sub-estados apilables si existen
+    if (videoData.stackableStatuses && videoData.stackableStatuses.length > 0) {
+      videoData.stackableStatuses.forEach(stackableStatus => {
+        statusText += STATUS_EMOJIS[stackableStatus] || '';
+      });
+    }
+    
+    return statusText;
+  };
+
+  // EMPTY ya no está disabled - el usuario puede cambiarlo
+  const isClickable = videoData.status !== VIDEO_MAIN_STATUS.PENDING;
+
   return React.createElement(
     'td',
     { className: 'video-scheduler-slot-cell' },
@@ -73,7 +95,6 @@ function VideoSlotCell(props) {
           onChange: handleNameInputChange,
           onBlur: handleNameInputBlur,
           onKeyDown: handleNameInputKeyDown,
-          disabled: videoData.status === VIDEO_MAIN_STATUS.EMPTY,
           onClick: (e) => e.stopPropagation() 
         }),
         React.createElement(
@@ -93,7 +114,6 @@ function VideoSlotCell(props) {
               onChange: handleDescriptionInputChange,
               onBlur: handleDescriptionInputBlur,
               onKeyDown: handleDescriptionInputKeyDown,
-              disabled: videoData.status === VIDEO_MAIN_STATUS.EMPTY,
               onClick: (e) => e.stopPropagation() 
             }),
             React.createElement(
@@ -101,17 +121,14 @@ function VideoSlotCell(props) {
               { 
                 key: `status-icons-${day}-${slotIndex}`,
                 className: 'status-container', 
-                onClick: (videoData.status !== VIDEO_MAIN_STATUS.EMPTY && videoData.status !== VIDEO_MAIN_STATUS.PENDING) 
+                onClick: isClickable 
                           ? (e) => { e.stopPropagation(); onStatusIconClick(day, slotIndex, e); }
                           : (e) => { e.stopPropagation(); }, 
                 style: { 
-                    cursor: (videoData.status !== VIDEO_MAIN_STATUS.EMPTY && videoData.status !== VIDEO_MAIN_STATUS.PENDING) ? 'pointer' : 'default',
+                    cursor: isClickable ? 'pointer' : 'default',
                 }
               },
-              [
-                STATUS_EMOJIS[videoData.status] || '',
-                videoData.subStatus ? ` ${STATUS_EMOJIS[videoData.subStatus] || ''}` : ''
-              ]
+              buildStatusDisplay()
             )
           ]
         )

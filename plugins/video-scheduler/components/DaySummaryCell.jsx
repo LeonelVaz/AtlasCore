@@ -4,10 +4,23 @@ import { STATUS_EMOJIS } from '../utils/constants.js';
 
 function DaySummaryCell({ videosForDay }) { 
   const summaryContent = (videosForDay || [])
-    .map(video => 
-        (STATUS_EMOJIS[video.status] || ' ') + 
-        (video.subStatus ? (STATUS_EMOJIS[video.subStatus] || '') : '')
-    )
+    .map(video => {
+      let statusDisplay = STATUS_EMOJIS[video.status] || ' ';
+      
+      // Añadir sub-estado normal si existe
+      if (video.subStatus) {
+        statusDisplay += STATUS_EMOJIS[video.subStatus] || '';
+      }
+      
+      // Añadir sub-estados apilables si existen
+      if (video.stackableStatuses && video.stackableStatuses.length > 0) {
+        video.stackableStatuses.forEach(stackableStatus => {
+          statusDisplay += STATUS_EMOJIS[stackableStatus] || '';
+        });
+      }
+      
+      return statusDisplay;
+    })
     .join('  ');
 
   return React.createElement(
