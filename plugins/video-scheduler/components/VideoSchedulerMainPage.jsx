@@ -458,13 +458,13 @@ function VideoSchedulerMainPage(props) {
         })
       ]),
       
-      // Panel de estadísticas compartido inferior usando el mismo componente
+      // Panel de estadísticas compartido inferior usando el mismo componente completo
       !isLoading && React.createElement(StatsOverviewPanel, {
         key: 'footer-stats-panel',
         monthData: monthData,
         currentDate: currentDate,
         plugin: plugin,
-        compact: true // Usa el modo compacto para el panel inferior
+        compact: false // Usar el modo completo para mostrar todas las estadísticas
       })
     ]
   );

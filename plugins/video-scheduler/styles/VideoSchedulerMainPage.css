@@ -174,17 +174,7 @@
   table-layout: fixed;
 }
 
-/* Panel de estadísticas minimalista */
-.video-stats-panel-placeholder {
-  padding: 20px;
-  background: var(--bg-color-secondary);
-  border-top: 1px solid var(--border-color);
-  color: var(--text-color-secondary);
-  text-align: center;
-  font-size: 0.8125rem;
-  font-style: italic;
-  flex-shrink: 0;
-}
+/* Panel de estadísticas minimalista - ELIMINADO porque ahora usa el panel completo */
 
 /* Mensaje de carga */
 .loading-message-placeholder {

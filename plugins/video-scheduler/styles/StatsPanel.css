@@ -1,6 +1,6 @@
 /* video-scheduler/styles/StatsPanel.css */
 
-/* Panel principal de estadísticas avanzado */
+/* Panel principal de estadísticas avanzado - MODAL CENTRADO */
 .video-scheduler-stats-panel {
   position: fixed;
   top: 0;
@@ -15,7 +15,20 @@
   backdrop-filter: blur(4px);
 }
 
-/* Encabezado mejorado del panel avanzado */
+/* Contenido del panel avanzado - MODAL CENTRADO CON HEADER INTEGRADO */
+.stats-panel-content {
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  max-width: 95vw;
+  max-height: 90vh;
+  width: 1200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Encabezado integrado del panel - DENTRO DEL MODAL */
 .stats-panel-header {
   display: flex;
   justify-content: space-between;
@@ -23,6 +36,8 @@
   padding: 20px 24px;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-color-secondary);
+  flex-shrink: 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .stats-panel-title-section {
@@ -83,25 +98,13 @@
   border-color: var(--primary-color);
 }
 
-/* Contenido del panel avanzado */
-.stats-panel-content {
-  background: var(--bg-color);
-  border-radius: 8px;
-  box-shadow: var(--shadow-lg);
-  max-width: 95vw;
-  max-height: 90vh;
-  width: 1200px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Sistema de pestañas */
+/* Sistema de pestañas - DEBAJO DEL HEADER */
 .stats-tabs {
   display: flex;
   background: var(--bg-color-secondary);
   border-bottom: 1px solid var(--border-color);
   padding: 0 24px;
+  flex-shrink: 0;
 }
 
 .stats-tab {
@@ -130,7 +133,7 @@
   background: rgba(var(--primary-color-rgb), 0.05);
 }
 
-/* Contenido de pestañas */
+/* Contenido de pestañas - AREA DE SCROLL */
 .stats-tab-content {
   padding: 24px;
   flex: 1;
