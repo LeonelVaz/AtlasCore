@@ -9,7 +9,8 @@ import DailyIncomeForm from './DailyIncomeForm.jsx';
 import StatsPanel from './StatsPanel.jsx';
 import StatsOverviewPanel from './StatsOverviewPanel.jsx';
 import BulkAddForm from './BulkAddForm.jsx';
-import { VIDEO_MAIN_STATUS, DEFAULT_SLOT_VIDEO_STRUCTURE } from '../utils/constants.js';
+import CurrencyRateForm from './CurrencyRateForm.jsx'; // <--- NUEVA IMPORTACIÓN
+import { VIDEO_MAIN_STATUS, DEFAULT_SLOT_VIDEO_STRUCTURE, CURRENCIES } from '../utils/constants.js'; // <--- CURRENCIES AÑADIDO
 
 function getMonthDetails(year, month) { // month es 0-11
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -30,6 +31,10 @@ function VideoSchedulerMainPage(props) {
   const [incomeFormContext, setIncomeFormContext] = React.useState(null);
   const [showStatsPanel, setShowStatsPanel] = React.useState(false);
   const [showBulkAddForm, setShowBulkAddForm] = React.useState(false);
+  const [showCurrencyRateForm, setShowCurrencyRateForm] = React.useState(false); // <--- NUEVO ESTADO
+  const [currentRates, setCurrentRates] = React.useState({ USD: 870, EUR: 950, ARS: 1 }); // <--- NUEVO ESTADO
+  const [currentDefaultCurrency, setCurrentDefaultCurrency] = React.useState('USD'); // <--- NUEVO ESTADO
+
 
   const incomePopupConfig = {
     width: 320,
@@ -40,9 +45,16 @@ function VideoSchedulerMainPage(props) {
 
   const statusSelectorPopupConfig = {
     width: 220, 
-    height: 280, // Ajustado ligeramente para más contenido
+    height: 280, 
     margin: 10,  
     gapToIcon: 10 
+  };
+
+  // <--- NUEVO: Configuración para el popup de tasas de cambio --->
+  const currencyRatePopupConfig = {
+    width: 380,
+    // height: 'auto', // La altura se ajustará al contenido
+    margin: 10
   };
 
   const findScrollContainer = () => {
@@ -52,21 +64,21 @@ function VideoSchedulerMainPage(props) {
     const appContent = document.querySelector('.app-content');
     if (appContent) return appContent;
     
-    return document.documentElement; // Fallback al body/html
+    return document.documentElement; 
   };
 
   React.useEffect(() => {
     const handleScroll = () => {
-      if (showIncomeForm || showStatusSelector) {
+      if (showIncomeForm || showStatusSelector || showCurrencyRateForm) { // <--- AÑADIDO showCurrencyRateForm
         setShowIncomeForm(false);
         setIncomeFormContext(null);
         setShowStatusSelector(false);
         setStatusSelectorContext(null);
+        setShowCurrencyRateForm(false); // <--- AÑADIDO
       }
     };
 
     const scrollContainer = findScrollContainer();
-    // Asegurarse de que scrollContainer no sea null y tenga addEventListener
     if (scrollContainer && scrollContainer.addEventListener) {
         if (scrollContainer === document.documentElement || scrollContainer === document.body) {
             window.addEventListener('scroll', handleScroll, { passive: true });
@@ -84,7 +96,7 @@ function VideoSchedulerMainPage(props) {
             }
         }
     };
-  }, [showIncomeForm, showStatusSelector]);
+  }, [showIncomeForm, showStatusSelector, showCurrencyRateForm]); // <--- AÑADIDO showCurrencyRateForm
 
 
   const refreshCalendarDataSilently = React.useCallback(async () => {
@@ -93,6 +105,11 @@ function VideoSchedulerMainPage(props) {
       const month = currentDate.getMonth(); 
       const data = await plugin.publicAPI.getMonthViewData(year, month);
       setMonthData(data);
+      // También cargar tasas y moneda por defecto silenciosamente si es necesario
+      const rates = await plugin.publicAPI.getCurrencyRates();
+      setCurrentRates(rates);
+      const defCurrency = await plugin.publicAPI.getDefaultCurrency();
+      setCurrentDefaultCurrency(defCurrency);
     }
   }, [plugin, currentDate]);
 
@@ -105,6 +122,14 @@ function VideoSchedulerMainPage(props) {
       const month = currentDate.getMonth(); 
       const data = await plugin.publicAPI.getMonthViewData(year, month);
       setMonthData(data);
+
+      // <--- CARGAR TASAS Y MONEDA POR DEFECTO --->
+      const rates = await plugin.publicAPI.getCurrencyRates();
+      setCurrentRates(rates);
+      const defCurrency = await plugin.publicAPI.getDefaultCurrency();
+      setCurrentDefaultCurrency(defCurrency);
+      // <--- FIN CARGA TASAS --->
+
       setIsLoading(false);
       setIsInitialLoad(false);
     }
@@ -117,12 +142,14 @@ function VideoSchedulerMainPage(props) {
   const handlePrevMonth = () => {
       setShowStatusSelector(false); setStatusSelectorContext(null);
       setShowIncomeForm(false); setIncomeFormContext(null);
+      setShowCurrencyRateForm(false); // <--- AÑADIDO
       setIsInitialLoad(true);
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   }
   const handleNextMonth = () => {
       setShowStatusSelector(false); setStatusSelectorContext(null);
       setShowIncomeForm(false); setIncomeFormContext(null);
+      setShowCurrencyRateForm(false); // <--- AÑADIDO
       setIsInitialLoad(true);
       setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
   }
@@ -203,6 +230,7 @@ function VideoSchedulerMainPage(props) {
     setShowStatusSelector(true);
     setShowIncomeForm(false); 
     setIncomeFormContext(null);
+    setShowCurrencyRateForm(false); // <--- AÑADIDO
   };
 
   const handleStatusChange = async (newMainStatus, newSubStatus, newStackableStatuses = []) => {
@@ -247,9 +275,7 @@ function VideoSchedulerMainPage(props) {
     const header = wrapper.querySelector('.page-header-controls');
     const headerHeight = header ? header.offsetHeight : 0;
     
-    // Considerar la altura del panel de estadísticas inferior si está visible
-    // Esta es una estimación, idealmente se debería obtener dinámicamente.
-    const footerStatsPanel = wrapper.querySelector('.stats-tab-content'); // Se usa .stats-tab-content para el panel inferior ahora
+    const footerStatsPanel = wrapper.querySelector('.stats-tab-content'); 
     const footerStatsPanelHeight = footerStatsPanel ? footerStatsPanel.offsetHeight : 0;
     
     const minTopPosition = headerHeight + margin;
@@ -269,7 +295,7 @@ function VideoSchedulerMainPage(props) {
     let finalTop = cellTop;
     if (finalTop + popupHeight > maxBottomEdgeOfPopup) {
         finalTop = cellRect.bottom - wrapperRect.top - popupHeight;
-        if (finalTop + popupHeight > maxBottomEdgeOfPopup) { // Re-check
+        if (finalTop + popupHeight > maxBottomEdgeOfPopup) { 
             finalTop = maxBottomEdgeOfPopup - popupHeight;
         }
     }
@@ -289,6 +315,7 @@ function VideoSchedulerMainPage(props) {
     setShowIncomeForm(true);
     setShowStatusSelector(false); 
     setStatusSelectorContext(null);
+    setShowCurrencyRateForm(false); // <--- AÑADIDO
   };
 
   const handleIncomeSave = async (day, newIncomeData) => {
@@ -299,12 +326,10 @@ function VideoSchedulerMainPage(props) {
     setIncomeFormContext(null);
   };
 
-  // NUEVA FUNCIÓN: Manejar guardado de videos en lote multimes
   const handleBulkAddSave = async (schedule) => {
     try {
       console.log(`[VideoSchedulerMainPage] Procesando ${schedule.length} videos en lote multimes`);
       
-      // Agrupar por mes para procesamiento eficiente
       const monthGroups = schedule.reduce((acc, item) => {
         const monthKey = `${item.year}-${item.month}`;
         if (!acc[monthKey]) {
@@ -316,35 +341,29 @@ function VideoSchedulerMainPage(props) {
       
       console.log(`[VideoSchedulerMainPage] Videos agrupados en ${Object.keys(monthGroups).length} meses:`, monthGroups);
       
-      // Procesar cada grupo de mes
       for (const [monthKey, monthVideos] of Object.entries(monthGroups)) {
         console.log(`[VideoSchedulerMainPage] Procesando mes ${monthKey} con ${monthVideos.length} videos`);
         
         for (const item of monthVideos) {
           console.log(`[VideoSchedulerMainPage] Creando video: ${item.dateStr} slot ${item.slotIndex} - ${item.name}`);
           
-          // Actualizar nombre del video
           await plugin.publicAPI.updateVideoName(item.dateStr, item.slotIndex, item.name);
           
-          // Actualizar estado si es diferente de PENDING
           if (item.status !== VIDEO_MAIN_STATUS.PENDING) {
             await plugin.publicAPI.updateVideoStatus(item.dateStr, item.slotIndex, item.status, null, []);
           }
           
-          // Actualizar descripción si existe
           if (item.description !== undefined && item.description !== '') {
             await plugin.publicAPI.updateVideoDescription(item.dateStr, item.slotIndex, item.description);
           }
         }
       }
       
-      // Refrescar solo el mes actual (los otros meses se cargarán cuando el usuario navegue a ellos)
       refreshCalendarDataSilently();
       setShowBulkAddForm(false);
       
       console.log(`[VideoSchedulerMainPage] Completado: ${schedule.length} videos creados exitosamente`);
       
-      // Mostrar mensaje de éxito
       const monthsInvolved = [...new Set(schedule.map(item => `${getMonthName(item.month)} ${item.year}`))];
       const monthsText = monthsInvolved.length > 1 ? 
         `en ${monthsInvolved.join(', ')}` : 
@@ -355,11 +374,10 @@ function VideoSchedulerMainPage(props) {
     } catch (error) {
       console.error('Error al crear videos en lote multimes:', error);
       alert('❌ Error al crear los videos. Revisa la consola para más detalles.');
-      throw error; // Relanzar para que el formulario de BulkAdd pueda manejarlo
+      throw error; 
     }
   };
 
-  // Función auxiliar para obtener nombre del mes
   const getMonthName = (monthIndex) => {
     const months = [
       'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -367,6 +385,35 @@ function VideoSchedulerMainPage(props) {
     ];
     return months[monthIndex] || 'Mes desconocido';
   };
+
+  // --- NUEVAS FUNCIONES PARA EL FORMULARIO DE TASAS DE CAMBIO ---
+  const handleOpenCurrencyRateForm = () => {
+    setShowCurrencyRateForm(true);
+    setShowIncomeForm(false);
+    setIncomeFormContext(null);
+    setShowStatusSelector(false);
+    setStatusSelectorContext(null);
+  };
+
+  const handleCurrencyRateSave = async (newRates, newDefaultCurrency) => {
+    try {
+      console.log(`[VideoSchedulerMainPage] Guardando tasas:`, newRates, `Moneda por defecto:`, newDefaultCurrency);
+      await plugin.publicAPI.setCurrencyRates(newRates);
+      await plugin.publicAPI.setDefaultCurrency(newDefaultCurrency);
+      
+      // Actualizar estado local y refrescar datos que dependen de las tasas (como el panel de stats)
+      setCurrentRates(newRates);
+      setCurrentDefaultCurrency(newDefaultCurrency);
+      refreshCalendarDataSilently(); // Refresca stats y otros datos
+      
+      setShowCurrencyRateForm(false);
+      alert('✅ Tasas de cambio y moneda por defecto guardadas.');
+    } catch (error) {
+      console.error('Error al guardar tasas de cambio:', error);
+      alert('❌ Error al guardar las tasas. Revisa la consola.');
+    }
+  };
+  // --- FIN NUEVAS FUNCIONES ---
   
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); 
@@ -393,7 +440,7 @@ function VideoSchedulerMainPage(props) {
           return monthData.videos[videoKey] || {
             ...DEFAULT_SLOT_VIDEO_STRUCTURE, 
             id: videoKey, 
-            status: VIDEO_MAIN_STATUS.PENDING, // Estado por defecto
+            status: VIDEO_MAIN_STATUS.PENDING, 
             stackableStatuses: []
           };
       });
@@ -402,7 +449,7 @@ function VideoSchedulerMainPage(props) {
       tableBodyRows.push(
         React.createElement('tr', {
           key: `day-row-${day}`, 
-          className: 'calendar-row' // <--- CLASE AÑADIDA AQUÍ
+          className: 'calendar-row' 
         }, [ 
           React.createElement(DayCell, {key: `daycell-${day}`, dayNumber: day, dayName: dayName}),
           videosForDay.map((video, slotIndex) => 
@@ -447,6 +494,17 @@ function VideoSchedulerMainPage(props) {
               },
               '📋 Añadir en Lote'
             ),
+            // --- NUEVO BOTÓN PARA TASAS DE CAMBIO ---
+            React.createElement(
+              'button',
+              { 
+                key: 'currency-rate-btn',
+                className: 'global-action-button',
+                onClick: handleOpenCurrencyRateForm // <--- NUEVA FUNCIÓN
+              },
+              '⚙️ Tasas Cambio' // Emoji de engranaje
+            ),
+            // --- FIN NUEVO BOTÓN ---
             React.createElement(
               'button',
               { 
@@ -489,7 +547,7 @@ function VideoSchedulerMainPage(props) {
 
         showStatsPanel && React.createElement(StatsPanel, {
           key: 'stats-panel-instance',
-          monthData: monthData, // Se pasa monthData completo, StatsPanel filtrará si es necesario
+          monthData: monthData, 
           currentDate: currentDate,
           plugin: plugin,
           onClose: () => setShowStatsPanel(false)
@@ -499,18 +557,34 @@ function VideoSchedulerMainPage(props) {
           key: 'bulk-add-form-instance',
           currentDate: currentDate,
           plugin: plugin,
-          onSave: handleBulkAddSave, // NUEVA FUNCIÓN MULTIMES
+          onSave: handleBulkAddSave, 
           onCancel: () => setShowBulkAddForm(false),
-          styleProps: { /* Para centrar por defecto, no se necesitan props de posición aquí */ }
+          styleProps: { }
+        }),
+
+        // --- NUEVO FORMULARIO DE TASAS DE CAMBIO ---
+        showCurrencyRateForm && React.createElement(CurrencyRateForm, {
+            key: 'currency-rate-form-instance',
+            initialRates: currentRates,
+            initialDefaultCurrency: currentDefaultCurrency,
+            onSave: handleCurrencyRateSave,
+            onCancel: () => setShowCurrencyRateForm(false),
+            // Para centrar, no se necesitan props de posición complejas,
+            // ya que el CSS del CurrencyRateForm lo manejará como un modal centrado.
+            styleProps: { 
+                width: `${currencyRatePopupConfig.width}px`,
+                // height: `${currencyRatePopupConfig.height}px` // altura auto
+            } 
         })
+        // --- FIN NUEVO FORMULARIO ---
       ]),
       
       !isLoading && React.createElement(StatsOverviewPanel, {
         key: 'footer-stats-panel',
-        monthData: monthData, // Se pasa monthData completo
+        monthData: monthData, 
         currentDate: currentDate,
         plugin: plugin,
-        compact: false // Usar el modo completo para mostrar todas las estadísticas
+        compact: false 
       })
     ]
   );
