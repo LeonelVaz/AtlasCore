@@ -54,7 +54,7 @@ function VideoSlotCell(props) {
   
   const nameInputId = `video-name-${day}-${slotIndex}`;
   const descriptionInputId = `video-description-${day}-${slotIndex}`;
-  const placeholderText = videoData.status === VIDEO_MAIN_STATUS.EMPTY ? 'Vacío (No programar)' : '';
+  const placeholderText = videoData.status === VIDEO_MAIN_STATUS.EMPTY ? '...' : '';
 
   // Construir el texto de estado con sub-estados apilables
   const buildStatusDisplay = () => {
