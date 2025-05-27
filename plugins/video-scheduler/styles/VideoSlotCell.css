@@ -52,7 +52,6 @@
 }
 
 .video-scheduler-slot-cell .video-name-input:not(:placeholder-shown) {
-  border-bottom-color: rgba(var(--primary-color-rgb), 0.2);
   background: none;
 }
 

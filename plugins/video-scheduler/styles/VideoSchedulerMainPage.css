@@ -67,9 +67,8 @@
 }
 
 .page-header-controls button:hover {
-  background: var(--hover-color);
   color: var(--text-color);
-  border-color: var(--primary-color);
+  border-color: var(--secondary-color);
 }
 
 /* Acciones globales */
@@ -97,6 +96,7 @@
   background: var(--primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.3);
+  border: none;
 }
 
 /* Contenedor del calendario - SIN OVERFLOW, altura automática */
@@ -156,7 +156,8 @@
 .calendar-grid td {
   padding: 0;
   border: none;
-  border-bottom: 1px solid rgba(var(--primary-color-rgb), 0.06);
+  border-bottom: 1px solid var(--border-color-secondary, var(--border-color));
+  border-right: 1px solid var(--border-color-secondary, var(--border-color));
   text-align: center;
   vertical-align: top;
   height: 80px; /* Altura mínima por fila */
