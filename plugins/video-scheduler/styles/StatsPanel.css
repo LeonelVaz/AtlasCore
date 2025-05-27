@@ -27,7 +27,7 @@
   width: 100%; /* Ocupar el ancho disponible dentro del padding del overlay */
   max-width: 1200px; /* Ancho máximo */
   height: 100%; /* Ocupar la altura disponible */
-  max-height: calc(100vh - 100px); /* Altura máxima, considerando el top y padding */
+  max-height: calc(100% - 16%); /* Altura máxima, considerando el top y padding */
   overflow: hidden; /* El scroll estará en el contenido de las pestañas */
   display: flex;
   flex-direction: column;
@@ -36,66 +36,71 @@
 /* Encabezado integrado del panel - DENTRO DEL MODAL */
 .stats-panel-header {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between;  <-- REMOVER ESTO */
+  justify-content: center; /* <-- AÑADIR ESTO para centrar el title-section */
   align-items: center;
-  padding: 20px 28px; /* Ajuste de padding */
+  padding: 20px 28px; 
   border-bottom: 1px solid var(--border-color);
-  background: var(--bg-color-secondary); /* Fondo ligeramente distinto */
+  background: var(--bg-color-secondary); 
   flex-shrink: 0;
-  border-radius: 12px 12px 0 0; /* Redondear solo esquinas superiores */
+  border-radius: 12px 12px 0 0;
+  position: relative; /* <-- AÑADIR ESTO para posicionar el botón de cierre */
 }
 
 .stats-panel-title-section {
   display: flex;
   align-items: center;
-  gap: 20px; /* Más espacio */
+  gap: 20px; /* Más espacio entre botones y título */
 }
 
-.month-nav-button {
+.month-nav-button { /* Estilo para los botones de navegación de mes */
   background: var(--primary-color);
   color: white;
   border: none;
   width: 40px; /* Ligeramente más grande */
   height: 40px;
-  border-radius: 50%;
+  border-radius: 50%; /* Hacerlos circulares */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem; /* Icono más grande */
+  font-size: 1.25rem; /* Icono/flecha más grande */
   font-weight: 600;
   transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-sm); /* Sombra sutil */
 }
 
 .month-nav-button:hover {
   background: var(--primary-hover);
-  transform: scale(1.05); /* Efecto sutil */
+  transform: scale(1.05); /* Efecto sutil al pasar el mouse */
   box-shadow: var(--shadow-md);
 }
 
 .stats-panel-header h2 {
   margin: 0;
-  font-size: 1.6rem; /* Más grande */
-  font-weight: 400; /* Más ligero */
+  font-size: 1.6rem; /* Ligeramente más grande */
+  font-weight: 400; /* Un poco más ligero si prefieres, o 600 para más bold */
   color: var(--text-color);
-  min-width: 320px; /* Ancho mínimo para el texto del mes */
+  /* ANCHO FIJO Y CENTRADO */
+  min-width: 450px; /* Ajusta este valor según el nombre de mes más largo + año */
   text-align: center;
   white-space: nowrap; /* Evitar que el texto se rompa */
 }
 
-.stats-panel-close {
+.stats-panel-close { 
+  position: absolute; 
+  right: 28px;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-color-secondary);
-  width: 36px; /* Ligeramente más grande */
+  width: 36px; 
   height: 36px;
-  border-radius: 50%;
+  border-radius: 50%; 
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem; /* Icono de cierre más grande */
+  font-size: 1.1rem; 
   transition: all 0.2s ease;
 }
 
@@ -103,7 +108,7 @@
   background: var(--hover-color);
   color: var(--danger-color); /* Color de peligro al pasar el mouse */
   border-color: var(--danger-color);
-  transform: rotate(90deg);
+  transform: rotate(90deg); /* Efecto divertido al cerrar */
 }
 
 /* Sistema de pestañas */
@@ -111,7 +116,6 @@
   display: flex;
   background: var(--bg-color-secondary);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 28px; /* Mismo padding que el header */
   flex-shrink: 0;
 }
 
@@ -125,7 +129,6 @@
   color: var(--text-color-secondary);
   transition: all 0.2s ease;
   border-bottom: 3px solid transparent; /* Indicador de activo */
-  display: flex;
   align-items: center;
   gap: 8px;
 }
@@ -149,10 +152,13 @@
 }
 
 /* Contenido de pestañas (clase genérica para el padding, usado por StatsOverviewPanel, charts-content, compare-content) */
-.stats-tab-content, 
+/* NOTA: La clase .stats-tab-content es definida en StatsOverviewPanel.css, 
+   así que si quieres un padding diferente aquí, asegúrate de que esta definición tenga mayor especificidad o se aplique correctamente.
+   Por ahora, StatsOverviewPanel y los contenidos de charts/compare usan el mismo padding a través de sus clases.
+*/
 .charts-content, 
 .compare-content {
-  padding: 28px; /* Padding uniforme */
+  padding: 28px; /* Padding uniforme para contenido de estas pestañas */
 }
 
 .charts-grid {
@@ -432,7 +438,6 @@
   .stats-tab-buttons-container {
     flex-direction: row; /* Mantener horizontal pero con scroll si es necesario */
     overflow-x: auto; /* Permitir scroll horizontal para pestañas */
-    padding: 0 10px;
   }
   
   .stats-tab {
@@ -442,7 +447,6 @@
   }
     
   .active-tab-content-container,
-  .stats-tab-content, 
   .charts-content, 
   .compare-content {
     padding: 20px; /* Menos padding en el contenido */

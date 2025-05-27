@@ -7,6 +7,7 @@
   border-top: 1px solid var(--border-color);
   color: var(--text-color);
   flex-shrink: 0; /* Evita que se encoja si está en un flex container */
+  margin: 20px 0px;
 }
 
 /* Secciones de estadísticas */
