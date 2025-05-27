@@ -480,49 +480,48 @@ function StatsPanel({ monthData, currentDate, onClose, plugin }) {
     [
       React.createElement(
         'div',
-        { key: 'stats-header', className: 'stats-panel-header' },
+        { key: 'stats-content', className: 'stats-panel-content' },
         [
           React.createElement(
             'div',
-            { key: 'title-section', className: 'stats-panel-title-section' },
+            { key: 'stats-header', className: 'stats-panel-header' },
             [
               React.createElement(
-                'button',
-                { 
-                  key: 'prev-month-btn',
-                  className: 'month-nav-button',
-                  onClick: handlePrevMonth 
-                },
-                '←'
+                'div',
+                { key: 'title-section', className: 'stats-panel-title-section' },
+                [
+                  React.createElement(
+                    'button',
+                    { 
+                      key: 'prev-month-btn',
+                      className: 'month-nav-button',
+                      onClick: handlePrevMonth 
+                    },
+                    '←'
+                  ),
+                  React.createElement('h2', { key: 'stats-title' }, `Estadísticas - ${monthName}`),
+                  React.createElement(
+                    'button',
+                    { 
+                      key: 'next-month-btn',
+                      className: 'month-nav-button',
+                      onClick: handleNextMonth 
+                    },
+                    '→'
+                  )
+                ]
               ),
-              React.createElement('h2', { key: 'stats-title' }, `Estadísticas - ${monthName}`),
               React.createElement(
                 'button',
                 { 
-                  key: 'next-month-btn',
-                  className: 'month-nav-button',
-                  onClick: handleNextMonth 
+                  key: 'close-btn',
+                  className: 'stats-panel-close',
+                  onClick: onClose 
                 },
-                '→'
+                '✕'
               )
             ]
           ),
-          React.createElement(
-            'button',
-            { 
-              key: 'close-btn',
-              className: 'stats-panel-close',
-              onClick: onClose 
-            },
-            '✕'
-          )
-        ]
-      ),
-      
-      React.createElement(
-        'div',
-        { key: 'stats-content', className: 'stats-panel-content' },
-        [
           React.createElement('div', { key: 'tab-buttons-container' }, renderTabButtons()),
           React.createElement('div', { key: 'active-tab-content' }, renderActiveTabContent())
         ]

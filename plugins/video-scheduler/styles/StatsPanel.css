@@ -23,7 +23,7 @@
   max-width: 95vw;
   max-height: 90vh;
   width: 1200px;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -138,6 +138,14 @@
   padding: 24px;
   flex: 1;
   overflow-y: auto;
+  background: var(--bg-color);
+}
+
+/* Contenedor del contenido activo de pestañas */
+#active-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-color);
 }
 
 /* Secciones de estadísticas */
