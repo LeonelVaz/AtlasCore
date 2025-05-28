@@ -11,57 +11,86 @@
   --danger-color: ;
   --danger-hover: ;
   --info-color: ;
-  
+
   /* Escala de grises */
-  --gray-50: ; --gray-100: ; --gray-200: ; --gray-300: ; --gray-400: ;
-  --gray-500: ; --gray-600: ; --gray-700: ; --gray-800: ; --gray-900: ;
-  
+  --gray-50: ;
+  --gray-100: ;
+  --gray-200: ;
+  --gray-300: ;
+  --gray-400: ;
+  --gray-500: ;
+  --gray-600: ;
+  --gray-700: ;
+  --gray-800: ;
+  --gray-900: ;
+
   /* Fondos y texto */
   --bg-color: ;
   --bg-color-secondary: ;
   --text-color: ;
   --text-color-secondary: ;
-  
+
   /* Componentes UI */
-  --header-bg: ; --sidebar-bg: ; --card-bg: ;
-  --hover-color: ; --modal-bg: ; --input-bg: ;
-  
+  --header-bg: ;
+  --sidebar-bg: ;
+  --card-bg: ;
+  --hover-color: ;
+  --modal-bg: ;
+  --input-bg: ;
+
   /* Barra superior */
-  --topbar-bg: ; --topbar-text: ;
-  
+  --topbar-bg: ;
+  --topbar-text: ;
+
   /* Navegación */
   --nav-active-bg: ;
-  
+
   /* Calendario */
-  --day-header-hover: ; --day-header-today: ; --time-slot-hover: ;
-  
+  --day-header-hover: ;
+  --day-header-today: ;
+  --time-slot-hover: ;
+
   /* Formularios */
-  --secondary-btn-bg: ; --secondary-btn-text: ; --secondary-btn-hover: ;
+  --secondary-btn-bg: ;
+  --secondary-btn-text: ;
+  --secondary-btn-hover: ;
   --tertiary-btn-bg: ;
-  
+
   /* Scroll */
-  --scrollbar-thumb: ; --scrollbar-thumb-hover: ;
-  
+  --scrollbar-thumb: ;
+  --scrollbar-thumb-hover: ;
+
   /* Bordes */
   --border-color: ;
-  
+
   /* Sombras */
-  --shadow-sm: ; --shadow-md: ; --shadow-lg: ; --shadow-xl: ;
-  
+  --shadow-sm: ;
+  --shadow-md: ;
+  --shadow-lg: ;
+  --shadow-xl: ;
+
   /* Slots de tiempo */
   --time-slot-standard-bg: transparent;
-  --time-slot-large-bg: ; --time-slot-medium-bg: ; --time-slot-short-bg: ;
+  --time-slot-large-bg: ;
+  --time-slot-medium-bg: ;
+  --time-slot-short-bg: ;
   --time-slot-standard-hover: var(--time-slot-hover);
   --time-slot-large-hover: var(--time-slot-hover);
   --time-slot-medium-hover: var(--time-slot-hover);
   --time-slot-short-hover: var(--time-slot-hover);
   --primary-color-rgb: ;
-  
+
   /* Diálogos */
-  --color-dialog-overlay: ; --color-dialog-bg: ; --color-dialog-title: ;
-  --color-dialog-close: ; --color-dialog-close-hover: ;
-  --color-dialog-footer: ; --color-dialog-header: ; --color-dialog-body: ;
-  --color-dialog-input-shadow: ; --color-dialog-error-bg: ;
+  --color-dialog-overlay: ;
+  --color-dialog-bg: ;
+  --color-dialog-title: ;
+  --color-dialog-close: ;
+  --color-dialog-close-hover: ;
+  --color-dialog-footer: ;
+  --color-dialog-header: ;
+  --color-dialog-body: ;
+  --color-dialog-input-shadow: ;
+  --color-dialog-error-bg: ;
   --danger-color-rgb: ;
 
   /* Específicos no derivados */
@@ -71,24 +100,24 @@
 
   /* Alias para compatibilidad - automáticamente vinculados a colores primarios */
   --color-atlas-blue: var(--primary-color);
-  --color-modular-green: var(--success-color); 
+  --color-modular-green: var(--success-color);
   --color-structure-gray: var(--secondary-color);
   --color-insight-yellow: var(--warning-color);
   --color-alarm-red: var(--danger-color);
-  
+
   /* Compatibilidad con variables originales */
   --color-background: var(--bg-color);
   --color-text: var(--text-color);
   --color-text-secondary: var(--text-color-secondary);
   --color-border: var(--border-color);
-  --color-shadow: rgba(0,0,0,.4);
-  
+  --color-shadow: rgba(0, 0, 0, 0.4);
+
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--text-color);
   --color-sidebar-border: var(--border-color);
   --color-sidebar-hover: var(--hover-color);
   --color-sidebar-active: var(--nav-active-bg);
-  
+
   --color-calendar-background: var(--bg-color);
   --color-calendar-header: var(--header-bg);
   --color-calendar-grid: var(--bg-color-secondary);
@@ -97,26 +126,26 @@
   --color-calendar-day-header: var(--text-color);
   --color-calendar-today: var(--day-header-today);
   --color-calendar-slot-hover: var(--time-slot-hover);
-  
+
   --color-event-default: var(--primary-color);
-  --color-event-text: #FFF;
-  
+  --color-event-text: #fff;
+
   --color-button-primary-bg: var(--primary-color);
-  --color-button-primary-text: #FFF;
+  --color-button-primary-text: #fff;
   --color-button-primary-hover: var(--primary-hover);
   --color-button-primary-active: var(--primary-color);
-  
+
   --color-button-secondary-bg: var(--secondary-btn-bg);
   --color-button-secondary-text: var(--secondary-btn-text);
   --color-button-secondary-hover: var(--secondary-btn-hover);
   --color-button-secondary-active: var(--primary-color);
-  
-  --color-button-active-text: #FFF;
-  
+
+  --color-button-active-text: #fff;
+
   --color-button-danger-bg: var(--danger-color);
-  --color-button-danger-text: #FFF;
+  --color-button-danger-text: #fff;
   --color-button-danger-hover: var(--danger-hover);
-  
+
   --color-input-bg: var(--input-bg);
   --color-input-border: var(--border-color);
   --color-input-focus: var(--primary-color);
