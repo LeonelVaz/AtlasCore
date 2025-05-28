@@ -235,22 +235,51 @@ function VideoSchedulerMainPage(props) {
   };
 
   const handleStatusChange = async (
-    newMainStatus,
-    newSubStatus,
-    newStackableStatuses = []
+    newMainStatusFromSelector, // Estado principal seleccionado en el popup
+    newSubStatusFromSelector, // Sub-estado calculado/seleccionado en el popup
+    newStackableStatusesFromSelector = [] // Estados apilables del popup
   ) => {
     if (statusSelectorContext && statusSelectorContext.video) {
-      const { day, slotIndex } = statusSelectorContext;
+      const {
+        day,
+        slotIndex,
+        video: videoBeforeChangeInPopup,
+      } = statusSelectorContext; // No necesitamos 'position' para reconstruir el video
       const dateStr = `${currentDate.getFullYear()}-${String(
         currentDate.getMonth() + 1
       ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      await plugin.publicAPI.updateVideoStatus(
-        dateStr,
-        slotIndex,
-        newMainStatus,
-        newSubStatus,
-        newStackableStatuses
-      );
+
+      // 1. Llamar a la API del plugin para actualizar el estado.
+      // Esta función interna se encarga de la lógica de sub-estados, alertas y updatedAt.
+      const videoAfterUpdateInBackend =
+        await plugin.publicAPI.updateVideoStatus(
+          dateStr,
+          slotIndex,
+          newMainStatusFromSelector,
+          newSubStatusFromSelector,
+          newStackableStatusesFromSelector
+        );
+
+      // 2. Actualizar el contexto del selector de estado para que el popup se re-renderice.
+      // Mantenemos los campos del video que no cambian (como 'name', 'description')
+      // y actualizamos los campos relacionados con el estado desde la respuesta del backend.
+      setStatusSelectorContext((prevContext) => {
+        if (!prevContext) return null; // Seguridad por si el contexto se limpió
+        return {
+          ...prevContext, // Mantiene day, slotIndex, position
+          video: {
+            ...videoBeforeChangeInPopup, // Base con nombre, descripción, etc.
+            status: videoAfterUpdateInBackend.status, // Actualizado desde el backend
+            subStatus: videoAfterUpdateInBackend.subStatus, // Actualizado desde el backend
+            stackableStatuses: videoAfterUpdateInBackend.stackableStatuses, // Actualizado desde el backend
+            updatedAt: videoAfterUpdateInBackend.updatedAt, // También el updatedAt
+            // Otros campos como detailedDescription, platform, etc., se mantienen del video original del contexto.
+          },
+        };
+      });
+
+      // 3. Refrescar los datos de la tabla principal silenciosamente.
+      // Esto asegura que la tabla refleje los cambios si el popup permanece abierto.
       refreshCalendarDataSilently();
     }
   };
