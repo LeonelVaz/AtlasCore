@@ -4,7 +4,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import Sidebar from "../../../../../../src/components/ui/sidebar/Sidebar";
+import Sidebar from "../../../../../../src/components/ui/sidebar/sidebar";
 
 // Mock de los componentes de extensión
 jest.mock(

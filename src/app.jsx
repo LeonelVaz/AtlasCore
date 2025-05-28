@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import CalendarMain from "./components/calendar/calendar-main";
 import SettingsPanel from "./components/settings/settings-panel";
-import Sidebar from "./components/ui/sidebar/Sidebar";
+import Sidebar from "./components/ui/sidebar/sidebar";
 import SidebarItem from "./components/ui/sidebar/sidebar-item";
 import WindowControls from "./components/ui/window-controls";
 import ConfigProvider from "./contexts/config-provider";
