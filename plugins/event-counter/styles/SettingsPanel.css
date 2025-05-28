@@ -1,10 +1,10 @@
 /* ==========================================================================
-   SettingsPanel - Estilos del Panel de Configuración Pro
+   SettingsPanel - Estilos del Panel de Configuración Pro CORREGIDOS
    Plugin: contador-eventos-dia v2.0.0
    ========================================================================== */
 
 /* ==========================================================================
-   Panel principal
+   Panel principal MEJORADO para layout horizontal
    ========================================================================== */
 
 .event-counter-settings-panel {
@@ -14,14 +14,15 @@
   padding: var(--plugin-spacing-xl);
   margin: var(--plugin-spacing-lg) 0;
   box-shadow: var(--plugin-shadow-lg);
-  max-width: 800px;
+  max-width: 1200px; /* Más ancho para layout horizontal */
+  width: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     sans-serif;
 }
 
 /* ==========================================================================
-     Header del panel
-     ========================================================================== */
+       Header del panel MEJORADO
+       ========================================================================== */
 
 .settings-header {
   text-align: center;
@@ -32,49 +33,66 @@
 
 .settings-title {
   margin: 0 0 var(--plugin-spacing-sm) 0;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
   color: var(--text-color, #1f2937);
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .settings-subtitle {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text-color-secondary, #6b7280);
-  font-weight: 400;
-}
-
-.saving-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  padding: var(--plugin-spacing-sm) var(--plugin-spacing-md);
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  border-radius: var(--plugin-radius-lg);
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: var(--plugin-spacing-md);
-  animation: plugin-pulse 2s infinite;
+  font-weight: 500;
 }
 
 /* ==========================================================================
-     Estados de carga y error
-     ========================================================================== */
+       LAYOUT HORIZONTAL PRINCIPAL (NUEVO)
+       ========================================================================== */
+
+.settings-main-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--plugin-spacing-xl);
+  align-items: start;
+}
+
+.settings-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--plugin-spacing-lg);
+}
+
+.settings-right-column {
+  position: sticky;
+  top: var(--plugin-spacing-lg);
+}
+
+.settings-section-sticky {
+  background: var(--bg-color-secondary, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-lg);
+  padding: var(--plugin-spacing-lg);
+}
+
+/* ==========================================================================
+       Estados de carga y error MEJORADOS
+       ========================================================================== */
 
 .settings-panel-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--plugin-spacing-xl);
+  padding: var(--plugin-spacing-xl) * 2;
   text-align: center;
   gap: var(--plugin-spacing-md);
   color: var(--text-color-secondary, #6b7280);
+  min-height: 200px;
 }
 
 .settings-panel-error {
@@ -84,60 +102,66 @@
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: var(--plugin-radius-lg);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ==========================================================================
-     Secciones del panel
-     ========================================================================== */
+       Secciones del panel MEJORADAS
+       ========================================================================== */
 
 .settings-section {
-  margin-bottom: var(--plugin-spacing-xl);
   padding: var(--plugin-spacing-lg);
   background: var(--bg-color-secondary, #f9fafb);
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: var(--plugin-radius-lg);
+  transition: var(--plugin-transition-fast);
+}
+
+.settings-section:hover {
+  border-color: rgba(79, 70, 229, 0.2);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
 }
 
 .settings-section h4 {
   margin: 0 0 var(--plugin-spacing-md) 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--text-color, #1f2937);
   display: flex;
   align-items: center;
   gap: var(--plugin-spacing-sm);
 }
 
-.subsection-title {
-  margin: var(--plugin-spacing-lg) 0 var(--plugin-spacing-md) 0;
+.subsection-title-compact {
+  margin: var(--plugin-spacing-md) 0 var(--plugin-spacing-sm) 0;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-color, #1f2937);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-  padding-bottom: var(--plugin-spacing-sm);
+  border-bottom: 2px solid var(--primary-color, #4f46e5);
+  padding-bottom: var(--plugin-spacing-xs);
+  display: inline-block;
 }
 
 /* ==========================================================================
-     Vista previa del badge
-     ========================================================================== */
+       Vista previa del badge MEJORADA
+       ========================================================================== */
 
 .badge-preview-container {
   display: flex;
   flex-direction: column;
-  gap: var(--plugin-spacing-md);
+  gap: var(--plugin-spacing-lg);
   align-items: center;
 }
 
 .badge-preview-area {
   position: relative;
-  width: 120px;
-  height: 80px;
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  width: 140px;
+  height: 100px;
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
   border: 2px dashed var(--border-color, #d1d5db);
-  border-radius: var(--plugin-radius-lg);
+  border-radius: var(--plugin-radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,29 +175,31 @@
   height: 100%;
   background-image: radial-gradient(
       circle at 25% 25%,
-      rgba(79, 70, 229, 0.1) 0%,
+      rgba(79, 70, 229, 0.08) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 75% 75%,
-      rgba(124, 58, 237, 0.1) 0%,
+      rgba(124, 58, 237, 0.08) 0%,
       transparent 50%
     );
-  animation: plugin-pulse 3s ease-in-out infinite;
+  animation: plugin-pulse 4s ease-in-out infinite;
 }
 
 .badge-preview-controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--plugin-spacing-md);
+  gap: var(--plugin-spacing-sm);
   font-size: 14px;
   color: var(--text-color-secondary, #6b7280);
+  text-align: center;
 }
 
 .preview-slider {
-  width: 120px;
-  height: 4px;
-  border-radius: 2px;
+  width: 140px;
+  height: 6px;
+  border-radius: 3px;
   background: var(--border-color, #e5e7eb);
   outline: none;
   cursor: pointer;
@@ -182,38 +208,43 @@
 
 .preview-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--primary-color, #4f46e5);
+  background: linear-gradient(135deg, var(--primary-color, #4f46e5), #7c3aed);
   cursor: pointer;
-  box-shadow: var(--plugin-shadow-sm);
+  box-shadow: var(--plugin-shadow-md);
+  transition: var(--plugin-transition-fast);
+}
+
+.preview-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
 }
 
 .preview-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--primary-color, #4f46e5);
+  background: linear-gradient(135deg, var(--primary-color, #4f46e5), #7c3aed);
   cursor: pointer;
   border: none;
-  box-shadow: var(--plugin-shadow-sm);
+  box-shadow: var(--plugin-shadow-md);
 }
 
 /* ==========================================================================
-     Presets rápidos
-     ========================================================================== */
+       Presets rápidos REDISEÑADOS para horizontal
+       ========================================================================== */
 
-.presets-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--plugin-spacing-md);
+.presets-grid-horizontal {
+  display: flex;
+  gap: var(--plugin-spacing-sm);
+  flex-wrap: wrap;
 }
 
-.preset-button {
+.preset-button-compact {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--plugin-spacing-xs);
   padding: var(--plugin-spacing-md);
   background: var(--card-bg, #ffffff);
@@ -221,48 +252,53 @@
   border-radius: var(--plugin-radius-lg);
   cursor: pointer;
   transition: var(--plugin-transition-normal);
-  text-align: left;
+  text-align: center;
   font-family: inherit;
+  min-width: 120px;
+  flex: 1;
 }
 
-.preset-button:hover {
+.preset-button-compact:hover {
   border-color: var(--primary-color, #4f46e5);
-  background: var(--bg-color-secondary, #f9fafb);
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.05),
+    rgba(124, 58, 237, 0.05)
+  );
   transform: translateY(-2px);
-  box-shadow: var(--plugin-shadow-md);
+  box-shadow: var(--plugin-shadow-lg);
 }
 
-.preset-button:active {
+.preset-button-compact:active {
   transform: translateY(0);
 }
 
-.preset-button strong {
-  font-size: 14px;
-  font-weight: 600;
+.preset-button-compact strong {
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text-color, #1f2937);
 }
 
-.preset-button small {
-  font-size: 12px;
+.preset-button-compact small {
+  font-size: 11px;
   color: var(--text-color-secondary, #6b7280);
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 /* ==========================================================================
-     Navegación por pestañas
-     ========================================================================== */
+       Navegación por pestañas HORIZONTAL
+       ========================================================================== */
 
-.settings-tabs {
+.settings-tabs-horizontal {
   display: flex;
   gap: var(--plugin-spacing-xs);
-  margin-bottom: var(--plugin-spacing-lg);
-  padding: var(--plugin-spacing-sm);
+  padding: var(--plugin-spacing-xs);
   background: var(--bg-color-secondary, #f3f4f6);
   border-radius: var(--plugin-radius-lg);
   overflow-x: auto;
 }
 
-.tab-button {
+.tab-button-horizontal {
   flex: 1;
   min-width: max-content;
   padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
@@ -271,42 +307,49 @@
   border-radius: var(--plugin-radius-md);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-color-secondary, #6b7280);
   transition: var(--plugin-transition-fast);
   white-space: nowrap;
 }
 
-.tab-button:hover {
+.tab-button-horizontal:hover {
   background: rgba(79, 70, 229, 0.1);
   color: var(--primary-color, #4f46e5);
+  transform: translateY(-1px);
 }
 
-.tab-button.active {
-  background: var(--primary-color, #4f46e5);
+.tab-button-horizontal.active {
+  background: linear-gradient(135deg, var(--primary-color, #4f46e5), #7c3aed);
   color: white;
-  font-weight: 600;
-  box-shadow: var(--plugin-shadow-sm);
+  font-weight: 700;
+  box-shadow: var(--plugin-shadow-md);
 }
 
 /* ==========================================================================
-     Contenido de pestañas
-     ========================================================================== */
+       Contenido de pestañas HORIZONTAL
+       ========================================================================== */
 
-.tab-content {
-  min-height: 300px;
+.tab-content-horizontal {
+  min-height: 400px;
 }
 
-.tab-panel {
+.tab-panel-horizontal {
   animation: plugin-fade-in 0.3s ease-out;
 }
 
 /* ==========================================================================
-     Grupos de configuración
-     ========================================================================== */
+       GRID SYSTEM para configuraciones horizontales (NUEVO)
+       ========================================================================== */
 
-.setting-group {
-  margin-bottom: var(--plugin-spacing-lg);
+.settings-grid-horizontal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--plugin-spacing-md);
+  align-items: start;
+}
+
+.setting-group-compact {
   padding: var(--plugin-spacing-md);
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: var(--plugin-radius-md);
@@ -314,73 +357,85 @@
   transition: var(--plugin-transition-fast);
 }
 
-.setting-group:hover {
+.setting-group-compact:hover {
   border-color: rgba(79, 70, 229, 0.3);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
 }
 
-.setting-label {
+.setting-group-horizontal {
+  margin-bottom: var(--plugin-spacing-md);
+  padding: var(--plugin-spacing-md);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-md);
+  background: var(--card-bg, #ffffff);
+  transition: var(--plugin-transition-fast);
+}
+
+.setting-group-horizontal:hover {
+  border-color: rgba(79, 70, 229, 0.3);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
+}
+
+/* ==========================================================================
+       Labels y controles COMPACTOS
+       ========================================================================== */
+
+.setting-label-compact {
   display: block;
   margin-bottom: var(--plugin-spacing-sm);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color, #1f2937);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.checkbox-label-horizontal {
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+  cursor: pointer;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-color, #1f2937);
 }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  cursor: pointer;
-}
-
-.checkbox-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+.checkbox-label-horizontal input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
   accent-color: var(--primary-color, #4f46e5);
   cursor: pointer;
 }
 
-.setting-description {
-  margin: var(--plugin-spacing-sm) 0 0 0;
-  font-size: 12px;
-  color: var(--text-color-secondary, #6b7280);
-  line-height: 1.4;
-  font-style: italic;
-}
-
-.setting-indent {
-  margin-left: var(--plugin-spacing-lg);
-  margin-top: var(--plugin-spacing-sm);
-}
-
 /* ==========================================================================
-     Controles de formulario
-     ========================================================================== */
+       Controles de formulario COMPACTOS
+       ========================================================================== */
 
-.setting-select,
-.setting-number-input,
-.setting-textarea {
+.setting-select-compact,
+.setting-number-input-compact,
+.setting-textarea-horizontal {
   width: 100%;
-  padding: var(--plugin-spacing-md);
-  border: 1px solid var(--border-color, #d1d5db);
+  padding: var(--plugin-spacing-sm) var(--plugin-spacing-md);
+  border: 2px solid var(--border-color, #d1d5db);
   border-radius: var(--plugin-radius-md);
   background: var(--input-bg, #ffffff);
   color: var(--text-color, #1f2937);
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
+  font-weight: 500;
   transition: var(--plugin-transition-fast);
 }
 
-.setting-select:focus,
-.setting-number-input:focus,
-.setting-textarea:focus {
+.setting-select-compact:focus,
+.setting-number-input-compact:focus,
+.setting-textarea-horizontal:focus {
   outline: none;
   border-color: var(--primary-color, #4f46e5);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  transform: translateY(-1px);
 }
 
-.setting-textarea {
+.setting-textarea-horizontal {
   resize: vertical;
   min-height: 120px;
   font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
@@ -389,8 +444,8 @@
   line-height: 1.5;
 }
 
-.setting-color-input {
-  width: 50px;
+.setting-color-input-compact {
+  width: 40px;
   height: 40px;
   padding: 0;
   border: 2px solid var(--border-color, #d1d5db);
@@ -400,147 +455,261 @@
   transition: var(--plugin-transition-fast);
 }
 
-.setting-color-input:hover {
+.setting-color-input-compact:hover {
   border-color: var(--primary-color, #4f46e5);
   transform: scale(1.05);
+  box-shadow: var(--plugin-shadow-md);
 }
 
-.setting-color-input:focus {
+.setting-color-input-compact:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
-/* ==========================================================================
-     Inputs de color específicos
-     ========================================================================== */
+.setting-number-input-compact {
+  max-width: 80px;
+}
 
-.color-input-group {
+.setting-indent {
+  margin-left: var(--plugin-spacing-md);
+  margin-top: var(--plugin-spacing-sm);
+}
+
+/* ==========================================================================
+       Inputs de color específicos MEJORADOS
+       ========================================================================== */
+
+.color-input-group-horizontal {
   display: flex;
   align-items: center;
   gap: var(--plugin-spacing-md);
   flex-wrap: wrap;
 }
 
-.color-preview-badge {
+.color-preview-badge-compact {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 32px;
   height: 24px;
   padding: 4px 8px;
-  background: var(--primary-color, #4f46e5);
   color: white;
   border-radius: 12px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.color-code {
+.color-code-compact {
   font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
     monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-color-secondary, #6b7280);
   background: var(--bg-color-secondary, #f3f4f6);
   padding: 4px 8px;
   border-radius: var(--plugin-radius-sm);
   border: 1px solid var(--border-color, #e5e7eb);
+  font-weight: 600;
 }
 
 /* ==========================================================================
-     Configuración de rangos
-     ========================================================================== */
+       Configuración de rangos COMPLETAMENTE REDISEÑADA
+       ========================================================================== */
 
-.range-config {
-  padding: var(--plugin-spacing-md);
+.color-ranges-section {
+  margin-top: var(--plugin-spacing-lg);
+}
+
+.range-config-horizontal {
+  padding: var(--plugin-spacing-lg);
   background: var(--bg-color-secondary, #f9fafb);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-md);
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-lg);
   margin-bottom: var(--plugin-spacing-md);
   transition: var(--plugin-transition-fast);
 }
 
-.range-config:hover {
-  background: var(--hover-color, rgba(0, 0, 0, 0.02));
+.range-config-horizontal:hover {
+  background: var(--hover-color, rgba(79, 70, 229, 0.02));
   border-color: rgba(79, 70, 229, 0.2);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
 }
 
-.range-config h5 {
+.range-config-horizontal h5 {
   margin: 0 0 var(--plugin-spacing-md) 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-color, #1f2937);
 }
 
-.range-controls {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--plugin-spacing-md);
+.range-controls-horizontal {
+  display: flex;
+  justify-content: space-between;
   align-items: end;
+  gap: var(--plugin-spacing-lg);
 }
 
-.range-input label {
-  display: block;
-  margin-bottom: var(--plugin-spacing-xs);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-color-secondary, #6b7280);
-}
-
-.border-controls {
-  display: grid;
-  grid-template-columns: 1fr auto;
+.range-inputs-horizontal {
+  display: flex;
   gap: var(--plugin-spacing-md);
-  align-items: end;
+  flex: 1;
 }
 
-.border-input {
+.range-input-horizontal {
   display: flex;
   flex-direction: column;
+  flex: 1;
+}
+
+.range-input-horizontal label {
+  margin-bottom: var(--plugin-spacing-xs);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-color-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* COLOR A LA DERECHA (NUEVO) */
+.range-color-horizontal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--plugin-spacing-xs);
+  padding: var(--plugin-spacing-sm);
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-md);
+}
+
+.range-color-horizontal label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-color-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  margin: 0;
 }
 
 /* ==========================================================================
-     Footer del panel
-     ========================================================================== */
+       Controles específicos de efectos (NUEVO)
+       ========================================================================== */
 
-.settings-footer {
+.glow-controls-horizontal {
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+  margin-top: var(--plugin-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.border-controls-horizontal {
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+  margin-top: var(--plugin-spacing-sm);
+}
+
+/* ==========================================================================
+       Footer del panel HORIZONTAL
+       ========================================================================== */
+
+.settings-footer-horizontal {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: var(--plugin-spacing-xl);
   padding-top: var(--plugin-spacing-lg);
-  border-top: 1px solid var(--border-color, #e5e7eb);
+  border-top: 2px solid var(--border-color, #e5e7eb);
 }
 
-.reset-button {
-  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
-  background: var(--danger-color, #ef4444);
+.reset-button-horizontal {
+  padding: var(--plugin-spacing-md) var(--plugin-spacing-xl);
+  background: linear-gradient(135deg, var(--danger-color, #ef4444), #dc2626);
   color: white;
   border: none;
-  border-radius: var(--plugin-radius-md);
+  border-radius: var(--plugin-radius-lg);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: var(--plugin-transition-fast);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
-.reset-button:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
-  box-shadow: var(--plugin-shadow-md);
+.reset-button-horizontal:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: var(--plugin-shadow-lg);
 }
 
-.reset-button:active {
+.reset-button-horizontal:active {
   transform: translateY(0);
 }
 
-.settings-footer small {
+.settings-footer-horizontal small {
   color: var(--text-color-secondary, #6b7280);
   font-size: 12px;
+  font-weight: 500;
 }
 
 /* ==========================================================================
-     Responsive Design
-     ========================================================================== */
+       NOTIFICACIÓN FLOTANTE DE GUARDADO (NUEVO)
+       ========================================================================== */
+
+.floating-save-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
+  background: linear-gradient(135deg, var(--success-color, #10b981), #059669);
+  color: white;
+  border-radius: var(--plugin-radius-xl);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: var(--plugin-shadow-lg);
+  animation: plugin-slide-up 0.3s ease-out, plugin-pulse 2s infinite;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.floating-save-notification span:first-child {
+  font-size: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+       Responsive Design MEJORADO
+       ========================================================================== */
+
+@media (max-width: 1024px) {
+  .settings-main-container {
+    grid-template-columns: 1fr;
+    gap: var(--plugin-spacing-lg);
+  }
+
+  .settings-right-column {
+    position: static;
+    order: -1;
+  }
+
+  .settings-grid-horizontal {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
 
 @media (max-width: 768px) {
   .event-counter-settings-panel {
@@ -549,39 +718,57 @@
   }
 
   .settings-title {
-    font-size: 20px;
+    font-size: 24px;
   }
 
-  .presets-grid {
-    grid-template-columns: 1fr;
+  .presets-grid-horizontal {
+    flex-direction: column;
   }
 
-  .settings-tabs {
+  .preset-button-compact {
+    min-width: auto;
+  }
+
+  .settings-tabs-horizontal {
     flex-wrap: wrap;
   }
 
-  .tab-button {
+  .tab-button-horizontal {
     flex: none;
-    min-width: 140px;
+    min-width: 120px;
   }
 
-  .range-controls {
+  .settings-grid-horizontal {
     grid-template-columns: 1fr;
   }
 
-  .color-input-group {
+  .range-controls-horizontal {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: var(--plugin-spacing-md);
   }
 
-  .border-controls {
-    grid-template-columns: 1fr;
+  .range-inputs-horizontal {
+    flex-direction: column;
   }
 
-  .settings-footer {
+  .glow-controls-horizontal,
+  .border-controls-horizontal {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-footer-horizontal {
     flex-direction: column;
     gap: var(--plugin-spacing-md);
     text-align: center;
+  }
+
+  .floating-save-notification {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    justify-content: center;
   }
 }
 
@@ -594,50 +781,59 @@
   .preview-slider {
     width: 100%;
   }
+
+  .color-input-group-horizontal {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 /* ==========================================================================
-     Accesibilidad
-     ========================================================================== */
+       Accesibilidad MEJORADA
+       ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .settings-panel *,
-  .tab-panel,
-  .preset-button,
-  .setting-group {
+  .tab-panel-horizontal,
+  .preset-button-compact,
+  .setting-group-compact,
+  .setting-group-horizontal,
+  .floating-save-notification {
     animation: none !important;
     transition: none !important;
   }
 
-  .preset-button:hover,
-  .reset-button:hover {
+  .preset-button-compact:hover,
+  .reset-button-horizontal:hover,
+  .tab-button-horizontal:hover {
     transform: none !important;
   }
 }
 
 @media (prefers-contrast: high) {
   .event-counter-settings-panel {
+    border-width: 3px;
+  }
+
+  .setting-group-compact,
+  .setting-group-horizontal {
     border-width: 2px;
   }
 
-  .setting-group {
-    border-width: 2px;
-  }
-
-  .tab-button.active {
+  .tab-button-horizontal.active {
     border: 2px solid white;
   }
 
-  .setting-select:focus,
-  .setting-number-input:focus,
-  .setting-textarea:focus {
+  .setting-select-compact:focus,
+  .setting-number-input-compact:focus,
+  .setting-textarea-horizontal:focus {
     border-width: 3px;
   }
 }
 
 /* ==========================================================================
-     Modo oscuro
-     ========================================================================== */
+       Modo oscuro MEJORADO
+       ========================================================================== */
 
 @media (prefers-color-scheme: dark) {
   .badge-preview-area {
@@ -645,24 +841,29 @@
     border-color: #6b7280;
   }
 
-  .color-code {
+  .color-code-compact {
     background: #374151;
     border-color: #4b5563;
   }
 
-  .settings-tabs {
+  .settings-tabs-horizontal {
     background: #374151;
   }
 
-  .range-config {
+  .range-config-horizontal {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  .range-color-horizontal {
     background: #374151;
     border-color: #4b5563;
   }
 }
 
 /* ==========================================================================
-     Utilidades y animaciones adicionales
-     ========================================================================== */
+       Utilidades y animaciones adicionales MEJORADAS
+       ========================================================================== */
 
 .setting-highlight {
   animation: plugin-pulse 1s ease-in-out;

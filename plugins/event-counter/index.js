@@ -46,12 +46,21 @@ export default {
     fontWeight: "semibold", // 'normal', 'medium', 'semibold', 'bold'
     textColor: "auto", // 'auto', 'white', 'black', 'gray-light', 'gray-dark'
 
-    // === EFECTOS VISUALES ===
-    showShadow: true,
-    shadowIntensity: "medium", // 'light', 'medium', 'strong'
+    // === FONDO Y BORDES ===
+    transparentBackground: false, // Nueva opción
     showBorder: false,
     borderColor: "#ffffff",
     borderWidth: 1,
+
+    // === EFECTOS VISUALES ===
+    showShadow: true,
+    shadowIntensity: "medium", // 'light', 'medium', 'strong'
+
+    // === EFECTO DE RESPLANDOR (NUEVO) ===
+    showGlow: false,
+    glowColor: "background", // 'background', 'border', 'custom'
+    glowCustomColor: "#4f46e5",
+    glowIntensity: "medium", // 'light', 'medium', 'strong'
 
     // === ANIMACIONES ===
     enableAnimations: true,
@@ -252,8 +261,16 @@ export default {
       classes.push(`badge-shadow-${this._settings.shadowIntensity}`);
     }
 
+    if (this._settings.showGlow) {
+      classes.push(`badge-glow-${this._settings.glowIntensity}`);
+    }
+
     if (this._settings.showBorder) {
       classes.push("badge-with-border");
+    }
+
+    if (this._settings.transparentBackground) {
+      classes.push("badge-transparent-bg");
     }
 
     if (this._settings.enableAnimations) {
@@ -271,44 +288,38 @@ export default {
   // Generar estilos inline dinámicos
   _getBadgeStyles: function (count) {
     const styles = {};
-    const backgroundColor = this._getColorForEventCount(count);
+    const backgroundColor = this._settings.transparentBackground
+      ? "transparent"
+      : this._getColorForEventCount(count);
 
-    if (backgroundColor) {
+    // Color de fondo
+    if (backgroundColor && backgroundColor !== "transparent") {
       styles.backgroundColor = backgroundColor;
+    }
 
-      // Color de texto
-      if (this._settings.textColor === "auto") {
-        styles.color = this._getTextColor(backgroundColor);
+    // Color de texto
+    if (this._settings.textColor === "auto") {
+      if (this._settings.transparentBackground) {
+        styles.color = "var(--text-color, #1f2937)";
       } else {
-        const textColors = {
-          white: "#ffffff",
-          black: "#000000",
-          "gray-light": "#9ca3af",
-          "gray-dark": "#374151",
-        };
-        styles.color = textColors[this._settings.textColor] || "#ffffff";
+        styles.color = this._getTextColor(backgroundColor);
       }
-
-      // Sombra personalizada
-      if (this._settings.showShadow) {
-        const shadowIntensities = {
-          light: "0 1px 2px",
-          medium: "0 2px 4px",
-          strong: "0 4px 8px",
-        };
-        const shadowBase =
-          shadowIntensities[this._settings.shadowIntensity] ||
-          shadowIntensities.medium;
-        styles.boxShadow = `${shadowBase} ${backgroundColor}20, ${shadowBase.replace(
-          "0 ",
-          "0 1px "
-        )} ${backgroundColor}40`;
-      }
+    } else {
+      const textColors = {
+        white: "#ffffff",
+        black: "#000000",
+        "gray-light": "#9ca3af",
+        "gray-dark": "#374151",
+      };
+      styles.color = textColors[this._settings.textColor] || "#ffffff";
     }
 
     // Borde personalizado
     if (this._settings.showBorder) {
-      styles.border = `${this._settings.borderWidth}px solid ${this._settings.borderColor}`;
+      const borderColor = this._settings.transparentBackground
+        ? this._getColorForEventCount(count) || this._settings.borderColor
+        : this._settings.borderColor;
+      styles.border = `${this._settings.borderWidth}px solid ${borderColor}`;
     }
 
     // Tamaño de fuente personalizado
@@ -322,7 +333,36 @@ export default {
       styles.fontSize = fontSizes[this._settings.fontSize];
     }
 
+    // Efecto de resplandor
+    if (this._settings.showGlow) {
+      const glowColor = this._getGlowColor(count);
+      const glowIntensities = {
+        light: "0 0 8px",
+        medium: "0 0 12px",
+        strong: "0 0 20px",
+      };
+      const intensity =
+        glowIntensities[this._settings.glowIntensity] || glowIntensities.medium;
+
+      if (styles.boxShadow) {
+        styles.boxShadow += `, ${intensity} ${glowColor}`;
+      } else {
+        styles.boxShadow = `${intensity} ${glowColor}`;
+      }
+    }
+
     return styles;
+  },
+
+  // Obtener color del resplandor
+  _getGlowColor: function (count) {
+    if (this._settings.glowColor === "background") {
+      return this._getColorForEventCount(count) || this._settings.singleColor;
+    } else if (this._settings.glowColor === "border") {
+      return this._settings.borderColor;
+    } else {
+      return this._settings.glowCustomColor;
+    }
   },
 
   // Determinar si mostrar badge
@@ -339,6 +379,10 @@ export default {
 
   // Calcular color de texto automático
   _getTextColor: function (backgroundColor) {
+    if (!backgroundColor || backgroundColor === "transparent") {
+      return "var(--text-color, #1f2937)";
+    }
+
     const hex = backgroundColor.replace("#", "");
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
@@ -347,44 +391,80 @@ export default {
     return luminance > 0.5 ? "#000000" : "#ffffff";
   },
 
-  // Presets predefinidos
+  // Presets predefinidos CORREGIDOS
   _getPreset: function (presetName) {
     const presets = {
       minimal: {
         badgeStyle: "minimal",
         badgeSize: "small",
         showShadow: false,
+        showGlow: false,
         showBorder: false,
+        transparentBackground: false,
         fontWeight: "normal",
         enableAnimations: false,
+        hoverEffect: false,
       },
       modern: {
         badgeStyle: "modern",
         badgeSize: "medium",
         showShadow: true,
         shadowIntensity: "medium",
+        showGlow: true,
+        glowColor: "background",
+        glowIntensity: "light",
+        transparentBackground: false,
+        showBorder: false,
         fontWeight: "semibold",
         enableAnimations: true,
         animationType: "scale",
+        hoverEffect: true,
       },
       classic: {
         badgeStyle: "circular",
         badgeSize: "medium",
         showShadow: true,
         shadowIntensity: "light",
+        showGlow: false,
+        showBorder: true,
+        borderWidth: 2,
+        transparentBackground: false,
         fontWeight: "bold",
         enableAnimations: true,
         animationType: "fade",
+        hoverEffect: true,
       },
       bold: {
         badgeStyle: "square",
         badgeSize: "large",
         showShadow: true,
         shadowIntensity: "strong",
+        showGlow: true,
+        glowColor: "custom",
+        glowCustomColor: "#ff6b6b",
+        glowIntensity: "strong",
         showBorder: true,
+        borderWidth: 2,
+        transparentBackground: false,
         fontWeight: "bold",
         enableAnimations: true,
         animationType: "bounce",
+        hoverEffect: true,
+      },
+      transparent: {
+        badgeStyle: "rounded",
+        badgeSize: "medium",
+        transparentBackground: true,
+        showBorder: true,
+        borderWidth: 2,
+        showShadow: false,
+        showGlow: true,
+        glowColor: "border",
+        glowIntensity: "medium",
+        fontWeight: "semibold",
+        enableAnimations: true,
+        animationType: "fade",
+        hoverEffect: true,
       },
     };
     return presets[presetName];
@@ -395,22 +475,27 @@ export default {
       {
         id: "minimal",
         name: "Minimalista",
-        description: "Diseño simple y limpio",
+        description: "Diseño simple y limpio sin efectos",
       },
       {
         id: "modern",
         name: "Moderno",
-        description: "Estilo contemporáneo con efectos suaves",
+        description: "Estilo contemporáneo con resplandor suave",
       },
       {
         id: "classic",
         name: "Clásico",
-        description: "Diseño tradicional y elegante",
+        description: "Diseño tradicional con borde elegante",
       },
       {
         id: "bold",
         name: "Llamativo",
-        description: "Diseño audaz que destaca",
+        description: "Diseño audaz con efectos intensos",
+      },
+      {
+        id: "transparent",
+        name: "Transparente",
+        description: "Fondo transparente con borde y resplandor",
       },
     ];
   },

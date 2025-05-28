@@ -1,10 +1,10 @@
 /* ==========================================================================
-   EventCounterBadge - Estilos del Contador de Eventos Pro
+   EventCounterBadge - Estilos del Contador de Eventos Pro CORREGIDOS
    Plugin: contador-eventos-dia v2.0.0
    ========================================================================== */
 
 /* ==========================================================================
-   Estilos base del badge
+   Estilos base del badge MEJORADOS
    ========================================================================== */
 
 .event-counter-badge {
@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
 
-  /* Tipografía base */
+  /* Tipografía base MEJORADA */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     sans-serif;
   font-weight: 600;
@@ -38,15 +38,25 @@
   -moz-user-select: none;
   -ms-user-select: none;
 
-  /* Antialiasing */
+  /* Antialiasing MEJORADO */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
 /* ==========================================================================
-     Posiciones del badge
-     ========================================================================== */
+       FONDO TRANSPARENTE (NUEVO)
+       ========================================================================== */
+
+.badge-transparent-bg {
+  background: transparent !important;
+  backdrop-filter: blur(8px) saturate(1.2);
+  -webkit-backdrop-filter: blur(8px) saturate(1.2);
+}
+
+/* ==========================================================================
+       Posiciones del badge
+       ========================================================================== */
 
 .badge-position-top_left {
   top: 4px;
@@ -75,8 +85,8 @@
 }
 
 /* ==========================================================================
-     Tamaños del badge
-     ========================================================================== */
+       Tamaños del badge
+       ========================================================================== */
 
 .badge-size-small {
   padding: 2px 6px;
@@ -111,8 +121,8 @@
 }
 
 /* ==========================================================================
-     Estilos de badge
-     ========================================================================== */
+       Estilos de badge
+       ========================================================================== */
 
 /* Estilo redondeado (por defecto) */
 .badge-style-rounded {
@@ -176,7 +186,7 @@
   height: 28px;
 }
 
-/* Estilo minimalista */
+/* Estilo minimalista MEJORADO */
 .badge-style-minimal {
   background: rgba(79, 70, 229, 0.1);
   color: var(--plugin-primary);
@@ -186,7 +196,12 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* Estilo moderno */
+.badge-style-minimal.badge-transparent-bg {
+  background: rgba(79, 70, 229, 0.05) !important;
+  border: 2px solid var(--plugin-primary);
+}
+
+/* Estilo moderno MEJORADO */
 .badge-style-modern {
   background: linear-gradient(
     135deg,
@@ -219,9 +234,23 @@
   left: 100%;
 }
 
+.badge-style-modern.badge-transparent-bg {
+  background: transparent !important;
+  border: 2px solid var(--plugin-primary);
+}
+
+.badge-style-modern.badge-transparent-bg::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(79, 70, 229, 0.1),
+    transparent
+  );
+}
+
 /* ==========================================================================
-     Familias de fuente
-     ========================================================================== */
+       Familias de fuente CORREGIDAS Y EXPANDIDAS
+       ========================================================================== */
 
 .badge-font-system {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
@@ -230,6 +259,7 @@
 
 .badge-font-inter {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: "liga", "kern";
 }
 
 .badge-font-roboto {
@@ -238,17 +268,19 @@
 
 .badge-font-poppins {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: "liga", "kern";
 }
 
 .badge-font-monospace {
   font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
     monospace;
   letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
-     Pesos de fuente
-     ========================================================================== */
+       Pesos de fuente CORREGIDOS
+       ========================================================================== */
 
 .badge-weight-normal {
   font-weight: 400;
@@ -266,34 +298,96 @@
   font-weight: 700;
 }
 
+/* Asegurar que las fuentes se apliquen correctamente */
+.event-counter-badge.badge-font-inter.badge-weight-bold {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.event-counter-badge.badge-font-roboto.badge-weight-bold {
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.event-counter-badge.badge-font-poppins.badge-weight-bold {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.event-counter-badge.badge-font-monospace.badge-weight-bold {
+  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+    monospace !important;
+  font-weight: 700 !important;
+}
+
 /* ==========================================================================
-     Sombras
-     ========================================================================== */
+       Sombras MEJORADAS (SIEMPRE OSCURAS)
+       ========================================================================== */
 
 .badge-shadow-light {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .badge-shadow-medium {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .badge-shadow-strong {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15), 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
 }
 
 /* ==========================================================================
-     Bordes
-     ========================================================================== */
+       EFECTOS DE RESPLANDOR (NUEVO)
+       ========================================================================== */
+
+.badge-glow-light {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.badge-glow-medium {
+  filter: drop-shadow(0 0 12px currentColor);
+}
+
+.badge-glow-strong {
+  filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
+}
+
+/* Resplandor combinado con sombra */
+.event-counter-badge.badge-shadow-light.badge-glow-light {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.event-counter-badge.badge-shadow-medium.badge-glow-medium {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+  filter: drop-shadow(0 0 12px currentColor);
+}
+
+.event-counter-badge.badge-shadow-strong.badge-glow-strong {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
+  filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
+}
+
+/* ==========================================================================
+       Bordes MEJORADOS
+       ========================================================================== */
 
 .badge-with-border {
   border-style: solid;
   /* El grosor y color se aplican via style inline */
 }
 
+/* Bordes para fondo transparente */
+.badge-transparent-bg.badge-with-border {
+  border-width: 2px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px) saturate(1.5);
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+}
+
 /* ==========================================================================
-     Animaciones
-     ========================================================================== */
+       Animaciones
+       ========================================================================== */
 
 .badge-animated.badge-animation-fade {
   animation: plugin-fade-in 0.3s ease-out;
@@ -312,8 +406,8 @@
 }
 
 /* ==========================================================================
-     Efectos hover
-     ========================================================================== */
+       Efectos hover MEJORADOS
+       ========================================================================== */
 
 .badge-hover-enabled:hover {
   transform: translateY(-1px);
@@ -337,9 +431,31 @@
   box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
 }
 
+/* Hover para badges transparentes */
+.badge-hover-enabled.badge-transparent-bg:hover {
+  background: rgba(79, 70, 229, 0.1) !important;
+  transform: translateY(-1px) scale(1.05);
+}
+
+/* Hover combinado con resplandor */
+.badge-hover-enabled.badge-glow-light:hover {
+  filter: drop-shadow(0 0 12px currentColor);
+  transform: translateY(-2px);
+}
+
+.badge-hover-enabled.badge-glow-medium:hover {
+  filter: drop-shadow(0 0 16px currentColor);
+  transform: translateY(-2px);
+}
+
+.badge-hover-enabled.badge-glow-strong:hover {
+  filter: drop-shadow(0 0 24px currentColor) drop-shadow(0 0 48px currentColor);
+  transform: translateY(-2px);
+}
+
 /* ==========================================================================
-     Estados especiales
-     ========================================================================== */
+       Estados especiales MEJORADOS
+       ========================================================================== */
 
 /* Focus para accesibilidad */
 .event-counter-badge:focus-visible {
@@ -357,8 +473,8 @@
 }
 
 /* ==========================================================================
-     Componentes específicos por estilo
-     ========================================================================== */
+       Componentes específicos por estilo MEJORADOS
+       ========================================================================== */
 
 /* Contenedores para estilos complejos */
 .badge-modern-container {
@@ -388,6 +504,13 @@
   gap: 1px;
 }
 
+.badge-square-container .badge-square-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
 .badge-square-container .badge-number {
   font-weight: 700;
   line-height: 1;
@@ -400,8 +523,8 @@
 }
 
 /* ==========================================================================
-     Adaptaciones responsive
-     ========================================================================== */
+       Adaptaciones responsive
+       ========================================================================== */
 
 @media (max-width: 768px) {
   .event-counter-badge {
@@ -450,8 +573,8 @@
 }
 
 /* ==========================================================================
-     Mejoras para diferentes resoluciones
-     ========================================================================== */
+       Mejoras para diferentes resoluciones
+       ========================================================================== */
 
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
   .event-counter-badge {
@@ -461,8 +584,8 @@
 }
 
 /* ==========================================================================
-     Soporte para accesibilidad
-     ========================================================================== */
+       Soporte para accesibilidad MEJORADO
+       ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .badge-animated {
@@ -471,6 +594,7 @@
 
   .badge-hover-enabled:hover {
     transform: none !important;
+    filter: none !important;
   }
 
   .badge-style-modern::before {
@@ -489,11 +613,16 @@
     color: white !important;
     border-color: var(--plugin-primary) !important;
   }
+
+  .badge-transparent-bg {
+    background: var(--plugin-primary) !important;
+    color: white !important;
+  }
 }
 
 /* ==========================================================================
-     Variaciones de color automáticas
-     ========================================================================== */
+       Variaciones de color automáticas MEJORADAS
+       ========================================================================== */
 
 /* Para colores claros, usar texto oscuro con sombra */
 .event-counter-badge[style*="color: rgb(0, 0, 0)"],
@@ -508,14 +637,48 @@
 }
 
 /* Mejoras para fondos con transparencia */
-.event-counter-badge[style*="rgba"] {
+.event-counter-badge[style*="rgba"],
+.badge-transparent-bg {
   backdrop-filter: blur(12px) saturate(1.5);
   -webkit-backdrop-filter: blur(12px) saturate(1.5);
 }
 
 /* ==========================================================================
-     Utilidades de depuración
-     ========================================================================== */
+       ESTILOS ESPECÍFICOS PARA TIPOGRAFÍAS (NUEVO)
+       ========================================================================== */
+
+/* Poppins - Mejorar legibilidad */
+.badge-font-poppins {
+  letter-spacing: 0.015em;
+}
+
+.badge-font-poppins.badge-weight-bold {
+  letter-spacing: 0.01em;
+}
+
+/* Inter - Optimizar para pantallas */
+.badge-font-inter {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Roboto - Ajustar espaciado */
+.badge-font-roboto {
+  letter-spacing: 0.02em;
+}
+
+.badge-font-roboto.badge-weight-bold {
+  letter-spacing: 0.015em;
+}
+
+/* Monospace - Números tabulares */
+.badge-font-monospace {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+
+/* ==========================================================================
+       Utilidades de depuración MEJORADAS
+       ========================================================================== */
 
 .debug .event-counter-badge {
   border: 2px dashed #ef4444 !important;
@@ -527,12 +690,50 @@
 .debug .event-counter-badge::after {
   content: " [DEBUG]";
   position: absolute;
-  top: -18px;
+  top: -20px;
   left: 0;
   font-size: 8px;
   color: #ef4444;
   background: white;
-  padding: 1px 3px;
+  padding: 2px 4px;
   border: 1px solid #ef4444;
   border-radius: 2px;
+  font-family: monospace;
+  font-weight: bold;
+  z-index: 1000;
+}
+
+/* ==========================================================================
+       MEJORAS ESPECÍFICAS PARA RESPLANDOR Y TRANSPARENCIA
+       ========================================================================== */
+
+/* Resplandor personalizado para diferentes colores */
+.event-counter-badge[data-glow-color] {
+  filter: drop-shadow(0 0 var(--glow-size, 12px) var(--glow-color));
+}
+
+/* Animación sutil para resplandor */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 var(--glow-size, 12px) var(--glow-color));
+  }
+  50% {
+    filter: drop-shadow(
+      0 0 calc(var(--glow-size, 12px) * 1.5) var(--glow-color)
+    );
+  }
+}
+
+.badge-glow-animated {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Combinaciones específicas para mejor rendimiento */
+.badge-transparent-bg.badge-with-border.badge-glow-medium {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(16px) saturate(1.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  border-width: 2px !important;
+  filter: drop-shadow(0 0 12px currentColor);
 }
