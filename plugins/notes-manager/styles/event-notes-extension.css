@@ -24,7 +24,6 @@
   }
 
   &:hover {
-    /* Del CSS original */
     border-color: var(--primary-color);
     box-shadow: var(--shadow-sm);
   }
@@ -104,16 +103,14 @@
       border-radius: var(--border-radius-sm);
       cursor: pointer;
       transition: all var(--transition-fast);
-      animation: slideIn 0.3s ease-out; /* slideIn definido en global.css */
+      animation: notesManagerSlideIn 0.3s ease-out; /* Actualizado */
 
       &:hover {
-        /* Del CSS original */
         border-color: var(--primary-color);
         transform: translateX(4px);
         box-shadow: var(--shadow-sm);
       }
       &:focus {
-        /* Del CSS original */
         outline: 2px solid var(--primary-color);
         outline-offset: 2px;
       }
@@ -163,13 +160,11 @@
   }
 
   @media (max-width: 768px) {
-    /* Del CSS original */
     margin-top: var(--spacing-sm);
     padding: var(--spacing-sm);
   }
 
   @media (prefers-contrast: high) {
-    /* Del CSS original */
     border-width: 2px;
   }
 }

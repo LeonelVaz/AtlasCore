@@ -8,8 +8,9 @@
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-lg);
-  animation: slideDownImproved var(--notes-animation-duration) ease-out;
-  margin-bottom: var(--spacing-xl); /* Del CSS original */
+  animation: notesManagerSlideDownImproved
+    var(--notes-manager-animation-duration) ease-out; /* Actualizado */
+  margin-bottom: var(--spacing-xl);
 
   .create-note-form-header {
     display: flex;
@@ -41,7 +42,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
-    animation: slideDown 0.3s ease-out; /* slideDown definido en global.css */
+    animation: notesManagerSlideDown 0.3s ease-out; /* Actualizado */
 
     .event-info-icon {
       font-size: 16px;
@@ -68,7 +69,6 @@
       &:focus {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
-        /* transform: translateY(-1px); Opcional, puede causar jitter */
       }
     }
 
@@ -84,15 +84,18 @@
       min-height: 120px;
     }
 
-    /* Estilos específicos para RichTextEditor en formulario de creación */
     .note-rich-editor {
       .rich-text-editor {
-        border: var(--notes-rich-editor-border);
+        border: var(
+          --notes-manager-rich-editor-border
+        ); /* Usando variable prefijada */
         border-radius: var(--border-radius-md);
         background-color: var(--input-bg);
 
         &:focus-within {
-          border: var(--notes-rich-editor-focus);
+          border: var(
+            --notes-manager-rich-editor-focus
+          ); /* Usando variable prefijada */
           box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
         }
       }
@@ -100,9 +103,9 @@
         background-color: var(--bg-color-secondary);
         border-bottom: 1px solid var(--border-color);
         padding: var(--spacing-xs);
-        display: flex; /* Asegura que los botones se alineen */
-        flex-wrap: wrap; /* Para toolbar responsiva */
-        gap: 2px; /* Espacio entre botones de toolbar */
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
 
         button {
           color: var(--text-color);
@@ -116,7 +119,6 @@
             background-color: var(--hover-color);
           }
           @media (max-width: 480px) {
-            /* Del CSS original */
             min-width: 32px;
             min-height: 32px;
           }
@@ -129,7 +131,7 @@
         min-height: 120px;
         border: none;
         outline: none;
-        line-height: 1.6; /* Mejorar legibilidad */
+        line-height: 1.6;
       }
     }
   }
@@ -211,12 +213,10 @@
   }
 
   @media (max-width: 768px) {
-    /* Del CSS original */
     padding: var(--spacing-md);
   }
 
   @media (max-width: 480px) {
-    /* Del CSS original */
     border-radius: var(--border-radius-sm);
   }
 }

@@ -11,7 +11,9 @@
   transition: all var(--transition-normal);
   cursor: pointer;
   position: relative;
-  max-height: var(--notes-card-max-height);
+  max-height: var(
+    --notes-manager-card-max-height
+  ); /* Usando variable prefijada */
   overflow: hidden;
   min-height: 200px;
   display: flex;
@@ -20,7 +22,9 @@
   &.hovered,
   &:hover {
     box-shadow: var(--shadow-lg);
-    transform: var(--notes-card-hover-transform);
+    transform: var(
+      --notes-manager-card-hover-transform
+    ); /* Usando variable prefijada */
     border-color: var(--primary-color);
 
     .note-actions {
@@ -76,7 +80,7 @@
       display: flex;
       align-items: center;
       gap: var(--spacing-xs);
-      animation: slideDown 0.3s ease-out; /* slideDown definido en global.css */
+      animation: notesManagerSlideDown 0.3s ease-out; /* Actualizado */
 
       .current-link-icon {
         font-size: 14px;
@@ -87,7 +91,7 @@
       display: flex;
       gap: var(--spacing-sm);
       justify-content: space-between;
-      align-items: center; /* Para alinear verticalmente el botón de link y el grupo save/cancel */
+      align-items: center;
       margin-top: var(--spacing-md);
       padding-top: var(--spacing-sm);
       border-top: 1px solid var(--border-color);
@@ -125,10 +129,7 @@
         background-color: var(--info-color);
         color: white;
         &:hover {
-          background-color: var(
-            --info-hover,
-            #1976d2
-          ); /* Fallback del CSS original */
+          background-color: var(--info-hover, #1976d2);
         }
       }
       .note-card-edit-save-cancel-group {
@@ -148,7 +149,7 @@
           background-color: var(--primary-color);
           color: white;
           &:disabled {
-            opacity: 0.5; /* 0.6 en create-note-form, unificar o mantener */
+            opacity: 0.5;
             cursor: not-allowed;
           }
           &:not(:disabled):hover {
@@ -164,18 +165,19 @@
       text-align: center;
     }
 
-    /* Estilos RichTextEditor específicos para edición en tarjeta */
     .note-rich-editor-edit {
-      /* Clase raíz de Atlas */
       margin-bottom: var(--spacing-md);
       .rich-text-editor {
-        /* Clase interna de Atlas */
-        border: var(--notes-rich-editor-border);
+        border: var(
+          --notes-manager-rich-editor-border
+        ); /* Usando variable prefijada */
         border-radius: var(--border-radius-md);
         background-color: var(--input-bg);
 
         &:focus-within {
-          border: var(--notes-rich-editor-focus);
+          border: var(
+            --notes-manager-rich-editor-focus
+          ); /* Usando variable prefijada */
           box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
         }
       }
@@ -183,9 +185,9 @@
         background-color: var(--bg-color-secondary);
         border-bottom: 1px solid var(--border-color);
         padding: var(--spacing-xs);
-        display: flex; /* Asegura que los botones se alineen */
-        flex-wrap: wrap; /* Para toolbar responsiva */
-        gap: 2px; /* Espacio entre botones de toolbar */
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px;
         button {
           color: var(--text-color);
           background: transparent;
@@ -214,7 +216,7 @@
   &.selected {
     border: 2px solid var(--primary-color);
     box-shadow: var(--shadow-lg);
-    animation: pulse 0.3s ease-in-out; /* pulse definido en global.css */
+    animation: notesManagerPulse 0.3s ease-in-out; /* Actualizado */
   }
 
   &:focus {
@@ -241,7 +243,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px; /* Para el icono */
+      font-size: 12px;
       transition: all var(--transition-fast);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
@@ -280,7 +282,7 @@
       font-size: 18px;
       font-weight: 600;
       color: var(--text-color);
-      padding-right: var(--spacing-xl); /* Espacio para botones flotantes */
+      padding-right: var(--spacing-xl);
       line-height: 1.4;
       flex: 1;
       word-wrap: break-word;
@@ -291,14 +293,13 @@
   .note-card-content-container {
     flex: 1;
     margin-bottom: var(--spacing-md);
-    overflow: hidden; /* Para que el contenido no desborde la tarjeta */
+    overflow: hidden;
 
     .note-content-viewer {
-      /* Del CSS original */
       font-size: 14px;
       line-height: 1.5;
-      max-height: 150px; /* Límite de altura para el preview */
-      overflow: hidden; /* Esconde el resto */
+      max-height: 150px;
+      overflow: hidden;
       color: var(--text-color-secondary);
       h1,
       h2,
@@ -372,7 +373,7 @@
     color: var(--text-color-secondary);
     border-top: 1px solid var(--border-color);
     padding-top: var(--spacing-xs);
-    margin-top: auto; /* Empuja al fondo */
+    margin-top: auto;
     flex-wrap: wrap;
     gap: var(--spacing-xs);
     position: relative;
@@ -391,7 +392,7 @@
       color: var(--primary-color);
       cursor: help;
       transition: all var(--transition-fast);
-      animation: fadeIn 0.3s ease-in; /* fadeIn definido en global.css */
+      animation: notesManagerFadeIn 0.3s ease-in; /* Actualizado */
 
       &:hover {
         transform: scale(1.1);
@@ -401,27 +402,21 @@
   }
 
   @media (max-width: 768px) {
-    /* Del CSS original */
     .note-actions {
-      position: static; /* Cambia de absoluto a estático */
-      opacity: 1; /* Siempre visible */
+      position: static;
+      opacity: 1;
       justify-content: flex-end;
       margin-bottom: var(--spacing-sm);
-      background-color: rgba(
-        var(--card-bg-rgb, 255, 255, 255),
-        0.9
-      ); /* Asume que var(--card-bg-rgb) está definido o usa fallback */
+      background-color: rgba(var(--card-bg-rgb, 255, 255, 255), 0.9);
       padding: var(--spacing-xs);
       border-radius: var(--border-radius-sm);
     }
     .note-card-title {
-      /* Del CSS original, selector ajustado */
       padding-right: 0;
       margin-bottom: var(--spacing-sm);
     }
   }
   @media (max-width: 480px) {
-    /* Del CSS original */
     border-radius: var(--border-radius-sm);
     .note-card-metadata {
       flex-direction: column;
@@ -429,12 +424,10 @@
       gap: var(--spacing-xs);
     }
     .note-card-event-indicator {
-      /* Del CSS original, selector ajustado */
       font-size: 16px;
     }
   }
   @media (prefers-contrast: high) {
-    /* Del CSS original */
     border: 2px solid var(--text-color);
   }
 }

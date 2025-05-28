@@ -1,8 +1,101 @@
 /* plugins\notes-manager\styles\index.css */
 
-@import "./global.css";
+/* Importaciones de los demás estilos del plugin */
 @import "./notes-page.css";
 @import "./note-card.css";
 @import "./create-note-form.css";
 @import "./event-notes-extension.css";
 @import "./event-selector.css";
+
+/* Variables específicas del plugin (antes en global.css) */
+:root {
+  --notes-manager-card-hover-transform: translateY(-2px);
+  --notes-manager-animation-duration: 0.3s;
+  --notes-manager-grid-min-width: 320px;
+  --notes-manager-card-max-height: 450px;
+  --notes-manager-rich-editor-border: 2px solid var(--border-color);
+  --notes-manager-rich-editor-focus: 2px solid var(--primary-color);
+}
+
+/* KEYFRAMES (Animaciones) - Prefijados para evitar colisiones */
+/* Estos keyframes son usados por varios componentes del plugin.
+   Si un keyframe es usado solo por UN componente, es mejor moverlo
+   a su archivo CSS específico. */
+
+@keyframes notesManagerSlideDownImproved {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes notesManagerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes notesManagerFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes notesManagerSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes notesManagerPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes notesManagerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Estilos para el item del menú contextual que este plugin añade */
+/* Asumiendo que el plugin añade un item con esta clase específica */
+.notes-manager-calendar-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.notes-manager-calendar-context-menu-item:hover {
+  background-color: var(--hover-color);
+}

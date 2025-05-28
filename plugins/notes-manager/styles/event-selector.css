@@ -14,7 +14,7 @@
   justify-content: center;
   z-index: 1000;
   padding: var(--spacing-lg);
-  animation: fadeIn 0.2s ease-out; /* fadeIn definido en global.css */
+  animation: notesManagerFadeIn 0.2s ease-out; /* Actualizado */
 
   .event-selector-content {
     background-color: var(--modal-bg, var(--card-bg));
@@ -113,21 +113,14 @@
             }
 
             &:hover:not(.selected) {
-              /* Del CSS original */
-              border-color: var(
-                --primary-color
-              ) !important; /* !important del CSS original, revisar necesidad */
-              background-color: var(
-                --hover-color
-              ) !important; /* !important del CSS original, revisar necesidad */
+              border-color: var(--primary-color) !important;
+              background-color: var(--hover-color) !important;
             }
             &:focus {
-              /* Del CSS original */
               outline: 2px solid var(--primary-color);
               outline-offset: 2px;
             }
             @media (prefers-contrast: high) {
-              /* Del CSS original */
               border-width: 2px;
             }
 
@@ -137,14 +130,12 @@
               gap: var(--spacing-sm);
 
               .event-color-indicator {
-                /* Del CSS original */
                 width: 4px;
                 align-self: stretch;
                 min-height: 40px;
                 border-radius: var(--border-radius-sm);
                 flex-shrink: 0;
                 @media (prefers-contrast: high) {
-                  /* Del CSS original */
                   outline: 1px solid var(--text-color);
                 }
               }
@@ -157,7 +148,6 @@
                   margin-bottom: 4px;
                 }
                 .event-selector-item-date {
-                  /* Del CSS original, antes event-date-time */
                   font-size: 12px;
                   color: var(--text-color-secondary);
                 }
@@ -204,7 +194,6 @@
   }
 
   .event-selector-loading {
-    /* Del CSS original */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -220,26 +209,23 @@
       border: 2px solid var(--border-color);
       border-top-color: var(--primary-color);
       border-radius: 50%;
-      animation: spin 1s linear infinite; /* spin definido en global.css */
+      animation: notesManagerSpin 1s linear infinite; /* Actualizado */
     }
   }
 
   @media (max-width: 768px) {
-    /* Del CSS original */
     .event-selector-content {
       max-height: 90vh;
       margin: var(--spacing-md);
     }
     .event-selector-item {
       .event-selector-item-title {
-        /* Del CSS original, selector ajustado */
         font-size: 13px;
       }
     }
   }
 
   @media (max-width: 480px) {
-    /* Del CSS original */
     padding: var(--spacing-sm);
     .event-selector-content {
       max-height: 95vh;
