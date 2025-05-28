@@ -201,53 +201,6 @@
     }
   }
 
-  /* Estilo moderno MEJORADO */
-  &.badge-style-modern {
-    background: linear-gradient(
-      135deg,
-      var(--plugin-primary),
-      rgba(79, 70, 229, 0.8)
-    );
-    border-radius: var(--plugin-radius-lg);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-      );
-      transition: left 0.5s;
-    }
-
-    &:hover::before {
-      left: 100%;
-    }
-
-    &.badge-transparent-bg {
-      background: transparent !important;
-      border: 2px solid var(--plugin-primary);
-
-      &::before {
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(79, 70, 229, 0.1),
-          transparent
-        );
-      }
-    }
-  }
-
   /* ==========================================================================
          Familias de fuente CORREGIDAS Y EXPANDIDAS
          ========================================================================== */
@@ -423,10 +376,6 @@
       transform: scale(0.95);
     }
 
-    &.badge-style-modern:hover {
-      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-    }
-
     /* Hover para badges transparentes */
     &.badge-transparent-bg:hover {
       background: rgba(79, 70, 229, 0.1) !important;
@@ -473,47 +422,18 @@
          Componentes específicos por estilo MEJORADOS
          ========================================================================== */
 
-  /* Contenedores para estilos complejos */
-  /* Asumiendo que .badge-modern-container, .badge-circular-container, .badge-square-container
-     son modificadores de .event-counter-badge (ej. <span class="event-counter-badge badge-modern-container">)
-     o son hijos directos. Del JSX, parece que son modificadores. */
-
-  &.badge-modern-container {
-    /* Si es modificador */
-    position: relative;
-
-    .badge-count {
-      /* Hijo de .event-counter-badge.badge-modern-container */
-      position: relative;
-      z-index: 2;
-    }
-
-    .badge-indicator {
-      /* Hijo */
-      position: absolute;
-      top: -2px;
-      right: -2px;
-      font-size: 0.6em;
-      opacity: 0.8;
-    }
-  }
-
   &.badge-circular-container {
-    /* Si es modificador */
     .badge-count-text {
-      /* Hijo */
       display: block;
       text-align: center;
     }
   }
 
   &.badge-square-container {
-    /* Si es modificador */
     flex-direction: column;
     gap: 1px;
 
     .badge-square-content {
-      /* Hijo */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -521,13 +441,11 @@
     }
 
     .badge-number {
-      /* Hijo */
       font-weight: 700;
       line-height: 1;
     }
 
     .badge-dots {
-      /* Hijo */
       font-size: 0.4em;
       opacity: 0.7;
       line-height: 1;
@@ -602,10 +520,6 @@
     &.badge-hover-enabled:hover {
       transform: none !important;
       filter: none !important;
-    }
-
-    &.badge-style-modern::before {
-      transition: none !important;
     }
   }
 

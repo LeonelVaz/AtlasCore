@@ -366,11 +366,6 @@ function SettingsPanel(props) {
                                     { key: "minimal", value: "minimal" },
                                     "Minimalista"
                                   ),
-                                  React.createElement(
-                                    "option",
-                                    { key: "modern", value: "modern" },
-                                    "Moderno"
-                                  ),
                                 ]
                               ),
                             ]

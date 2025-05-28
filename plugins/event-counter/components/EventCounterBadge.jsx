@@ -126,29 +126,6 @@ function EventCounterBadge(props) {
     );
   }
 
-  if (settings.badgeStyle === "modern") {
-    return React.createElement(
-      "div",
-      {
-        ...badgeProps,
-        className: `${badgeClasses} badge-modern-container`,
-      },
-      [
-        React.createElement(
-          "span",
-          { key: "count", className: "badge-count" },
-          formatCount(eventCount)
-        ),
-        eventCount > 1 &&
-          React.createElement(
-            "span",
-            { key: "indicator", className: "badge-indicator" },
-            "+"
-          ),
-      ]
-    );
-  }
-
   if (settings.badgeStyle === "circular") {
     return React.createElement(
       "div",

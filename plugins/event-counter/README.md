@@ -8,7 +8,7 @@
 
 - 🔢 **Contadores Visuales:** Muestra una "badge" (insignia) en cada día del calendario con el número de eventos.
 - 🎨 **Personalización Completa:**
-  - **Estilos de Badge:** Elige entre redondeado, circular, cuadrado, minimalista y moderno.
+  - **Estilos de Badge:** Elige entre redondeado, circular, cuadrado y minimalista.
   - **Posición y Tamaño:** Ajusta dónde aparece el badge (esquinas, centro) y cuán grande es (pequeño, mediano, grande, XL).
   - **Colores Dinámicos:** Configura un color único o define rangos para que el color del badge cambie según la cantidad de eventos (ej. verde para pocos, amarillo para algunos, rojo para muchos).
   - **Tipografía Avanzada:** Selecciona la familia de fuente (Sistema, Inter, Roboto, Poppins, Monospace), tamaño, peso y color del texto del badge.
@@ -21,7 +21,7 @@
   - **Ocultar con Cero Eventos:** Mantén tu calendario limpio ocultando el badge si no hay eventos.
   - **Mostrar Solo en Días Laborales:** Configura el badge para que aparezca únicamente en los días que consideres laborales.
   - **CSS Personalizado:** Para los usuarios más avanzados, permite inyectar tus propios estilos CSS para una personalización sin límites.
-- 🚀 **Presets Rápidos:** Comienza rápidamente con configuraciones predefinidas (Minimalista, Moderno, Clásico, Llamativo, Transparente) y ajústalas a tu gusto.
+- 🚀 **Presets Rápidos:** Comienza rápidamente con configuraciones predefinidas (Minimalista, Clásico, Llamativo, Transparente) y ajústalas a tu gusto.
 - 👁️ **Vista Previa en Tiempo Real:** Visualiza tus cambios instantáneamente en el panel de configuración antes de aplicarlos, ajustando un contador de eventos de prueba.
 - 💡 **Tooltips Informativos:** Obtén detalles rápidos al pasar el mouse sobre el badge (ej. "5 eventos este día").
 

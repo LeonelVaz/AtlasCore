@@ -36,7 +36,7 @@ export default {
     },
 
     // === ESTILO DEL BADGE ===
-    badgeStyle: "rounded", // 'rounded', 'circular', 'square', 'minimal', 'modern'
+    badgeStyle: "rounded", // 'rounded', 'circular', 'square', 'minimal'
     badgePosition: "bottom-right", // 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'
     badgeSize: "medium", // 'small', 'medium', 'large', 'xl'
 
@@ -405,21 +405,6 @@ export default {
         enableAnimations: false,
         hoverEffect: false,
       },
-      modern: {
-        badgeStyle: "modern",
-        badgeSize: "medium",
-        showShadow: true,
-        shadowIntensity: "medium",
-        showGlow: true,
-        glowColor: "background",
-        glowIntensity: "light",
-        transparentBackground: false,
-        showBorder: false,
-        fontWeight: "semibold",
-        enableAnimations: true,
-        animationType: "scale",
-        hoverEffect: true,
-      },
       classic: {
         badgeStyle: "circular",
         badgeSize: "medium",
@@ -435,6 +420,7 @@ export default {
         hoverEffect: true,
       },
       bold: {
+        // Renombrado de "Llamativo" a "bold" para consistencia interna si es necesario, o mantener "bold" como id
         badgeStyle: "square",
         badgeSize: "large",
         showShadow: true,
@@ -478,17 +464,12 @@ export default {
         description: "Diseño simple y limpio sin efectos",
       },
       {
-        id: "modern",
-        name: "Moderno",
-        description: "Estilo contemporáneo con resplandor suave",
-      },
-      {
         id: "classic",
         name: "Clásico",
         description: "Diseño tradicional con borde elegante",
       },
       {
-        id: "bold",
+        id: "bold", // Usar el id "bold" si _getPreset lo usa como clave
         name: "Llamativo",
         description: "Diseño audaz con efectos intensos",
       },
