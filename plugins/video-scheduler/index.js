@@ -3,7 +3,7 @@ import React from "react";
 import VideoSchedulerNavItemComponent from "./components/VideoSchedulerNavItem.jsx";
 import VideoSchedulerMainPageComponent from "./components/VideoSchedulerMainPage.jsx";
 import {
-  DEFAULT_SLOT_VIDEO_STRUCTURE, // Asegúrate que DEFAULT_SLOT_VIDEO_STRUCTURE se actualizó en constants.js
+  DEFAULT_SLOT_VIDEO_STRUCTURE,
   VIDEO_MAIN_STATUS,
   VIDEO_SUB_STATUS,
   VIDEO_STACKABLE_STATUS,
@@ -16,12 +16,12 @@ import {
 import "./styles/index.css";
 
 const PLUGIN_PAGE_ID = "videoscheduler";
-const STORAGE_KEY_DATA = "video_scheduler_plugin_data_v2"; // Incrementar versión de storage si la estructura cambia significativamente
+const STORAGE_KEY_DATA = "video_scheduler_plugin_data_v2";
 
 export default {
   id: "video-scheduler",
   name: "Video Scheduler",
-  version: "0.8.0", // <-- VERSIÓN INCREMENTADA por VideoForm
+  version: "0.8.1",
   description:
     "Planificador visual de videos con estados, multimes, moneda personalizable y detalles extendidos.",
   author: "Tu Nombre/Equipo",
@@ -147,13 +147,13 @@ export default {
           newSubStatus,
           newStackableStatuses
         ),
-      // --- NUEVA API PARA DETALLES EXTENDIDOS ---
       updateVideoDetails: async (dateStr, slotIndex, details) =>
         self._internalUpdateVideoDetails(dateStr, slotIndex, details),
-      // --- FIN NUEVA API ---
       setDailyIncome: async (dateStr, incomeData) =>
         self._internalSetDailyIncome(dateStr, incomeData),
       getDailyIncome: async (dateStr) => self._internalGetDailyIncome(dateStr),
+      deleteDailyIncome: async (dateStr) =>
+        self._internalDeleteDailyIncome(dateStr),
       getCurrencyConfiguration: async () =>
         self._internalGetCurrencyConfiguration(),
       saveCurrencyConfiguration: async (
@@ -228,11 +228,10 @@ export default {
       settings: finalSettings,
     };
 
-    // Asegurar que todos los videos tengan los campos por defecto, incluyendo los nuevos
     Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
       self._pluginData.videosBySlotKey[key] = {
-        ...DEFAULT_SLOT_VIDEO_STRUCTURE, // Aplica la estructura por defecto primero
-        ...self._pluginData.videosBySlotKey[key], // Luego sobrescribe con los datos guardados
+        ...DEFAULT_SLOT_VIDEO_STRUCTURE,
+        ...self._pluginData.videosBySlotKey[key],
         stackableStatuses: Array.isArray(
           self._pluginData.videosBySlotKey[key].stackableStatuses
         )
@@ -240,7 +239,7 @@ export default {
           : [],
         tags: Array.isArray(self._pluginData.videosBySlotKey[key].tags)
           ? self._pluginData.videosBySlotKey[key].tags
-          : [], // Asegurar que tags sea array
+          : [],
       };
     });
 
@@ -293,11 +292,10 @@ export default {
     const key = this._getVideoSlotKey(dateStr, slotIndex);
     if (!this._pluginData.videosBySlotKey[key]) {
       this._pluginData.videosBySlotKey[key] = {
-        ...DEFAULT_SLOT_VIDEO_STRUCTURE, // Usa la estructura actualizada
+        ...DEFAULT_SLOT_VIDEO_STRUCTURE,
         id: key,
       };
     } else {
-      // Asegurar que los campos nuevos existan si el video ya existía
       this._pluginData.videosBySlotKey[key] = {
         ...DEFAULT_SLOT_VIDEO_STRUCTURE,
         ...this._pluginData.videosBySlotKey[key],
@@ -362,8 +360,7 @@ export default {
         "0"
       )}-${String(day).padStart(2, "0")}`;
       for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
-        const video = self._ensureVideoSlotExists(dateStr, slotIndex); // Llama para asegurar que todos los campos existan
-        // No necesitamos marcar dataChanged aquí solo por asegurar el slot, _ensureVideoSlotExists ya lo hace si crea.
+        self._ensureVideoSlotExists(dateStr, slotIndex);
       }
       if (!self._pluginData.dailyIncomes[dateStr]) {
         self._pluginData.dailyIncomes[dateStr] = {
@@ -379,7 +376,7 @@ export default {
       const video = self._pluginData.videosBySlotKey[key];
       const dateStr = key.substring(0, 10);
       const isPast = isDateInPast(dateStr);
-      const originalState = JSON.stringify(video); // Para comparación simple
+      const originalState = JSON.stringify(video);
       if (isPast) {
         if (video.status === VIDEO_MAIN_STATUS.PENDING) {
           video.status = VIDEO_MAIN_STATUS.EMPTY;
@@ -441,7 +438,7 @@ export default {
   ) {
     const self = this;
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
-    video.description = newDescription.trim(); // Esta es la descripción corta
+    video.description = newDescription.trim();
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;
@@ -481,12 +478,9 @@ export default {
     return video;
   },
 
-  // --- NUEVA FUNCIÓN INTERNA PARA DETALLES EXTENDIDOS ---
   _internalUpdateVideoDetails: async function (dateStr, slotIndex, details) {
     const self = this;
     const video = self._ensureVideoSlotExists(dateStr, slotIndex);
-
-    // Actualizar solo los campos relevantes de 'details'
     if (details.hasOwnProperty("detailedDescription"))
       video.detailedDescription = details.detailedDescription;
     if (details.hasOwnProperty("platform")) video.platform = details.platform;
@@ -494,22 +488,27 @@ export default {
     if (details.hasOwnProperty("duration")) video.duration = details.duration;
     if (details.hasOwnProperty("tags"))
       video.tags = Array.isArray(details.tags) ? details.tags : [];
-
     video.updatedAt = new Date().toISOString();
     await self._savePluginData();
     return video;
   },
-  // --- FIN NUEVA FUNCIÓN INTERNA ---
 
   _internalSetDailyIncome: async function (dateStr, incomeData) {
     const self = this;
     const mainCurrency = self._pluginData.settings.mainUserCurrency;
-    self._pluginData.dailyIncomes[dateStr] = {
-      ...DEFAULT_DAILY_INCOME_STRUCTURE,
-      currency: mainCurrency,
-      ...(self._pluginData.dailyIncomes[dateStr] || {}),
-      ...incomeData,
-    };
+    if (parseFloat(incomeData.amount) === 0 || incomeData.amount === "") {
+      self._pluginData.dailyIncomes[dateStr] = {
+        ...DEFAULT_DAILY_INCOME_STRUCTURE,
+        currency: incomeData.currency || mainCurrency,
+      };
+    } else {
+      self._pluginData.dailyIncomes[dateStr] = {
+        ...DEFAULT_DAILY_INCOME_STRUCTURE,
+        currency: mainCurrency,
+        ...(self._pluginData.dailyIncomes[dateStr] || {}),
+        ...incomeData,
+      };
+    }
     await self._savePluginData();
     return self._pluginData.dailyIncomes[dateStr];
   },
@@ -522,6 +521,19 @@ export default {
         currency: self._pluginData.settings.mainUserCurrency,
       }
     );
+  },
+
+  _internalDeleteDailyIncome: async function (dateStr) {
+    const self = this;
+    if (self._pluginData.dailyIncomes[dateStr]) {
+      self._pluginData.dailyIncomes[dateStr] = {
+        ...DEFAULT_DAILY_INCOME_STRUCTURE,
+        currency: self._pluginData.settings.mainUserCurrency,
+      };
+      await self._savePluginData();
+      return true;
+    }
+    return false;
   },
 
   _internalGetCurrencyConfiguration: async function () {

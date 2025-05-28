@@ -10,7 +10,7 @@ import StatsPanel from "./StatsPanel.jsx";
 import StatsOverviewPanel from "./StatsOverviewPanel.jsx";
 import BulkAddForm from "./BulkAddForm.jsx";
 import CurrencyRateForm from "./CurrencyRateForm.jsx";
-import VideoForm from "./VideoForm.jsx"; // <--- NUEVO: Importar VideoForm
+import VideoForm from "./VideoForm.jsx";
 import {
   VIDEO_MAIN_STATUS,
   DEFAULT_SLOT_VIDEO_STRUCTURE,
@@ -42,8 +42,8 @@ function VideoSchedulerMainPage(props) {
   const [showStatsPanel, setShowStatsPanel] = React.useState(false);
   const [showBulkAddForm, setShowBulkAddForm] = React.useState(false);
   const [showCurrencyRateForm, setShowCurrencyRateForm] = React.useState(false);
-  const [showVideoForm, setShowVideoForm] = React.useState(false); // <--- NUEVO: Estado para VideoForm
-  const [videoFormContext, setVideoFormContext] = React.useState(null); // <--- NUEVO: Contexto para VideoForm
+  const [showVideoForm, setShowVideoForm] = React.useState(false);
+  const [videoFormContext, setVideoFormContext] = React.useState(null);
 
   const [currencyConfiguration, setCurrencyConfiguration] = React.useState({
     mainUserCurrency: "USD",
@@ -51,18 +51,8 @@ function VideoSchedulerMainPage(props) {
     currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
   });
 
-  const incomePopupConfig = {
-    width: 320,
-    height: 300,
-    margin: 10,
-    gapToCell: 10,
-  };
-  const statusSelectorPopupConfig = {
-    width: 220,
-    height: 280,
-    margin: 10,
-    gapToIcon: 10,
-  };
+  const incomePopupConfig = { width: 320, margin: 10, gapToCell: 10 };
+  const statusSelectorPopupConfig = { width: 220, margin: 10, gapToIcon: 10 };
   const currencyRatePopupConfig = { width: 700, margin: 10 };
 
   const findScrollContainer = () => {
@@ -87,7 +77,7 @@ function VideoSchedulerMainPage(props) {
         setStatusSelectorContext(null);
         setShowCurrencyRateForm(false);
         setShowVideoForm(false);
-        setVideoFormContext(null); // <--- NUEVO: Cerrar VideoForm al hacer scroll
+        setVideoFormContext(null);
       }
     };
     const scrollContainer = findScrollContainer();
@@ -100,7 +90,7 @@ function VideoSchedulerMainPage(props) {
       target.addEventListener("scroll", handleScroll, { passive: true });
       return () => target.removeEventListener("scroll", handleScroll);
     }
-  }, [showIncomeForm, showStatusSelector, showCurrencyRateForm, showVideoForm]); // <--- NUEVO: Dependencia de showVideoForm
+  }, [showIncomeForm, showStatusSelector, showCurrencyRateForm, showVideoForm]);
 
   const refreshCalendarDataSilently = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
@@ -138,8 +128,8 @@ function VideoSchedulerMainPage(props) {
     setIncomeFormContext(null);
     setShowCurrencyRateForm(false);
     setShowVideoForm(false);
-    setVideoFormContext(null); // <--- NUEVO: Incluir VideoForm
-    setShowBulkAddForm(false); // BulkAdd es modal, pero por consistencia
+    setVideoFormContext(null);
+    setShowBulkAddForm(false);
   };
 
   const handlePrevMonth = () => {
@@ -182,7 +172,7 @@ function VideoSchedulerMainPage(props) {
   };
 
   const handleStatusIconClick = (day, slotIndex, event) => {
-    closeAllPopups(); // Cerrar otros popups antes de abrir uno nuevo
+    closeAllPopups();
     const dateStr = `${currentDate.getFullYear()}-${String(
       currentDate.getMonth() + 1
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -201,15 +191,24 @@ function VideoSchedulerMainPage(props) {
     const wrapperRect = wrapper.getBoundingClientRect();
     const {
       width: popupWidth,
-      height: popupHeightEstimate,
       margin: popupMargin,
       gapToIcon,
-    } = statusSelectorPopupConfig;
+    } = statusSelectorPopupConfig; // height es auto
     let finalLeft = iconRect.right - wrapperRect.left + gapToIcon;
     if (finalLeft + popupWidth > wrapper.clientWidth - popupMargin)
       finalLeft = iconRect.left - wrapperRect.left - popupWidth - gapToIcon;
     if (finalLeft < popupMargin)
       finalLeft = Math.max(popupMargin, (wrapper.clientWidth - popupWidth) / 2);
+
+    // Ajuste de top para que no se salga de la pantalla, considerando altura dinámica
+    const tempPopup = document.createElement("div"); // Crear un popup temporal para medir su altura
+    tempPopup.className = "status-selector-popup"; // Asignar la clase del popup
+    tempPopup.style.visibility = "hidden";
+    tempPopup.style.position = "absolute";
+    document.body.appendChild(tempPopup); // Añadir al DOM para que tenga dimensiones
+    const popupHeightEstimate = tempPopup.offsetHeight || 280; // Usar altura medida o fallback
+    document.body.removeChild(tempPopup); // Remover del DOM
+
     let finalTop =
       iconRect.top -
       wrapperRect.top +
@@ -225,11 +224,12 @@ function VideoSchedulerMainPage(props) {
         minTopPosition,
         maxBottomEdgeOfPopup - popupHeightEstimate
       );
+
     setStatusSelectorContext({
       day,
       slotIndex,
       video,
-      position: { top: finalTop, left: finalLeft },
+      position: { top: finalTop, left: finalLeft, height: "auto" },
     });
     setShowStatusSelector(true);
   };
@@ -252,7 +252,6 @@ function VideoSchedulerMainPage(props) {
         newStackableStatuses
       );
       refreshCalendarDataSilently();
-      // No cerramos el selector aquí, se cierra desde el propio selector o por scroll/escape
     }
   };
 
@@ -268,21 +267,26 @@ function VideoSchedulerMainPage(props) {
     if (!wrapper) return;
     const cellRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
-    const {
-      width: popupWidth,
-      height: popupHeight,
-      margin,
-      gapToCell,
-    } = incomePopupConfig;
+    const { width: popupWidth, margin, gapToCell } = incomePopupConfig; // height es auto
     let finalLeft = cellRect.left - wrapperRect.left - popupWidth - gapToCell;
     if (finalLeft < margin)
       finalLeft = cellRect.right - wrapperRect.left + gapToCell;
     if (finalLeft + popupWidth > wrapper.clientWidth - margin)
       finalLeft = Math.max(margin, wrapper.clientWidth - popupWidth - margin);
+
+    const tempPopup = document.createElement("div");
+    tempPopup.className = "daily-income-form-popup";
+    tempPopup.style.visibility = "hidden";
+    tempPopup.style.position = "absolute";
+    tempPopup.style.width = `${popupWidth}px`; // Importante para medir altura correcta
+    document.body.appendChild(tempPopup);
+    const popupHeight = tempPopup.offsetHeight || 300;
+    document.body.removeChild(tempPopup);
+
     let finalTop = cellRect.top - wrapperRect.top;
     const header = wrapper.querySelector(".page-header-controls");
     const headerHeight = header ? header.offsetHeight : 0;
-    const footerStatsPanel = wrapper.querySelector(".stats-tab-content"); // Asumiendo que este es el panel inferior
+    const footerStatsPanel = wrapper.querySelector(".stats-tab-content");
     const footerStatsPanelHeight = footerStatsPanel
       ? footerStatsPanel.offsetHeight
       : 0;
@@ -295,6 +299,7 @@ function VideoSchedulerMainPage(props) {
         cellRect.bottom - wrapperRect.top - popupHeight
       );
     if (finalTop < minTopPosition) finalTop = minTopPosition;
+
     setIncomeFormContext({
       day,
       incomeData,
@@ -302,7 +307,7 @@ function VideoSchedulerMainPage(props) {
         top: finalTop,
         left: finalLeft,
         width: `${popupWidth}px`,
-        height: `${popupHeight}px`,
+        height: "auto",
       },
     });
     setShowIncomeForm(true);
@@ -313,6 +318,16 @@ function VideoSchedulerMainPage(props) {
       currentDate.getMonth() + 1
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     await plugin.publicAPI.setDailyIncome(dateStr, newIncomeData);
+    refreshCalendarDataSilently();
+    setShowIncomeForm(false);
+    setIncomeFormContext(null);
+  };
+
+  const handleIncomeDelete = async (day) => {
+    const dateStr = `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    await plugin.publicAPI.deleteDailyIncome(dateStr);
     refreshCalendarDataSilently();
     setShowIncomeForm(false);
     setIncomeFormContext(null);
@@ -373,12 +388,10 @@ function VideoSchedulerMainPage(props) {
       "Noviembre",
       "Diciembre",
     ][monthIndex] || "Mes desconocido";
-
   const handleOpenCurrencyRateForm = () => {
     closeAllPopups();
     setShowCurrencyRateForm(true);
   };
-
   const handleCurrencyRateSave = async (
     mainCurrency,
     incomeCurrencies,
@@ -401,22 +414,15 @@ function VideoSchedulerMainPage(props) {
     }
   };
 
-  // --- NUEVAS FUNCIONES PARA VIDEOFORM ---
   const handleOpenDetailsForm = (day, slotIndex, videoDataFromCell) => {
     closeAllPopups();
-    // Asegurarnos de que tenemos los datos completos del video
     const dateStr = `${currentDate.getFullYear()}-${String(
       currentDate.getMonth() + 1
     ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
     const videoKey = `${dateStr}-${slotIndex}`;
     const fullVideoData = monthData?.videos?.[videoKey] ||
       videoDataFromCell || { ...DEFAULT_SLOT_VIDEO_STRUCTURE, id: videoKey };
-
-    setVideoFormContext({
-      day,
-      slotIndex,
-      ...fullVideoData, // Esparcir todos los datos del video
-    });
+    setVideoFormContext({ day, slotIndex, ...fullVideoData });
     setShowVideoForm(true);
   };
 
@@ -429,12 +435,11 @@ function VideoSchedulerMainPage(props) {
     setShowVideoForm(false);
     setVideoFormContext(null);
   };
-  // --- FIN NUEVAS FUNCIONES PARA VIDEOFORM ---
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const { daysInMonth } = getMonthDetails(year, month);
-  const monthNameStr = getMonthName(month); // Usar getMonthName para consistencia
+  const monthNameStr = getMonthName(month);
 
   const tableHeader = React.createElement(
     "thead",
@@ -447,7 +452,6 @@ function VideoSchedulerMainPage(props) {
       )
     )
   );
-
   const tableBodyRows = [];
   if (!isLoading && monthData && monthData.videos && monthData.dailyIncomes) {
     for (let day = 1; day <= daysInMonth; day++) {
@@ -487,7 +491,7 @@ function VideoSchedulerMainPage(props) {
                 onNameChange: handleVideoNameChange,
                 onDescriptionChange: handleVideoDescriptionChange,
                 onStatusIconClick: (d, s, e) => handleStatusIconClick(d, s, e),
-                onOpenDetailsForm: handleOpenDetailsForm, // <--- NUEVO: Pasar callback
+                onOpenDetailsForm: handleOpenDetailsForm,
               })
             ),
             React.createElement(DaySummaryCell, {
@@ -642,8 +646,9 @@ function VideoSchedulerMainPage(props) {
               setShowStatusSelector(false);
               setStatusSelectorContext(null);
             },
-            styleProps: statusSelectorContext.position,
+            styleProps: { ...statusSelectorContext.position, height: "auto" },
           }),
+
         showIncomeForm &&
           incomeFormContext &&
           React.createElement(DailyIncomeForm, {
@@ -655,9 +660,11 @@ function VideoSchedulerMainPage(props) {
               setShowIncomeForm(false);
               setIncomeFormContext(null);
             },
-            styleProps: incomeFormContext.position,
+            onDelete: handleIncomeDelete,
+            styleProps: { ...incomeFormContext.position, height: "auto" },
             plugin: plugin,
           }),
+
         showStatsPanel &&
           React.createElement(StatsPanel, {
             key: "stats-panel-instance",
@@ -684,12 +691,11 @@ function VideoSchedulerMainPage(props) {
             styleProps: { width: `${currencyRatePopupConfig.width}px` },
             plugin: plugin,
           }),
-        // --- NUEVO: Renderizar VideoForm ---
         showVideoForm &&
           videoFormContext &&
           React.createElement(VideoForm, {
             key: "video-form-instance",
-            videoData: videoFormContext, // Pasar todos los datos del video, incluyendo day y slotIndex si es necesario
+            videoData: videoFormContext,
             onSave: handleSaveVideoDetails,
             onCancel: () => {
               setShowVideoForm(false);
@@ -697,7 +703,6 @@ function VideoSchedulerMainPage(props) {
             },
             plugin: plugin,
           }),
-        // --- FIN NUEVO ---
       ]
     ),
     !isLoading &&
@@ -706,7 +711,7 @@ function VideoSchedulerMainPage(props) {
         monthData: monthData,
         currentDate: currentDate,
         plugin: plugin,
-        compact: false, // Siempre modo completo para el footer
+        compact: false,
       }),
   ]);
 }

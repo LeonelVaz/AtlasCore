@@ -1,30 +1,35 @@
 // video-scheduler/components/DailyIncomeForm.jsx
 import React from "react";
-// Importar ALL_SUPPORTED_CURRENCIES para el selector
 import {
   DEFAULT_DAILY_INCOME_STRUCTURE,
   ALL_SUPPORTED_CURRENCIES,
 } from "../utils/constants.js";
 
 function DailyIncomeForm(props) {
-  const { day, existingIncome, onSave, onCancel, styleProps, plugin } = props; // plugin añadido para acceder a config
+  const {
+    day,
+    existingIncome,
+    onSave,
+    onCancel,
+    onDelete,
+    plugin,
+    styleProps,
+  } = props;
   const popupRef = React.useRef(null);
+  const core = plugin._core;
 
-  // Obtener configuración de moneda del plugin
   const currencyConfig = plugin._pluginData.settings;
   const mainUserCurrency = currencyConfig.mainUserCurrency;
-  // Las monedas disponibles para ingresos son las configuradas por el usuario
   const availableIncomeCurrencies =
     currencyConfig.configuredIncomeCurrencies || [mainUserCurrency];
 
   const initialData = existingIncome || {
     ...DEFAULT_DAILY_INCOME_STRUCTURE,
-    currency: mainUserCurrency, // Por defecto, la moneda principal del usuario
+    currency: mainUserCurrency,
   };
 
   const [amount, setAmount] = React.useState(initialData.amount);
   const [currency, setCurrency] = React.useState(
-    // Asegurar que la moneda inicial sea una de las configuradas, sino usar la principal
     availableIncomeCurrencies.includes(initialData.currency)
       ? initialData.currency
       : mainUserCurrency
@@ -35,15 +40,28 @@ function DailyIncomeForm(props) {
   React.useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
-        onCancel();
+        onCancel(); // El botón Cancelar o el click afuera llaman a onCancel
       }
     };
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 100);
+    const timeoutId = setTimeout(
+      () => document.addEventListener("mousedown", handleClickOutside),
+      100
+    );
     return () => {
       clearTimeout(timeoutId);
       document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onCancel]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onCancel(); // Escape también llama a onCancel
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [onCancel]);
 
@@ -60,7 +78,7 @@ function DailyIncomeForm(props) {
     );
     setPayer(currentInitialData.payer);
     setStatus(currentInitialData.status);
-  }, [existingIncome, mainUserCurrency, availableIncomeCurrencies]); // Depender de availableIncomeCurrencies
+  }, [existingIncome, mainUserCurrency, availableIncomeCurrencies]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -72,12 +90,56 @@ function DailyIncomeForm(props) {
     });
   };
 
+  const handleDeleteClick = async () => {
+    if (existingIncome && existingIncome.amount > 0) {
+      if (core && core.dialogs && core.dialogs.confirm) {
+        try {
+          const message = `¿Estás seguro de que quieres eliminar el ingreso del día ${day}? Esta acción no se puede deshacer.`;
+          const title = "Confirmar Eliminación";
+          const confirmed = await core.dialogs.confirm(message, title);
+          if (confirmed) {
+            if (onDelete) {
+              onDelete(day); // onDelete se encargará de cerrar el popup a través de VideoSchedulerMainPage
+            }
+          }
+          // Si no se confirma, el popup permanece abierto.
+          // No se llama a onCancel() aquí explícitamente, el usuario puede cerrar con ESC o click afuera.
+        } catch (error) {
+          console.log(
+            "[DailyIncomeForm] Diálogo de confirmación cerrado o cancelado.",
+            error
+          );
+        }
+      } else {
+        console.warn(
+          "[DailyIncomeForm] core.dialogs.confirm no disponible, usando confirm() nativo."
+        );
+        if (
+          confirm(
+            `¿Estás seguro de que quieres eliminar el ingreso del día ${day}?`
+          )
+        ) {
+          if (onDelete) {
+            onDelete(day);
+          }
+        }
+      }
+    }
+  };
+
+  const incomeIsPresent = existingIncome && existingIncome.amount > 0;
+
   return React.createElement(
     "div",
-    { ref: popupRef, className: "daily-income-form-popup", style: styleProps },
+    {
+      ref: popupRef,
+      className: "daily-income-form-popup",
+      style: styleProps,
+    },
     [
       React.createElement("h4", { key: "dif-title" }, `Ingreso del Día ${day}`),
       React.createElement("form", { key: "dif-form", onSubmit: handleSubmit }, [
+        // ... (campos del formulario sin cambios) ...
         React.createElement(
           "div",
           { key: "dif-amount-group", className: "form-group" },
@@ -115,7 +177,6 @@ function DailyIncomeForm(props) {
                 value: currency,
                 onChange: (e) => setCurrency(e.target.value),
               },
-              // Mapear sobre las monedas configuradas por el usuario
               availableIncomeCurrencies.map((code) => {
                 const currencyInfo = ALL_SUPPORTED_CURRENCIES.find(
                   (c) => c.code === code
@@ -183,16 +244,31 @@ function DailyIncomeForm(props) {
           "div",
           { key: "dif-actions", className: "form-actions" },
           [
-            React.createElement(
-              "button",
-              {
-                key: "cancel-button",
-                type: "button",
-                onClick: onCancel,
-                className: "button-secondary",
-              },
-              "Cancelar"
-            ),
+            // Si hay un ingreso existente, mostrar "Eliminar"
+            incomeIsPresent &&
+              React.createElement(
+                "button",
+                {
+                  key: "delete-button",
+                  type: "button",
+                  onClick: handleDeleteClick,
+                  className: "button-danger",
+                },
+                "Eliminar"
+              ),
+            // Si NO hay un ingreso existente (creando nuevo), mostrar "Cancelar"
+            !incomeIsPresent &&
+              React.createElement(
+                "button",
+                {
+                  key: "cancel-button",
+                  type: "button",
+                  onClick: onCancel,
+                  className: "button-secondary",
+                },
+                "Cancelar"
+              ),
+            // El botón "Guardar Ingreso" siempre se muestra
             React.createElement(
               "button",
               {

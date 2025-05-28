@@ -1,8 +1,7 @@
 /* video-scheduler/styles/DailyIncomeForm.css */
 
-/* Formulario de ingresos - diseño refinado con position absolute */
 .daily-income-form-popup {
-  position: absolute; /* Vuelto a absolute para que se mueva con el scroll */
+  position: absolute;
   background: var(--modal-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);
@@ -61,19 +60,25 @@
   padding-top: 12px;
   border-top: 1px solid var(--border-color);
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+  gap: 8px; /* Espacio entre los botones que estén visibles */
+  align-items: center;
 }
 
+/* Ya no necesitamos .actions-right-group */
+
 .daily-income-form-popup .form-actions .button-primary,
-.daily-income-form-popup .form-actions .button-secondary {
-  padding: 8px 16px;
+.daily-income-form-popup .form-actions .button-secondary,
+.daily-income-form-popup .form-actions .button-danger {
+  padding: 8px 16px; /* Tamaño original de los botones */
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
-  border: 1px solid var(--border-color);
-  font-size: 0.8125rem;
+  border: 1px solid transparent;
+  font-size: 0.8125rem; /* Tamaño original de la fuente */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .daily-income-form-popup .form-actions .button-primary {
@@ -81,7 +86,6 @@
   color: white;
   border-color: var(--primary-color);
 }
-
 .daily-income-form-popup .form-actions .button-primary:hover {
   background: var(--primary-hover);
   border-color: var(--primary-hover);
@@ -90,9 +94,34 @@
 .daily-income-form-popup .form-actions .button-secondary {
   background: transparent;
   color: var(--text-color-secondary);
+  border-color: var(--border-color);
 }
-
 .daily-income-form-popup .form-actions .button-secondary:hover {
   background: var(--hover-color);
   color: var(--text-color);
 }
+
+.daily-income-form-popup .form-actions .button-danger {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+  margin-right: auto; /* Esto empujará el botón Eliminar a la izquierda si está presente */
+}
+.daily-income-form-popup .form-actions .button-danger:hover {
+  background-color: hsl(
+    var(--danger-color-hsl-h, 0),
+    var(--danger-color-hsl-s, 100%),
+    calc(var(--danger-color-hsl-l, 50%) - 10%)
+  );
+  border-color: hsl(
+    var(--danger-color-hsl-h, 0),
+    var(--danger-color-hsl-s, 100%),
+    calc(var(--danger-color-hsl-l, 50%) - 10%)
+  );
+}
+
+/* Si el popup sigue siendo muy estrecho para dos botones (Eliminar y Guardar)
+   podríamos necesitar una media query, pero con justify-content: flex-end y
+   margin-right: auto en el botón de eliminar, debería funcionar bien
+   para la mayoría de los casos con dos botones.
+*/
