@@ -24,7 +24,7 @@
   border-radius: 12px;
   color: var(--text-color);
   width: 100%;
-  max-width: 700px; /* Un poco más ancho para el nuevo layout */
+  max-width: 700px;
   max-height: calc(100% - 40px);
   overflow: hidden;
   display: flex;
@@ -33,6 +33,7 @@
 }
 
 .currency-rate-form-header {
+  /* Esta clase ya existe */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -43,7 +44,22 @@
   flex-shrink: 0;
 }
 
+/* NUEVO: Contenedor para el título y el icono (compartido con BulkAddForm) */
+.modal-title-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* NUEVO: Estilo para el icono en el header del modal (compartido con BulkAddForm) */
+.modal-header-icon {
+  font-family: "Material Icons";
+  font-size: 1.5em;
+  color: var(--primary-color);
+}
+
 .currency-rate-form-header h3 {
+  /* Ajuste para que el h3 no tenga tanto margen si es necesario */
   margin: 0;
   font-size: 1.1rem;
   font-weight: 500;
@@ -94,7 +110,6 @@
   font-weight: 500;
 }
 .main-currency-selector {
-  /* Estilo específico para el selector de moneda principal */
   font-size: 1rem !important;
   padding: 12px 14px !important;
   background: var(--input-bg);
@@ -141,9 +156,8 @@
 }
 
 .add-currency-section {
-  /* Usando form-row-compact para alineación */
   display: grid;
-  grid-template-columns: 2fr 1fr; /* Más espacio para el select */
+  grid-template-columns: 2fr 1fr;
   gap: 12px;
   align-items: center;
   margin-bottom: 20px;
@@ -188,7 +202,7 @@
 
 .rate-edit-item {
   display: grid;
-  grid-template-columns: 1fr auto auto; /* Label, Input, RemoveButton */
+  grid-template-columns: 1fr auto auto;
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
@@ -232,8 +246,8 @@
   color: var(--text-color-secondary);
 }
 .rate-input-wrapper input[type="number"] {
-  flex-grow: 1; /* Ocupa el espacio disponible */
-  min-width: 100px; /* Ancho mínimo */
+  flex-grow: 1;
+  min-width: 100px;
   text-align: right;
   background: var(--input-bg);
   color: var(--text-color);
@@ -358,14 +372,14 @@
   .rate-edit-item {
     grid-template-columns: 1fr auto;
     gap: 8px;
-  } /* Stack remove button or adjust */
+  }
   .rate-edit-item .button-remove-currency {
     grid-row: 1;
     grid-column: 2;
     justify-self: end;
-  } /* Move remove to end of first row */
+  }
   .rate-input-wrapper {
     grid-column: 1 / -1;
     margin-top: 6px;
-  } /* Input wrapper full width on new line */
+  }
 }

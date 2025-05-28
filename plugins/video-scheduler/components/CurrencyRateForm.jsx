@@ -12,15 +12,12 @@ function CurrencyRateForm(props) {
   const [mainCurrency, setMainCurrency] = React.useState(
     initialConfiguration.mainUserCurrency
   );
-  // incomeCurrencies es un array de códigos de moneda ['USD', 'EUR']
   const [incomeCurrencies, setIncomeCurrencies] = React.useState([
     ...initialConfiguration.configuredIncomeCurrencies,
   ]);
-  // rates es un objeto { 'USD': 1, 'EUR': 1.08 }
   const [rates, setRates] = React.useState({
     ...initialConfiguration.currencyRates,
   });
-
   const [newCurrencyToAdd, setNewCurrencyToAdd] = React.useState("");
 
   React.useEffect(() => {
@@ -31,13 +28,13 @@ function CurrencyRateForm(props) {
 
   React.useEffect(() => {
     const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+      if (modalRef.current && !modalRef.current.contains(event.target))
         onCancel();
-      }
     };
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-    }, 100);
+    const timeoutId = setTimeout(
+      () => document.addEventListener("mousedown", handleClickOutside),
+      100
+    );
     return () => {
       clearTimeout(timeoutId);
       document.removeEventListener("mousedown", handleClickOutside);
@@ -46,27 +43,18 @@ function CurrencyRateForm(props) {
 
   React.useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        onCancel();
-      }
+      if (event.key === "Escape") onCancel();
     };
     document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onCancel]);
 
   const handleMainCurrencyChange = (e) => {
     const newMain = e.target.value;
     setMainCurrency(newMain);
-
-    // Actualizar rates: la nueva moneda principal es 1, el resto necesita recalcularse o resetearse
-    // Por simplicidad, vamos a resetear las tasas relativas, el usuario tendrá que reconfirmarlas.
-    // Una lógica más avanzada podría intentar convertir.
     const newRates = { [newMain]: 1 };
     incomeCurrencies.forEach((code) => {
       if (code !== newMain) {
-        // Mantener tasa si ya existe, sino poner 1 (para que el usuario ajuste)
         newRates[code] =
           rates[code] !== undefined &&
           code !== initialConfiguration.mainUserCurrency
@@ -75,8 +63,6 @@ function CurrencyRateForm(props) {
       }
     });
     setRates(newRates);
-
-    // Asegurar que la nueva moneda principal esté en incomeCurrencies
     if (!incomeCurrencies.includes(newMain)) {
       setIncomeCurrencies((prev) => [...prev, newMain].sort());
     }
@@ -89,8 +75,6 @@ function CurrencyRateForm(props) {
         newCurrencyToAdd,
       ].sort();
       setIncomeCurrencies(updatedIncomeCurrencies);
-
-      // Añadir tasa por defecto si no existe (relativa a la moneda principal)
       setRates((prevRates) => ({
         ...prevRates,
         [newCurrencyToAdd]:
@@ -99,7 +83,7 @@ function CurrencyRateForm(props) {
             ? 1
             : prevRates[newCurrencyToAdd],
       }));
-      setNewCurrencyToAdd(""); // Resetear selector
+      setNewCurrencyToAdd("");
     }
   };
 
@@ -113,7 +97,6 @@ function CurrencyRateForm(props) {
     setIncomeCurrencies((prev) =>
       prev.filter((code) => code !== currencyCodeToRemove)
     );
-    // Opcional: eliminar la tasa de rates, aunque la función de guardado lo limpiará
     setRates((prevRates) => {
       const newRates = { ...prevRates };
       delete newRates[currencyCodeToRemove];
@@ -124,29 +107,20 @@ function CurrencyRateForm(props) {
   const handleRateChange = (currencyCode) => (e) => {
     const value = e.target.value;
     const numericValue = value === "" ? "" : parseFloat(value);
-    setRates((prev) => ({
-      ...prev,
-      [currencyCode]: numericValue,
-    }));
+    setRates((prev) => ({ ...prev, [currencyCode]: numericValue }));
   };
 
   const handleRateBlur = (currencyCode) => (e) => {
     let value = parseFloat(e.target.value);
-    if (isNaN(value) || value <= 0) {
-      // Restaurar al valor inicial o un default si no existe
+    if (isNaN(value) || value <= 0)
       value = initialConfiguration.currencyRates[currencyCode] || 1;
-    }
-    setRates((prev) => ({
-      ...prev,
-      [currencyCode]: value,
-    }));
+    setRates((prev) => ({ ...prev, [currencyCode]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const finalRates = { ...rates };
     let ratesAreValid = true;
-
     incomeCurrencies.forEach((code) => {
       if (code !== mainCurrency) {
         const rateValue = parseFloat(finalRates[code]);
@@ -159,18 +133,14 @@ function CurrencyRateForm(props) {
           finalRates[code] = rateValue;
         }
       } else {
-        finalRates[code] = 1; // La moneda principal siempre es 1 contra sí misma
+        finalRates[code] = 1;
       }
     });
-
     if (!ratesAreValid) return;
-
-    // Filtrar tasas para solo incluir las de incomeCurrencies
     const ratesToSave = {};
     incomeCurrencies.forEach((code) => {
       ratesToSave[code] = finalRates[code];
     });
-
     onSave(mainCurrency, incomeCurrencies, ratesToSave);
   };
 
@@ -191,12 +161,30 @@ function CurrencyRateForm(props) {
       [
         React.createElement(
           "div",
-          { key: "header", className: "currency-rate-form-header" },
+          {
+            key: "header",
+            className: "currency-rate-form-header modal-header-flex",
+          }, // Añadida clase modal-header-flex
           [
             React.createElement(
-              "h3",
-              { key: "title" },
-              "⚙️ Configurar Monedas y Tasas"
+              // Contenedor para el icono y el título
+              "div",
+              { key: "title-container", className: "modal-title-container" },
+              [
+                React.createElement(
+                  "span",
+                  {
+                    key: "icon",
+                    className: "material-icons modal-header-icon",
+                  }, // Clase para el icono
+                  "currency_exchange"
+                ),
+                React.createElement(
+                  "h3",
+                  { key: "title" },
+                  "Configurar Monedas y Tasas" // Texto sin el emoji
+                ),
+              ]
             ),
             React.createElement(
               "button",
@@ -257,7 +245,7 @@ function CurrencyRateForm(props) {
                         key: "main-info",
                         className: "currency-form-info-text",
                       },
-                      "Esta es la moneda en la que se mostrarán los totales. Las tasas de otras monedas se definirán en relación a esta."
+                      `Esta es la moneda en la que se mostrarán los totales. Las tasas de otras monedas se definirán en relación a esta.`
                     ),
                   ]
                 ),
@@ -265,7 +253,6 @@ function CurrencyRateForm(props) {
                   key: "divider1",
                   className: "form-divider",
                 }),
-
                 React.createElement(
                   "h4",
                   {
@@ -279,9 +266,7 @@ function CurrencyRateForm(props) {
                   { key: "rates-info", className: "currency-form-info-text" },
                   `Define las monedas en las que recibes ingresos y su valor equivalente a 1 unidad de tu moneda principal (${mainCurrency}).`
                 ),
-
                 React.createElement(
-                  // Sección para añadir nuevas monedas de ingreso
                   "div",
                   {
                     key: "add-currency-section",
@@ -324,9 +309,7 @@ function CurrencyRateForm(props) {
                     ),
                   ]
                 ),
-
                 React.createElement(
-                  // Grid para mostrar y editar tasas
                   "div",
                   {
                     key: "rates-grid",
@@ -349,13 +332,13 @@ function CurrencyRateForm(props) {
                         React.createElement(
                           "div",
                           {
-                            key: "currency-label",
+                            key: `label-${code}`,
                             className: "rate-currency-label",
                           },
                           [
                             React.createElement(
                               "span",
-                              { key: "name" },
+                              { key: `name-${code}` },
                               `${
                                 currencyInfo ? currencyInfo.name : code
                               } (${code})`
@@ -364,7 +347,7 @@ function CurrencyRateForm(props) {
                               React.createElement(
                                 "span",
                                 {
-                                  key: "main-tag",
+                                  key: `tag-${code}`,
                                   className: "main-currency-tag",
                                 },
                                 "Principal"
@@ -374,13 +357,13 @@ function CurrencyRateForm(props) {
                         React.createElement(
                           "div",
                           {
-                            key: "rate-input-wrapper",
+                            key: `input-wrap-${code}`,
                             className: "rate-input-wrapper",
                           },
                           [
                             React.createElement(
                               "span",
-                              { key: "prefix" },
+                              { key: `prefix-${code}` },
                               `1 ${code} = `
                             ),
                             React.createElement("input", {
@@ -398,14 +381,14 @@ function CurrencyRateForm(props) {
                               onBlur: isMain ? undefined : handleRateBlur(code),
                               readOnly: isMain,
                               disabled: isMain,
-                              step: "0.000001", // Mayor precisión para tasas pequeñas
+                              step: "0.000001",
                               min: "0.000001",
                               required: !isMain,
                               placeholder: isMain ? "1.00" : "0.00",
                             }),
                             React.createElement(
                               "span",
-                              { key: "suffix" },
+                              { key: `suffix-${code}` },
                               mainCurrency
                             ),
                           ]
@@ -419,7 +402,7 @@ function CurrencyRateForm(props) {
                               onClick: () => handleRemoveIncomeCurrency(code),
                               className: "button-remove-currency",
                             },
-                            "✕" // O un icono de "eliminar"
+                            "✕"
                           ),
                       ]
                     );
@@ -437,7 +420,6 @@ function CurrencyRateForm(props) {
               ]
             ),
             React.createElement(
-              // Pie de página fijo
               "div",
               { key: "actions", className: "form-actions" },
               [
