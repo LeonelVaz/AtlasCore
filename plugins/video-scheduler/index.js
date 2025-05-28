@@ -2,6 +2,8 @@
 import React from "react";
 import VideoSchedulerNavItemComponent from "./components/VideoSchedulerNavItem.jsx";
 import VideoSchedulerMainPageComponent from "./components/VideoSchedulerMainPage.jsx";
+// highlight-next-line
+import SettingsPanelWidgetComponent from "./components/SettingsPanelWidget.jsx"; // Nueva importación
 import {
   DEFAULT_SLOT_VIDEO_STRUCTURE,
   VIDEO_MAIN_STATUS,
@@ -16,12 +18,12 @@ import {
 import "./styles/index.css";
 
 const PLUGIN_PAGE_ID = "videoscheduler";
-const STORAGE_KEY_DATA = "video_scheduler_plugin_data_v2";
+const STORAGE_KEY_DATA = "video_scheduler_plugin_data_v2"; // Mantener v2 si la estructura no cambia drásticamente
 
 export default {
   id: "video-scheduler",
   name: "Video Scheduler",
-  version: "0.8.1",
+  version: "0.8.2", // Incrementar versión
   description:
     "Planificador visual de videos con estados, multimes, moneda personalizable y detalles extendidos.",
   author: "Atlas Plugin Developer",
@@ -32,6 +34,8 @@ export default {
   _core: null,
   _navigationExtensionId: null,
   _pageExtensionId: null,
+  // highlight-next-line
+  _settingsWidgetExtensionId: null, // Para el nuevo widget
 
   _pluginData: {
     videosBySlotKey: {},
@@ -40,6 +44,8 @@ export default {
       mainUserCurrency: "USD",
       currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
       configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+      // Podríamos añadir aquí más configuraciones en el futuro
+      // ejemploEnableNotifications: true,
     },
   },
 
@@ -58,40 +64,45 @@ export default {
         self.publicAPI = self._createPublicAPI(self);
         self._core.plugins.registerAPI(self.id, self.publicAPI);
 
-        const NavItemWrapperFactory =
-          (Component, extraProps) => (propsFromAtlas) =>
+        // Helper para crear wrappers de componentes
+        const createComponentWrapper = (Component, extraProps = {}) => {
+          return (propsFromAtlas) =>
             React.createElement(Component, {
               ...propsFromAtlas,
+              plugin: self,
+              core: self._core,
+              pluginId: self.id,
               ...extraProps,
             });
+        };
+
+        // Registrar NavItem
         self._navigationExtensionId = self._core.ui.registerExtension(
           self.id,
           self._core.ui.getExtensionZones().MAIN_NAVIGATION,
-          NavItemWrapperFactory(VideoSchedulerNavItemComponent, {
-            plugin: self,
-            core: self._core,
-            pluginId: self.id,
+          createComponentWrapper(VideoSchedulerNavItemComponent, {
             pageIdToNavigate: PLUGIN_PAGE_ID,
           }),
           { order: 150 }
         );
 
-        const PageWrapperFactory =
-          (Component, extraProps) => (propsFromAtlas) =>
-            React.createElement(Component, {
-              ...propsFromAtlas,
-              ...extraProps,
-            });
+        // Registrar MainPage
         self._pageExtensionId = self._core.ui.registerExtension(
           self.id,
           self._core.ui.getExtensionZones().PLUGIN_PAGES,
-          PageWrapperFactory(VideoSchedulerMainPageComponent, {
-            plugin: self,
-            core: self._core,
-            pluginId: self.id,
-          }),
+          createComponentWrapper(VideoSchedulerMainPageComponent),
           { order: 100, props: { pageId: PLUGIN_PAGE_ID } }
         );
+
+        // highlight-start
+        // Registrar SettingsPanelWidget
+        self._settingsWidgetExtensionId = self._core.ui.registerExtension(
+          self.id,
+          self._core.ui.getExtensionZones().SETTINGS_PANEL, // Zona correcta
+          createComponentWrapper(SettingsPanelWidgetComponent), // Usar el wrapper
+          { order: 100 } // Opcional: ajustar orden si hay otros widgets
+        );
+        // highlight-end
 
         console.log(`[${self.id}] Plugin inicializado.`);
         resolve(true);
@@ -106,12 +117,31 @@ export default {
     const self = this;
     console.log(`[${self.id}] Limpiando plugin...`);
     try {
-      await self._savePluginData();
-      if (self._core?.ui?.removeAllExtensions) {
-        self._core.ui.removeAllExtensions(self.id);
+      await self._savePluginData(); // Guardar datos antes de limpiar
+
+      // Limpiar extensiones específicas
+      if (self._core && self._core.ui) {
+        if (self._navigationExtensionId) {
+          self._core.ui.removeExtension(self.id, self._navigationExtensionId);
+        }
+        if (self._pageExtensionId) {
+          self._core.ui.removeExtension(self.id, self._pageExtensionId);
+        }
+        // highlight-start
+        if (self._settingsWidgetExtensionId) {
+          self._core.ui.removeExtension(
+            self.id,
+            self._settingsWidgetExtensionId
+          );
+        }
+        // highlight-end
       }
+
       self._navigationExtensionId = null;
       self._pageExtensionId = null;
+      // highlight-next-line
+      self._settingsWidgetExtensionId = null;
+
       console.log(`[${self.id}] Plugin limpiado.`);
       return true;
     } catch (error) {
@@ -120,7 +150,7 @@ export default {
     }
   },
 
-  publicAPI: {},
+  publicAPI: {}, // Se define en _createPublicAPI
   _createPublicAPI: function (self) {
     return {
       getMonthViewData: async (year, month) =>
@@ -155,8 +185,10 @@ export default {
       deleteDailyIncome: async (dateStr) =>
         self._internalDeleteDailyIncome(dateStr),
       getCurrencyConfiguration: async () =>
+        // Usado por SettingsPanelWidget y CurrencyRateForm
         self._internalGetCurrencyConfiguration(),
       saveCurrencyConfiguration: async (
+        // Usado por SettingsPanelWidget y CurrencyRateForm
         mainCurrency,
         incomeCurrencies,
         rates
@@ -166,8 +198,16 @@ export default {
           incomeCurrencies,
           rates
         ),
-      getAllSupportedCurrencies: () => ALL_SUPPORTED_CURRENCIES,
+      getAllSupportedCurrencies: () => ALL_SUPPORTED_CURRENCIES, // Usado por SettingsPanelWidget y otros forms
       getCurrencySymbol: (currencyCode) => getCurrencySymbol(currencyCode),
+      // Aquí podrían ir más funciones para otras configuraciones si las añades
+      // Ejemplo:
+      // getPluginSpecificSetting: async (key) => self._pluginData.settings[key],
+      // savePluginSpecificSetting: async (key, value) => {
+      //   self._pluginData.settings[key] = value;
+      //   await self._savePluginData();
+      //   return self._pluginData.settings[key];
+      // }
     };
   },
 
@@ -177,35 +217,59 @@ export default {
       console.warn(
         `[${self.id}] Core o storage no disponible en _loadPluginData.`
       );
+      self._pluginData.settings = {
+        // Asegurar que settings exista incluso si falla la carga
+        mainUserCurrency: "USD",
+        currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
+        configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+      };
       return;
     }
     const loadedData = await self._core.storage.getItem(
       self.id,
       STORAGE_KEY_DATA,
-      {}
+      {} // Default a objeto vacío si no hay nada
     );
     const safeLoadedData = loadedData || {};
 
+    // Definir estructura de settings por defecto más robusta
     const defaultSettings = {
       mainUserCurrency: "USD",
-      currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
-      configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+      currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 }, // Tasas base
+      configuredIncomeCurrencies: ["USD", "EUR", "ARS"], // Monedas de ingreso base
+      // ejemploEnableNotifications: true, // otras configuraciones
     };
+
     const loadedSettings = safeLoadedData.settings || {};
-    const finalSettings = {
-      mainUserCurrency:
-        loadedSettings.mainUserCurrency || defaultSettings.mainUserCurrency,
-      currencyRates: {
-        ...defaultSettings.currencyRates,
-        ...(loadedSettings.currencyRates || {}),
-      },
-      configuredIncomeCurrencies:
-        Array.isArray(loadedSettings.configuredIncomeCurrencies) &&
-        loadedSettings.configuredIncomeCurrencies.length > 0
-          ? loadedSettings.configuredIncomeCurrencies
-          : defaultSettings.configuredIncomeCurrencies,
+
+    // Fusionar configuraciones cargadas con las por defecto
+    // Esto asegura que si se añaden nuevas claves de settings en el futuro,
+    // el plugin no falle al cargarlas si no existen en los datos guardados.
+    const finalSettings = { ...defaultSettings, ...loadedSettings };
+
+    // Re-validar y asegurar consistencia de la configuración de moneda
+    if (
+      !ALL_SUPPORTED_CURRENCIES.find(
+        (c) => c.code === finalSettings.mainUserCurrency
+      )
+    ) {
+      finalSettings.mainUserCurrency = defaultSettings.mainUserCurrency; // Fallback a USD
+    }
+
+    finalSettings.currencyRates = {
+      ...defaultSettings.currencyRates,
+      ...(finalSettings.currencyRates || {}),
     };
-    finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1;
+    finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1; // Moneda principal siempre tasa 1
+
+    if (
+      !Array.isArray(finalSettings.configuredIncomeCurrencies) ||
+      finalSettings.configuredIncomeCurrencies.length === 0
+    ) {
+      finalSettings.configuredIncomeCurrencies = [
+        ...defaultSettings.configuredIncomeCurrencies,
+      ];
+    }
     if (
       !finalSettings.configuredIncomeCurrencies.includes(
         finalSettings.mainUserCurrency
@@ -214,13 +278,19 @@ export default {
       finalSettings.configuredIncomeCurrencies.push(
         finalSettings.mainUserCurrency
       );
-      if (
-        finalSettings.currencyRates[finalSettings.mainUserCurrency] ===
-        undefined
-      ) {
-        finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1;
-      }
+      finalSettings.configuredIncomeCurrencies = [
+        ...new Set(finalSettings.configuredIncomeCurrencies),
+      ];
     }
+    // Asegurar que todas las configuredIncomeCurrencies tengan una tasa
+    finalSettings.configuredIncomeCurrencies.forEach((code) => {
+      if (finalSettings.currencyRates[code] === undefined) {
+        finalSettings.currencyRates[code] =
+          code === finalSettings.mainUserCurrency
+            ? 1
+            : defaultSettings.currencyRates[code] || 1;
+      }
+    });
 
     self._pluginData = {
       videosBySlotKey: safeLoadedData.videosBySlotKey || {},
@@ -228,6 +298,7 @@ export default {
       settings: finalSettings,
     };
 
+    // Normalizar videos (ya existente)
     Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
       self._pluginData.videosBySlotKey[key] = {
         ...DEFAULT_SLOT_VIDEO_STRUCTURE,
@@ -243,12 +314,13 @@ export default {
       };
     });
 
+    // Normalizar dailyIncomes (ya existente)
     const validIncomeCurrencies =
       self._pluginData.settings.configuredIncomeCurrencies;
-    const mainCurrency = self._pluginData.settings.mainUserCurrency;
+    const mainCurrencyForIncomes = self._pluginData.settings.mainUserCurrency;
     Object.values(self._pluginData.dailyIncomes).forEach((income) => {
       if (!validIncomeCurrencies.includes(income.currency)) {
-        income.currency = mainCurrency;
+        income.currency = mainCurrencyForIncomes;
       }
     });
   },
@@ -262,14 +334,16 @@ export default {
       return;
     }
     try {
+      // Asegurar que la configuración de moneda sea consistente antes de guardar
       if (
-        self._pluginData.settings?.currencyRates &&
-        self._pluginData.settings?.mainUserCurrency
+        self._pluginData.settings?.mainUserCurrency &&
+        self._pluginData.settings?.currencyRates
       ) {
         self._pluginData.settings.currencyRates[
           self._pluginData.settings.mainUserCurrency
         ] = 1;
       } else {
+        // Fallback si settings está corrupto o incompleto
         self._pluginData.settings = {
           mainUserCurrency: "USD",
           currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
@@ -285,6 +359,13 @@ export default {
       console.error(`[${self.id}] Error al guardar datos:`, error);
     }
   },
+
+  // _getVideoSlotKey, _ensureVideoSlotExists, _filterDataByMonth, _applySystemWarnings
+  // _internalGetMonthViewData, _internalUpdateVideoName, _internalUpdateVideoDescription
+  // _internalUpdateVideoStatus, _internalUpdateVideoDetails, _internalSetDailyIncome
+  // _internalGetDailyIncome, _internalDeleteDailyIncome
+  // (Estas funciones internas no necesitan cambios para el widget de configuración,
+  // a menos que el widget fuera a modificar directamente videos o ingresos, lo cual no es el caso)
 
   _getVideoSlotKey: (dateStr, slotIndex) => `${dateStr}-${slotIndex}`,
 
@@ -374,8 +455,8 @@ export default {
     Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
       if (!key.startsWith(monthKeyPrefix)) return;
       const video = self._pluginData.videosBySlotKey[key];
-      const dateStr = key.substring(0, 10);
-      const isPast = isDateInPast(dateStr);
+      const dateStrOfVideo = key.substring(0, 10); // Asegurar que usamos dateStr del video
+      const isPast = isDateInPast(dateStrOfVideo);
       const originalState = JSON.stringify(video);
       if (isPast) {
         if (video.status === VIDEO_MAIN_STATUS.PENDING) {
@@ -391,7 +472,7 @@ export default {
         )
           video.subStatus = null;
       }
-      self._applySystemWarnings(video, dateStr);
+      self._applySystemWarnings(video, dateStrOfVideo);
       if (JSON.stringify(video) !== originalState) dataChanged = true;
     });
     if (dataChanged) await self._savePluginData();
@@ -538,14 +619,8 @@ export default {
 
   _internalGetCurrencyConfiguration: async function () {
     const self = this;
-    return JSON.parse(
-      JSON.stringify({
-        mainUserCurrency: self._pluginData.settings.mainUserCurrency,
-        configuredIncomeCurrencies:
-          self._pluginData.settings.configuredIncomeCurrencies,
-        currencyRates: self._pluginData.settings.currencyRates,
-      })
-    );
+    // Devolver una copia profunda para evitar mutaciones externas
+    return JSON.parse(JSON.stringify(self._pluginData.settings));
   },
 
   _internalSaveCurrencyConfiguration: async function (
@@ -554,33 +629,46 @@ export default {
     rates
   ) {
     const self = this;
+    // Validación y lógica de guardado (ya existente y parece robusta)
     if (!ALL_SUPPORTED_CURRENCIES.find((c) => c.code === mainCurrency)) {
       console.error(`[${self.id}] Moneda principal inválida: ${mainCurrency}`);
-      return self._pluginData.settings;
+      return self._pluginData.settings; // Retorna la configuración actual sin cambios
     }
     self._pluginData.settings.mainUserCurrency = mainCurrency;
+
     const validatedIncomeCurrencies = incomeCurrencies.filter((code) =>
       ALL_SUPPORTED_CURRENCIES.find((c) => c.code === code)
     );
-    if (!validatedIncomeCurrencies.includes(mainCurrency))
+    if (!validatedIncomeCurrencies.includes(mainCurrency)) {
       validatedIncomeCurrencies.push(mainCurrency);
+    }
+    // Usar Set para eliminar duplicados y luego convertir a array
     self._pluginData.settings.configuredIncomeCurrencies = [
       ...new Set(validatedIncomeCurrencies),
     ];
+
     const validatedRates = {};
     self._pluginData.settings.configuredIncomeCurrencies.forEach((code) => {
-      if (code === mainCurrency) validatedRates[code] = 1;
-      else if (rates && typeof rates[code] === "number" && rates[code] > 0)
+      if (code === mainCurrency) {
+        validatedRates[code] = 1;
+      } else if (rates && typeof rates[code] === "number" && rates[code] > 0) {
         validatedRates[code] = rates[code];
-      else
+      } else {
+        // Si no hay tasa nueva o es inválida, intentar mantener la existente o default a 1
         validatedRates[code] =
-          self._pluginData.settings.currencyRates[code] || 1;
+          self._pluginData.settings.currencyRates &&
+          self._pluginData.settings.currencyRates[code] > 0
+            ? self._pluginData.settings.currencyRates[code]
+            : 1;
+      }
     });
     self._pluginData.settings.currencyRates = validatedRates;
+
+    // Limpiar tasas de monedas que ya no están en configuredIncomeCurrencies (excepto la principal)
     Object.keys(self._pluginData.settings.currencyRates).forEach(
       (rateCurrency) => {
         if (
-          rateCurrency !== mainCurrency &&
+          rateCurrency !== self._pluginData.settings.mainUserCurrency &&
           !self._pluginData.settings.configuredIncomeCurrencies.includes(
             rateCurrency
           )
@@ -589,7 +677,14 @@ export default {
         }
       }
     );
+
     await self._savePluginData();
-    return self._pluginData.settings;
+    // Emitir un evento indicando que la configuración de moneda ha cambiado
+    if (self._core && self._core.events && self._core.events.publish) {
+      self._core.events.publish(self.id, `${self.id}.currencyConfigChanged`, {
+        ...self._pluginData.settings,
+      });
+    }
+    return JSON.parse(JSON.stringify(self._pluginData.settings)); // Devolver copia
   },
 };
