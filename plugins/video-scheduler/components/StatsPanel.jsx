@@ -637,7 +637,12 @@ function StatsPanel({
                       className: "month-nav-button",
                       onClick: handlePrevMonth,
                     },
-                    "←"
+                    // Contenido del botón modificado para usar Material Icons
+                    React.createElement(
+                      "span",
+                      { className: "material-icons" },
+                      "chevron_left"
+                    )
                   ),
                   React.createElement(
                     "h2",
@@ -651,7 +656,12 @@ function StatsPanel({
                       className: "month-nav-button",
                       onClick: handleNextMonth,
                     },
-                    "→"
+                    // Contenido del botón modificado para usar Material Icons
+                    React.createElement(
+                      "span",
+                      { className: "material-icons" },
+                      "chevron_right"
+                    )
                   ),
                 ]
               ),

@@ -57,12 +57,12 @@
 
 .month-nav-button {
   /* Estilo para los botones de navegación de mes */
-  background: var(--primary-color);
+  background: transparent;
+  border: 1px solid var(--border-color);
   color: white;
-  border: none;
   width: 40px; /* Ligeramente más grande */
   height: 40px;
-  border-radius: 50%; /* Hacerlos circulares */
+  border-radius: 25%; /* Hacerlos circulares */
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -74,9 +74,10 @@
 }
 
 .month-nav-button:hover {
-  background: var(--primary-hover);
+  background: transparent;
   transform: scale(1.05); /* Efecto sutil al pasar el mouse */
   box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
 }
 
 .stats-panel-header h2 {
@@ -88,6 +89,25 @@
   min-width: 450px; /* Ajusta este valor según el nombre de mes más largo + año */
   text-align: center;
   white-space: nowrap; /* Evitar que el texto se rompa */
+}
+
+/* Estilo para los iconos dentro de los botones de navegación de mes */
+.stats-panel-header .month-nav-button .material-icons {
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  /* font-size se hereda de .month-nav-button o puedes especificarlo aquí si es necesario */
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga";
 }
 
 .stats-panel-close {
