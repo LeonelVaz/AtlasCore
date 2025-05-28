@@ -3,684 +3,7 @@
    Plugin: contador-eventos-dia v2.0.0
    ========================================================================== */
 
-/* ==========================================================================
-   Panel principal MEJORADO para layout horizontal
-   ========================================================================== */
-
-.event-counter-settings-panel {
-  background: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-xl);
-  padding: var(--plugin-spacing-xl);
-  margin: var(--plugin-spacing-lg) 0;
-  box-shadow: var(--plugin-shadow-lg);
-  width: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    sans-serif;
-}
-
-/* ==========================================================================
-       Header del panel MEJORADO
-       ========================================================================== */
-
-.settings-header {
-  text-align: center;
-  margin-bottom: var(--plugin-spacing-xl);
-  padding-bottom: var(--plugin-spacing-lg);
-  border-bottom: 2px solid var(--border-color, #e5e7eb);
-}
-
-.settings-title {
-  margin: 0 0 var(--plugin-spacing-sm) 0;
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--text-color, #1f2937);
-  background: linear-gradient(135deg, #4f46e5, #7c3aed, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
-}
-
-.settings-subtitle {
-  margin: 0;
-  font-size: 16px;
-  color: var(--text-color-secondary, #6b7280);
-  font-weight: 500;
-}
-
-/* ==========================================================================
-       LAYOUT HORIZONTAL PRINCIPAL (NUEVO)
-       ========================================================================== */
-
-.settings-main-container {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--plugin-spacing-xl);
-  align-items: start;
-}
-
-.settings-left-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--plugin-spacing-lg);
-}
-
-.settings-right-column {
-  position: sticky;
-  top: var(--plugin-spacing-lg);
-}
-
-.settings-section-sticky {
-  background: var(--bg-color-secondary, #f9fafb);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-lg);
-  padding: var(--plugin-spacing-lg);
-}
-
-/* ==========================================================================
-       Estados de carga y error MEJORADOS
-       ========================================================================== */
-
-.settings-panel-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--plugin-spacing-xl) * 2;
-  text-align: center;
-  gap: var(--plugin-spacing-md);
-  color: var(--text-color-secondary, #6b7280);
-  min-height: 200px;
-}
-
-.settings-panel-error {
-  padding: var(--plugin-spacing-xl);
-  text-align: center;
-  color: var(--danger-color, #ef4444);
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--plugin-radius-lg);
-  font-weight: 600;
-}
-
-/* ==========================================================================
-       Secciones del panel MEJORADAS
-       ========================================================================== */
-
-.settings-section {
-  padding: var(--plugin-spacing-lg);
-  background: var(--bg-color-secondary, #f9fafb);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-lg);
-  transition: var(--plugin-transition-fast);
-}
-
-.settings-section:hover {
-  border-color: rgba(79, 70, 229, 0.2);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
-}
-
-.settings-section h4 {
-  margin: 0 0 var(--plugin-spacing-md) 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-color, #1f2937);
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-}
-
-.subsection-title-compact {
-  margin: var(--plugin-spacing-md) 0 var(--plugin-spacing-sm) 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-color, #1f2937);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--primary-color, #4f46e5);
-  padding-bottom: var(--plugin-spacing-xs);
-  display: inline-block;
-}
-
-/* ==========================================================================
-       Vista previa del badge MEJORADA
-       ========================================================================== */
-
-.badge-preview-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--plugin-spacing-lg);
-  align-items: center;
-}
-
-.badge-preview-area {
-  position: relative;
-  width: 140px;
-  height: 100px;
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-  border: 2px dashed var(--border-color, #d1d5db);
-  border-radius: var(--plugin-radius-xl);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.badge-preview-area::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(
-      circle at 25% 25%,
-      rgba(79, 70, 229, 0.08) 0%,
-      transparent 50%
-    ),
-    radial-gradient(
-      circle at 75% 75%,
-      rgba(124, 58, 237, 0.08) 0%,
-      transparent 50%
-    );
-  animation: plugin-pulse 4s ease-in-out infinite;
-}
-
-.badge-preview-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  font-size: 14px;
-  color: var(--text-color-secondary, #6b7280);
-  text-align: center;
-}
-
-.preview-slider {
-  width: 140px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border-color, #e5e7eb);
-  outline: none;
-  cursor: pointer;
-  transition: var(--plugin-transition-fast);
-}
-
-.preview-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color, #4f46e5), #7c3aed);
-  cursor: pointer;
-  box-shadow: var(--plugin-shadow-md);
-  transition: var(--plugin-transition-fast);
-}
-
-.preview-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-}
-
-.preview-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color, #4f46e5), #7c3aed);
-  cursor: pointer;
-  border: none;
-  box-shadow: var(--plugin-shadow-md);
-}
-
-/* ==========================================================================
-       Presets rápidos REDISEÑADOS para horizontal
-       ========================================================================== */
-
-.presets-grid-horizontal {
-  display: flex;
-  gap: var(--plugin-spacing-sm);
-  flex-wrap: wrap;
-}
-
-.preset-button-compact {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--plugin-spacing-xs);
-  padding: var(--plugin-spacing-md);
-  background: var(--card-bg, #ffffff);
-  border: 2px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-lg);
-  cursor: pointer;
-  transition: var(--plugin-transition-normal);
-  text-align: center;
-  font-family: inherit;
-  min-width: 120px;
-  flex: 1;
-}
-
-.preset-button-compact:hover {
-  border-color: var(--primary-color, #4f46e5);
-  background: linear-gradient(
-    135deg,
-    rgba(79, 70, 229, 0.05),
-    rgba(124, 58, 237, 0.05)
-  );
-  transform: translateY(-2px);
-  box-shadow: var(--plugin-shadow-lg);
-}
-
-.preset-button-compact:active {
-  transform: translateY(0);
-}
-
-.preset-button-compact strong {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-color, #1f2937);
-}
-
-.preset-button-compact small {
-  font-size: 11px;
-  color: var(--text-color-secondary, #6b7280);
-  line-height: 1.3;
-}
-
-/* ==========================================================================
-       Navegación por pestañas HORIZONTAL
-       ========================================================================== */
-
-.settings-tabs-horizontal {
-  display: flex;
-  gap: var(--plugin-spacing-xs);
-  padding: var(--plugin-spacing-xs);
-  background: var(--bg-color-secondary, #f3f4f6);
-  border-radius: var(--plugin-radius-lg);
-  overflow-x: auto;
-}
-
-.tab-button-horizontal {
-  flex: 1;
-  min-width: max-content;
-  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
-  background: transparent;
-  border: none;
-  border-radius: var(--plugin-radius-md);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-color-secondary, #6b7280);
-  transition: var(--plugin-transition-fast);
-  white-space: nowrap;
-}
-
-.tab-button-horizontal:hover {
-  background: rgba(79, 70, 229, 0.1);
-  color: var(--primary-color, #4f46e5);
-  transform: translateY(-1px);
-}
-
-.tab-button-horizontal.active {
-  background: linear-gradient(135deg, var(--primary-color, #4f46e5), #7c3aed);
-  color: white;
-  font-weight: 700;
-  box-shadow: var(--plugin-shadow-md);
-}
-
-/* ==========================================================================
-       Contenido de pestañas HORIZONTAL
-       ========================================================================== */
-
-.tab-content-horizontal {
-  min-height: 400px;
-}
-
-.tab-panel-horizontal {
-  animation: plugin-fade-in 0.3s ease-out;
-}
-
-/* ==========================================================================
-       GRID SYSTEM para configuraciones horizontales (NUEVO)
-       ========================================================================== */
-
-.settings-grid-horizontal {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--plugin-spacing-md);
-  align-items: start;
-}
-
-.setting-group-compact {
-  padding: var(--plugin-spacing-md);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-md);
-  background: var(--card-bg, #ffffff);
-  transition: var(--plugin-transition-fast);
-}
-
-.setting-group-compact:hover {
-  border-color: rgba(79, 70, 229, 0.3);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
-}
-
-.setting-group-horizontal {
-  margin-bottom: var(--plugin-spacing-md);
-  padding: var(--plugin-spacing-md);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-md);
-  background: var(--card-bg, #ffffff);
-  transition: var(--plugin-transition-fast);
-}
-
-.setting-group-horizontal:hover {
-  border-color: rgba(79, 70, 229, 0.3);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
-}
-
-/* ==========================================================================
-       Labels y controles COMPACTOS
-       ========================================================================== */
-
-.setting-label-compact {
-  display: block;
-  margin-bottom: var(--plugin-spacing-sm);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-color, #1f2937);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.checkbox-label-horizontal {
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-color, #1f2937);
-}
-
-.checkbox-label-horizontal input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary-color, #4f46e5);
-  cursor: pointer;
-}
-
-/* ==========================================================================
-       Controles de formulario COMPACTOS
-       ========================================================================== */
-
-.setting-select-compact,
-.setting-number-input-compact,
-.setting-textarea-horizontal {
-  width: 100%;
-  padding: var(--plugin-spacing-sm) var(--plugin-spacing-md);
-  border: 2px solid var(--border-color, #d1d5db);
-  border-radius: var(--plugin-radius-md);
-  background: var(--input-bg, #ffffff);
-  color: var(--text-color, #1f2937);
-  font-size: 13px;
-  font-family: inherit;
-  font-weight: 500;
-  transition: var(--plugin-transition-fast);
-}
-
-.setting-select-compact:focus,
-.setting-number-input-compact:focus,
-.setting-textarea-horizontal:focus {
-  outline: none;
-  border-color: var(--primary-color, #4f46e5);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  transform: translateY(-1px);
-}
-
-.setting-textarea-horizontal {
-  resize: vertical;
-  min-height: 120px;
-  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
-    monospace;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.setting-color-input-compact {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 2px solid var(--border-color, #d1d5db);
-  border-radius: var(--plugin-radius-md);
-  background: none;
-  cursor: pointer;
-  transition: var(--plugin-transition-fast);
-}
-
-.setting-color-input-compact:hover {
-  border-color: var(--primary-color, #4f46e5);
-  transform: scale(1.05);
-  box-shadow: var(--plugin-shadow-md);
-}
-
-.setting-color-input-compact:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-}
-
-.setting-number-input-compact {
-  max-width: 80px;
-}
-
-.setting-indent {
-  margin-left: var(--plugin-spacing-md);
-  margin-top: var(--plugin-spacing-sm);
-}
-
-/* ==========================================================================
-       Inputs de color específicos MEJORADOS
-       ========================================================================== */
-
-.color-input-group-horizontal {
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-md);
-  flex-wrap: wrap;
-}
-
-.color-preview-badge-compact {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 24px;
-  padding: 4px 8px;
-  color: white;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.color-code-compact {
-  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
-    monospace;
-  font-size: 11px;
-  color: var(--text-color-secondary, #6b7280);
-  background: var(--bg-color-secondary, #f3f4f6);
-  padding: 4px 8px;
-  border-radius: var(--plugin-radius-sm);
-  border: 1px solid var(--border-color, #e5e7eb);
-  font-weight: 600;
-}
-
-/* ==========================================================================
-       Configuración de rangos COMPLETAMENTE REDISEÑADA
-       ========================================================================== */
-
-.color-ranges-section {
-  margin-top: var(--plugin-spacing-lg);
-}
-
-.range-config-horizontal {
-  padding: var(--plugin-spacing-lg);
-  background: var(--bg-color-secondary, #f9fafb);
-  border: 2px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-lg);
-  margin-bottom: var(--plugin-spacing-md);
-  transition: var(--plugin-transition-fast);
-}
-
-.range-config-horizontal:hover {
-  background: var(--hover-color, rgba(79, 70, 229, 0.02));
-  border-color: rgba(79, 70, 229, 0.2);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
-}
-
-.range-config-horizontal h5 {
-  margin: 0 0 var(--plugin-spacing-md) 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-color, #1f2937);
-}
-
-.range-controls-horizontal {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  gap: var(--plugin-spacing-lg);
-}
-
-.range-inputs-horizontal {
-  display: flex;
-  gap: var(--plugin-spacing-md);
-  flex: 1;
-}
-
-.range-input-horizontal {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.range-input-horizontal label {
-  margin-bottom: var(--plugin-spacing-xs);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-color-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-/* COLOR A LA DERECHA (NUEVO) */
-.range-color-horizontal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--plugin-spacing-xs);
-  padding: var(--plugin-spacing-sm);
-  background: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: var(--plugin-radius-md);
-}
-
-.range-color-horizontal label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-color-secondary, #6b7280);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  margin: 0;
-}
-
-/* ==========================================================================
-       Controles específicos de efectos (NUEVO)
-       ========================================================================== */
-
-.glow-controls-horizontal {
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  margin-top: var(--plugin-spacing-sm);
-  flex-wrap: wrap;
-}
-
-.border-controls-horizontal {
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  margin-top: var(--plugin-spacing-sm);
-}
-
-/* ==========================================================================
-       Footer del panel HORIZONTAL
-       ========================================================================== */
-
-.settings-footer-horizontal {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--plugin-spacing-xl);
-  padding-top: var(--plugin-spacing-lg);
-  border-top: 2px solid var(--border-color, #e5e7eb);
-}
-
-.reset-button-horizontal {
-  padding: var(--plugin-spacing-md) var(--plugin-spacing-xl);
-  background: linear-gradient(135deg, var(--danger-color, #ef4444), #dc2626);
-  color: white;
-  border: none;
-  border-radius: var(--plugin-radius-lg);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--plugin-transition-fast);
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.reset-button-horizontal:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
-  transform: translateY(-2px);
-  box-shadow: var(--plugin-shadow-lg);
-}
-
-.reset-button-horizontal:active {
-  transform: translateY(0);
-}
-
-.settings-footer-horizontal small {
-  color: var(--text-color-secondary, #6b7280);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* ==========================================================================
-       NOTIFICACIÓN FLOTANTE DE GUARDADO (NUEVO)
-       ========================================================================== */
-
-.floating-save-notification {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  gap: var(--plugin-spacing-sm);
-  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
-  background: linear-gradient(135deg, var(--success-color, #10b981), #059669);
-  color: white;
-  border-radius: var(--plugin-radius-xl);
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: var(--plugin-shadow-lg);
-  animation: plugin-slide-up 0.3s ease-out, plugin-pulse 2s infinite;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.floating-save-notification span:first-child {
-  font-size: 16px;
-  animation: spin 1s linear infinite;
-}
-
+/* Definiciones de Keyframes (deben estar en el ámbito global) */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -690,192 +13,907 @@
   }
 }
 
-/* ==========================================================================
-       Responsive Design MEJORADO
-       ========================================================================== */
+@keyframes plugin-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  /* Nota: Tu badge-preview-area::before usa una animación plugin-pulse diferente,
+     si es la misma, puedes unificarla. Si es distinta, dale un nombre único.
+     Asumo que es distinta por ahora. */
+}
 
-@media (max-width: 1024px) {
+@keyframes plugin-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes plugin-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Clase principal del plugin para anidar todos los estilos */
+.event-counter-settings-panel {
+  /* ==========================================================================
+     Panel principal MEJORADO para layout horizontal
+     ========================================================================== */
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-xl);
+  padding: var(--plugin-spacing-xl);
+  margin: var(--plugin-spacing-lg) 0;
+  box-shadow: var(--plugin-shadow-lg);
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+
+  /* ==========================================================================
+         Header del panel MEJORADO
+         ========================================================================== */
+  .settings-header {
+    text-align: center;
+    margin-bottom: var(--plugin-spacing-xl);
+    padding-bottom: var(--plugin-spacing-lg);
+    border-bottom: 2px solid var(--border-color, #e5e7eb);
+  }
+
+  .settings-title {
+    margin: 0 0 var(--plugin-spacing-sm) 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-color, #1f2937);
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+  }
+
+  .settings-subtitle {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-color-secondary, #6b7280);
+    font-weight: 500;
+  }
+
+  /* ==========================================================================
+         LAYOUT HORIZONTAL PRINCIPAL (NUEVO)
+         ========================================================================== */
   .settings-main-container {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--plugin-spacing-xl);
+    align-items: start;
+  }
+
+  .settings-left-column {
+    display: flex;
+    flex-direction: column;
     gap: var(--plugin-spacing-lg);
   }
 
   .settings-right-column {
-    position: static;
-    order: -1;
+    position: sticky;
+    top: var(--plugin-spacing-lg);
   }
 
-  .settings-grid-horizontal {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .event-counter-settings-panel {
+  .settings-section-sticky {
+    background: var(--bg-color-secondary, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-lg);
     padding: var(--plugin-spacing-lg);
-    margin: var(--plugin-spacing-md) 0;
   }
 
-  .settings-title {
-    font-size: 24px;
-  }
-
-  .presets-grid-horizontal {
+  /* ==========================================================================
+         Estados de carga y error MEJORADOS
+         ========================================================================== */
+  .settings-panel-loading {
+    display: flex;
     flex-direction: column;
-  }
-
-  .preset-button-compact {
-    min-width: auto;
-  }
-
-  .settings-tabs-horizontal {
-    flex-wrap: wrap;
-  }
-
-  .tab-button-horizontal {
-    flex: none;
-    min-width: 120px;
-  }
-
-  .settings-grid-horizontal {
-    grid-template-columns: 1fr;
-  }
-
-  .range-controls-horizontal {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--plugin-spacing-md);
-  }
-
-  .range-inputs-horizontal {
-    flex-direction: column;
-  }
-
-  .glow-controls-horizontal,
-  .border-controls-horizontal {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .settings-footer-horizontal {
-    flex-direction: column;
-    gap: var(--plugin-spacing-md);
-    text-align: center;
-  }
-
-  .floating-save-notification {
-    bottom: 16px;
-    right: 16px;
-    left: 16px;
+    align-items: center;
     justify-content: center;
+    /* padding: var(--plugin-spacing-xl) * 2; // Esto no es CSS válido, debe ser un valor calculado o fijo */
+    padding: calc(
+      var(--plugin-spacing-xl, 24px) * 2
+    ); /* Asumiendo que plugin-spacing-xl es una variable con unidad */
+    text-align: center;
+    gap: var(--plugin-spacing-md);
+    color: var(--text-color-secondary, #6b7280);
+    min-height: 200px;
   }
-}
 
-@media (max-width: 480px) {
-  .badge-preview-controls {
+  .settings-panel-error {
+    padding: var(--plugin-spacing-xl);
+    text-align: center;
+    color: var(--danger-color, #ef4444);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--plugin-radius-lg);
+    font-weight: 600;
+  }
+
+  /* ==========================================================================
+         Secciones del panel MEJORADAS
+         ========================================================================== */
+  .settings-section {
+    padding: var(--plugin-spacing-lg);
+    background: var(--bg-color-secondary, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-lg);
+    transition: var(--plugin-transition-fast);
+
+    &:hover {
+      border-color: rgba(79, 70, 229, 0.2);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
+    }
+
+    h4 {
+      margin: 0 0 var(--plugin-spacing-md) 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-color, #1f2937);
+      display: flex;
+      align-items: center;
+      gap: var(--plugin-spacing-sm);
+    }
+  }
+
+  .subsection-title-compact {
+    margin: var(--plugin-spacing-md) 0 var(--plugin-spacing-sm) 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-color, #1f2937);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--primary-color, #4f46e5);
+    padding-bottom: var(--plugin-spacing-xs);
+    display: inline-block;
+  }
+
+  /* ==========================================================================
+         Vista previa del badge MEJORADA
+         ========================================================================== */
+  .badge-preview-container {
+    display: flex;
     flex-direction: column;
+    gap: var(--plugin-spacing-lg);
+    align-items: center;
+  }
+
+  .badge-preview-area {
+    position: relative;
+    width: 140px;
+    height: 100px;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border: 2px dashed var(--border-color, #d1d5db);
+    border-radius: var(--plugin-radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(
+          circle at 25% 25%,
+          rgba(79, 70, 229, 0.08) 0%,
+          transparent 50%
+        ),
+        radial-gradient(
+          circle at 75% 75%,
+          rgba(124, 58, 237, 0.08) 0%,
+          transparent 50%
+        );
+      animation: plugin-pulse 4s ease-in-out infinite; /* Considera si este plugin-pulse es el mismo que el global */
+    }
+  }
+
+  .badge-preview-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--plugin-spacing-sm);
+    font-size: 14px;
+    color: var(--text-color-secondary, #6b7280);
     text-align: center;
   }
 
   .preview-slider {
-    width: 100%;
+    width: 140px;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border-color, #e5e7eb);
+    outline: none;
+    cursor: pointer;
+    transition: var(--plugin-transition-fast);
+    -webkit-appearance: none; /* Necesario para estilizar sliders en webkit */
+    appearance: none;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(
+        135deg,
+        var(--primary-color, #4f46e5),
+        #7c3aed
+      );
+      cursor: pointer;
+      box-shadow: var(--plugin-shadow-md);
+      transition: var(--plugin-transition-fast);
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    &::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(
+        135deg,
+        var(--primary-color, #4f46e5),
+        #7c3aed
+      );
+      cursor: pointer;
+      border: none;
+      box-shadow: var(--plugin-shadow-md);
+      &:hover {
+        transform: scale(1.1); /* Añadido para consistencia */
+      }
+    }
   }
 
-  .color-input-group-horizontal {
+  /* ==========================================================================
+         Presets rápidos REDISEÑADOS para horizontal
+         ========================================================================== */
+  .presets-grid-horizontal {
+    display: flex;
+    gap: var(--plugin-spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .preset-button-compact {
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
+    gap: var(--plugin-spacing-xs);
+    padding: var(--plugin-spacing-md);
+    background: var(--card-bg, #ffffff);
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-lg);
+    cursor: pointer;
+    transition: var(--plugin-transition-normal);
+    text-align: center;
+    font-family: inherit;
+    min-width: 120px;
+    flex: 1;
+
+    &:hover {
+      border-color: var(--primary-color, #4f46e5);
+      background: linear-gradient(
+        135deg,
+        rgba(79, 70, 229, 0.05),
+        rgba(124, 58, 237, 0.05)
+      );
+      transform: translateY(-2px);
+      box-shadow: var(--plugin-shadow-lg);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    strong {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-color, #1f2937);
+    }
+
+    small {
+      font-size: 11px;
+      color: var(--text-color-secondary, #6b7280);
+      line-height: 1.3;
+    }
   }
-}
 
-/* ==========================================================================
-       Accesibilidad MEJORADA
-       ========================================================================== */
-
-@media (prefers-reduced-motion: reduce) {
-  .settings-panel *,
-  .tab-panel-horizontal,
-  .preset-button-compact,
-  .setting-group-compact,
-  .setting-group-horizontal,
-  .floating-save-notification {
-    animation: none !important;
-    transition: none !important;
+  /* ==========================================================================
+         Navegación por pestañas HORIZONTAL
+         ========================================================================== */
+  .settings-tabs-horizontal {
+    display: flex;
+    gap: var(--plugin-spacing-xs);
+    padding: var(--plugin-spacing-xs);
+    background: var(--bg-color-secondary, #f3f4f6);
+    border-radius: var(--plugin-radius-lg);
+    overflow-x: auto;
   }
 
-  .preset-button-compact:hover,
-  .reset-button-horizontal:hover,
-  .tab-button-horizontal:hover {
-    transform: none !important;
-  }
-}
+  .tab-button-horizontal {
+    flex: 1;
+    min-width: max-content;
+    padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
+    background: transparent;
+    border: none;
+    border-radius: var(--plugin-radius-md);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color-secondary, #6b7280);
+    transition: var(--plugin-transition-fast);
+    white-space: nowrap;
 
-@media (prefers-contrast: high) {
-  .event-counter-settings-panel {
-    border-width: 3px;
+    &:hover {
+      background: rgba(79, 70, 229, 0.1);
+      color: var(--primary-color, #4f46e5);
+      transform: translateY(-1px);
+    }
+
+    &.active {
+      background: linear-gradient(
+        135deg,
+        var(--primary-color, #4f46e5),
+        #7c3aed
+      );
+      color: white;
+      font-weight: 700;
+      box-shadow: var(--plugin-shadow-md);
+    }
   }
 
-  .setting-group-compact,
+  /* ==========================================================================
+         Contenido de pestañas HORIZONTAL
+         ========================================================================== */
+  .tab-content-horizontal {
+    min-height: 400px;
+  }
+
+  .tab-panel-horizontal {
+    animation: plugin-fade-in 0.3s ease-out;
+  }
+
+  /* ==========================================================================
+         GRID SYSTEM para configuraciones horizontales (NUEVO)
+         ========================================================================== */
+  .settings-grid-horizontal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--plugin-spacing-md);
+    align-items: start;
+  }
+
+  .setting-group-compact {
+    padding: var(--plugin-spacing-md);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-md);
+    background: var(--card-bg, #ffffff);
+    transition: var(--plugin-transition-fast);
+
+    &:hover {
+      border-color: rgba(79, 70, 229, 0.3);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
+    }
+  }
+
   .setting-group-horizontal {
-    border-width: 2px;
+    margin-bottom: var(--plugin-spacing-md);
+    padding: var(--plugin-spacing-md);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-md);
+    background: var(--card-bg, #ffffff);
+    transition: var(--plugin-transition-fast);
+
+    &:hover {
+      border-color: rgba(79, 70, 229, 0.3);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
+    }
   }
 
-  .tab-button-horizontal.active {
-    border: 2px solid white;
+  /* ==========================================================================
+         Labels y controles COMPACTOS
+         ========================================================================== */
+  .setting-label-compact {
+    display: block;
+    margin-bottom: var(--plugin-spacing-sm);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-color, #1f2937);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
   }
 
-  .setting-select-compact:focus,
-  .setting-number-input-compact:focus,
-  .setting-textarea-horizontal:focus {
-    border-width: 3px;
+  .checkbox-label-horizontal {
+    display: flex;
+    align-items: center;
+    gap: var(--plugin-spacing-sm);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-color, #1f2937);
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary-color, #4f46e5);
+      cursor: pointer;
+    }
   }
-}
 
-/* ==========================================================================
-       Modo oscuro MEJORADO
-       ========================================================================== */
+  /* ==========================================================================
+         Controles de formulario COMPACTOS
+         ========================================================================== */
+  .setting-select-compact,
+  .setting-number-input-compact,
+  .setting-textarea-horizontal {
+    width: 100%;
+    padding: var(--plugin-spacing-sm) var(--plugin-spacing-md);
+    border: 2px solid var(--border-color, #d1d5db);
+    border-radius: var(--plugin-radius-md);
+    background: var(--input-bg, #ffffff);
+    color: var(--text-color, #1f2937);
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    transition: var(--plugin-transition-fast);
 
-@media (prefers-color-scheme: dark) {
-  .badge-preview-area {
-    background: linear-gradient(135deg, #374151, #4b5563);
-    border-color: #6b7280;
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color, #4f46e5);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      transform: translateY(-1px);
+    }
+  }
+
+  .setting-textarea-horizontal {
+    resize: vertical;
+    min-height: 120px;
+    font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+      monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .setting-color-input-compact {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 2px solid var(--border-color, #d1d5db);
+    border-radius: var(--plugin-radius-md);
+    background: none;
+    cursor: pointer;
+    transition: var(--plugin-transition-fast);
+
+    &:hover {
+      border-color: var(--primary-color, #4f46e5);
+      transform: scale(1.05);
+      box-shadow: var(--plugin-shadow-md);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+  }
+
+  .setting-number-input-compact {
+    max-width: 80px;
+  }
+
+  .setting-indent {
+    margin-left: var(--plugin-spacing-md);
+    margin-top: var(--plugin-spacing-sm);
+  }
+
+  /* ==========================================================================
+         Inputs de color específicos MEJORADOS
+         ========================================================================== */
+  .color-input-group-horizontal {
+    display: flex;
+    align-items: center;
+    gap: var(--plugin-spacing-md);
+    flex-wrap: wrap;
+  }
+
+  .color-preview-badge-compact {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 24px;
+    padding: 4px 8px;
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
   .color-code-compact {
-    background: #374151;
-    border-color: #4b5563;
+    font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+      monospace;
+    font-size: 11px;
+    color: var(--text-color-secondary, #6b7280);
+    background: var(--bg-color-secondary, #f3f4f6);
+    padding: 4px 8px;
+    border-radius: var(--plugin-radius-sm);
+    border: 1px solid var(--border-color, #e5e7eb);
+    font-weight: 600;
   }
 
-  .settings-tabs-horizontal {
-    background: #374151;
+  /* ==========================================================================
+         Configuración de rangos COMPLETAMENTE REDISEÑADA
+         ========================================================================== */
+  .color-ranges-section {
+    margin-top: var(--plugin-spacing-lg);
   }
 
   .range-config-horizontal {
-    background: #374151;
-    border-color: #4b5563;
+    padding: var(--plugin-spacing-lg);
+    background: var(--bg-color-secondary, #f9fafb);
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-lg);
+    margin-bottom: var(--plugin-spacing-md);
+    transition: var(--plugin-transition-fast);
+
+    &:hover {
+      background: var(--hover-color, rgba(79, 70, 229, 0.02));
+      border-color: rgba(79, 70, 229, 0.2);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
+    }
+
+    h5 {
+      margin: 0 0 var(--plugin-spacing-md) 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-color, #1f2937);
+    }
   }
 
+  .range-controls-horizontal {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--plugin-spacing-lg);
+  }
+
+  .range-inputs-horizontal {
+    display: flex;
+    gap: var(--plugin-spacing-md);
+    flex: 1;
+  }
+
+  .range-input-horizontal {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    label {
+      margin-bottom: var(--plugin-spacing-xs);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-color-secondary, #6b7280);
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+  }
+
+  /* COLOR A LA DERECHA (NUEVO) */
   .range-color-horizontal {
-    background: #374151;
-    border-color: #4b5563;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--plugin-spacing-xs);
+    padding: var(--plugin-spacing-sm);
+    background: var(--card-bg, #ffffff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--plugin-radius-md);
+
+    label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-color-secondary, #6b7280);
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      margin: 0;
+    }
   }
-}
 
-/* ==========================================================================
-       Utilidades y animaciones adicionales MEJORADAS
-       ========================================================================== */
+  /* ==========================================================================
+         Controles específicos de efectos (NUEVO)
+         ========================================================================== */
+  .glow-controls-horizontal {
+    display: flex;
+    align-items: center;
+    gap: var(--plugin-spacing-sm);
+    margin-top: var(--plugin-spacing-sm);
+    flex-wrap: wrap;
+  }
 
-.setting-highlight {
-  animation: plugin-pulse 1s ease-in-out;
-  border-color: var(--primary-color, #4f46e5) !important;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
-}
+  .border-controls-horizontal {
+    display: flex;
+    align-items: center;
+    gap: var(--plugin-spacing-sm);
+    margin-top: var(--plugin-spacing-sm);
+  }
 
-.setting-success {
-  border-color: var(--success-color, #10b981) !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
-}
+  /* ==========================================================================
+         Footer del panel HORIZONTAL
+         ========================================================================== */
+  .settings-footer-horizontal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--plugin-spacing-xl);
+    padding-top: var(--plugin-spacing-lg);
+    border-top: 2px solid var(--border-color, #e5e7eb);
 
-.setting-error {
-  border-color: var(--danger-color, #ef4444) !important;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    small {
+      color: var(--text-color-secondary, #6b7280);
+      font-size: 12px;
+      font-weight: 500;
+    }
+  }
+
+  .reset-button-horizontal {
+    padding: var(--plugin-spacing-md) var(--plugin-spacing-xl);
+    background: linear-gradient(135deg, var(--danger-color, #ef4444), #dc2626);
+    color: white;
+    border: none;
+    border-radius: var(--plugin-radius-lg);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--plugin-transition-fast);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+
+    &:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: translateY(-2px);
+      box-shadow: var(--plugin-shadow-lg);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  /* ==========================================================================
+         NOTIFICACIÓN FLOTANTE DE GUARDADO (NUEVO)
+         ========================================================================== */
+  .floating-save-notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: var(--plugin-spacing-sm);
+    padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
+    background: linear-gradient(135deg, var(--success-color, #10b981), #059669);
+    color: white;
+    border-radius: var(--plugin-radius-xl);
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: var(--plugin-shadow-lg);
+    animation: plugin-slide-up 0.3s ease-out, plugin-pulse 2s infinite 0.3s; /* Delay pulse */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    span:first-child {
+      font-size: 16px;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  /* ==========================================================================
+         Responsive Design MEJORADO
+         ========================================================================== */
+  @media (max-width: 1024px) {
+    .settings-main-container {
+      grid-template-columns: 1fr;
+      gap: var(--plugin-spacing-lg);
+    }
+
+    .settings-right-column {
+      position: static;
+      order: -1;
+    }
+
+    .settings-grid-horizontal {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    /* Ajustes para el panel principal en pantallas pequeñas */
+    & {
+      /* Se refiere a .event-counter-settings-panel */
+      padding: var(--plugin-spacing-lg);
+      margin: var(--plugin-spacing-md) 0;
+    }
+
+    .settings-title {
+      font-size: 24px;
+    }
+
+    .presets-grid-horizontal {
+      flex-direction: column;
+    }
+
+    .preset-button-compact {
+      min-width: auto;
+    }
+
+    .settings-tabs-horizontal {
+      flex-wrap: wrap;
+    }
+
+    .tab-button-horizontal {
+      flex: none;
+      min-width: 120px;
+    }
+
+    .settings-grid-horizontal {
+      grid-template-columns: 1fr;
+    }
+
+    .range-controls-horizontal {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--plugin-spacing-md);
+    }
+
+    .range-inputs-horizontal {
+      flex-direction: column;
+    }
+
+    .glow-controls-horizontal,
+    .border-controls-horizontal {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .settings-footer-horizontal {
+      flex-direction: column;
+      gap: var(--plugin-spacing-md);
+      text-align: center;
+    }
+
+    .floating-save-notification {
+      bottom: 16px;
+      right: 16px;
+      left: 16px;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .badge-preview-controls {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .preview-slider {
+      width: 100%;
+    }
+
+    .color-input-group-horizontal {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  /* ==========================================================================
+         Accesibilidad MEJORADA
+         ========================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    /* Aplicar a todos los hijos directos e indirectos de .settings-panel (asumo que se refiere a .event-counter-settings-panel) */
+    & *,
+    .tab-panel-horizontal, /* Estos ya están anidados, así que el & * los cubriría */
+    .preset-button-compact,
+    .setting-group-compact,
+    .setting-group-horizontal,
+    .floating-save-notification {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .preset-button-compact:hover,
+    .reset-button-horizontal:hover,
+    .tab-button-horizontal:hover {
+      transform: none !important;
+    }
+  }
+
+  @media (prefers-contrast: high) {
+    & {
+      /* Se refiere a .event-counter-settings-panel */
+      border-width: 3px;
+    }
+
+    .setting-group-compact,
+    .setting-group-horizontal {
+      border-width: 2px;
+    }
+
+    .tab-button-horizontal.active {
+      border: 2px solid white; /* Asumiendo texto blanco sobre fondo oscuro */
+    }
+
+    .setting-select-compact:focus,
+    .setting-number-input-compact:focus,
+    .setting-textarea-horizontal:focus {
+      border-width: 3px;
+    }
+  }
+
+  /* ==========================================================================
+         Modo oscuro MEJORADO
+         ========================================================================== */
+  @media (prefers-color-scheme: dark) {
+    .badge-preview-area {
+      background: linear-gradient(135deg, #374151, #4b5563);
+      border-color: #6b7280;
+    }
+
+    .color-code-compact {
+      background: #374151;
+      border-color: #4b5563;
+    }
+
+    .settings-tabs-horizontal {
+      background: #374151;
+    }
+
+    .range-config-horizontal {
+      background: #374151;
+      border-color: #4b5563;
+    }
+
+    .range-color-horizontal {
+      background: #374151;
+      border-color: #4b5563;
+    }
+  }
+
+  /* ==========================================================================
+         Utilidades y animaciones adicionales MEJORADAS
+         ========================================================================== */
+  .setting-highlight {
+    animation: plugin-pulse 1s ease-in-out;
+    border-color: var(--primary-color, #4f46e5) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+  }
+
+  .setting-success {
+    border-color: var(--success-color, #10b981) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+  }
+
+  .setting-error {
+    border-color: var(--danger-color, #ef4444) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+  }
 }
