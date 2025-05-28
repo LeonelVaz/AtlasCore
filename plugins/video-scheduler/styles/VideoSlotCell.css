@@ -1,9 +1,9 @@
 /* video-scheduler/styles/VideoSlotCell.css */
 
-/* Slots de video - diseño limpio y funcional */
 .video-scheduler-slot-cell {
   padding: 12px !important;
   border-right: 1px solid var(--border-color);
+  position: relative; /* Para posicionar el botón de detalles */
 }
 
 .video-scheduler-slot-cell .video-slot {
@@ -15,7 +15,6 @@
   transition: all 0.2s ease;
 }
 
-/* Estados de video - SIN COLORES DE FONDO */
 .video-slot.status-pending,
 .video-slot.status-empty,
 .video-slot.status-development,
@@ -24,9 +23,16 @@
   background: transparent;
 }
 
-/* Input del nombre del video */
+/* Contenedor para el nombre y el botón de detalles */
+.name-details-container {
+  display: flex;
+  align-items: center; /* Alinea verticalmente el input y el botón */
+  gap: 4px; /* Espacio entre input y botón */
+  margin-bottom: 8px; /* Mantiene el margen inferior original */
+}
+
 .video-scheduler-slot-cell .video-name-input {
-  width: 100%;
+  flex-grow: 1; /* El input ocupa el espacio restante */
   border: none;
   border-bottom: 1px solid transparent;
   padding: 6px 0;
@@ -34,7 +40,7 @@
   background: transparent;
   color: var(--text-color);
   outline: none;
-  margin-bottom: 8px;
+  /* margin-bottom removido, gestionado por el contenedor flex */
   transition: all 0.2s ease;
   font-weight: 500;
 }
@@ -60,16 +66,45 @@
   font-style: italic;
 }
 
-/* CONTENEDOR DESCRIPCIÓN Y EMOJI EN LÍNEA HORIZONTAL */
+/* Botón de detalles del video */
+.video-slot-details-button {
+  background: transparent;
+  border: none;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  padding: 2px; /* Padding pequeño */
+  border-radius: 50%;
+  opacity: 0.3; /* Casi indistinguible por defecto */
+  transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; /* Tamaño fijo */
+  height: 20px;
+  flex-shrink: 0; /* No se encoge */
+}
+
+.video-slot-details-button .material-icons {
+  font-size: 16px; /* Tamaño del icono */
+}
+
+.video-scheduler-slot-cell:hover .video-slot-details-button,
+.video-slot-details-button:hover,
+.video-slot-details-button:focus {
+  opacity: 1; /* Totalmente visible al hacer hover en la celda o en el botón */
+  color: var(--primary-color);
+  background-color: var(--hover-color);
+}
+
 .description-status-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   gap: 8px;
+  margin-top: auto; /* Empuja este contenedor hacia abajo */
 }
 
-/* CAMPO DE DESCRIPCIÓN - A LA IZQUIERDA */
 .video-scheduler-slot-cell .video-description-input {
   flex: 1;
   border: none;
@@ -97,7 +132,6 @@
   opacity: 0.4;
 }
 
-/* EMOJI A LA DERECHA */
 .video-scheduler-slot-cell .status-container {
   cursor: pointer;
   font-size: 0.875rem;
@@ -117,9 +151,15 @@
   transform: scale(1.1);
 }
 
-/* Responsive para video slots */
 @media (max-width: 1024px) {
   .video-scheduler-slot-cell .video-slot {
     min-height: 60px;
+  }
+  .video-slot-details-button .material-icons {
+    font-size: 14px;
+  }
+  .video-slot-details-button {
+    width: 18px;
+    height: 18px;
   }
 }

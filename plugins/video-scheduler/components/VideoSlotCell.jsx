@@ -10,6 +10,7 @@ function VideoSlotCell(props) {
     onNameChange,
     onStatusIconClick,
     onDescriptionChange,
+    onOpenDetailsForm, // Nueva prop
   } = props;
   const [currentName, setCurrentName] = React.useState(videoData.name || "");
   const [currentDescription, setCurrentDescription] = React.useState(
@@ -72,9 +73,6 @@ function VideoSlotCell(props) {
 
   const buildStatusDisplay = () => {
     const emojiElements = [];
-
-    // 1. Sub-estados Apilables (primero en el array, aparecerán más a la izquierda)
-    // Se añaden en el orden en que están en el array, pero se pueden invertir si es necesario
     if (videoData.stackableStatuses && videoData.stackableStatuses.length > 0) {
       videoData.stackableStatuses.forEach((stackableStatus, index) => {
         if (STATUS_EMOJIS[stackableStatus]) {
@@ -83,7 +81,7 @@ function VideoSlotCell(props) {
               "span",
               {
                 key: `stackable-${index}`,
-                className: "status-emoji stackable-status-emoji", // Clase para posible estilo
+                className: "status-emoji stackable-status-emoji",
               },
               STATUS_EMOJIS[stackableStatus]
             )
@@ -91,35 +89,30 @@ function VideoSlotCell(props) {
         }
       });
     }
-
-    // 2. Sub-estado Normal (después de los apilables)
     if (videoData.subStatus && STATUS_EMOJIS[videoData.subStatus]) {
       emojiElements.push(
         React.createElement(
           "span",
           {
             key: "sub-status",
-            className: "status-emoji sub-status-emoji", // Clase para posible estilo
+            className: "status-emoji sub-status-emoji",
           },
           STATUS_EMOJIS[videoData.subStatus]
         )
       );
     }
-
-    // 3. Estado Principal (último en el array, aparecerá más a la derecha)
     if (videoData.status && STATUS_EMOJIS[videoData.status]) {
       emojiElements.push(
         React.createElement(
           "span",
           {
             key: "main-status",
-            className: "status-emoji main-status-emoji", // Clase para posible estilo
+            className: "status-emoji main-status-emoji",
           },
           STATUS_EMOJIS[videoData.status]
         )
       );
     } else {
-      // Fallback si no hay estado principal (debería mostrar PENDING por defecto)
       emojiElements.push(
         React.createElement(
           "span",
@@ -131,9 +124,6 @@ function VideoSlotCell(props) {
         )
       );
     }
-
-    // Si no hay emojis (ej. solo era un PENDING que no tenía emoji explícito antes),
-    // asegurar que se muestre el PENDING.
     if (emojiElements.length === 0) {
       emojiElements.push(
         React.createElement(
@@ -146,11 +136,17 @@ function VideoSlotCell(props) {
         )
       );
     }
-
-    return emojiElements; // Devolvemos el array de elementos
+    return emojiElements;
   };
 
-  const isClickable = true;
+  const isClickable = true; // Para el selector de estado
+
+  const handleOpenDetailsClick = (e) => {
+    e.stopPropagation(); // Evitar que se propague al TD o a otros elementos
+    if (onOpenDetailsForm) {
+      onOpenDetailsForm(day, slotIndex, videoData);
+    }
+  };
 
   return React.createElement(
     "td",
@@ -159,18 +155,43 @@ function VideoSlotCell(props) {
       "div",
       { className: `video-slot status-${videoData.status}` },
       [
-        React.createElement("input", {
-          key: nameInputId,
-          id: nameInputId,
-          type: "text",
-          className: "video-name-input",
-          value: currentName,
-          placeholder: placeholderText,
-          onChange: handleNameInputChange,
-          onBlur: handleNameInputBlur,
-          onKeyDown: handleNameInputKeyDown,
-          onClick: (e) => e.stopPropagation(),
-        }),
+        React.createElement(
+          "div", // Contenedor para el nombre y el botón de detalles
+          {
+            key: `name-details-container-${day}-${slotIndex}`,
+            className: "name-details-container",
+          },
+          [
+            React.createElement("input", {
+              key: nameInputId,
+              id: nameInputId,
+              type: "text",
+              className: "video-name-input",
+              value: currentName,
+              placeholder: placeholderText,
+              onChange: handleNameInputChange,
+              onBlur: handleNameInputBlur,
+              onKeyDown: handleNameInputKeyDown,
+              onClick: (e) => e.stopPropagation(),
+            }),
+            // Botón para abrir detalles extendidos
+            React.createElement(
+              "button",
+              {
+                key: `details-btn-${day}-${slotIndex}`,
+                className: "video-slot-details-button",
+                onClick: handleOpenDetailsClick,
+                title: "Editar detalles del video",
+              },
+              // Usar un icono de Material Icons o un SVG simple
+              React.createElement(
+                "span",
+                { className: "material-icons" },
+                "more_vert" // o "edit_note", "settings_ethernet"
+              )
+            ),
+          ]
+        ),
         React.createElement(
           "div",
           {
@@ -184,7 +205,7 @@ function VideoSlotCell(props) {
               type: "text",
               className: "video-description-input",
               value: currentDescription,
-              placeholder: "",
+              placeholder: "", // O "Descripción breve..."
               onChange: handleDescriptionInputChange,
               onBlur: handleDescriptionInputBlur,
               onKeyDown: handleDescriptionInputKeyDown,
@@ -194,7 +215,7 @@ function VideoSlotCell(props) {
               "div",
               {
                 key: `status-icons-${day}-${slotIndex}`,
-                className: "status-container", // La clase 'status-container' ya usa flex
+                className: "status-container",
                 onClick: isClickable
                   ? (e) => {
                       e.stopPropagation();
@@ -207,8 +228,6 @@ function VideoSlotCell(props) {
                   cursor: isClickable ? "pointer" : "default",
                 },
               },
-              // buildStatusDisplay() ahora devuelve un array de elementos,
-              // que React renderizará en orden.
               buildStatusDisplay()
             ),
           ]

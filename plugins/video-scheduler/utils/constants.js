@@ -59,22 +59,27 @@ export const STATUS_EMOJIS = {
 export const DEFAULT_SLOT_VIDEO_STRUCTURE = {
   id: null,
   name: "",
-  description: "",
+  description: "", // Descripción corta (editable inline)
   status: VIDEO_MAIN_STATUS.PENDING,
   subStatus: null,
   stackableStatuses: [],
   createdAt: null,
   updatedAt: null,
+  // Nuevos campos para detalles extendidos:
+  detailedDescription: "", // Descripción larga
+  platform: "", // ej. "YouTube", "Vimeo"
+  url: "", // URL del video publicado
+  duration: "", // ej. "10:35" (string)
+  tags: [], // array de strings
 };
 
 export const DEFAULT_DAILY_INCOME_STRUCTURE = {
   amount: 0,
-  currency: "USD", // Este será sobrescrito por la moneda principal o la elegida en el form
+  currency: "USD",
   payer: "",
   status: "pending",
 };
 
-// Lista de monedas más completa
 export const ALL_SUPPORTED_CURRENCIES = [
   { code: "USD", name: "Dólar estadounidense", symbol: "$" },
   { code: "EUR", name: "Euro", symbol: "€" },
@@ -83,22 +88,22 @@ export const ALL_SUPPORTED_CURRENCIES = [
   { code: "AUD", name: "Dólar australiano", symbol: "$" },
   { code: "CAD", name: "Dólar canadiense", symbol: "$" },
   { code: "CHF", name: "Franco suizo", symbol: "CHF" },
-  { code: "CNY", name: "Yuan chino", symbol: "CN¥" }, // Símbolo más específico para Yuan
+  { code: "CNY", name: "Yuan chino", symbol: "CN¥" },
   { code: "HKD", name: "Dólar de Hong Kong", symbol: "$" },
   { code: "NZD", name: "Dólar neozelandés", symbol: "$" },
   { code: "SEK", name: "Corona sueca", symbol: "kr" },
   { code: "KRW", name: "Won surcoreano", symbol: "₩" },
   { code: "SGD", name: "Dólar de Singapur", symbol: "$" },
   { code: "NOK", name: "Corona noruega", symbol: "kr" },
-  { code: "MXN", name: "Peso mexicano", symbol: "$" }, // Símbolo más específico para Peso Mexicano
+  { code: "MXN", name: "Peso mexicano", symbol: "$" },
   { code: "INR", name: "Rupia india", symbol: "₹" },
   { code: "RUB", name: "Rublo ruso", symbol: "₽" },
   { code: "ZAR", name: "Rand sudafricano", symbol: "R" },
   { code: "BRL", name: "Real brasileño", symbol: "R$" },
   { code: "TRY", name: "Lira turca", symbol: "₺" },
-  { code: "ARS", name: "Peso argentino", symbol: "$" }, // Símbolo más específico
-  { code: "CLP", name: "Peso chileno", symbol: "$" }, // Símbolo más específico
-  { code: "COP", name: "Peso colombiano", symbol: "$" }, // Símbolo más específico
+  { code: "ARS", name: "Peso argentino", symbol: "$" },
+  { code: "CLP", name: "Peso chileno", symbol: "$" },
+  { code: "COP", name: "Peso colombiano", symbol: "$" },
   { code: "PEN", name: "Sol peruano", symbol: "S/." },
   { code: "PLN", name: "Złoty polaco", symbol: "zł" },
   { code: "THB", name: "Baht tailandés", symbol: "฿" },
@@ -110,31 +115,25 @@ export const ALL_SUPPORTED_CURRENCIES = [
   { code: "MYR", name: "Ringgit malayo", symbol: "RM" },
 ];
 
-// Función para obtener el símbolo de una moneda
 export const getCurrencySymbol = (currencyCode) => {
   const currency = ALL_SUPPORTED_CURRENCIES.find(
     (c) => c.code === currencyCode
   );
-  return currency ? currency.symbol : currencyCode; // Devuelve el código si no encuentra símbolo
+  return currency ? currency.symbol : currencyCode;
 };
 
 export const isDateInPast = (dateStr) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const parts = dateStr.split("-");
     if (parts.length !== 3) return false;
-
     const year = parseInt(parts[0], 10);
     const month = parseInt(parts[1], 10);
     const day = parseInt(parts[2], 10);
-
     if (isNaN(year) || isNaN(month) || isNaN(day)) return false;
-
     const checkDate = new Date(year, month - 1, day);
     checkDate.setHours(0, 0, 0, 0);
-
     return checkDate < today;
   } catch (error) {
     console.error("Error en isDateInPast:", error, "dateStr:", dateStr);
