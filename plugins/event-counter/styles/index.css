@@ -3,12 +3,12 @@
    Plugin: contador-eventos-dia v2.0.0
    ========================================================================== */
 
-/* Importar estilos de componentes */
+/* Importar estilos de componentes (deben estar al principio y fuera de cualquier anidamiento) */
 @import "EventCounterBadge.css";
 @import "SettingsPanel.css";
 
 /* ==========================================================================
-   Variables CSS globales del plugin EXPANDIDAS
+   Variables CSS globales del plugin EXPANDIDAS (permanecen en :root)
    ========================================================================== */
 
 :root {
@@ -99,109 +99,7 @@
 }
 
 /* ==========================================================================
-   Utilidades globales del plugin EXPANDIDAS
-   ========================================================================== */
-
-.plugin-transition {
-  transition: var(--plugin-transition-normal);
-}
-
-.plugin-transition-fast {
-  transition: var(--plugin-transition-fast);
-}
-
-.plugin-transition-slow {
-  transition: var(--plugin-transition-slow);
-}
-
-.plugin-transition-bounce {
-  transition: var(--plugin-transition-bounce);
-}
-
-.plugin-shadow {
-  box-shadow: var(--plugin-shadow-md);
-}
-
-.plugin-shadow-lg {
-  box-shadow: var(--plugin-shadow-lg);
-}
-
-.plugin-text-shadow {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* UTILIDADES DE RESPLANDOR (NUEVO) */
-.plugin-glow-light {
-  filter: drop-shadow(var(--plugin-glow-light) currentColor);
-}
-
-.plugin-glow-medium {
-  filter: drop-shadow(var(--plugin-glow-medium) currentColor);
-}
-
-.plugin-glow-strong {
-  filter: drop-shadow(var(--plugin-glow-strong) currentColor);
-}
-
-.plugin-glow-intense {
-  filter: drop-shadow(var(--plugin-glow-intense) currentColor);
-}
-
-/* UTILIDADES DE GRADIENTES (NUEVO) */
-.plugin-bg-gradient-primary {
-  background: var(--plugin-gradient-primary);
-}
-
-.plugin-bg-gradient-success {
-  background: var(--plugin-gradient-success);
-}
-
-.plugin-bg-gradient-warning {
-  background: var(--plugin-gradient-warning);
-}
-
-.plugin-bg-gradient-danger {
-  background: var(--plugin-gradient-danger);
-}
-
-/* ==========================================================================
-   Clases base para accesibilidad MEJORADAS
-   ========================================================================== */
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.plugin-focus-visible:focus-visible {
-  outline: 2px solid var(--primary-color, var(--plugin-primary));
-  outline-offset: 2px;
-  border-radius: var(--plugin-radius-sm);
-}
-
-/* Mejora para elementos interactivos */
-.plugin-interactive {
-  cursor: pointer;
-  transition: var(--plugin-transition-fast);
-}
-
-.plugin-interactive:hover {
-  transform: translateY(-1px);
-}
-
-.plugin-interactive:active {
-  transform: translateY(0);
-}
-
-/* ==========================================================================
-   Animaciones globales del plugin MEJORADAS
+   Animaciones globales del plugin (permanecen en el nivel superior)
    ========================================================================== */
 
 @keyframes plugin-pulse {
@@ -378,6 +276,125 @@
   }
 }
 
+@keyframes spin {
+  /* Este ya estaba en SettingsPanel, se puede unificar */
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ==========================================================================
+   Utilidades globales del plugin EXPANDIDAS (permanecen en nivel superior,
+   ya que son utilidades generales del plugin, no específicas de un componente)
+   ========================================================================== */
+
+.plugin-transition {
+  transition: var(--plugin-transition-normal);
+}
+
+.plugin-transition-fast {
+  transition: var(--plugin-transition-fast);
+}
+
+.plugin-transition-slow {
+  transition: var(--plugin-transition-slow);
+}
+
+.plugin-transition-bounce {
+  transition: var(--plugin-transition-bounce);
+}
+
+.plugin-shadow {
+  box-shadow: var(--plugin-shadow-md);
+}
+
+.plugin-shadow-lg {
+  box-shadow: var(--plugin-shadow-lg);
+}
+
+.plugin-text-shadow {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* UTILIDADES DE RESPLANDOR (NUEVO) */
+.plugin-glow-light {
+  filter: drop-shadow(var(--plugin-glow-light) currentColor);
+}
+
+.plugin-glow-medium {
+  filter: drop-shadow(var(--plugin-glow-medium) currentColor);
+}
+
+.plugin-glow-strong {
+  filter: drop-shadow(var(--plugin-glow-strong) currentColor);
+}
+
+.plugin-glow-intense {
+  filter: drop-shadow(var(--plugin-glow-intense) currentColor);
+}
+
+/* UTILIDADES DE GRADIENTES (NUEVO) */
+.plugin-bg-gradient-primary {
+  background: var(--plugin-gradient-primary);
+}
+
+.plugin-bg-gradient-success {
+  background: var(--plugin-gradient-success);
+}
+
+.plugin-bg-gradient-warning {
+  background: var(--plugin-gradient-warning);
+}
+
+.plugin-bg-gradient-danger {
+  background: var(--plugin-gradient-danger);
+}
+
+/* ==========================================================================
+   Clases base para accesibilidad MEJORADAS
+   ========================================================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.plugin-focus-visible:focus-visible {
+  outline: 2px solid var(--primary-color, var(--plugin-primary));
+  outline-offset: 2px;
+  border-radius: var(--plugin-radius-sm);
+}
+
+/* Mejora para elementos interactivos */
+.plugin-interactive {
+  cursor: pointer;
+  transition: var(--plugin-transition-fast);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
 /* ==========================================================================
    Estados de carga globales MEJORADOS
    ========================================================================== */
@@ -404,12 +421,6 @@
   border-width: 2px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .loading-shimmer {
   background: linear-gradient(
     90deg,
@@ -419,15 +430,6 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
 }
 
 /* Estados de carga con resplandor */
@@ -450,43 +452,44 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   animation: plugin-slide-up 0.3s ease-out;
-}
 
-.plugin-notification-success {
-  background: var(--plugin-gradient-success);
-  color: white;
-}
+  /* Modificadores de tipo */
+  &.plugin-notification-success {
+    background: var(--plugin-gradient-success);
+    color: white;
+  }
 
-.plugin-notification-warning {
-  background: var(--plugin-gradient-warning);
-  color: white;
-}
+  &.plugin-notification-warning {
+    background: var(--plugin-gradient-warning);
+    color: white;
+  }
 
-.plugin-notification-danger {
-  background: var(--plugin-gradient-danger);
-  color: white;
-}
+  &.plugin-notification-danger {
+    background: var(--plugin-gradient-danger);
+    color: white;
+  }
 
-.plugin-notification-info {
-  background: linear-gradient(135deg, var(--plugin-info), #0891b2);
-  color: white;
-}
+  &.plugin-notification-info {
+    background: linear-gradient(135deg, var(--plugin-info), #0891b2);
+    color: white;
+  }
 
-/* Posiciones de notificaciones */
-.plugin-notification-top-right {
-  top: var(--plugin-spacing-lg);
-  right: var(--plugin-spacing-lg);
-}
+  /* Posiciones de notificaciones */
+  &.plugin-notification-top-right {
+    top: var(--plugin-spacing-lg);
+    right: var(--plugin-spacing-lg);
+  }
 
-.plugin-notification-bottom-right {
-  bottom: var(--plugin-spacing-lg);
-  right: var(--plugin-spacing-lg);
-}
+  &.plugin-notification-bottom-right {
+    bottom: var(--plugin-spacing-lg);
+    right: var(--plugin-spacing-lg);
+  }
 
-.plugin-notification-bottom-center {
-  bottom: var(--plugin-spacing-lg);
-  left: 50%;
-  transform: translateX(-50%);
+  &.plugin-notification-bottom-center {
+    bottom: var(--plugin-spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 /* ==========================================================================
@@ -503,35 +506,36 @@
   border-radius: var(--plugin-radius-full);
   text-transform: uppercase;
   letter-spacing: 0.025em;
-}
 
-.plugin-badge-primary {
-  background: var(--plugin-primary);
-  color: white;
-}
+  /* Modificadores de tipo */
+  &.plugin-badge-primary {
+    background: var(--plugin-primary);
+    color: white;
+  }
 
-.plugin-badge-success {
-  background: var(--plugin-success);
-  color: white;
-}
+  &.plugin-badge-success {
+    background: var(--plugin-success);
+    color: white;
+  }
 
-.plugin-badge-warning {
-  background: var(--plugin-warning);
-  color: white;
-}
+  &.plugin-badge-warning {
+    background: var(--plugin-warning);
+    color: white;
+  }
 
-.plugin-badge-danger {
-  background: var(--plugin-danger);
-  color: white;
-}
+  &.plugin-badge-danger {
+    background: var(--plugin-danger);
+    color: white;
+  }
 
-.plugin-badge-outline {
-  background: transparent;
-  border: 1px solid currentColor;
+  &.plugin-badge-outline {
+    background: transparent;
+    border: 1px solid currentColor;
+  }
 }
 
 /* ==========================================================================
-   Mejoras responsive globales EXPANDIDAS
+   Mejoras responsive globales EXPANDIDAS (permanecen en :root o @media global)
    ========================================================================== */
 
 @media (max-width: 1200px) {
@@ -575,7 +579,7 @@
 }
 
 /* ==========================================================================
-   Soporte para preferencias del usuario EXPANDIDO
+   Soporte para preferencias del usuario EXPANDIDO (global)
    ========================================================================== */
 
 /* Movimiento reducido */
@@ -615,10 +619,12 @@
     --plugin-shadow-xl: 0 16px 24px rgba(0, 0, 0, 0.7);
   }
 
+  /* Aplicado a cualquier .plugin-badge, anidado o no */
   .plugin-badge {
     border: 2px solid currentColor !important;
   }
 
+  /* Aplicado a cualquier .plugin-notification, anidado o no */
   .plugin-notification {
     border: 2px solid rgba(255, 255, 255, 0.8) !important;
   }
@@ -638,6 +644,9 @@
 @media (prefers-reduced-transparency: reduce) {
   .loading-shimmer,
   .plugin-notification,
+  /* Esta clase es específica de EventCounterBadge.css,
+     pero si se usa globalmente, la regla aquí es correcta.
+     Si es sólo para el badge, ya está cubierta en EventCounterBadge.css */
   .badge-transparent-bg {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -645,16 +654,16 @@
 }
 
 /* ==========================================================================
-   UTILIDADES DE DESARROLLO Y DEPURACIÓN EXPANDIDAS
+   UTILIDADES DE DESARROLLO Y DEPURACIÓN EXPANDIDAS (global)
    ========================================================================== */
 
 .debug-plugin * {
   outline: 1px dashed rgba(255, 0, 0, 0.3) !important;
-}
 
-.debug-plugin *:hover {
-  outline-color: rgba(255, 0, 0, 0.8) !important;
-  background-color: rgba(255, 255, 0, 0.1) !important;
+  &:hover {
+    outline-color: rgba(255, 0, 0, 0.8) !important;
+    background-color: rgba(255, 255, 0, 0.1) !important;
+  }
 }
 
 .debug-performance {
@@ -673,7 +682,7 @@
 }
 
 /* ==========================================================================
-   UTILIDADES DE LAYOUT (NUEVO)
+   UTILIDADES DE LAYOUT (NUEVO) (global)
    ========================================================================== */
 
 .plugin-flex {
@@ -726,7 +735,7 @@
 }
 
 /* ==========================================================================
-   UTILIDADES DE TIPOGRAFÍA (NUEVO)
+   UTILIDADES DE TIPOGRAFÍA (NUEVO) (global)
    ========================================================================== */
 
 .plugin-text-xs {
@@ -774,15 +783,18 @@
 }
 
 /* ==========================================================================
-   CLASES DE APLICACIÓN CONDICIONAL (NUEVO)
+   CLASES DE APLICACIÓN CONDICIONAL (NUEVO) (global)
    ========================================================================== */
 
 .plugin-show-on-hover {
   opacity: 0;
   transition: var(--plugin-transition-fast);
-}
 
-.plugin-show-on-hover:hover,
+  &:hover {
+    opacity: 1;
+  }
+}
+/* Para el caso de un trigger padre */
 .plugin-hover-trigger:hover .plugin-show-on-hover {
   opacity: 1;
 }

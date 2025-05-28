@@ -3,11 +3,15 @@
    Plugin: contador-eventos-dia v2.0.0
    ========================================================================== */
 
-/* ==========================================================================
-   Estilos base del badge MEJORADOS
-   ========================================================================== */
+/* Keyframes deben estar en el ámbito global si se usan aquí,
+   pero no hay keyframes definidos directamente en este archivo.
+   Si se necesitaran, se declararían fuera del anidamiento principal. */
 
+/* Clase principal del badge para anidar todos los estilos */
 .event-counter-badge {
+  /* ==========================================================================
+     Estilos base del badge MEJORADOS
+     ========================================================================== */
   /* Posicionamiento base */
   position: absolute;
   z-index: var(--plugin-z-badge);
@@ -42,698 +46,699 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-}
 
-/* ==========================================================================
-       FONDO TRANSPARENTE (NUEVO)
-       ========================================================================== */
-
-.badge-transparent-bg {
-  background: transparent !important;
-  backdrop-filter: blur(8px) saturate(1.2);
-  -webkit-backdrop-filter: blur(8px) saturate(1.2);
-}
-
-/* ==========================================================================
-       Posiciones del badge
-       ========================================================================== */
-
-.badge-position-top_left {
-  top: 4px;
-  left: 4px;
-}
-
-.badge-position-top_right {
-  top: 4px;
-  right: 4px;
-}
-
-.badge-position-bottom_left {
-  bottom: 4px;
-  left: 4px;
-}
-
-.badge-position-bottom_right {
-  bottom: 4px;
-  right: 4px;
-}
-
-.badge-position-center {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-/* ==========================================================================
-       Tamaños del badge
-       ========================================================================== */
-
-.badge-size-small {
-  padding: 2px 6px;
-  min-width: 16px;
-  height: 16px;
-  font-size: 9px;
-  border-radius: 8px;
-}
-
-.badge-size-medium {
-  padding: 4px 8px;
-  min-width: 20px;
-  height: 20px;
-  font-size: 11px;
-  border-radius: 10px;
-}
-
-.badge-size-large {
-  padding: 6px 10px;
-  min-width: 24px;
-  height: 24px;
-  font-size: 12px;
-  border-radius: 12px;
-}
-
-.badge-size-xl {
-  padding: 8px 12px;
-  min-width: 28px;
-  height: 28px;
-  font-size: 13px;
-  border-radius: 14px;
-}
-
-/* ==========================================================================
-       Estilos de badge
-       ========================================================================== */
-
-/* Estilo redondeado (por defecto) */
-.badge-style-rounded {
-  border-radius: var(--plugin-radius-lg);
-}
-
-/* Estilo circular */
-.badge-style-circular {
-  border-radius: var(--plugin-radius-full);
-  aspect-ratio: 1;
-  padding: 4px;
-}
-
-.badge-style-circular.badge-size-small {
-  width: 16px;
-  height: 16px;
-  font-size: 8px;
-}
-
-.badge-style-circular.badge-size-medium {
-  width: 20px;
-  height: 20px;
-  font-size: 10px;
-}
-
-.badge-style-circular.badge-size-large {
-  width: 24px;
-  height: 24px;
-  font-size: 11px;
-}
-
-.badge-style-circular.badge-size-xl {
-  width: 28px;
-  height: 28px;
-  font-size: 12px;
-}
-
-/* Estilo cuadrado */
-.badge-style-square {
-  border-radius: var(--plugin-radius-sm);
-  aspect-ratio: 1;
-}
-
-.badge-style-square.badge-size-small {
-  width: 16px;
-  height: 16px;
-}
-
-.badge-style-square.badge-size-medium {
-  width: 20px;
-  height: 20px;
-}
-
-.badge-style-square.badge-size-large {
-  width: 24px;
-  height: 24px;
-}
-
-.badge-style-square.badge-size-xl {
-  width: 28px;
-  height: 28px;
-}
-
-/* Estilo minimalista MEJORADO */
-.badge-style-minimal {
-  background: rgba(79, 70, 229, 0.1);
-  color: var(--plugin-primary);
-  border: 1px solid rgba(79, 70, 229, 0.2);
-  border-radius: var(--plugin-radius-sm);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.badge-style-minimal.badge-transparent-bg {
-  background: rgba(79, 70, 229, 0.05) !important;
-  border: 2px solid var(--plugin-primary);
-}
-
-/* Estilo moderno MEJORADO */
-.badge-style-modern {
-  background: linear-gradient(
-    135deg,
-    var(--plugin-primary),
-    rgba(79, 70, 229, 0.8)
-  );
-  border-radius: var(--plugin-radius-lg);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.badge-style-modern::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.5s;
-}
-
-.badge-style-modern:hover::before {
-  left: 100%;
-}
-
-.badge-style-modern.badge-transparent-bg {
-  background: transparent !important;
-  border: 2px solid var(--plugin-primary);
-}
-
-.badge-style-modern.badge-transparent-bg::before {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(79, 70, 229, 0.1),
-    transparent
-  );
-}
-
-/* ==========================================================================
-       Familias de fuente CORREGIDAS Y EXPANDIDAS
-       ========================================================================== */
-
-.badge-font-system {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    sans-serif;
-}
-
-.badge-font-inter {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-feature-settings: "liga", "kern";
-}
-
-.badge-font-roboto {
-  font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.badge-font-poppins {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
-  font-feature-settings: "liga", "kern";
-}
-
-.badge-font-monospace {
-  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
-    monospace;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ==========================================================================
-       Pesos de fuente CORREGIDOS
-       ========================================================================== */
-
-.badge-weight-normal {
-  font-weight: 400;
-}
-
-.badge-weight-medium {
-  font-weight: 500;
-}
-
-.badge-weight-semibold {
-  font-weight: 600;
-}
-
-.badge-weight-bold {
-  font-weight: 700;
-}
-
-/* Asegurar que las fuentes se apliquen correctamente */
-.event-counter-badge.badge-font-inter.badge-weight-bold {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
-  font-weight: 700 !important;
-}
-
-.event-counter-badge.badge-font-roboto.badge-weight-bold {
-  font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif !important;
-  font-weight: 700 !important;
-}
-
-.event-counter-badge.badge-font-poppins.badge-weight-bold {
-  font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif !important;
-  font-weight: 700 !important;
-}
-
-.event-counter-badge.badge-font-monospace.badge-weight-bold {
-  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
-    monospace !important;
-  font-weight: 700 !important;
-}
-
-/* ==========================================================================
-       Sombras MEJORADAS (SIEMPRE OSCURAS)
-       ========================================================================== */
-
-.badge-shadow-light {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.badge-shadow-medium {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.badge-shadow-strong {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
-}
-
-/* ==========================================================================
-       EFECTOS DE RESPLANDOR (NUEVO)
-       ========================================================================== */
-
-.badge-glow-light {
-  filter: drop-shadow(0 0 8px currentColor);
-}
-
-.badge-glow-medium {
-  filter: drop-shadow(0 0 12px currentColor);
-}
-
-.badge-glow-strong {
-  filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
-}
-
-/* Resplandor combinado con sombra */
-.event-counter-badge.badge-shadow-light.badge-glow-light {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
-  filter: drop-shadow(0 0 8px currentColor);
-}
-
-.event-counter-badge.badge-shadow-medium.badge-glow-medium {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
-  filter: drop-shadow(0 0 12px currentColor);
-}
-
-.event-counter-badge.badge-shadow-strong.badge-glow-strong {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
-  filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px currentColor);
-}
-
-/* ==========================================================================
-       Bordes MEJORADOS
-       ========================================================================== */
-
-.badge-with-border {
-  border-style: solid;
-  /* El grosor y color se aplican via style inline */
-}
-
-/* Bordes para fondo transparente */
-.badge-transparent-bg.badge-with-border {
-  border-width: 2px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(12px) saturate(1.5);
-  -webkit-backdrop-filter: blur(12px) saturate(1.5);
-}
-
-/* ==========================================================================
-       Animaciones
-       ========================================================================== */
-
-.badge-animated.badge-animation-fade {
-  animation: plugin-fade-in 0.3s ease-out;
-}
-
-.badge-animated.badge-animation-scale {
-  animation: plugin-scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.badge-animated.badge-animation-slide {
-  animation: plugin-slide-up 0.3s ease-out;
-}
-
-.badge-animated.badge-animation-bounce {
-  animation: plugin-bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* ==========================================================================
-       Efectos hover MEJORADOS
-       ========================================================================== */
-
-.badge-hover-enabled:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1) saturate(1.1);
-}
-
-.badge-hover-enabled:active {
-  transform: translateY(0);
-  filter: brightness(0.95);
-}
-
-.badge-hover-enabled.badge-style-circular:hover {
-  transform: scale(1.1);
-}
-
-.badge-hover-enabled.badge-style-circular:active {
-  transform: scale(0.95);
-}
-
-.badge-hover-enabled.badge-style-modern:hover {
-  box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
-}
-
-/* Hover para badges transparentes */
-.badge-hover-enabled.badge-transparent-bg:hover {
-  background: rgba(79, 70, 229, 0.1) !important;
-  transform: translateY(-1px) scale(1.05);
-}
-
-/* Hover combinado con resplandor */
-.badge-hover-enabled.badge-glow-light:hover {
-  filter: drop-shadow(0 0 12px currentColor);
-  transform: translateY(-2px);
-}
-
-.badge-hover-enabled.badge-glow-medium:hover {
-  filter: drop-shadow(0 0 16px currentColor);
-  transform: translateY(-2px);
-}
-
-.badge-hover-enabled.badge-glow-strong:hover {
-  filter: drop-shadow(0 0 24px currentColor) drop-shadow(0 0 48px currentColor);
-  transform: translateY(-2px);
-}
-
-/* ==========================================================================
-       Estados especiales MEJORADOS
-       ========================================================================== */
-
-/* Focus para accesibilidad */
-.event-counter-badge:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-  filter: brightness(1.2);
-}
-
-/* Números grandes */
-.event-counter-badge[data-count="99+"],
-.event-counter-badge[data-count="999+"] {
-  font-size: 0.85em;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-/* ==========================================================================
-       Componentes específicos por estilo MEJORADOS
-       ========================================================================== */
-
-/* Contenedores para estilos complejos */
-.badge-modern-container {
-  position: relative;
-}
-
-.badge-modern-container .badge-count {
-  position: relative;
-  z-index: 2;
-}
-
-.badge-modern-container .badge-indicator {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  font-size: 0.6em;
-  opacity: 0.8;
-}
-
-.badge-circular-container .badge-count-text {
-  display: block;
-  text-align: center;
-}
-
-.badge-square-container {
-  flex-direction: column;
-  gap: 1px;
-}
-
-.badge-square-container .badge-square-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-}
-
-.badge-square-container .badge-number {
-  font-weight: 700;
-  line-height: 1;
-}
-
-.badge-square-container .badge-dots {
-  font-size: 0.4em;
-  opacity: 0.7;
-  line-height: 1;
-}
-
-/* ==========================================================================
-       Adaptaciones responsive
-       ========================================================================== */
-
-@media (max-width: 768px) {
-  .event-counter-badge {
-    transform: scale(0.9);
+  /* ==========================================================================
+         FONDO TRANSPARENTE (NUEVO)
+         ========================================================================== */
+  &.badge-transparent-bg {
+    background: transparent !important;
+    backdrop-filter: blur(8px) saturate(1.2);
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
   }
 
-  .badge-position-top_left,
-  .badge-position-top_right {
-    top: 3px;
+  /* ==========================================================================
+         Posiciones del badge
+         ========================================================================== */
+  &.badge-position-top_left {
+    top: 4px;
+    left: 4px;
   }
 
-  .badge-position-bottom_left,
-  .badge-position-bottom_right {
-    bottom: 3px;
+  &.badge-position-top_right {
+    top: 4px;
+    right: 4px;
   }
 
-  .badge-position-top_left,
-  .badge-position-bottom_left {
-    left: 3px;
+  &.badge-position-bottom_left {
+    bottom: 4px;
+    left: 4px;
   }
 
-  .badge-position-top_right,
-  .badge-position-bottom_right {
-    right: 3px;
-  }
-}
-
-@media (max-width: 480px) {
-  .event-counter-badge {
-    transform: scale(0.8);
+  &.badge-position-bottom_right {
+    bottom: 4px;
+    right: 4px;
   }
 
-  .badge-size-xl {
-    padding: 6px 10px;
-    min-width: 24px;
-    height: 24px;
-    font-size: 11px;
+  &.badge-position-center {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
-  .badge-size-large {
+  /* ==========================================================================
+         Tamaños del badge
+         ========================================================================== */
+  &.badge-size-small {
+    padding: 2px 6px;
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+    border-radius: 8px;
+  }
+
+  &.badge-size-medium {
     padding: 4px 8px;
     min-width: 20px;
     height: 20px;
-    font-size: 10px;
+    font-size: 11px;
+    border-radius: 10px;
   }
-}
 
-/* ==========================================================================
-       Mejoras para diferentes resoluciones
-       ========================================================================== */
+  &.badge-size-large {
+    padding: 6px 10px;
+    min-width: 24px;
+    height: 24px;
+    font-size: 12px;
+    border-radius: 12px;
+  }
 
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
-  .event-counter-badge {
+  &.badge-size-xl {
+    padding: 8px 12px;
+    min-width: 28px;
+    height: 28px;
+    font-size: 13px;
+    border-radius: 14px;
+  }
+
+  /* ==========================================================================
+         Estilos de badge
+         ========================================================================== */
+
+  /* Estilo redondeado (por defecto) */
+  &.badge-style-rounded {
+    border-radius: var(--plugin-radius-lg);
+  }
+
+  /* Estilo circular */
+  &.badge-style-circular {
+    border-radius: var(--plugin-radius-full);
+    aspect-ratio: 1;
+    padding: 4px;
+
+    &.badge-size-small {
+      width: 16px;
+      height: 16px;
+      font-size: 8px;
+    }
+
+    &.badge-size-medium {
+      width: 20px;
+      height: 20px;
+      font-size: 10px;
+    }
+
+    &.badge-size-large {
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+    }
+
+    &.badge-size-xl {
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+  }
+
+  /* Estilo cuadrado */
+  &.badge-style-square {
+    border-radius: var(--plugin-radius-sm);
+    aspect-ratio: 1;
+
+    &.badge-size-small {
+      width: 16px;
+      height: 16px;
+    }
+
+    &.badge-size-medium {
+      width: 20px;
+      height: 20px;
+    }
+
+    &.badge-size-large {
+      width: 24px;
+      height: 24px;
+    }
+
+    &.badge-size-xl {
+      width: 28px;
+      height: 28px;
+    }
+  }
+
+  /* Estilo minimalista MEJORADO */
+  &.badge-style-minimal {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--plugin-primary);
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    border-radius: var(--plugin-radius-sm);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    &.badge-transparent-bg {
+      background: rgba(79, 70, 229, 0.05) !important;
+      border: 2px solid var(--plugin-primary);
+    }
+  }
+
+  /* Estilo moderno MEJORADO */
+  &.badge-style-modern {
+    background: linear-gradient(
+      135deg,
+      var(--plugin-primary),
+      rgba(79, 70, 229, 0.8)
+    );
+    border-radius: var(--plugin-radius-lg);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: left 0.5s;
+    }
+
+    &:hover::before {
+      left: 100%;
+    }
+
+    &.badge-transparent-bg {
+      background: transparent !important;
+      border: 2px solid var(--plugin-primary);
+
+      &::before {
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(79, 70, 229, 0.1),
+          transparent
+        );
+      }
+    }
+  }
+
+  /* ==========================================================================
+         Familias de fuente CORREGIDAS Y EXPANDIDAS
+         ========================================================================== */
+  &.badge-font-system {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      sans-serif;
+  }
+
+  &.badge-font-inter {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: "liga", "kern";
+  }
+
+  &.badge-font-roboto {
+    font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  &.badge-font-poppins {
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-feature-settings: "liga", "kern";
+  }
+
+  &.badge-font-monospace {
+    font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+      monospace;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ==========================================================================
+         Pesos de fuente CORREGIDOS
+         ========================================================================== */
+  &.badge-weight-normal {
+    font-weight: 400;
+  }
+
+  &.badge-weight-medium {
+    font-weight: 500;
+  }
+
+  &.badge-weight-semibold {
+    font-weight: 600;
+  }
+
+  &.badge-weight-bold {
+    font-weight: 700;
+  }
+
+  /* Asegurar que las fuentes se apliquen correctamente */
+  &.badge-font-inter.badge-weight-bold {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-weight: 700 !important;
+  }
+
+  &.badge-font-roboto.badge-weight-bold {
+    font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-weight: 700 !important;
+  }
+
+  &.badge-font-poppins.badge-weight-bold {
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-weight: 700 !important;
+  }
+
+  &.badge-font-monospace.badge-weight-bold {
+    font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+      monospace !important;
+    font-weight: 700 !important;
+  }
+
+  /* ==========================================================================
+         Sombras MEJORADAS (SIEMPRE OSCURAS)
+         ========================================================================== */
+  &.badge-shadow-light {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  &.badge-shadow-medium {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  &.badge-shadow-strong {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ==========================================================================
+         EFECTOS DE RESPLANDOR (NUEVO)
+         ========================================================================== */
+  &.badge-glow-light {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  &.badge-glow-medium {
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+
+  &.badge-glow-strong {
+    filter: drop-shadow(0 0 20px currentColor)
+      drop-shadow(0 0 40px currentColor);
+  }
+
+  /* Resplandor combinado con sombra */
+  &.badge-shadow-light.badge-glow-light {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+
+  &.badge-shadow-medium.badge-glow-medium {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+
+  &.badge-shadow-strong.badge-glow-strong {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.25);
+    filter: drop-shadow(0 0 20px currentColor)
+      drop-shadow(0 0 40px currentColor);
+  }
+
+  /* ==========================================================================
+         Bordes MEJORADOS
+         ========================================================================== */
+  &.badge-with-border {
+    border-style: solid;
+    /* El grosor y color se aplican via style inline */
+  }
+
+  /* Bordes para fondo transparente */
+  &.badge-transparent-bg.badge-with-border {
+    border-width: 2px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(12px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  }
+
+  /* ==========================================================================
+         Animaciones
+         ========================================================================== */
+  &.badge-animated.badge-animation-fade {
+    animation: plugin-fade-in 0.3s ease-out; /* Asume plugin-fade-in está definido globalmente */
+  }
+
+  &.badge-animated.badge-animation-scale {
+    animation: plugin-scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Asume plugin-scale-in está definido globalmente */
+  }
+
+  &.badge-animated.badge-animation-slide {
+    animation: plugin-slide-up 0.3s ease-out; /* Asume plugin-slide-up está definido globalmente */
+  }
+
+  &.badge-animated.badge-animation-bounce {
+    animation: plugin-bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Asume plugin-bounce-in está definido globalmente */
+  }
+
+  /* ==========================================================================
+         Efectos hover MEJORADOS
+         ========================================================================== */
+  &.badge-hover-enabled {
+    &:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1) saturate(1.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+      filter: brightness(0.95);
+    }
+
+    &.badge-style-circular:hover {
+      transform: scale(1.1);
+    }
+
+    &.badge-style-circular:active {
+      transform: scale(0.95);
+    }
+
+    &.badge-style-modern:hover {
+      box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+    }
+
+    /* Hover para badges transparentes */
+    &.badge-transparent-bg:hover {
+      background: rgba(79, 70, 229, 0.1) !important;
+      transform: translateY(-1px) scale(1.05);
+    }
+
+    /* Hover combinado con resplandor */
+    &.badge-glow-light:hover {
+      filter: drop-shadow(0 0 12px currentColor);
+      transform: translateY(-2px);
+    }
+
+    &.badge-glow-medium:hover {
+      filter: drop-shadow(0 0 16px currentColor);
+      transform: translateY(-2px);
+    }
+
+    &.badge-glow-strong:hover {
+      filter: drop-shadow(0 0 24px currentColor)
+        drop-shadow(0 0 48px currentColor);
+      transform: translateY(-2px);
+    }
+  }
+
+  /* ==========================================================================
+         Estados especiales MEJORADOS
+         ========================================================================== */
+  /* Focus para accesibilidad */
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    filter: brightness(1.2);
+  }
+
+  /* Números grandes */
+  &[data-count="99+"],
+  &[data-count="999+"] {
+    font-size: 0.85em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* ==========================================================================
+         Componentes específicos por estilo MEJORADOS
+         ========================================================================== */
+
+  /* Contenedores para estilos complejos */
+  /* Asumiendo que .badge-modern-container, .badge-circular-container, .badge-square-container
+     son modificadores de .event-counter-badge (ej. <span class="event-counter-badge badge-modern-container">)
+     o son hijos directos. Del JSX, parece que son modificadores. */
+
+  &.badge-modern-container {
+    /* Si es modificador */
+    position: relative;
+
+    .badge-count {
+      /* Hijo de .event-counter-badge.badge-modern-container */
+      position: relative;
+      z-index: 2;
+    }
+
+    .badge-indicator {
+      /* Hijo */
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      font-size: 0.6em;
+      opacity: 0.8;
+    }
+  }
+
+  &.badge-circular-container {
+    /* Si es modificador */
+    .badge-count-text {
+      /* Hijo */
+      display: block;
+      text-align: center;
+    }
+  }
+
+  &.badge-square-container {
+    /* Si es modificador */
+    flex-direction: column;
+    gap: 1px;
+
+    .badge-square-content {
+      /* Hijo */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+    }
+
+    .badge-number {
+      /* Hijo */
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .badge-dots {
+      /* Hijo */
+      font-size: 0.4em;
+      opacity: 0.7;
+      line-height: 1;
+    }
+  }
+
+  /* ==========================================================================
+         Adaptaciones responsive
+         ========================================================================== */
+  @media (max-width: 768px) {
+    /* this refers to .event-counter-badge */
+    transform: scale(0.9);
+
+    &.badge-position-top_left,
+    &.badge-position-top_right {
+      top: 3px;
+    }
+
+    &.badge-position-bottom_left,
+    &.badge-position-bottom_right {
+      bottom: 3px;
+    }
+
+    &.badge-position-top_left,
+    &.badge-position-bottom_left {
+      left: 3px;
+    }
+
+    &.badge-position-top_right,
+    &.badge-position-bottom_right {
+      right: 3px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    /* this refers to .event-counter-badge */
+    transform: scale(0.8);
+
+    &.badge-size-xl {
+      padding: 6px 10px;
+      min-width: 24px;
+      height: 24px;
+      font-size: 11px;
+    }
+
+    &.badge-size-large {
+      padding: 4px 8px;
+      min-width: 20px;
+      height: 20px;
+      font-size: 10px;
+    }
+  }
+
+  /* ==========================================================================
+         Mejoras para diferentes resoluciones
+         ========================================================================== */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+    /* this refers to .event-counter-badge */
     -webkit-font-smoothing: antialiased;
     font-smooth: always;
   }
-}
 
-/* ==========================================================================
-       Soporte para accesibilidad MEJORADO
-       ========================================================================== */
+  /* ==========================================================================
+         Soporte para accesibilidad MEJORADO
+         ========================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    /* this refers to .event-counter-badge */
+    &.badge-animated {
+      animation: none !important;
+    }
 
-@media (prefers-reduced-motion: reduce) {
-  .badge-animated {
-    animation: none !important;
+    &.badge-hover-enabled:hover {
+      transform: none !important;
+      filter: none !important;
+    }
+
+    &.badge-style-modern::before {
+      transition: none !important;
+    }
   }
 
-  .badge-hover-enabled:hover {
-    transform: none !important;
-    filter: none !important;
-  }
-
-  .badge-style-modern::before {
-    transition: none !important;
-  }
-}
-
-@media (prefers-contrast: high) {
-  .event-counter-badge {
+  @media (prefers-contrast: high) {
+    /* this refers to .event-counter-badge */
     border: 2px solid currentColor !important;
     filter: contrast(1.3) !important;
+
+    &.badge-style-minimal {
+      background: var(--plugin-primary) !important;
+      color: white !important;
+      border-color: var(--plugin-primary) !important;
+    }
+
+    &.badge-transparent-bg {
+      background: var(--plugin-primary) !important;
+      color: white !important;
+    }
   }
 
-  .badge-style-minimal {
-    background: var(--plugin-primary) !important;
-    color: white !important;
-    border-color: var(--plugin-primary) !important;
+  /* ==========================================================================
+         Variaciones de color automáticas MEJORADAS
+         ========================================================================== */
+  /* Para colores claros, usar texto oscuro con sombra */
+  &[style*="color: rgb(0, 0, 0)"],
+  &[style*="color: #000000"] {
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
   }
 
-  .badge-transparent-bg {
-    background: var(--plugin-primary) !important;
-    color: white !important;
+  /* Para colores oscuros, usar texto claro con sombra */
+  &[style*="color: rgb(255, 255, 255)"],
+  &[style*="color: #ffffff"] {
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
   }
-}
 
-/* ==========================================================================
-       Variaciones de color automáticas MEJORADAS
-       ========================================================================== */
+  /* Mejoras para fondos con transparencia */
+  &[style*="rgba"],
+  &.badge-transparent-bg {
+    /* Ya definido, pero reiteramos el efecto con backdrop si es necesario */
+    backdrop-filter: blur(12px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  }
 
-/* Para colores claros, usar texto oscuro con sombra */
-.event-counter-badge[style*="color: rgb(0, 0, 0)"],
-.event-counter-badge[style*="color: #000000"] {
-  text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
-}
+  /* ==========================================================================
+         ESTILOS ESPECÍFICOS PARA TIPOGRAFÍAS (NUEVO)
+         ========================================================================== */
+  /* Poppins - Mejorar legibilidad */
+  &.badge-font-poppins {
+    letter-spacing: 0.015em;
 
-/* Para colores oscuros, usar texto claro con sombra */
-.event-counter-badge[style*="color: rgb(255, 255, 255)"],
-.event-counter-badge[style*="color: #ffffff"] {
-  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
-}
+    &.badge-weight-bold {
+      letter-spacing: 0.01em;
+    }
+  }
 
-/* Mejoras para fondos con transparencia */
-.event-counter-badge[style*="rgba"],
-.badge-transparent-bg {
-  backdrop-filter: blur(12px) saturate(1.5);
-  -webkit-backdrop-filter: blur(12px) saturate(1.5);
-}
+  /* Inter - Optimizar para pantallas */
+  &.badge-font-inter {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
 
-/* ==========================================================================
-       ESTILOS ESPECÍFICOS PARA TIPOGRAFÍAS (NUEVO)
-       ========================================================================== */
+  /* Roboto - Ajustar espaciado */
+  &.badge-font-roboto {
+    letter-spacing: 0.02em;
 
-/* Poppins - Mejorar legibilidad */
-.badge-font-poppins {
-  letter-spacing: 0.015em;
-}
+    &.badge-weight-bold {
+      letter-spacing: 0.015em;
+    }
+  }
 
-.badge-font-poppins.badge-weight-bold {
-  letter-spacing: 0.01em;
-}
+  /* Monospace - Números tabulares */
+  &.badge-font-monospace {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.025em;
+  }
 
-/* Inter - Optimizar para pantallas */
-.badge-font-inter {
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-}
+  /* ==========================================================================
+         Utilidades de depuración MEJORADAS
+         (Si .debug se añade a un ancestro de .event-counter-badge)
+         Si .debug se añade directamente a .event-counter-badge, sería:
+         &.debug { ... }
+         Asumiré que .debug es un ancestro por ahora,
+         o que .event-counter-badge es el único elemento al que se le aplicará.
+         Si .debug es una clase en el body o un wrapper, la regla original está bien.
+         Para mantenerlo anidado, se puede hacer:
+         .debug & { ... } pero esto requiere que .debug sea padre.
+         La forma más simple es asumir que el desarrollador puede añadir una clase .debug al propio badge.
+         Si se quiere que funcione si .debug está en un ancestro:
+  */
+  /* .debug &.event-counter-badge { */ /* Si debug es ancestro */
+  /* O si se añade .debug directamente al badge: */
+  &.debug {
+    border: 2px dashed #ef4444 !important;
+    background: #fef3c7 !important;
+    color: #92400e !important;
+    position: relative; /* Puede que ya esté definido como absolute */
 
-/* Roboto - Ajustar espaciado */
-.badge-font-roboto {
-  letter-spacing: 0.02em;
-}
+    &::after {
+      content: " [DEBUG]";
+      position: absolute;
+      top: -20px;
+      left: 0;
+      font-size: 8px;
+      color: #ef4444;
+      background: white;
+      padding: 2px 4px;
+      border: 1px solid #ef4444;
+      border-radius: 2px;
+      font-family: monospace;
+      font-weight: bold;
+      z-index: 1000;
+    }
+  }
 
-.badge-font-roboto.badge-weight-bold {
-  letter-spacing: 0.015em;
-}
-
-/* Monospace - Números tabulares */
-.badge-font-monospace {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.025em;
-}
-
-/* ==========================================================================
-       Utilidades de depuración MEJORADAS
-       ========================================================================== */
-
-.debug .event-counter-badge {
-  border: 2px dashed #ef4444 !important;
-  background: #fef3c7 !important;
-  color: #92400e !important;
-  position: relative;
-}
-
-.debug .event-counter-badge::after {
-  content: " [DEBUG]";
-  position: absolute;
-  top: -20px;
-  left: 0;
-  font-size: 8px;
-  color: #ef4444;
-  background: white;
-  padding: 2px 4px;
-  border: 1px solid #ef4444;
-  border-radius: 2px;
-  font-family: monospace;
-  font-weight: bold;
-  z-index: 1000;
-}
-
-/* ==========================================================================
-       MEJORAS ESPECÍFICAS PARA RESPLANDOR Y TRANSPARENCIA
-       ========================================================================== */
-
-/* Resplandor personalizado para diferentes colores */
-.event-counter-badge[data-glow-color] {
-  filter: drop-shadow(0 0 var(--glow-size, 12px) var(--glow-color));
-}
-
-/* Animación sutil para resplandor */
-@keyframes glow-pulse {
-  0%,
-  100% {
+  /* ==========================================================================
+         MEJORAS ESPECÍFICAS PARA RESPLANDOR Y TRANSPARENCIA
+         ========================================================================== */
+  /* Resplandor personalizado para diferentes colores */
+  &[data-glow-color] {
     filter: drop-shadow(0 0 var(--glow-size, 12px) var(--glow-color));
   }
-  50% {
-    filter: drop-shadow(
-      0 0 calc(var(--glow-size, 12px) * 1.5) var(--glow-color)
-    );
+
+  /* Animación sutil para resplandor
+     (Asumiendo que glow-pulse es un keyframe global) */
+  &.badge-glow-animated {
+    animation: glow-pulse 3s ease-in-out infinite;
   }
-}
 
-.badge-glow-animated {
-  animation: glow-pulse 3s ease-in-out infinite;
-}
-
-/* Combinaciones específicas para mejor rendimiento */
-.badge-transparent-bg.badge-with-border.badge-glow-medium {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(16px) saturate(1.8);
-  -webkit-backdrop-filter: blur(16px) saturate(1.8);
-  border-width: 2px !important;
-  filter: drop-shadow(0 0 12px currentColor);
+  /* Combinaciones específicas para mejor rendimiento */
+  &.badge-transparent-bg.badge-with-border.badge-glow-medium {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(16px) saturate(1.8);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    border-width: 2px !important;
+    filter: drop-shadow(0 0 12px currentColor);
+  }
 }
