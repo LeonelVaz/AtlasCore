@@ -3,161 +3,158 @@
 .video-scheduler-slot-cell {
   padding: 12px !important;
   border-right: 1px solid var(--border-color);
-  position: relative; /* Para posicionar el botón de detalles */
-}
+  position: relative;
 
-.video-scheduler-slot-cell .video-slot {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  height: 100%;
-  min-height: 68px;
-  transition: all 0.2s ease;
-}
-
-.video-slot.status-pending,
-.video-slot.status-empty,
-.video-slot.status-development,
-.video-slot.status-production,
-.video-slot.status-published {
-  background: transparent;
-}
-
-/* Contenedor para el nombre y el botón de detalles */
-.name-details-container {
-  display: flex;
-  align-items: center; /* Alinea verticalmente el input y el botón */
-  gap: 4px; /* Espacio entre input y botón */
-  margin-bottom: 8px; /* Mantiene el margen inferior original */
-}
-
-.video-scheduler-slot-cell .video-name-input {
-  flex-grow: 1; /* El input ocupa el espacio restante */
-  border: none;
-  border-bottom: 1px solid transparent;
-  padding: 6px 0;
-  font-size: 0.8125rem;
-  background: transparent;
-  color: var(--text-color);
-  outline: none;
-  /* margin-bottom removido, gestionado por el contenedor flex */
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.video-scheduler-slot-cell .video-name-input::placeholder {
-  color: var(--text-color-secondary);
-  opacity: 0.6;
-  font-style: italic;
-  font-weight: 400;
-}
-
-.video-scheduler-slot-cell .video-name-input:focus {
-  border-bottom-color: var(--primary-color);
-  color: var(--text-color);
-}
-
-.video-scheduler-slot-cell .video-name-input:not(:placeholder-shown) {
-  background: none;
-}
-
-.video-scheduler-slot-cell .video-name-input:disabled {
-  color: var(--text-color-secondary);
-  font-style: italic;
-}
-
-/* Botón de detalles del video */
-.video-slot-details-button {
-  background: transparent;
-  border: none;
-  color: var(--text-color-secondary);
-  cursor: pointer;
-  padding: 2px; /* Padding pequeño */
-  opacity: 0.3; /* Casi indistinguible por defecto */
-  transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px; /* Tamaño fijo */
-  height: 20px;
-  flex-shrink: 0; /* No se encoge */
-}
-
-.video-slot-details-button .material-icons {
-  font-size: 16px; /* Tamaño del icono */
-}
-
-.video-scheduler-slot-cell:hover .video-slot-details-button,
-.video-slot-details-button:hover,
-.video-slot-details-button:focus {
-  opacity: 1; /* Totalmente visible al hacer hover en la celda o en el botón */
-  color: var(--primary-color);
-}
-
-.description-status-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  gap: 8px;
-  margin-top: auto; /* Empuja este contenedor hacia abajo */
-}
-
-.video-scheduler-slot-cell .video-description-input {
-  flex: 1;
-  border: none;
-  padding: 2px 4px;
-  font-size: 0.6875rem;
-  background: transparent;
-  color: var(--text-color-secondary);
-  outline: none;
-  transition: all 0.2s ease;
-  font-weight: 400;
-  opacity: 0.7;
-  min-width: 0;
-}
-
-.video-scheduler-slot-cell .video-description-input:focus {
-  color: var(--text-color);
-  opacity: 1;
-  background: rgba(var(--primary-color-rgb), 0.05);
-  border-radius: 2px;
-}
-
-.video-scheduler-slot-cell .video-description-input:disabled {
-  color: var(--text-color-secondary);
-  font-style: italic;
-  opacity: 0.4;
-}
-
-.video-scheduler-slot-cell .status-container {
-  cursor: pointer;
-  font-size: 0.875rem;
-  padding: 2px 4px;
-  color: var(--text-color-secondary);
-  transition: all 0.2s ease;
-  opacity: 0.8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.video-scheduler-slot-cell .status-container:hover {
-  opacity: 1;
-  transform: scale(1.1);
-}
-
-@media (max-width: 1024px) {
-  .video-scheduler-slot-cell .video-slot {
-    min-height: 60px;
+  &:hover .video-slot-details-button {
+    opacity: 1;
   }
-  .video-slot-details-button .material-icons {
-    font-size: 14px;
+
+  .video-slot {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    min-height: 68px;
+    transition: all 0.2s ease;
+
+    &.status-pending,
+    &.status-empty,
+    &.status-development,
+    &.status-production,
+    &.status-published {
+      background: transparent;
+    }
+
+    /* Contenedor para el nombre y el botón de detalles */
+    .name-details-container {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 8px;
+
+      .video-name-input {
+        flex-grow: 1;
+        border: none;
+        border-bottom: 1px solid transparent;
+        padding: 6px 0;
+        font-size: 0.8125rem;
+        background: transparent;
+        color: var(--text-color);
+        outline: none;
+        transition: all 0.2s ease;
+        font-weight: 500;
+
+        &::placeholder {
+          color: var(--text-color-secondary);
+          opacity: 0.6;
+          font-style: italic;
+          font-weight: 400;
+        }
+        &:focus {
+          border-bottom-color: var(--primary-color);
+          color: var(--text-color);
+        }
+        &:not(:placeholder-shown) {
+          background: none;
+        }
+        &:disabled {
+          color: var(--text-color-secondary);
+          font-style: italic;
+        }
+      }
+
+      /* Botón de detalles del video */
+      .video-slot-details-button {
+        background: transparent;
+        border: none;
+        color: var(--text-color-secondary);
+        cursor: pointer;
+        padding: 2px;
+        opacity: 0.3;
+        transition: opacity 0.2s ease, background-color 0.2s ease,
+          color 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+
+        .material-icons {
+          font-size: 16px;
+        }
+        &:hover,
+        &:focus {
+          opacity: 1;
+          color: var(--primary-color);
+        }
+      }
+    }
+
+    .description-status-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 8px;
+      margin-top: auto;
+
+      .video-description-input {
+        flex: 1;
+        border: none;
+        padding: 2px 4px;
+        font-size: 0.6875rem;
+        background: transparent;
+        color: var(--text-color-secondary);
+        outline: none;
+        transition: all 0.2s ease;
+        font-weight: 400;
+        opacity: 0.7;
+        min-width: 0;
+
+        &:focus {
+          color: var(--text-color);
+          opacity: 1;
+          background: rgba(var(--primary-color-rgb), 0.05);
+          border-radius: 2px;
+        }
+        &:disabled {
+          color: var(--text-color-secondary);
+          font-style: italic;
+          opacity: 0.4;
+        }
+      }
+
+      .status-container {
+        cursor: pointer;
+        font-size: 0.875rem;
+        padding: 2px 4px;
+        color: var(--text-color-secondary);
+        transition: all 0.2s ease;
+        opacity: 0.8;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2px;
+        flex-shrink: 0;
+        &:hover {
+          opacity: 1;
+          transform: scale(1.1);
+        }
+      }
+    }
   }
-  .video-slot-details-button {
-    width: 18px;
-    height: 18px;
+
+  @media (max-width: 1024px) {
+    .video-slot {
+      min-height: 60px;
+      .name-details-container .video-slot-details-button {
+        width: 18px;
+        height: 18px;
+        .material-icons {
+          font-size: 14px;
+        }
+      }
+    }
   }
 }

@@ -11,51 +11,50 @@
   font-size: 0.75rem;
   font-weight: 500;
   border-left: 1px solid var(--border-color) !important; /* Asegurar borde izquierdo */
-}
 
-.video-scheduler-income-cell:hover {
-  background: var(--hover-color) !important;
-}
+  &:hover {
+    background: var(--hover-color) !important;
+  }
 
-.video-scheduler-income-cell.income-empty {
-  color: var(--text-color-secondary);
-  opacity: 0.6;
-}
+  &.income-empty {
+    color: var(--text-color-secondary);
+    opacity: 0.6;
+    .income-amount-text::before {
+      content: "+ "; /* Solo un "+" aquí */
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+  }
 
-.video-scheduler-income-cell.income-empty .income-amount-text::before {
-  content: "+ "; /* Solo un "+" aquí */
-  color: var(--primary-color);
-  font-weight: bold;
-}
+  &.income-pending {
+    background: var(--warning-color) !important;
+    color: white !important;
+    border-radius: 4px;
+    margin: 2px; /* Para que el borde redondeado se vea bien */
+  }
 
-.video-scheduler-income-cell.income-pending {
-  background: var(--warning-color) !important;
-  color: white !important;
-  border-radius: 4px;
-  margin: 2px; /* Para que el borde redondeado se vea bien */
-}
+  &.income-paid {
+    background: var(--success-color) !important;
+    color: white !important;
+    border-radius: 4px;
+    margin: 2px;
+  }
 
-.video-scheduler-income-cell.income-paid {
-  background: var(--success-color) !important;
-  color: white !important;
-  border-radius: 4px;
-  margin: 2px;
-}
+  .income-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
 
-.video-scheduler-income-cell .income-content-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-}
+    .income-amount-text {
+      font-weight: 600;
+      font-size: 0.8125rem;
+    }
 
-.video-scheduler-income-cell .income-amount-text {
-  font-weight: 600;
-  font-size: 0.8125rem;
-}
-
-.video-scheduler-income-cell .income-payer-text {
-  font-size: 0.6875rem;
-  opacity: 0.9;
+    .income-payer-text {
+      font-size: 0.6875rem;
+      opacity: 0.9;
+    }
+  }
 }

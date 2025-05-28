@@ -7,28 +7,28 @@
   padding: 16px 8px !important;
   background: var(--bg-color-secondary) !important;
   border-right: 1px solid var(--border-color) !important;
-}
 
-.video-scheduler-day-cell .day-info-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
+  .day-info-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 
-.video-scheduler-day-cell .day-number-display {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-color);
-  display: block;
-  margin-bottom: 2px;
-}
+    .day-number-display {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-color);
+      display: block;
+      margin-bottom: 2px;
+    }
 
-.video-scheduler-day-cell .day-name-display {
-  font-size: 0.6875rem;
-  color: var(--text-color-secondary);
-  text-transform: uppercase;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+    .day-name-display {
+      font-size: 0.6875rem;
+      color: var(--text-color-secondary);
+      text-transform: uppercase;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+  }
 }

@@ -9,92 +9,88 @@
   border-radius: 8px;
   color: var(--text-color);
   padding: 16px;
-  z-index: 1050; /* Encima del calendario, debajo de modales principales */
+  z-index: 1050;
   min-width: 200px;
-  /* backdrop-filter: blur(12px); Opcional, puede interferir con otros popups */
-}
 
-.status-selector-popup h4 {
-  color: var(--text-color);
-  margin: 0 0 12px 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+  h4 {
+    color: var(--text-color);
+    margin: 0 0 12px 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-.status-selector-popup .status-selector-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  color: var(--text-color-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
+  .status-selector-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    &.sub-label {
+      margin-top: 12px;
+    }
+  }
 
-.status-selector-popup .status-selector-label.sub-label {
-  margin-top: 12px;
-}
+  .status-options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
 
-.status-selector-popup .status-options-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
-}
+    .status-option-button {
+      background: transparent;
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 400;
 
-.status-selector-popup .status-option-button {
-  background: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 8px 12px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  text-align: left;
-  font-size: 0.8125rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 400;
-}
+      &:hover {
+        background: var(--hover-color);
+        border-color: var(--primary-color);
+      }
+      &.active {
+        background: var(--primary-color) !important;
+        color: white !important;
+        border-color: var(--primary-color) !important;
+        font-weight: 500;
+      }
+    }
+  }
 
-.status-selector-popup .status-option-button:hover {
-  background: var(--hover-color);
-  border-color: var(--primary-color);
-}
+  .status-info-display {
+    background: rgba(var(--warning-color-rgb), 0.05);
+    color: var(--warning-color);
+    border: 1px solid rgba(var(--warning-color-rgb), 0.3);
+    font-style: italic;
+  }
 
-.status-selector-popup .status-option-button.active {
-  background: var(--primary-color) !important;
-  color: white !important;
-  border-color: var(--primary-color) !important;
-  font-weight: 500;
-}
+  .status-selector-cancel-button {
+    background: transparent;
+    color: var(--text-color-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.75rem;
+    font-weight: 400;
+    margin-top: 8px;
 
-.status-selector-popup .status-info-display {
-  /* Para el warning no clickeable */
-  background: rgba(var(--warning-color-rgb), 0.05);
-  color: var(--warning-color);
-  border: 1px solid rgba(var(--warning-color-rgb), 0.3);
-  font-style: italic;
-}
-
-.status-selector-popup .status-selector-cancel-button {
-  background: transparent;
-  color: var(--text-color-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 8px;
-  width: 100%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.75rem;
-  font-weight: 400;
-  margin-top: 8px; /* Espacio antes del botón cerrar */
-}
-
-.status-selector-popup .status-selector-cancel-button:hover {
-  background: var(--hover-color);
-  color: var(--text-color);
+    &:hover {
+      background: var(--hover-color);
+      color: var(--text-color);
+    }
+  }
 }

@@ -11,117 +11,108 @@
   z-index: 1050;
   backdrop-filter: blur(12px);
   min-height: fit-content;
-}
 
-.daily-income-form-popup h4 {
-  color: var(--text-color);
-  margin: 0 0 16px 0;
-  font-size: 1rem;
-  font-weight: 500;
-}
+  h4 {
+    color: var(--text-color);
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
 
-.daily-income-form-popup .form-group {
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-}
+  .form-group {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
 
-.daily-income-form-popup .form-group label {
-  color: var(--text-color-secondary);
-  font-size: 0.6875rem;
-  margin-bottom: 4px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+    label {
+      color: var(--text-color-secondary);
+      font-size: 0.6875rem;
+      margin-bottom: 4px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
 
-.daily-income-form-popup .form-group input,
-.daily-income-form-popup .form-group select {
-  background: var(--input-bg);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 8px 10px;
-  width: 100%;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-  font-size: 0.8125rem;
-}
+    input,
+    select {
+      background: var(--input-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 8px 10px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+      font-size: 0.8125rem;
 
-.daily-income-form-popup .form-group input:focus,
-.daily-income-form-popup .form-group select:focus {
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
-}
+      &:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      }
+    }
+  }
 
-.daily-income-form-popup .form-actions {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  justify-content: flex-end; /* Alinea los botones a la derecha */
-  gap: 8px; /* Espacio entre los botones que estén visibles */
-  align-items: center;
-}
+  .form-actions {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end; /* Alinea los botones a la derecha */
+    gap: 8px; /* Espacio entre los botones que estén visibles */
+    align-items: center;
 
-/* Ya no necesitamos .actions-right-group */
+    .button-primary,
+    .button-secondary,
+    .button-danger {
+      padding: 8px 16px; /* Tamaño original de los botones */
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      font-size: 0.8125rem; /* Tamaño original de la fuente */
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
 
-.daily-income-form-popup .form-actions .button-primary,
-.daily-income-form-popup .form-actions .button-secondary,
-.daily-income-form-popup .form-actions .button-danger {
-  padding: 8px 16px; /* Tamaño original de los botones */
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  font-size: 0.8125rem; /* Tamaño original de la fuente */
-  flex-shrink: 0;
-  white-space: nowrap;
-}
+    .button-primary {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+      &:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+      }
+    }
 
-.daily-income-form-popup .form-actions .button-primary {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-.daily-income-form-popup .form-actions .button-primary:hover {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
+    .button-secondary {
+      background: transparent;
+      color: var(--text-color-secondary);
+      border-color: var(--border-color);
+      &:hover {
+        background: var(--hover-color);
+        color: var(--text-color);
+      }
+    }
 
-.daily-income-form-popup .form-actions .button-secondary {
-  background: transparent;
-  color: var(--text-color-secondary);
-  border-color: var(--border-color);
+    .button-danger {
+      background: var(--danger-color);
+      color: white;
+      border-color: var(--danger-color);
+      margin-right: auto; /* Esto empujará el botón Eliminar a la izquierda si está presente */
+      &:hover {
+        background-color: hsl(
+          var(--danger-color-hsl-h, 0),
+          var(--danger-color-hsl-s, 100%),
+          calc(var(--danger-color-hsl-l, 50%) - 10%)
+        );
+        border-color: hsl(
+          var(--danger-color-hsl-h, 0),
+          var(--danger-color-hsl-s, 100%),
+          calc(var(--danger-color-hsl-l, 50%) - 10%)
+        );
+      }
+    }
+  }
 }
-.daily-income-form-popup .form-actions .button-secondary:hover {
-  background: var(--hover-color);
-  color: var(--text-color);
-}
-
-.daily-income-form-popup .form-actions .button-danger {
-  background: var(--danger-color);
-  color: white;
-  border-color: var(--danger-color);
-  margin-right: auto; /* Esto empujará el botón Eliminar a la izquierda si está presente */
-}
-.daily-income-form-popup .form-actions .button-danger:hover {
-  background-color: hsl(
-    var(--danger-color-hsl-h, 0),
-    var(--danger-color-hsl-s, 100%),
-    calc(var(--danger-color-hsl-l, 50%) - 10%)
-  );
-  border-color: hsl(
-    var(--danger-color-hsl-h, 0),
-    var(--danger-color-hsl-s, 100%),
-    calc(var(--danger-color-hsl-l, 50%) - 10%)
-  );
-}
-
-/* Si el popup sigue siendo muy estrecho para dos botones (Eliminar y Guardar)
-   podríamos necesitar una media query, pero con justify-content: flex-end y
-   margin-right: auto en el botón de eliminar, debería funcionar bien
-   para la mayoría de los casos con dos botones.
-*/

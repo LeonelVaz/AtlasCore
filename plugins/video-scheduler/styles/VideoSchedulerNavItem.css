@@ -3,34 +3,29 @@
 /* Ítem de navegación del plugin */
 .video-scheduler-nav-item {
   cursor: pointer;
-  padding: 5px 15px; /* Ajuste de padding */
+  padding: 5px 15px;
   display: flex;
   align-items: center;
-  gap: 10px; /* Más espacio */
+  gap: 10px;
   transition: all 0.2s ease;
-  border-radius: 6px; /* Bordes más redondeados */
-  margin: 2px 0; /* Pequeño margen vertical */
-}
+  border-radius: 6px;
+  margin: 2px 0;
 
-.video-scheduler-nav-item:hover {
-  background: var(--hover-color); /* Usar variable de tema para hover */
-  color: var(--primary-color); /* Cambiar color de texto al hacer hover */
-}
+  &:hover {
+    background: var(--hover-color);
+    color: var(--primary-color);
+  }
 
-.video-scheduler-nav-icon {
-  /* Clase específica para el icono */
-  font-size: 1.3em; /* Tamaño del icono */
-  color: var(
-    --text-color
-  ); /* Color del icono por defecto, debe ser blanco si el tema es oscuro */
-  /* Si se necesita específicamente blanco, se puede forzar aquí, pero es mejor que el tema lo maneje */
-  /* color: white; */
-  transition: color 0.2s ease;
-}
+  .video-scheduler-nav-icon {
+    font-size: 1.3em;
+    color: var(--text-color);
+    transition: color 0.2s ease;
+  }
 
-.video-scheduler-nav-item span:last-child {
-  /* Texto del ítem */
-  font-weight: 500;
-  color: var(--text-color); /* Color del texto por defecto */
-  font-size: 0.9rem; /* Tamaño de fuente */
+  span:last-child {
+    /* Texto del ítem */
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 0.9rem;
+  }
 }
