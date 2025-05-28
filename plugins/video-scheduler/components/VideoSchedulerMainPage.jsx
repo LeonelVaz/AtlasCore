@@ -596,7 +596,14 @@ function VideoSchedulerMainPage(props) {
                     className: "global-action-button",
                     onClick: () => setShowBulkAddForm(true),
                   },
-                  "📋 Añadir en Lote"
+                  [
+                    React.createElement(
+                      "span",
+                      { className: "material-icons", key: "icon" },
+                      "playlist_add"
+                    ),
+                    "Añadir en Lote",
+                  ]
                 ),
                 React.createElement(
                   "button",
@@ -605,7 +612,14 @@ function VideoSchedulerMainPage(props) {
                     className: "global-action-button",
                     onClick: handleOpenCurrencyRateForm,
                   },
-                  "⚙️ Monedas"
+                  [
+                    React.createElement(
+                      "span",
+                      { className: "material-icons", key: "icon" },
+                      "currency_exchange"
+                    ),
+                    "Monedas",
+                  ]
                 ),
                 React.createElement(
                   "button",
@@ -614,7 +628,14 @@ function VideoSchedulerMainPage(props) {
                     className: "global-action-button",
                     onClick: () => setShowStatsPanel(true),
                   },
-                  "📊 Estadísticas"
+                  [
+                    React.createElement(
+                      "span",
+                      { className: "material-icons", key: "icon" },
+                      "insights"
+                    ),
+                    "Estadísticas",
+                  ]
                 ),
               ]
             ),

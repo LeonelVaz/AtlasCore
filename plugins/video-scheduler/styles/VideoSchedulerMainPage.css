@@ -236,3 +236,22 @@
     var(--bg-color-secondary)
   ) !important;
 }
+/* Estilos para Material Icons en los botones de acción globales */
+.video-scheduler-global-actions .global-action-button .material-icons {
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 23px; /* Ajusta según el tamaño del botón */
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga";
+  vertical-align: middle; /* Para mejor alineación vertical con el texto */
+}

@@ -270,11 +270,10 @@ function StatsPanel({
   };
 
   const renderTabButtons = () => {
-    // ... (sin cambios en renderTabButtons)
     const tabs = [
-      { id: "overview", label: "📊 Vista General" },
-      { id: "charts", label: "📈 Gráficos" },
-      { id: "compare", label: "⚖️ Comparar" },
+      { id: "overview", label: "Vista General", icon: "dashboard" },
+      { id: "charts", label: "Gráficos", icon: "bar_chart" },
+      { id: "compare", label: "Comparar", icon: "compare_arrows" },
     ];
     const tabButtons = tabs.map((tab) =>
       React.createElement(
@@ -287,7 +286,14 @@ function StatsPanel({
             if (tab.id === "compare" && !compareMode) setCompareMode(true);
           },
         },
-        tab.label
+        [
+          React.createElement(
+            "span",
+            { className: "material-icons", key: "icon" },
+            tab.icon
+          ),
+          tab.label,
+        ]
       )
     );
     return React.createElement("div", { className: "stats-tabs" }, tabButtons);

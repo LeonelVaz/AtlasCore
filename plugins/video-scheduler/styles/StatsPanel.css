@@ -490,3 +490,24 @@
     margin-top: 4px;
   }
 }
+
+/* Estilos para Material Icons en los botones de las pestañas del StatsPanel */
+.stats-tab-buttons-container .stats-tab .material-icons {
+  font-family: "Material Icons";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px; /* Ajusta según el tamaño de la pestaña */
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga";
+  margin-right: 8px; /* Para que coincida con el gap de la pestaña */
+  vertical-align: middle; /* Para mejor alineación vertical con el texto */
+}
