@@ -1,0 +1,231 @@
+/* ==========================================================================
+   Contador de Eventos por Día - Estilos
+   Plugin: contador-eventos-dia
+   ========================================================================== */
+
+/* Badge principal del contador */
+.event-counter-badge {
+  /* Posicionamiento */
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  z-index: 10;
+
+  /* Layout interno */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  min-width: 16px;
+  height: 14px;
+
+  /* Tipografía */
+  font-size: 9px;
+  font-weight: 500;
+  font-family: var(--font-family-body);
+  line-height: 1;
+
+  /* Diseño base */
+  color: var(--text-color-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+
+  /* Efectos visuales */
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  opacity: 0.8;
+
+  /* Transiciones y animaciones */
+  transition: var(--transition-fast);
+  animation: badge-fade-in 0.2s ease-out;
+}
+
+/* ==========================================================================
+   Variantes por cantidad de eventos
+   ========================================================================== */
+
+/* Pocos eventos (1-2) - Verde/Azul */
+.event-counter-badge--low {
+  background: linear-gradient(135deg, var(--success-color), var(--info-color));
+}
+
+/* Eventos moderados (3-5) - Azul/Morado */
+.event-counter-badge--medium {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+}
+
+/* Muchos eventos (6+) - Naranja/Rojo */
+.event-counter-badge--high {
+  background: linear-gradient(
+    135deg,
+    var(--warning-color),
+    var(--danger-color)
+  );
+}
+
+/* ==========================================================================
+   Estados interactivos
+   ========================================================================== */
+
+/* Estado hover */
+.event-counter-badge:hover {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+/* Estado focus para accesibilidad */
+.event-counter-badge:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Animaciones
+   ========================================================================== */
+
+/* Animación de aparición */
+@keyframes badge-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   Adaptaciones por tema
+   ========================================================================== */
+
+/* Tema oscuro */
+@media (prefers-color-scheme: dark) {
+  .event-counter-badge {
+    backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .event-counter-badge--low {
+    background: linear-gradient(
+      135deg,
+      rgba(76, 175, 80, 0.7),
+      rgba(33, 150, 243, 0.7)
+    );
+  }
+
+  .event-counter-badge--medium {
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.7),
+      rgba(156, 39, 176, 0.7)
+    );
+  }
+
+  .event-counter-badge--high {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 193, 7, 0.7),
+      rgba(244, 67, 54, 0.7)
+    );
+  }
+}
+
+/* Alto contraste para accesibilidad */
+@media (prefers-contrast: high) {
+  .event-counter-badge {
+    background: var(--primary-color) !important;
+    color: var(--bg-color) !important;
+    border: 2px solid var(--text-color) !important;
+    opacity: 1 !important;
+    backdrop-filter: none;
+  }
+}
+
+/* ==========================================================================
+   Adaptaciones responsive
+   ========================================================================== */
+
+/* Tablets y móviles */
+@media (max-width: 768px) {
+  .event-counter-badge {
+    font-size: 8px;
+    padding: 1px 4px;
+    min-width: 12px;
+    height: 12px;
+    bottom: 2px;
+    right: 2px;
+  }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+  .event-counter-badge {
+    font-size: 7px;
+    padding: 1px 3px;
+    min-width: 10px;
+    height: 10px;
+  }
+}
+
+/* ==========================================================================
+   Adaptaciones de accesibilidad
+   ========================================================================== */
+
+/* Movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .event-counter-badge {
+    transition: none;
+    animation: none;
+  }
+
+  .event-counter-badge:hover {
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   Variantes especiales para números grandes
+   ========================================================================== */
+
+/* Badge para números de dos dígitos */
+.event-counter-badge[data-count^="1"],
+.event-counter-badge[data-count^="2"],
+.event-counter-badge[data-count^="3"],
+.event-counter-badge[data-count^="4"],
+.event-counter-badge[data-count^="5"],
+.event-counter-badge[data-count^="6"],
+.event-counter-badge[data-count^="7"],
+.event-counter-badge[data-count^="8"],
+.event-counter-badge[data-count^="9"] {
+  padding: 2px 4px;
+  min-width: 18px;
+}
+
+/* Badge para números 99+ */
+.event-counter-badge[data-count="99+"] {
+  padding: 2px 3px;
+  font-size: 8px;
+  min-width: 20px;
+}
+
+/* ==========================================================================
+   Utilidades de depuración (solo para desarrollo)
+   ========================================================================== */
+
+.debug .event-counter-badge {
+  border: 2px dashed var(--danger-color) !important;
+  background: var(--warning-color) !important;
+  color: var(--text-color) !important;
+}
+
+.debug .event-counter-badge::after {
+  content: " [DEBUG]";
+  font-size: 6px;
+  opacity: 0.7;
+}
