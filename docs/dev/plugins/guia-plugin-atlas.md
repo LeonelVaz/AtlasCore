@@ -24,6 +24,9 @@
    - [Puntos de extensión UI](#puntos-de-extensión-ui)
    - [Patrón Wrapper para componentes](#patrón-wrapper-para-componentes)
    - [Componentes para la barra lateral](#componentes-para-la-barra-lateral)
+   - [Integración Visual en la Barra Lateral de Atlas](#integración-visual-en-la-barra-lateral-de-atlas)
+     - [1. Ítems de Navegación Principal (Zona: `MAIN_NAVIGATION`)](#1-ítems-de-navegación-principal-zona-main_navigation)
+     - [2. Widgets o Paneles en la Barra Lateral (Zona: `CALENDAR_SIDEBAR` u otras)](#2-widgets-o-paneles-en-la-barra-lateral-zona-calendar_sidebar-u-otras)
    - [Extensiones para el calendario](#extensiones-para-el-calendario)
    - [Páginas completas de plugin](#páginas-completas-de-plugin)
    - [Widgets para el panel de configuración](#widgets-para-el-panel-de-configuración)
@@ -218,23 +221,44 @@ function MiPluginNavItem(props) {
     props.onNavigate(props.pluginId, props.pageIdToNavigate);
   };
 
+  // Determinar si el ítem está activo.
+  // Para este ejemplo, lo dejaremos simple. En un plugin real,
+  // necesitarías una lógica para determinar si la página actual
+  // coincide con pageIdToNavigate.
+  const isActive = false;
+
   return React.createElement(
     "div",
     {
-      className: "navigation-item",
+      // Clase raíz requerida por Atlas para ítems de navegación principal
+      className: `sidebar-item ${isActive ? "active" : ""}`,
       onClick: handleClick,
-      style: { cursor: "pointer", padding: "8px" },
+      title: "Ir a Mi Plugin", // Tooltip para accesibilidad
+      style: { cursor: "pointer" }, // Añadir cursor para indicar clickeabilidad
     },
     [
+      // Contenedor del icono
       React.createElement(
         "span",
-        { className: "material-icons", key: "icon" },
-        "extension"
+        {
+          className: "sidebar-item-icon", // Clase para el icono
+          key: "plugin-nav-icon",
+        },
+        // Icono (usando Material Icons)
+        React.createElement(
+          "span",
+          { className: "material-icons" },
+          "extension" // Nombre del Material Icon
+        )
       ),
+      // Contenedor de la etiqueta (texto)
       React.createElement(
         "span",
-        { key: "label", style: { marginLeft: "8px" } },
-        "Mi Plugin"
+        {
+          className: "sidebar-item-label", // CLASE CRÍTICA para el colapso de texto
+          key: "plugin-nav-label",
+        },
+        "Mi Plugin" // Texto del elemento de navegación
       ),
     ]
   );
@@ -303,7 +327,7 @@ export const UI_CONSTANTS = {
 Si seguiste estos pasos correctamente:
 
 1.  **El plugin se carga**: Aparece en la lista de plugins de Atlas
-2.  **El item de navegación funciona**: Aparece en la navegación principal
+2.  **El item de navegación funciona**: Aparece en la navegación principal, se ve como los demás ítems y su texto se oculta al colapsar la barra lateral.
 3.  **La página se muestra**: Al hacer clic en el item de navegación, se muestra tu página principal
 
 ### Problemas Comunes en el Primer Plugin
@@ -1078,24 +1102,259 @@ const extensionId = this._core.ui.registerExtension(
 
 ### Componentes para la barra lateral
 
+Esta sección ha sido expandida y detallada en la siguiente sección: [Integración Visual en la Barra Lateral de Atlas](#integración-visual-en-la-barra-lateral-de-atlas).
+
+### Integración Visual en la Barra Lateral de Atlas
+
+La barra lateral de Atlas es un componente central de la navegación y la interacción. Los plugins pueden extenderla de dos maneras principales, y es crucial que ambas mantengan una coherencia visual con la interfaz de Atlas:
+
+1.  **Añadiendo Ítems de Navegación Principal**: Para dirigir al usuario a páginas completas dedicadas del plugin.
+2.  **Añadiendo Widgets o Paneles Informativos**: Para mostrar información o controles rápidos directamente en la barra lateral (generalmente en la zona `CALENDAR_SIDEBAR`).
+
+#### 1. Ítems de Navegación Principal (Zona: `MAIN_NAVIGATION`)
+
+Estos elementos permiten a los usuarios acceder a las páginas principales de tu plugin. Para que se vean y comporten como los ítems nativos de Atlas –incluyendo el importante ocultamiento del texto cuando la barra lateral se colapsa– sigue estas directrices:
+
+##### Requisitos para tu Componente de Ítem de Navegación Principal:
+
+- **Punto de Extensión**: Registra tu componente de navegación en la zona de extensión `MAIN_NAVIGATION` utilizando `core.ui.registerExtension`.
+
+  ```javascript
+  // En el método init de tu plugin (index.js)
+  this._extensionIds.navigation = this._core.ui.registerExtension(
+    this.id, // El ID de tu plugin
+    this._core.ui.getExtensionZones().MAIN_NAVIGATION, // Zona específica
+    NavigationItemWrapper, // Tu componente de navegación (envuelto con el Patrón Wrapper)
+    { order: 150 } // Opcional: para influir en el orden de aparición
+  );
+  ```
+
+- **Estructura DOM y Clases CSS Clave**: El componente React que renderices debe generar la siguiente estructura DOM con clases CSS específicas para asegurar la compatibilidad visual y funcional:
+
+  - **Elemento Raíz (Contenedor Principal del Ítem)**:
+    - Debe tener la clase CSS `sidebar-item`.
+    - Opcionalmente, puede tener la clase `active` si el ítem representa la página actualmente visible (la lógica para determinar esto recae en el plugin o en cómo se gestione el estado de página activa globalmente).
+  - **Icono**:
+    - Dentro del elemento raíz, debe haber un `<span>` con la clase CSS `sidebar-item-icon`.
+    - Para usar los iconos estándar de la aplicación (Material Icons), dentro de este `<span>`, incluye otro `<span>` con la clase CSS `material-icons` y el nombre del icono como contenido textual (ej: `"widgets"`).
+    - Alternativamente, puedes usar un carácter emoji directamente como contenido del `<span>` con clase `sidebar-item-icon`.
+  - **Etiqueta de Texto**:
+    - Junto al icono (o como hermano del `sidebar-item-icon`), debe haber un `<span>` con la clase CSS `sidebar-item-label`.
+    - **Esta es la clase CSS esencial que Atlas utiliza para ocultar automáticamente el texto del ítem cuando la barra lateral se colapsa.**
+
+- **Props Recibidas por tu Componente de Navegación**: Cuando Atlas renderiza tu componente de navegación en la zona `MAIN_NAVIGATION`, le pasará automáticamente las siguientes `props` (a través del `ExtensionPoint` y tu wrapper):
+
+  - `pluginId` (string): El ID de tu plugin (el mismo que definiste en tus metadatos).
+  - `extensionId` (string): Un ID único generado por Atlas para esta instancia específica de la extensión.
+  - `onNavigate` (function): Una función que **debes** llamar para que Atlas navegue a la página de tu plugin. Esta función espera dos argumentos: `(pluginId, pageId)`.
+
+- **Manejo de la Navegación**:
+  - Debes definir un `pageId` (un string único y constante) para la página principal (o cada página navegable) de tu plugin.
+  - Al hacer clic en tu elemento de navegación, debes invocar la función `props.onNavigate(props.pluginId, TU_PAGE_ID_DEFINIDO)`.
+  - Es crucial que este `TU_PAGE_ID_DEFINIDO` sea el mismo que utilices al registrar el componente de tu página principal en la zona `PLUGIN_PAGES` (ver la sección [Páginas completas de plugin](#páginas-completas-de-plugin)).
+
+##### Ejemplo de Componente para `MAIN_NAVIGATION` (`MiPluginNavItem.jsx`):
+
 ```javascript
-function SidebarWidget(props) {
-  return React.createElement("div", { className: "sidebar-widget" }, [
-    React.createElement("h3", { key: "title" }, "Mi Widget"),
-    React.createElement("p", { key: "content" }, "Contenido de mi widget"),
-  ]);
+// plugins/mi-plugin/components/MiPluginNavItem.jsx
+import React from "react"; // Siempre importa React en archivos .jsx
+
+function MiPluginNavItem(props) {
+  // props.pluginId y props.onNavigate son proporcionados por Atlas.
+  // props.pageIdToNavigate es una prop personalizada que debes pasar
+  // a través del Patrón Wrapper desde tu plugin (ver sección de registro).
+
+  const handleClick = () => {
+    if (props.onNavigate && props.pageIdToNavigate) {
+      props.onNavigate(props.pluginId, props.pageIdToNavigate);
+    } else {
+      // Es buena práctica loguear si faltan props esenciales
+      console.warn(
+        `[${props.pluginId}] Navegación no posible: 'onNavigate' o 'pageIdToNavigate' no definidos en props.`
+      );
+    }
+  };
+
+  // Determinar si el ítem está activo.
+  // Atlas no pasa explícitamente una prop 'active' a los ítems de plugin.
+  // Si necesitas esta funcionalidad, deberás implementarla basándote en el
+  // estado global de la aplicación (si es accesible) o gestionarlo internamente.
+  // const isActive = tuLogicaParaDeterminarSiEstaActivo;
+  const isActive = false; // Simplificado para el ejemplo
+
+  return React.createElement(
+    "div",
+    {
+      className: `sidebar-item ${isActive ? "active" : ""}`, // Clase raíz
+      onClick: handleClick,
+      title: "Ir a Mi Plugin", // Tooltip para accesibilidad y usabilidad
+      style: { cursor: "pointer" }, // Es buena práctica añadir esto para indicar que es clickeable
+    },
+    [
+      // Contenedor del icono
+      React.createElement(
+        "span",
+        {
+          className: "sidebar-item-icon", // Clase para el icono
+          key: "plugin-nav-icon", // React key
+        },
+        // Icono (usando Material Icons)
+        React.createElement(
+          "span",
+          { className: "material-icons" }, // Clase para iconos de Material Design
+          "extension" // Reemplaza con el nombre del Material Icon deseado
+          // o usa un emoji directamente como texto aquí.
+        )
+      ),
+      // Contenedor de la etiqueta (texto)
+      React.createElement(
+        "span",
+        {
+          className: "sidebar-item-label", // CLASE CRÍTICA para el colapso de texto
+          key: "plugin-nav-label", // React key
+        },
+        "Mi Plugin" // El texto de tu elemento de navegación
+      ),
+    ]
+  );
 }
 
-// Registrar en la barra lateral usando el patrón Wrapper
-const SidebarWrapper = this._createComponentWrapper(SidebarWidget);
-
-const extensionId = core.ui.registerExtension(
-  pluginId,
-  core.ui.getExtensionZones().CALENDAR_SIDEBAR,
-  SidebarWrapper,
-  { order: 100 }
-);
+export default MiPluginNavItem;
 ```
+
+**Nota sobre el Registro**: Recuerda utilizar el [Patrón Wrapper](#patrón-wrapper-para-componentes) al registrar este `MiPluginNavItem` para inyectarle props como `pageIdToNavigate`.
+
+#### 2. Widgets o Paneles en la Barra Lateral (Zona: `CALENDAR_SIDEBAR` u otras)
+
+Estas extensiones son diferentes de los ítems de navegación principal. En lugar de llevar a páginas completas, ofrecen información o funcionalidades rápidas directamente en la barra lateral. Aunque no suelen necesitar la misma lógica de colapso de texto, su diseño debe ser coherente con el tema y estilo de Atlas.
+
+##### Recomendaciones para el Diseño de Widgets en la Barra Lateral:
+
+- **Punto de Extensión**: Registra tu componente de widget en la zona apropiada, como `CALENDAR_SIDEBAR`, usando `core.ui.registerExtension`.
+- **Apariencia Visual (CSS)**:
+  - **Variables CSS de Atlas**: Utiliza las [Variables CSS disponibles](#variables-css-disponibles) de Atlas para todos los aspectos visuales:
+    - **Fondos**: `var(--sidebar-bg)` para el fondo principal del sidebar, o `var(--bg-color-secondary)` si deseas un leve contraste para tu widget dentro del sidebar.
+    - **Texto**: `var(--text-color)` para el texto principal, y `var(--text-color-secondary)` para texto secundario o menos enfatizado.
+    - **Bordes**: `var(--border-color)` para bordes, y `var(--border-radius-md)` o `var(--border-radius-sm)` para esquinas redondeadas.
+    - **Colores de Acento**: Para elementos destacados, usa `var(--primary-color)` o variables semánticas como `var(--success-color)`.
+  - **Espaciado**: Aplica márgenes y rellenos internos usando las variables de espaciado de Atlas (ej. `var(--spacing-sm)`, `var(--spacing-md)`).
+  - **Tipografía**: Emplea `var(--font-family-body)` para texto general. Si tu widget tiene títulos, puedes usar `var(--font-family-heading)` y tamaños de fuente consistentes (ej. `0.9rem`, `1rem`).
+- **Contenedor Principal del Widget**:
+  - Envuelve la UI de tu widget en un `div` con una **clase CSS única y específica de tu plugin** (ej. `mi-plugin-id-sidebar-widget`). Esto ayuda a aislar tus estilos.
+  - Aplica un `padding` interno usando las variables de espaciado de Atlas (ej. `var(--spacing-sm)` o `var(--spacing-md)`).
+  - Si tu widget tiene un título, utiliza una etiqueta semántica como `<h4>` y estilízala sutilmente con las variables de Atlas.
+- **Elementos Interactivos**:
+  - Si tu widget incluye botones, campos de entrada u otros controles, estilízalos para que coincidan con la apariencia general de Atlas. Utiliza las variables de color para botones (`var(--color-button-primary-bg)`, etc.) y para inputs (`var(--input-bg)`, `var(--border-color)`).
+- **Adaptación al Colapso (Avanzado y Opcional para Widgets)**:
+  Los widgets en `CALENDAR_SIDEBAR` generalmente no se colapsan como los ítems de `MAIN_NAVIGATION`. Sin embargo, si tu widget tiene contenido que podría no verse bien cuando el sidebar general de Atlas se colapse (se haga más estrecho), podrías necesitar implementar lógica de CSS o JavaScript para ajustar su diseño. Esto implicaría detectar si el elemento contenedor `.sidebar` tiene la clase `.collapsed` aplicada por Atlas. Esta es una consideración avanzada y depende de la complejidad de tu widget.
+
+##### Ejemplo de Componente Widget para `CALENDAR_SIDEBAR` (`MiSidebarWidget.jsx`):
+
+```javascript
+// plugins/mi-plugin/components/MiSidebarWidget.jsx
+import React from "react";
+
+function MiSidebarWidget(props) {
+  // props.plugin (tu instancia de plugin), props.core (API de Atlas),
+  // y props.pluginId son inyectados por el Patrón Wrapper.
+
+  const [widgetData, setWidgetData] = React.useState(
+    "Cargando datos del widget..."
+  );
+
+  React.useEffect(() => {
+    // Simular carga de datos o suscripción a eventos del plugin
+    const timer = setTimeout(() => {
+      setWidgetData(`Información relevante de ${props.pluginId} actualizada.`);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [props.pluginId]); // Dependencia para reaccionar si el pluginId cambiara (aunque es raro)
+
+  // Estilos en línea usando variables CSS de Atlas para consistencia
+  const widgetContainerStyle = {
+    padding: "var(--spacing-md)",
+    margin: "var(--spacing-sm) var(--spacing-xs)", // Margen para separación
+    backgroundColor: "var(--bg-color-secondary)", // Un fondo ligeramente distinto
+    borderRadius: "var(--border-radius-md)",
+    border: `1px solid var(--border-color)`,
+    color: "var(--text-color)",
+    fontFamily: "var(--font-family-body)",
+    boxShadow: "var(--shadow-sm)", // Sombra sutil para destacar
+  };
+
+  const widgetTitleStyle = {
+    fontSize: "0.9rem",
+    fontWeight: "600",
+    color: "var(--primary-color)", // Usar color primario de Atlas
+    marginBottom: "var(--spacing-xs)",
+    marginTop: "0", // Resetear margen superior del h4
+  };
+
+  const widgetContentStyle = {
+    fontSize: "0.85rem",
+    color: "var(--text-color-secondary)",
+    lineHeight: "1.4",
+    margin: "0", // Resetear margen del p
+  };
+
+  const widgetButtonStyle = {
+    marginTop: "var(--spacing-sm)",
+    padding: "var(--spacing-xs) var(--spacing-sm)",
+    backgroundColor: "var(--primary-color)",
+    color: "var(--color-button-primary-text)", // Asegura contraste
+    border: "none",
+    borderRadius: "var(--border-radius-sm)",
+    cursor: "pointer",
+    fontSize: "0.8rem",
+    transition: "background-color var(--transition-fast)",
+  };
+
+  // Hover para el botón (se podría hacer con CSS también)
+  const handleButtonHover = (e, isHovering) => {
+    e.target.style.backgroundColor = isHovering
+      ? "var(--primary-hover)"
+      : "var(--primary-color)";
+  };
+
+  return React.createElement(
+    "div",
+    {
+      className: `${props.pluginId}-sidebar-widget`, // Clase única para tu plugin
+      style: widgetContainerStyle,
+    },
+    [
+      React.createElement(
+        "h4", // Título semántico para el widget
+        { key: "widget-title", style: widgetTitleStyle },
+        "Widget de Mi Plugin"
+      ),
+      React.createElement(
+        "p",
+        { key: "widget-content", style: widgetContentStyle },
+        widgetData
+      ),
+      // Ejemplo de un botón dentro del widget
+      React.createElement(
+        "button",
+        {
+          key: "widget-action",
+          onClick: () => {
+            /* Lógica de tu botón */ alert("Botón del widget presionado!");
+          },
+          style: widgetButtonStyle,
+          onMouseEnter: (e) => handleButtonHover(e, true),
+          onMouseLeave: (e) => handleButtonHover(e, false),
+        },
+        "Acción Rápida"
+      ),
+    ]
+  );
+}
+
+export default MiSidebarWidget;
+```
+
+**Nota sobre el Registro del Widget**: Al igual que con los ítems de navegación, usa el [Patrón Wrapper](#patrón-wrapper-para-componentes) para registrar tu `MiSidebarWidget` en la zona `CALENDAR_SIDEBAR` o la que corresponda, para asegurarte de que reciba las props necesarias como `plugin`, `core`, y `pluginId`.
 
 ### Extensiones para el calendario
 
@@ -1234,26 +1493,8 @@ const extensionId = core.ui.registerExtension(
 // ⚠️ IMPORTANTE: Define una constante para el ID de página
 const PAGE_ID = "mi-pagina-principal";
 
-// Componente de navegación
-function NavigationItem(props) {
-  const handleClick = () => {
-    // ⚠️ CRÍTICO: Usar exactamente el mismo pageId
-    props.onNavigate(props.pluginId, props.pageIdToNavigate);
-  };
-
-  return React.createElement(
-    "div",
-    { className: "nav-item", onClick: handleClick },
-    [
-      React.createElement(
-        "span",
-        { className: "material-icons", key: "icon" },
-        "extension"
-      ),
-      React.createElement("span", { key: "label" }, "Mi Plugin"),
-    ]
-  );
-}
+// Componente de navegación (usar el ejemplo de MiPluginNavItem.jsx adaptado)
+// function NavigationItem(props) { ... }
 
 // Componente de página
 function MainPage(props) {
@@ -1268,7 +1509,8 @@ function MainPage(props) {
 }
 
 // Registrar navegación
-const navWrapper = this._createComponentWrapper(NavigationItem, {
+const navWrapper = this._createComponentWrapper(MiPluginNavItem, {
+  // Asegúrate de usar tu componente
   pageIdToNavigate: PAGE_ID, // Pasar el pageId como prop
 });
 
@@ -1304,19 +1546,83 @@ function SettingsWidget(props) {
   const handleChange = (e) => {
     setValor(e.target.value);
     // Guardar configuración
-    props.onSettingChange("miConfiguracion", e.target.value);
+    // Esto es un ejemplo, la lógica de onSettingChange dependería de cómo
+    // el panel de configuración de Atlas maneje los cambios.
+    // props.onSettingChange("miConfiguracion", e.target.value);
+
+    // Si `onSettingChange` no es provisto, necesitarás tu propia lógica
+    // para guardar la configuración, por ejemplo, usando la API de almacenamiento
+    // del plugin a través de `props.plugin.publicAPI.saveSetting(...)` o
+    // `props.core.storage.setItem(...)`.
+    if (
+      props.plugin &&
+      props.plugin.publicAPI &&
+      props.plugin.publicAPI.saveSetting
+    ) {
+      props.plugin.publicAPI.saveSetting("miConfiguracion", e.target.value);
+    } else {
+      console.warn("Función para guardar configuración no disponible.");
+    }
   };
 
-  return React.createElement("div", { className: "settings-widget" }, [
-    React.createElement("h3", { key: "title" }, "Configuración de Mi Plugin"),
-    React.createElement("input", {
-      key: "input",
-      type: "text",
-      value: valor,
-      onChange: handleChange,
-      placeholder: "Configuración",
-    }),
-  ]);
+  // Ejemplo de carga de configuración inicial
+  React.useEffect(() => {
+    if (
+      props.plugin &&
+      props.plugin.publicAPI &&
+      props.plugin.publicAPI.loadSetting
+    ) {
+      const initialValue = props.plugin.publicAPI.loadSetting(
+        "miConfiguracion",
+        ""
+      );
+      setValor(initialValue);
+    }
+  }, [props.plugin]);
+
+  return React.createElement(
+    "div",
+    {
+      className: `${props.pluginId}-settings-widget settings-widget`, // Clase específica y genérica
+      style: {
+        padding: "var(--spacing-md)",
+        border: "1px solid var(--border-color)",
+        borderRadius: "var(--border-radius-md)",
+        marginBottom: "var(--spacing-md)",
+        backgroundColor: "var(--card-bg)",
+      },
+    },
+    [
+      React.createElement(
+        "h3",
+        {
+          key: "title",
+          style: {
+            color: "var(--text-color)",
+            marginTop: 0,
+            marginBottom: "var(--spacing-sm)",
+          },
+        },
+        "Configuración de Mi Plugin"
+      ),
+      React.createElement("input", {
+        key: "input",
+        type: "text",
+        value: valor,
+        onChange: handleChange,
+        placeholder: "Valor de configuración",
+        style: {
+          width: "100%",
+          padding: "var(--spacing-sm)",
+          borderRadius: "var(--border-radius-sm)",
+          border: "1px solid var(--border-color)",
+          backgroundColor: "var(--input-bg)",
+          color: "var(--text-color)",
+          boxSizing: "border-box",
+        },
+      }),
+    ]
+  );
 }
 
 // Registrar en el panel de configuración
@@ -1346,15 +1652,27 @@ function MiListaComponent(props) {
   const refreshItems = React.useCallback(async () => {
     try {
       setLoading(true);
-      const currentItems = await props.plugin.publicAPI.getAllItems();
-      setItems(currentItems);
+      // Asegúrate de que publicAPI y getAllItems existan y sean funciones
+      if (
+        props.plugin &&
+        props.plugin.publicAPI &&
+        typeof props.plugin.publicAPI.getAllItems === "function"
+      ) {
+        const currentItems = await props.plugin.publicAPI.getAllItems();
+        setItems(Array.isArray(currentItems) ? currentItems : []); // Asegurar que es un array
+      } else {
+        console.warn(
+          `[${props.pluginId}] publicAPI.getAllItems no está disponible.`
+        );
+        setItems([]);
+      }
     } catch (error) {
-      console.error("Error al cargar items:", error);
+      console.error(`[${props.pluginId}] Error al cargar items:`, error);
       setItems([]); // Valor de emergencia
     } finally {
       setLoading(false);
     }
-  }, [props.plugin]);
+  }, [props.plugin, props.pluginId]); // props.pluginId para logs, props.plugin para la API
 
   // ⚠️ Cargar datos iniciales
   React.useEffect(() => {
@@ -1364,39 +1682,77 @@ function MiListaComponent(props) {
   // ⚠️ Función para manejar acciones
   const handleCreateItem = async (itemData) => {
     try {
-      await props.plugin.publicAPI.createItem(itemData);
-      refreshItems(); // ⚠️ Refrescar después de modificar
+      if (
+        props.plugin &&
+        props.plugin.publicAPI &&
+        typeof props.plugin.publicAPI.createItem === "function"
+      ) {
+        await props.plugin.publicAPI.createItem(itemData);
+        refreshItems(); // ⚠️ Refrescar después de modificar
+      } else {
+        console.warn(
+          `[${props.pluginId}] publicAPI.createItem no está disponible.`
+        );
+      }
     } catch (error) {
-      console.error("Error al crear item:", error);
+      console.error(`[${props.pluginId}] Error al crear item:`, error);
     }
   };
 
   if (loading) {
-    return React.createElement("div", {}, "Cargando...");
+    return React.createElement(
+      "div",
+      { style: { color: "var(--text-color)" } },
+      "Cargando..."
+    );
   }
 
-  return React.createElement("div", { className: "items-list" }, [
-    React.createElement("h2", { key: "title" }, "Mi Lista"),
-    React.createElement(
-      "button",
-      {
-        key: "add-btn",
-        onClick: () => handleCreateItem({ name: "Nuevo item" }),
-      },
-      "Añadir Item"
-    ),
-    React.createElement(
-      "ul",
-      { key: "list" },
-      items.map((item, index) =>
-        React.createElement(
-          "li",
-          { key: item.id || index }, // ⚠️ Key única obligatoria
-          item.name
+  return React.createElement(
+    "div",
+    { className: `${props.pluginId}-items-list items-list` },
+    [
+      React.createElement(
+        "h2",
+        { key: "title", style: { color: "var(--text-color)" } },
+        "Mi Lista"
+      ),
+      React.createElement(
+        "button",
+        {
+          key: "add-btn",
+          onClick: () => handleCreateItem({ name: "Nuevo item" }),
+          style: {
+            backgroundColor: "var(--primary-color)",
+            color: "var(--color-button-primary-text)",
+            border: "none",
+            padding: "var(--spacing-sm) var(--spacing-md)",
+            borderRadius: "var(--border-radius-sm)",
+            cursor: "pointer",
+            marginBottom: "var(--spacing-md)",
+          },
+        },
+        "Añadir Item"
+      ),
+      React.createElement(
+        "ul",
+        { key: "list", style: { listStyle: "none", padding: 0, margin: 0 } },
+        items.map((item, index) =>
+          React.createElement(
+            "li",
+            {
+              key: item.id || index, // ⚠️ Key única obligatoria
+              style: {
+                padding: "var(--spacing-sm)",
+                borderBottom: "1px solid var(--border-color)",
+                color: "var(--text-color-secondary)",
+              },
+            },
+            item.name
+          )
         )
-      )
-    ),
-  ]);
+      ),
+    ]
+  );
 }
 ```
 
@@ -1414,7 +1770,11 @@ function MiFormulario(props) {
   // ⚠️ Resetear formulario cuando cambian las props
   React.useEffect(() => {
     if (props.existingItem) {
-      setFormData(props.existingItem);
+      setFormData({
+        name: props.existingItem.name || "",
+        description: props.existingItem.description || "",
+        status: props.existingItem.status || "active",
+      });
     } else {
       setFormData({ name: "", description: "", status: "active" });
     }
@@ -1433,72 +1793,113 @@ function MiFormulario(props) {
 
     // ⚠️ Validación básica
     if (!formData.name.trim()) {
-      alert("El nombre es obligatorio");
+      alert("El nombre es obligatorio"); // Considerar usar un sistema de notificaciones más integrado
       return;
     }
 
     try {
-      if (props.existingItem) {
-        await props.plugin.publicAPI.updateItem(
-          props.existingItem.id,
-          formData
-        );
+      // Asegurar que las funciones de publicAPI existen
+      const api = props.plugin?.publicAPI;
+      if (!api) {
+        console.error(`[${props.pluginId}] publicAPI no disponible.`);
+        return;
+      }
+
+      if (props.existingItem && typeof api.updateItem === "function") {
+        await api.updateItem(props.existingItem.id, formData);
+      } else if (typeof api.createItem === "function") {
+        await api.createItem(formData);
       } else {
-        await props.plugin.publicAPI.createItem(formData);
+        console.error(
+          `[${props.pluginId}] Funciones updateItem o createItem no disponibles en publicAPI.`
+        );
+        return;
       }
 
       // ⚠️ Callback al componente padre
-      if (props.onSave) {
+      if (props.onSave && typeof props.onSave === "function") {
         props.onSave(formData);
       }
     } catch (error) {
-      console.error("Error al guardar:", error);
+      console.error(`[${props.pluginId}] Error al guardar:`, error);
     }
   };
 
-  return React.createElement("form", { onSubmit: handleSubmit }, [
-    React.createElement("input", {
-      key: "name",
-      type: "text",
-      name: "name",
-      value: formData.name,
-      onChange: handleChange,
-      placeholder: "Nombre",
-    }),
-    React.createElement("textarea", {
-      key: "description",
-      name: "description",
-      value: formData.description,
-      onChange: handleChange,
-      placeholder: "Descripción",
-    }),
-    React.createElement(
-      "select",
-      {
-        key: "status",
-        name: "status",
-        value: formData.status,
+  const commonInputStyle = {
+    width: "100%",
+    padding: "var(--spacing-sm)",
+    borderRadius: "var(--border-radius-sm)",
+    border: `1px solid var(--border-color)`,
+    backgroundColor: "var(--input-bg)",
+    color: "var(--text-color)",
+    boxSizing: "border-box",
+    marginBottom: "var(--spacing-md)",
+  };
+
+  return React.createElement(
+    "form",
+    {
+      onSubmit: handleSubmit,
+      className: `${props.pluginId}-mi-formulario`,
+    },
+    [
+      React.createElement("input", {
+        key: "name",
+        type: "text",
+        name: "name",
+        value: formData.name,
         onChange: handleChange,
-      },
-      [
-        React.createElement(
-          "option",
-          { key: "active", value: "active" },
-          "Activo"
-        ),
-        React.createElement(
-          "option",
-          { key: "inactive", value: "inactive" },
-          "Inactivo"
-        ),
-      ]
-    ),
-    React.createElement(
-      "button",
-      { key: "submit", type: "submit" },
-      props.existingItem ? "Actualizar" : "Crear"
-    ),
-  ]);
+        placeholder: "Nombre",
+        style: commonInputStyle,
+      }),
+      React.createElement("textarea", {
+        key: "description",
+        name: "description",
+        value: formData.description,
+        onChange: handleChange,
+        placeholder: "Descripción",
+        style: { ...commonInputStyle, minHeight: "80px" },
+      }),
+      React.createElement(
+        "select",
+        {
+          key: "status",
+          name: "status",
+          value: formData.status,
+          onChange: handleChange,
+          style: commonInputStyle,
+        },
+        [
+          React.createElement(
+            "option",
+            { key: "active", value: "active" },
+            "Activo"
+          ),
+          React.createElement(
+            "option",
+            { key: "inactive", value: "inactive" },
+            "Inactivo"
+          ),
+        ]
+      ),
+      React.createElement(
+        "button",
+        {
+          key: "submit",
+          type: "submit",
+          style: {
+            backgroundColor: "var(--primary-color)",
+            color: "var(--color-button-primary-text)",
+            border: "none",
+            padding: "var(--spacing-sm) var(--spacing-md)",
+            borderRadius: "var(--border-radius-sm)",
+            cursor: "pointer",
+          },
+        },
+        props.existingItem ? "Actualizar" : "Crear"
+      ),
+    ]
+  );
 }
 ```
 
@@ -1520,64 +1921,108 @@ function ComponenteConModal(props) {
   };
 
   const handleSave = (formData) => {
-    // La lógica de guardado se maneja en el formulario
+    // La lógica de guardado se maneja en el formulario MiFormulario
+    // Aquí solo cerramos el modal y, opcionalmente, refrescamos la lista o notificamos.
+    console.log(`[${props.pluginId}] Formulario guardado:`, formData);
     handleCloseModal();
+    // Si este componente maneja una lista que necesita actualizarse:
+    // if (props.onListRefresh) props.onListRefresh();
   };
 
-  return React.createElement("div", { className: "component-with-modal" }, [
-    React.createElement(
-      "button",
-      { key: "open-btn", onClick: () => handleOpenModal() },
-      "Crear Nuevo"
-    ),
-
-    // ⚠️ Renderizado condicional del modal
-    showModal &&
+  return React.createElement(
+    "div",
+    {
+      className: `${props.pluginId}-component-with-modal component-with-modal`,
+    },
+    [
       React.createElement(
-        "div",
+        "button",
         {
-          key: "modal",
-          className: "modal-overlay",
+          key: "open-btn",
+          onClick: () => handleOpenModal(),
           style: {
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            backgroundColor: "var(--primary-color)",
+            color: "var(--color-button-primary-text)",
+            border: "none",
+            padding: "var(--spacing-sm) var(--spacing-md)",
+            borderRadius: "var(--border-radius-sm)",
+            cursor: "pointer",
           },
         },
+        "Crear Nuevo con Modal"
+      ),
+
+      // ⚠️ Renderizado condicional del modal
+      showModal &&
         React.createElement(
-          "div",
+          "div", // Modal Overlay
           {
-            className: "modal-content",
+            key: "modal-overlay",
+            className: `${props.pluginId}-modal-overlay modal-overlay`,
             style: {
-              backgroundColor: "white",
-              padding: "20px",
-              borderRadius: "8px",
-              maxWidth: "500px",
-              width: "90%",
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.6)", // Fondo semitransparente
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 1000, // Asegurar que esté por encima de otros elementos
             },
           },
-          [
-            React.createElement(MiFormulario, {
-              key: "form",
-              plugin: props.plugin,
-              existingItem: editingItem,
-              onSave: handleSave,
-            }),
-            React.createElement(
-              "button",
-              { key: "cancel", onClick: handleCloseModal },
-              "Cancelar"
-            ),
-          ]
-        )
-      ),
-  ]);
+          React.createElement(
+            "div", // Modal Content
+            {
+              className: `${props.pluginId}-modal-content modal-content`,
+              style: {
+                backgroundColor: "var(--card-bg)", // Fondo del modal
+                padding: "var(--spacing-lg)",
+                borderRadius: "var(--border-radius-lg)", // Bordes redondeados
+                boxShadow: "var(--shadow-xl)", // Sombra pronunciada
+                maxWidth: "500px",
+                width: "90%",
+                maxHeight: "80vh", // Altura máxima para evitar que sea muy largo
+                overflowY: "auto", // Scroll si el contenido es muy largo
+              },
+            },
+            [
+              React.createElement(MiFormulario, {
+                // Reutilizar el componente de formulario
+                key: "form-in-modal",
+                plugin: props.plugin, // Pasar la instancia del plugin
+                pluginId: props.pluginId,
+                existingItem: editingItem,
+                onSave: handleSave, // Callback para cuando el formulario se guarda
+                // Pasar onCancel también si el formulario lo maneja internamente
+              }),
+              // Botón de cancelar podría estar aquí o dentro del formulario
+              // Si MiFormulario no tiene su propio botón de cancelar:
+              // React.createElement(
+              //   "button",
+              //   {
+              //     key: "cancel-modal-btn",
+              //     onClick: handleCloseModal,
+              //     style: {
+              //       marginTop: "var(--spacing-md)",
+              //       backgroundColor: "var(--bg-color-secondary)",
+              //       color: "var(--text-color)",
+              //       border: "1px solid var(--border-color)",
+              //       padding: "var(--spacing-sm) var(--spacing-md)",
+              //       borderRadius: "var(--border-radius-sm)",
+              //       cursor: "pointer",
+              //       display: "block", // o flex para alinear con el de guardar
+              //       width: "100%" // o ajustado según diseño
+              //     }
+              //   },
+              //   "Cancelar (desde Modal)"
+              // )
+            ]
+          )
+        ),
+    ]
+  );
 }
 ```
 
@@ -1592,11 +2037,15 @@ _createPublicAPI: function() {
 
   return {
     // Operaciones de lectura
-    getAllItems: () => [...self._items], // ⚠️ Devolver copia
-    getItem: (id) => self._items.find(item => item.id === id),
+    getAllItems: () => [...self._items], // ⚠️ Devolver copia para inmutabilidad
+    getItem: (id) => {
+        const item = self._items.find(item => item.id === id);
+        return item ? { ...item } : undefined; // Devolver copia si se encuentra
+    },
 
     // Operaciones de escritura (deben ser async si usan storage)
     createItem: async (itemData) => {
+      // self._internalCreateItem ya debería devolver una copia y manejar el storage
       return await self._internalCreateItem(itemData);
     },
 
@@ -1607,47 +2056,61 @@ _createPublicAPI: function() {
     deleteItem: async (id) => {
       return await self._internalDeleteItem(id);
     }
+    // Puedes añadir aquí métodos específicos para guardar/cargar configuraciones
+    // si los widgets de configuración los necesitan.
+    // saveSetting: async (key, value) => { ... },
+    // loadSetting: async (key, defaultValue) => { ... },
   };
 },
 
 // Métodos internos que realmente modifican los datos
 async _internalCreateItem(itemData) {
   const newItem = {
-    id: Date.now().toString(),
+    id: Date.now().toString(), // Usar un generador de UUIDs más robusto en producción
     ...itemData,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString() // Añadir updatedAt también en creación
   };
 
   this._items.push(newItem);
   await this._saveDataToStorage(); // ⚠️ Persistir cambios
-  return newItem;
+  // Publicar evento si es necesario (ej. this._core.events.publish(...))
+  return { ...newItem }; // Devolver copia
 },
 
 async _internalUpdateItem(id, updateData) {
   const index = this._items.findIndex(item => item.id === id);
   if (index === -1) {
-    throw new Error(`Item con ID ${id} no encontrado`);
+    // Considerar devolver un error o un objeto que indique el fallo
+    console.error(`[${this.id}] Item con ID ${id} no encontrado para actualizar.`);
+    throw new Error(`Item con ID ${id} no encontrado`); // O manejar de otra forma
   }
+
+  // Evitar sobreescribir el ID o createdAt
+  const { id: _id, createdAt: _createdAt, ...restOfUpdateData } = updateData;
 
   this._items[index] = {
     ...this._items[index],
-    ...updateData,
+    ...restOfUpdateData, // Aplicar solo los datos actualizables
     updatedAt: new Date().toISOString()
   };
 
   await this._saveDataToStorage();
-  return this._items[index];
+  // Publicar evento si es necesario
+  return { ...this._items[index] }; // Devolver copia
 },
 
 async _internalDeleteItem(id) {
   const index = this._items.findIndex(item => item.id === id);
   if (index === -1) {
+    console.error(`[${this.id}] Item con ID ${id} no encontrado para eliminar.`);
     throw new Error(`Item con ID ${id} no encontrado`);
   }
 
   const deletedItem = this._items.splice(index, 1)[0];
   await this._saveDataToStorage();
-  return deletedItem;
+  // Publicar evento si es necesario
+  return { ...deletedItem }; // Devolver copia
 }
 ```
 
@@ -3048,11 +3511,26 @@ export default {
 
       return React.createElement(
         "div",
-        { className: `${self.id}-settings-panel` }, // Clase específica del plugin
+        {
+          className: `${self.id}-settings-panel settings-widget`, // Clase específica y genérica
+          style: {
+            padding: "var(--spacing-md)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "var(--border-radius-md)",
+            backgroundColor: "var(--card-bg)",
+          },
+        },
         [
           React.createElement(
             "h3",
-            { key: "title" },
+            {
+              key: "title",
+              style: {
+                color: "var(--text-color)",
+                marginTop: 0,
+                marginBottom: "var(--spacing-md)",
+              },
+            },
             "Configuración de Notificaciones"
           ),
 
@@ -3061,7 +3539,11 @@ export default {
             {
               key: "color",
               className: "settings-group",
-              style: { marginBottom: "10px" },
+              style: {
+                marginBottom: "var(--spacing-md)",
+                display: "flex",
+                alignItems: "center",
+              },
             },
             [
               React.createElement(
@@ -3069,7 +3551,10 @@ export default {
                 {
                   key: "label",
                   htmlFor: `${self.id}-color-input`,
-                  style: { marginRight: "5px" },
+                  style: {
+                    marginRight: "var(--spacing-sm)",
+                    color: "var(--text-color-secondary)",
+                  },
                 },
                 "Color de notificación:"
               ),
@@ -3080,6 +3565,12 @@ export default {
                 value: currentSettings.notificationColor,
                 onChange: (e) =>
                   handleSettingChange("notificationColor", e.target.value),
+                style: {
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "var(--border-radius-sm)",
+                  padding: "var(--spacing-xs)", // Pequeño padding para el input color
+                  backgroundColor: "var(--input-bg)", // Fondo del input
+                },
               }),
             ]
           ),
@@ -3089,7 +3580,11 @@ export default {
             {
               key: "headers",
               className: "settings-group",
-              style: { marginBottom: "10px" },
+              style: {
+                marginBottom: "var(--spacing-sm)",
+                display: "flex",
+                alignItems: "center",
+              },
             },
             [
               React.createElement("input", {
@@ -3099,13 +3594,17 @@ export default {
                 checked: currentSettings.showInHeaders,
                 onChange: (e) =>
                   handleSettingChange("showInHeaders", e.target.checked),
+                style: { marginRight: "var(--spacing-xs)" },
               }),
               React.createElement(
                 "label",
                 {
                   key: "label",
                   htmlFor: `${self.id}-headers-checkbox`,
-                  style: { marginLeft: "5px" },
+                  style: {
+                    color: "var(--text-color-secondary)",
+                    cursor: "pointer",
+                  },
                 },
                 "Mostrar en encabezados de día"
               ),
@@ -3114,7 +3613,11 @@ export default {
 
           React.createElement(
             "div",
-            { key: "cells", className: "settings-group" },
+            {
+              key: "cells",
+              className: "settings-group",
+              style: { display: "flex", alignItems: "center" },
+            },
             [
               React.createElement("input", {
                 key: "input",
@@ -3123,13 +3626,17 @@ export default {
                 checked: currentSettings.showInCells,
                 onChange: (e) =>
                   handleSettingChange("showInCells", e.target.checked),
+                style: { marginRight: "var(--spacing-xs)" },
               }),
               React.createElement(
                 "label",
                 {
                   key: "label",
                   htmlFor: `${self.id}-cells-checkbox`,
-                  style: { marginLeft: "5px" },
+                  style: {
+                    color: "var(--text-color-secondary)",
+                    cursor: "pointer",
+                  },
                 },
                 "Mostrar en celdas de hora"
               ),
@@ -3256,16 +3763,17 @@ export default {
 
     return {
       getStats: function () {
-        return { ...self._data.stats };
+        return { ...self._data.stats }; // Devolver copia
       },
 
       getDailySummary: function (date) {
         const dateStr = date
           ? new Date(date).toISOString().split("T")[0]
           : new Date().toISOString().split("T")[0];
-        return (
-          self._data.stats[dateStr] || { created: 0, updated: 0, deleted: 0 }
-        );
+        // Devolver copia o un objeto por defecto si no existe
+        return self._data.stats[dateStr]
+          ? { ...self._data.stats[dateStr] }
+          : { created: 0, updated: 0, deleted: 0 };
       },
 
       getLastUpdateTime: function () {
@@ -3299,7 +3807,7 @@ export default {
 
   _updateStats: async function (eventData) {
     // Actualizar estadísticas
-    const stats = this._data.stats;
+    const stats = this._data.stats; // Acceso directo para modificar
     const date = new Date().toISOString().split("T")[0];
 
     if (!stats[date]) {
@@ -3314,11 +3822,12 @@ export default {
       stats[date].deleted++;
     }
 
-    this._data.lastUpdate = Date.now();
+    this._data.lastUpdate = new Date().toISOString(); // Guardar como ISO string
 
-    // Publicar evento propio
+    // Publicar evento propio con copia de los datos
     this._core.events.publish(this.id, "estadisticasTiempo.actualizado", {
-      stats: this._data.stats,
+      stats: { ...this._data.stats }, // Enviar copia
+      lastUpdate: this._data.lastUpdate,
     });
 
     // Guardar datos
@@ -3342,39 +3851,41 @@ export default {
   _registerNavigation: function () {
     const self = this;
 
-    function NavItem(props) {
+    // Usar el componente MiPluginNavItem.jsx adaptado para este plugin
+    function StatsNavItem(props) {
       const handleClick = () => {
         props.onNavigate(props.pluginId, props.pageIdToNavigate);
       };
+      const isActive = false; // Lógica de activación si es necesaria
 
       return React.createElement(
         "div",
         {
-          className: `${self.id}-navigation-item navigation-item`, // Clase específica y genérica
+          className: `sidebar-item ${isActive ? "active" : ""}`,
           onClick: handleClick,
-          style: {
-            cursor: "pointer",
-            padding: "8px",
-            display: "flex",
-            alignItems: "center",
-          },
+          title: "Ver Estadísticas de Tiempo",
+          style: { cursor: "pointer" },
         },
         [
           React.createElement(
             "span",
-            { className: "material-icons", key: "icon" },
-            "bar_chart"
+            { className: "sidebar-item-icon", key: "icon" },
+            React.createElement(
+              "span",
+              { className: "material-icons" },
+              "bar_chart"
+            )
           ),
           React.createElement(
             "span",
-            { key: "label", style: { marginLeft: "8px" } },
+            { className: "sidebar-item-label", key: "label" },
             "Estadísticas"
           ),
         ]
       );
     }
 
-    const navWrapper = this._createComponentWrapper(NavItem, {
+    const navWrapper = this._createComponentWrapper(StatsNavItem, {
       pageIdToNavigate: this._PAGE_ID,
     });
 
@@ -3382,7 +3893,7 @@ export default {
       this.id,
       this._core.ui.getExtensionZones().MAIN_NAVIGATION,
       navWrapper,
-      { order: 100 }
+      { order: 110 } // Ajustar orden si es necesario
     );
   },
 
@@ -3390,34 +3901,48 @@ export default {
     const self = this;
 
     function StatsPage(props) {
+      // props.plugin, props.core, props.pluginId son inyectados por el wrapper
       const [stats, setStats] = React.useState({});
+      const [lastUpdate, setLastUpdate] = React.useState(null);
+
+      const refreshStats = React.useCallback(() => {
+        // Usar la API pública del plugin (inyectada como props.plugin)
+        const currentStats = props.plugin.publicAPI.getStats();
+        const currentLastUpdate = props.plugin.publicAPI.getLastUpdateTime();
+        setStats({ ...currentStats }); // Clonar
+        setLastUpdate(currentLastUpdate);
+      }, [props.plugin]); // Dependencia de props.plugin
 
       React.useEffect(() => {
-        // Cargar estadísticas iniciales
-        setStats({ ...self._data.stats }); // Usar self._data.stats directamente para el estado inicial
+        refreshStats(); // Carga inicial
 
-        // Suscribirse a actualizaciones
-        const unsub = self._core.events.subscribe(
-          props.pluginId, // Usar props.pluginId o self.id
+        // Suscribirse a actualizaciones del propio plugin
+        const unsub = props.core.events.subscribe(
+          props.pluginId, // ID del plugin actual
           "estadisticasTiempo.actualizado",
           (data) => {
             setStats({ ...data.stats }); // Asegurarse de clonar el objeto
+            setLastUpdate(data.lastUpdate);
           }
         );
 
         return () => {
           if (typeof unsub === "function") unsub();
         };
-      }, [self._data.stats, self._core.events, props.pluginId]); // Dependencias correctas
+      }, [refreshStats, props.core.events, props.pluginId]); // Dependencias
 
-      // Función para descargar estadísticas
       const handleDownload = () => {
-        const json = JSON.stringify(stats, null, 2);
+        const dataToDownload = {
+          stats: stats,
+          lastUpdate: lastUpdate,
+          generatedAt: new Date().toISOString(),
+        };
+        const json = JSON.stringify(dataToDownload, null, 2);
         const blob = new Blob([json], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${self.id}-estadisticas.json`;
+        a.download = `${props.pluginId}-estadisticas.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -3427,8 +3952,8 @@ export default {
       return React.createElement(
         "div",
         {
-          className: `${self.id}-stats-page plugin-page`, // Clases específicas y genéricas
-          style: { padding: "var(--spacing-lg)" }, // Usar variables de tema
+          className: `${props.pluginId}-stats-page plugin-page`,
+          style: { padding: "var(--spacing-lg)", color: "var(--text-color)" },
         },
         [
           React.createElement(
@@ -3447,7 +3972,7 @@ export default {
             "button",
             {
               key: "download",
-              className: `${self.id}-download-button`,
+              className: `${props.pluginId}-download-button`,
               onClick: handleDownload,
               style: {
                 backgroundColor: "var(--primary-color)",
@@ -3456,15 +3981,32 @@ export default {
                 padding: "var(--spacing-sm) var(--spacing-md)",
                 borderRadius: "var(--border-radius-sm)",
                 cursor: "pointer",
-                marginBottom: "var(--spacing-lg)",
+                marginBottom: "var(--spacing-md)",
               },
             },
             "Descargar estadísticas"
           ),
 
+          lastUpdate &&
+            React.createElement(
+              "p",
+              {
+                key: "last-update-info",
+                style: {
+                  color: "var(--text-color-secondary)",
+                  fontSize: "0.85rem",
+                  marginBottom: "var(--spacing-lg)",
+                },
+              },
+              `Última actualización: ${new Date(lastUpdate).toLocaleString()}`
+            ),
+
           React.createElement(
             "div",
-            { className: `${self.id}-stats-container`, key: "container" },
+            {
+              className: `${props.pluginId}-stats-container`,
+              key: "container",
+            },
             Object.entries(stats).length === 0
               ? React.createElement(
                   "p",
@@ -3472,93 +4014,102 @@ export default {
                     key: "no-data",
                     style: { color: "var(--text-color-secondary)" },
                   },
-                  "No hay estadísticas disponibles"
+                  "No hay estadísticas disponibles todavía."
                 )
-              : Object.entries(stats).map(([date, dayStat]) => {
-                  return React.createElement(
-                    "div",
-                    {
-                      className: `${self.id}-stat-item`,
-                      key: date,
-                      style: {
-                        backgroundColor: "var(--card-bg)",
-                        border: "1px solid var(--border-color)",
-                        borderRadius: "var(--border-radius-md)",
-                        padding: "var(--spacing-md)",
-                        marginBottom: "var(--spacing-md)",
-                        boxShadow: "var(--shadow-sm)",
+              : Object.entries(stats)
+                  .map(([date, dayStat]) => {
+                    return React.createElement(
+                      "div", // Contenedor por día
+                      {
+                        className: `${props.pluginId}-stat-item`,
+                        key: date,
+                        style: {
+                          backgroundColor: "var(--card-bg)",
+                          border: "1px solid var(--border-color)",
+                          borderRadius: "var(--border-radius-md)",
+                          padding: "var(--spacing-md)",
+                          marginBottom: "var(--spacing-md)",
+                          boxShadow: "var(--shadow-sm)",
+                        },
                       },
-                    },
-                    [
-                      React.createElement(
-                        "h3",
-                        {
-                          key: "date",
-                          style: {
-                            color: "var(--text-color)",
-                            marginTop: 0,
-                            marginBottom: "var(--spacing-sm)",
+                      [
+                        React.createElement(
+                          "h3", // Fecha
+                          {
+                            key: "date",
+                            style: {
+                              color: "var(--text-color)",
+                              marginTop: 0,
+                              marginBottom: "var(--spacing-sm)",
+                              fontSize: "1.1rem",
+                            },
                           },
-                        },
-                        date
-                      ),
-                      React.createElement(
-                        "ul",
-                        {
-                          key: "list",
-                          style: {
-                            listStyle: "none",
-                            padding: 0,
-                            margin: 0,
-                            color: "var(--text-color-secondary)",
+                          new Date(date + "T00:00:00").toLocaleDateString(
+                            undefined,
+                            { year: "numeric", month: "long", day: "numeric" }
+                          ) // Formatear fecha
+                        ),
+                        React.createElement(
+                          "ul", // Lista de estadísticas del día
+                          {
+                            key: "list",
+                            style: {
+                              listStyle: "none",
+                              padding: 0,
+                              margin: 0,
+                              color: "var(--text-color-secondary)",
+                              fontSize: "0.9rem",
+                            },
                           },
-                        },
-                        [
-                          React.createElement(
-                            "li",
-                            {
-                              key: "created",
-                              style: { marginBottom: "var(--spacing-xs)" },
-                            },
-                            `✅ Creados: ${dayStat.created}`
-                          ),
-                          React.createElement(
-                            "li",
-                            {
-                              key: "updated",
-                              style: { marginBottom: "var(--spacing-xs)" },
-                            },
-                            `📝 Actualizados: ${dayStat.updated}`
-                          ),
-                          React.createElement(
-                            "li",
-                            {
-                              key: "deleted",
-                              style: { marginBottom: "var(--spacing-xs)" },
-                            },
-                            `❌ Eliminados: ${dayStat.deleted}`
-                          ),
-                          React.createElement(
-                            "li",
-                            {
-                              key: "total",
-                              style: {
-                                fontWeight: "bold",
-                                marginTop: "var(--spacing-sm)",
-                                color: "var(--text-color)",
+                          [
+                            React.createElement(
+                              "li",
+                              {
+                                key: "created",
+                                style: { marginBottom: "var(--spacing-xs)" },
                               },
-                            },
-                            `📊 Total: ${
-                              dayStat.created +
-                              dayStat.updated +
-                              dayStat.deleted
-                            }`
-                          ),
-                        ]
-                      ),
-                    ]
-                  );
-                })
+                              `✅ Creados: ${dayStat.created || 0}`
+                            ),
+                            React.createElement(
+                              "li",
+                              {
+                                key: "updated",
+                                style: { marginBottom: "var(--spacing-xs)" },
+                              },
+                              `📝 Actualizados: ${dayStat.updated || 0}`
+                            ),
+                            React.createElement(
+                              "li",
+                              {
+                                key: "deleted",
+                                style: { marginBottom: "var(--spacing-xs)" },
+                              },
+                              `❌ Eliminados: ${dayStat.deleted || 0}`
+                            ),
+                            React.createElement(
+                              "li",
+                              {
+                                key: "total",
+                                style: {
+                                  fontWeight: "bold",
+                                  marginTop: "var(--spacing-sm)",
+                                  paddingTop: "var(--spacing-xs)",
+                                  borderTop: `1px solid var(--border-color)`,
+                                  color: "var(--text-color)",
+                                },
+                              },
+                              `📊 Total de cambios: ${
+                                (dayStat.created || 0) +
+                                (dayStat.updated || 0) +
+                                (dayStat.deleted || 0)
+                              }`
+                            ),
+                          ]
+                        ),
+                      ]
+                    );
+                  })
+                  .sort((a, b) => new Date(b.key) - new Date(a.key)) // Ordenar por fecha descendente
           ),
         ]
       );
@@ -3610,25 +4161,26 @@ export default {
   permissions: ["storage", "events", "ui"],
 
   _core: null,
-  _tasks: [],
+  _tasks: [], // Estado interno para las tareas
   _subscriptions: [],
   _extensionIds: {},
-  _PAGE_ID: "task-manager",
+  _PAGE_ID: "task-manager-page", // ID único para la página
 
   init: async function (core) {
     try {
       this._core = core;
-      this._subscriptions = [];
+      this._subscriptions = []; // Inicializar arrays de tracking
       this._extensionIds = {};
 
-      // Cargar datos
+      // Cargar tareas desde el almacenamiento
       await this._loadTasksFromStorage();
 
-      // Crear API pública
+      // Crear y registrar la API pública del plugin
+      // Es importante hacerlo antes de registrar componentes que puedan usarla
       this.publicAPI = this._createPublicAPI();
       core.plugins.registerAPI(this.id, this.publicAPI);
 
-      // Registrar UI
+      // Registrar componentes de UI (navegación y página principal)
       this._registerNavigation();
       this._registerMainPage();
 
@@ -3642,20 +4194,24 @@ export default {
 
   cleanup: async function () {
     try {
+      // Opcional: Guardar tareas al limpiar, aunque se recomienda guardar tras cada cambio
       await this._saveTasksToStorage();
 
+      // Cancelar todas las suscripciones a eventos
       this._subscriptions.forEach((unsub) => {
         if (typeof unsub === "function") unsub();
       });
+      this._subscriptions = []; // Limpiar array
 
-      // Limpiar extensiones de UI
+      // Limpiar todas las extensiones de UI registradas por este plugin
       Object.entries(this._extensionIds).forEach(([key, extensionId]) => {
         if (extensionId) {
           this._core.ui.removeExtension(this.id, extensionId);
         }
       });
-      this._extensionIds = {};
+      this._extensionIds = {}; // Limpiar objeto
 
+      console.log(`[${this.name}] Limpieza completada`);
       return true;
     } catch (error) {
       console.error(`[${this.name}] Error en limpieza:`, error);
@@ -3664,17 +4220,17 @@ export default {
   },
 
   async _loadTasksFromStorage() {
-    const STORAGE_KEY = `${this.id}_tasks`; // Prefijar clave de almacenamiento
+    const STORAGE_KEY = `${this.id}_tasks`;
     try {
       const storedTasks = await this._core.storage.getItem(
         this.id,
         STORAGE_KEY,
-        []
+        [] // Valor por defecto: array vacío
       );
-      this._tasks = storedTasks || [];
+      this._tasks = Array.isArray(storedTasks) ? storedTasks : []; // Asegurar que sea un array
     } catch (error) {
       console.error(`[${this.name}] Error al cargar tareas:`, error);
-      this._tasks = [];
+      this._tasks = []; // Estado seguro en caso de error
     }
   },
 
@@ -3687,14 +4243,20 @@ export default {
     }
   },
 
+  // API Pública del plugin para ser usada por sus componentes u otros plugins
   _createPublicAPI: function () {
-    const self = this;
+    const self = this; // Preservar contexto del plugin
 
     return {
-      getAllTasks: () => [...self._tasks], // Devuelve una copia para inmutabilidad
+      getAllTasks: () => [...self._tasks], // Devolver copia para inmutabilidad
+
+      getTaskById: (id) => {
+        const task = self._tasks.find((t) => t.id === id);
+        return task ? { ...task } : undefined; // Devolver copia
+      },
 
       createTask: async (taskData) => {
-        return await self._internalCreateTask(taskData);
+        return await self._internalCreateTask(taskData); // Usar método interno
       },
 
       updateTask: async (id, updateData) => {
@@ -3706,15 +4268,18 @@ export default {
       },
 
       getTasksByStatus: (status) => {
-        return self._tasks.filter((task) => task.status === status);
+        return self._tasks
+          .filter((task) => task.status === status)
+          .map((task) => ({ ...task })); // Copias
       },
     };
   },
 
+  // Métodos internos para la lógica de negocio (CRUD de tareas)
   async _internalCreateTask(taskData) {
     const newTask = {
-      id: Date.now().toString(),
-      title: taskData.title || "",
+      id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // ID más único
+      title: taskData.title || "Nueva Tarea",
       description: taskData.description || "",
       status: taskData.status || TASK_STATUS.PENDING,
       createdAt: new Date().toISOString(),
@@ -3722,165 +4287,202 @@ export default {
     };
 
     this._tasks.push(newTask);
-    await this._saveTasksToStorage();
+    await this._saveTasksToStorage(); // Guardar después de modificar
 
-    // Publicar evento
+    // Publicar evento de que una tarea fue creada
     this._core.events.publish(
-      this.id,
-      `${this.id}.taskCreated`, // Evento específico del plugin
-      { task: { ...newTask } } // Enviar copia
+      this.id, // ID del plugin que origina el evento
+      `${this.id}.taskCreated`, // Nombre del evento (pluginId.nombreEvento)
+      { task: { ...newTask } } // Datos del evento (enviar copia)
     );
 
-    return { ...newTask };
+    return { ...newTask }; // Devolver copia de la nueva tarea
   },
 
   async _internalUpdateTask(id, updateData) {
-    const index = this._tasks.findIndex((task) => task.id === id);
-    if (index === -1) {
+    const taskIndex = this._tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) {
+      console.error(
+        `[${this.name}] Tarea con ID ${id} no encontrada para actualizar.`
+      );
       throw new Error(`Tarea con ID ${id} no encontrada`);
     }
 
-    this._tasks[index] = {
-      ...this._tasks[index],
-      ...updateData,
+    // Evitar sobreescribir id y createdAt
+    const { id: _id, createdAt: _createdAt, ...restOfUpdateData } = updateData;
+
+    this._tasks[taskIndex] = {
+      ...this._tasks[taskIndex],
+      ...restOfUpdateData,
       updatedAt: new Date().toISOString(),
     };
 
     await this._saveTasksToStorage();
 
-    // Publicar evento
     this._core.events.publish(this.id, `${this.id}.taskUpdated`, {
-      task: { ...this._tasks[index] },
+      task: { ...this._tasks[taskIndex] },
     });
 
-    return { ...this._tasks[index] };
+    return { ...this._tasks[taskIndex] };
   },
 
   async _internalDeleteTask(id) {
-    const index = this._tasks.findIndex((task) => task.id === id);
-    if (index === -1) {
+    const taskIndex = this._tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) {
+      console.error(
+        `[${this.name}] Tarea con ID ${id} no encontrada para eliminar.`
+      );
       throw new Error(`Tarea con ID ${id} no encontrada`);
     }
 
-    const deletedTask = this._tasks.splice(index, 1)[0];
+    const deletedTask = this._tasks.splice(taskIndex, 1)[0];
     await this._saveTasksToStorage();
 
-    // Publicar evento
     this._core.events.publish(this.id, `${this.id}.taskDeleted`, {
-      task: { ...deletedTask },
+      task: { ...deletedTask }, // Enviar la tarea eliminada
+      taskId: id, // También puede ser útil enviar solo el ID
     });
 
     return { ...deletedTask };
   },
 
+  // Patrón Wrapper para inyectar dependencias (plugin, core, pluginId) a los componentes
   _createComponentWrapper: function (Component, extraProps = {}) {
     const self = this;
-
     return function ComponentWrapper(propsFromAtlas) {
       return React.createElement(Component, {
-        ...propsFromAtlas,
-        plugin: self, // Pasar la instancia del plugin
-        core: self._core,
-        pluginId: self.id,
-        ...extraProps,
+        ...propsFromAtlas, // Props de Atlas (ej. onNavigate)
+        plugin: self, // Instancia del plugin (incluye publicAPI)
+        core: self._core, // API de Core
+        pluginId: self.id, // ID del plugin
+        ...extraProps, // Props adicionales definidas al crear el wrapper
       });
     };
   },
 
+  // Registrar el ítem de navegación para la página del plugin
   _registerNavigation: function () {
-    const self = this;
-    function NavItem(props) {
+    const self = this; // Mantener contexto del plugin
+
+    // Componente React para el ítem de navegación
+    function TaskManagerNavItem(props) {
+      // props.pluginId, props.onNavigate son pasados por Atlas
+      // props.pageIdToNavigate es pasado por el _createComponentWrapper
       const handleClick = () => {
-        props.onNavigate(props.pluginId, props.pageIdToNavigate);
+        if (props.onNavigate && props.pageIdToNavigate) {
+          props.onNavigate(props.pluginId, props.pageIdToNavigate);
+        }
       };
+      // Lógica para estado activo (simplificada)
+      const isActive = false; // props.currentPageId === props.pageIdToNavigate; (requeriría currentPageId de Atlas)
 
       return React.createElement(
         "div",
         {
-          className: `${self.id}-navigation-item navigation-item`,
+          className: `sidebar-item ${isActive ? "active" : ""}`,
           onClick: handleClick,
-          style: {
-            cursor: "pointer",
-            padding: "var(--spacing-sm)",
-            display: "flex",
-            alignItems: "center",
-          },
+          title: self.name, // Usar el nombre del plugin para el tooltip
+          style: { cursor: "pointer" },
         },
         [
           React.createElement(
             "span",
-            {
-              className: "material-icons",
-              key: "icon",
-              style: { color: "var(--text-color)" },
-            },
-            "task"
+            { className: "sidebar-item-icon", key: "icon" },
+            React.createElement(
+              "span",
+              { className: "material-icons" },
+              "task_alt"
+            ) // Icono para tareas
           ),
           React.createElement(
             "span",
-            {
-              key: "label",
-              style: {
-                marginLeft: "var(--spacing-sm)",
-                color: "var(--text-color)",
-              },
-            },
-            "Tareas"
+            { className: "sidebar-item-label", key: "label" },
+            "Tareas" // Texto del ítem
           ),
         ]
       );
     }
 
-    const navWrapper = this._createComponentWrapper(NavItem, {
-      pageIdToNavigate: this._PAGE_ID,
+    const navWrapper = this._createComponentWrapper(TaskManagerNavItem, {
+      pageIdToNavigate: this._PAGE_ID, // Pasar el ID de la página a navegar
     });
 
     this._extensionIds.navigation = this._core.ui.registerExtension(
       this.id,
       this._core.ui.getExtensionZones().MAIN_NAVIGATION,
       navWrapper,
-      { order: 100 }
+      { order: 120 } // Orden de aparición en la barra lateral
     );
   },
 
+  // Registrar la página principal del plugin
   _registerMainPage: function () {
+    // Componente React para la página principal del gestor de tareas
+    // (Definiciones de TaskManagerPage, TaskItem, TaskForm van aquí, como en el ejemplo original)
+    // ... (ver las definiciones de TaskManagerPage, TaskItem, TaskForm del ejemplo anterior) ...
+    // Por brevedad, no se repiten aquí pero deben estar definidos.
+
     const self = this; // Guardar referencia a 'this' del plugin
 
     // Componente de la página principal del gestor de tareas
     function TaskManagerPage(props) {
-      // props aquí son las inyectadas por el wrapper
+      // props aquí son las inyectadas por el wrapper (plugin, core, pluginId)
       const [tasks, setTasks] = React.useState([]);
       const [showForm, setShowForm] = React.useState(false);
-      const [editingTask, setEditingTask] = React.useState(null);
+      const [editingTask, setEditingTask] = React.useState(null); // null o la tarea a editar
 
+      // Función para cargar/refrescar la lista de tareas desde la API del plugin
       const refreshTasks = React.useCallback(async () => {
         try {
           // Usar props.plugin.publicAPI que fue inyectado por el wrapper
           const currentTasks = props.plugin.publicAPI.getAllTasks();
-          setTasks(currentTasks);
+          setTasks(
+            currentTasks.sort(
+              (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+            )
+          ); // Ordenar por más reciente
         } catch (error) {
           console.error(`[${props.pluginId}] Error al cargar tareas:`, error);
-          setTasks([]);
+          setTasks([]); // Estado seguro
         }
-      }, [props.plugin, props.pluginId]); // Dependencias
+      }, [props.plugin, props.pluginId]); // Dependencias de useCallback
 
+      // Efecto para cargar tareas al montar y suscribirse a eventos del plugin
       React.useEffect(() => {
-        refreshTasks();
-        // Suscribirse a eventos del plugin para actualizar la UI
-        const subscriptions = [
+        refreshTasks(); // Carga inicial
+
+        // Suscribirse a eventos propios del plugin para mantener la UI actualizada
+        const eventNames = [
           `${props.pluginId}.taskCreated`,
           `${props.pluginId}.taskUpdated`,
           `${props.pluginId}.taskDeleted`,
-        ].map((eventName) =>
-          props.core.events.subscribe(props.pluginId, eventName, refreshTasks)
+        ];
+        const subscriptions = eventNames.map((eventName) =>
+          props.core.events.subscribe(
+            props.pluginId,
+            eventName,
+            (eventData) => {
+              console.log(
+                `[${props.pluginId}] Evento recibido: ${eventName}`,
+                eventData
+              );
+              refreshTasks(); // Refrescar la lista cuando ocurra un evento
+            }
+          )
         );
 
+        // Función de limpieza para desuscribirse al desmontar el componente
         return () => {
           subscriptions.forEach((unsub) => {
             if (typeof unsub === "function") unsub();
           });
         };
-      }, [refreshTasks, props.pluginId, props.core.events]);
+      }, [refreshTasks, props.core.events, props.pluginId]); // Dependencias del useEffect
+
+      const handleOpenForm = (taskToEdit = null) => {
+        setEditingTask(taskToEdit ? { ...taskToEdit } : null); // Clonar si se edita
+        setShowForm(true);
+      };
 
       const handleFormSave = async (taskData) => {
         try {
@@ -3889,12 +4491,12 @@ export default {
           } else {
             await props.plugin.publicAPI.createTask(taskData);
           }
-          // refreshTasks(); // No es necesario si los eventos ya lo hacen
+          // refreshTasks() será llamado por el manejador de eventos.
           setShowForm(false);
           setEditingTask(null);
         } catch (error) {
           console.error(`[${props.pluginId}] Error al guardar tarea:`, error);
-          // Considerar mostrar un mensaje de error al usuario
+          // Considerar mostrar un mensaje de error al usuario (ej. con un toast/notificación de Atlas)
         }
       };
 
@@ -3903,19 +4505,14 @@ export default {
         setEditingTask(null);
       };
 
-      const handleEditTask = (task) => {
-        setEditingTask({ ...task }); // Clonar para evitar mutaciones directas
-        setShowForm(true);
-      };
-
       const handleDeleteTask = async (taskId) => {
-        // Usar confirmación nativa o un modal más elegante
+        // Usar confirmación nativa o un modal más elegante proporcionado por Atlas si existe
         if (
           window.confirm("¿Estás seguro de que quieres eliminar esta tarea?")
         ) {
           try {
             await props.plugin.publicAPI.deleteTask(taskId);
-            // refreshTasks(); // No es necesario si los eventos ya lo hacen
+            // refreshTasks() será llamado por el manejador de eventos.
           } catch (error) {
             console.error(
               `[${props.pluginId}] Error al eliminar tarea:`,
@@ -3930,10 +4527,24 @@ export default {
           await props.plugin.publicAPI.updateTask(taskId, {
             status: newStatus,
           });
-          // refreshTasks(); // No es necesario si los eventos ya lo hacen
+          // refreshTasks() será llamado por el manejador de eventos.
         } catch (error) {
-          console.error(`[${props.pluginId}] Error al cambiar estado:`, error);
+          console.error(
+            `[${props.pluginId}] Error al cambiar estado de tarea:`,
+            error
+          );
         }
+      };
+
+      // Estilos comunes para botones y elementos de UI de esta página
+      const buttonStyle = {
+        backgroundColor: "var(--primary-color)",
+        color: "var(--color-button-primary-text)",
+        border: "none",
+        padding: "var(--spacing-sm) var(--spacing-md)",
+        borderRadius: "var(--border-radius-sm)",
+        cursor: "pointer",
+        transition: "background-color var(--transition-fast)",
       };
 
       return React.createElement(
@@ -3944,51 +4555,64 @@ export default {
         },
         [
           React.createElement(
-            "h1",
-            { key: "title", style: { marginBottom: "var(--spacing-md)" } },
-            "Gestor de Tareas"
-          ),
-
-          React.createElement(
-            "button",
+            "div",
             {
-              key: "add-btn",
-              onClick: () => {
-                setEditingTask(null);
-                setShowForm(true);
-              },
+              key: "header-bar",
               style: {
-                backgroundColor: "var(--primary-color)",
-                color: "var(--color-button-primary-text)",
-                border: "none",
-                padding: "var(--spacing-sm) var(--spacing-md)",
-                borderRadius: "var(--border-radius-sm)",
-                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 marginBottom: "var(--spacing-lg)",
               },
             },
-            "Nueva Tarea"
+            [
+              React.createElement(
+                "h1",
+                { key: "title", style: { margin: 0 } },
+                self.name
+              ),
+              React.createElement(
+                "button",
+                {
+                  key: "add-btn",
+                  onClick: () => handleOpenForm(),
+                  style: buttonStyle,
+                  onMouseEnter: (e) =>
+                    (e.target.style.backgroundColor = "var(--primary-hover)"),
+                  onMouseLeave: (e) =>
+                    (e.target.style.backgroundColor = "var(--primary-color)"),
+                },
+                "Nueva Tarea"
+              ),
+            ]
           ),
 
           React.createElement(
             "div",
-            { key: "tasks-list", className: `${props.pluginId}-tasks-list` },
+            {
+              key: "tasks-list-container",
+              className: `${props.pluginId}-tasks-list`,
+            },
             tasks.length === 0
               ? React.createElement(
                   "p",
                   {
-                    key: "no-tasks",
-                    style: { color: "var(--text-color-secondary)" },
+                    key: "no-tasks-msg",
+                    style: {
+                      color: "var(--text-color-secondary)",
+                      textAlign: "center",
+                      padding: "var(--spacing-lg)",
+                    },
                   },
-                  "No hay tareas. ¡Añade una!"
+                  "No hay tareas. ¡Añade una para empezar!"
                 )
               : tasks.map((task) =>
                   React.createElement(TaskItem, {
-                    // Pasa props.pluginId si es necesario
+                    // Componente TaskItem (definido abajo)
                     key: task.id,
                     task: task,
                     pluginId: props.pluginId,
-                    onEdit: () => handleEditTask(task),
+                    onEdit: () => handleOpenForm(task),
                     onDelete: () => handleDeleteTask(task.id),
                     onStatusChange: (newStatus) =>
                       handleStatusChange(task.id, newStatus),
@@ -3998,54 +4622,94 @@ export default {
 
           showForm &&
             React.createElement(
-              "div", // Modal Overlay
-              {
-                key: "modal",
-                className: `${props.pluginId}-modal-overlay`,
-                style: {
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "rgba(0,0,0,0.6)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 1000,
-                },
-              },
-              React.createElement(
-                "div", // Modal Content
-                {
-                  className: `${props.pluginId}-modal-content`,
-                  style: {
-                    backgroundColor: "var(--card-bg)",
-                    padding: "var(--spacing-lg)",
-                    borderRadius: "var(--border-radius-md)",
-                    boxShadow: "var(--shadow-lg)",
-                    maxWidth: "500px",
-                    width: "90%",
-                    maxHeight: "80vh",
-                    overflowY: "auto",
-                  },
-                },
-                React.createElement(TaskForm, {
-                  // Pasa props.pluginId si es necesario
-                  pluginId: props.pluginId,
-                  existingTask: editingTask,
-                  onSave: handleFormSave,
-                  onCancel: handleFormCancel,
-                })
-              )
+              ModalWrapper,
+              { pluginId: props.pluginId }, // Componente ModalWrapper (definido abajo)
+              React.createElement(TaskForm, {
+                // Componente TaskForm (definido abajo)
+                pluginId: props.pluginId,
+                existingTask: editingTask,
+                onSave: handleFormSave,
+                onCancel: handleFormCancel,
+              })
             ),
         ]
+      );
+    }
+
+    // Componente para envolver el formulario en un modal
+    function ModalWrapper(props) {
+      const { pluginId, children } = props;
+      return React.createElement(
+        "div", // Overlay del modal
+        {
+          key: `${pluginId}-modal-overlay`,
+          className: `${pluginId}-modal-overlay`,
+          style: {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.65)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1050, // Alto z-index
+          },
+        },
+        React.createElement(
+          "div", // Contenido del modal
+          {
+            className: `${pluginId}-modal-content`,
+            style: {
+              backgroundColor: "var(--card-bg)",
+              padding: "var(--spacing-lg)",
+              borderRadius: "var(--border-radius-lg)",
+              boxShadow: "var(--shadow-xl)",
+              maxWidth: "600px",
+              width: "calc(100% - var(--spacing-lg)*2)",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            },
+          },
+          children // Aquí se renderizará el TaskForm
+        )
       );
     }
 
     // Componente para mostrar una tarea individual
     function TaskItem(props) {
       const { task, onEdit, onDelete, onStatusChange, pluginId } = props;
+
+      const getStatusStyle = (status) => {
+        switch (status) {
+          case TASK_STATUS.COMPLETED:
+            return {
+              backgroundColor: "var(--success-color)",
+              color: "white",
+              padding: "2px 6px",
+              borderRadius: "var(--border-radius-sm)",
+              fontSize: "0.75rem",
+            };
+          case TASK_STATUS.IN_PROGRESS:
+            return {
+              backgroundColor: "var(--info-color)",
+              color: "white",
+              padding: "2px 6px",
+              borderRadius: "var(--border-radius-sm)",
+              fontSize: "0.75rem",
+            };
+          default:
+            return {
+              backgroundColor: "var(--bg-color-secondary)",
+              color: "var(--text-color-secondary)",
+              padding: "2px 6px",
+              border: "1px solid var(--border-color)",
+              borderRadius: "var(--border-radius-sm)",
+              fontSize: "0.75rem",
+            };
+        }
+      };
 
       return React.createElement(
         "div",
@@ -4058,69 +4722,88 @@ export default {
             padding: "var(--spacing-md)",
             marginBottom: "var(--spacing-md)",
             boxShadow: "var(--shadow-sm)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--spacing-sm)",
           },
         },
         [
           React.createElement(
+            // Encabezado de la tarea con título y acciones
             "div",
             {
-              key: "header",
+              key: "task-header",
               style: {
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "var(--spacing-sm)",
+                alignItems: "flex-start",
               },
             },
             [
               React.createElement(
                 "h3",
                 {
-                  key: "title",
-                  style: { margin: 0, color: "var(--text-color)" },
+                  key: "task-title",
+                  style: {
+                    margin: 0,
+                    color: "var(--text-color)",
+                    fontSize: "1.1rem",
+                    flexGrow: 1,
+                    marginRight: "var(--spacing-sm)",
+                  },
                 },
                 task.title
               ),
               React.createElement(
                 "div",
                 {
-                  key: "actions",
-                  style: { display: "flex", gap: "var(--spacing-sm)" },
+                  key: "task-actions",
+                  style: {
+                    display: "flex",
+                    gap: "var(--spacing-xs)",
+                    flexShrink: 0,
+                  },
                 },
                 [
                   React.createElement(
                     "button",
                     {
-                      key: "edit",
+                      key: "edit-btn",
                       onClick: onEdit,
                       title: "Editar tarea",
                       style: {
-                        padding: "var(--spacing-xs) var(--spacing-sm)",
-                        borderRadius: "var(--border-radius-sm)",
-                        border: `1px solid var(--border-color)`,
+                        padding: "var(--spacing-xs)",
+                        background: "none",
+                        border: "none",
                         cursor: "pointer",
-                        backgroundColor: "var(--input-bg)",
-                        color: "var(--text-color)",
+                        color: "var(--text-color-secondary)",
                       },
                     },
-                    "Editar"
+                    React.createElement(
+                      "span",
+                      { className: "material-icons" },
+                      "edit"
+                    )
                   ),
                   React.createElement(
                     "button",
                     {
-                      key: "delete",
+                      key: "delete-btn",
                       onClick: onDelete,
                       title: "Eliminar tarea",
                       style: {
-                        padding: "var(--spacing-xs) var(--spacing-sm)",
-                        borderRadius: "var(--border-radius-sm)",
-                        border: `1px solid var(--danger-color)`,
-                        color: "var(--danger-color)",
+                        padding: "var(--spacing-xs)",
+                        background: "none",
+                        border: "none",
                         cursor: "pointer",
-                        backgroundColor: "transparent",
+                        color: "var(--danger-color)",
                       },
                     },
-                    "Eliminar"
+                    React.createElement(
+                      "span",
+                      { className: "material-icons" },
+                      "delete_outline"
+                    )
                   ),
                 ]
               ),
@@ -4131,49 +4814,50 @@ export default {
             React.createElement(
               "p",
               {
-                key: "description",
+                key: "task-description",
                 style: {
-                  margin: `0 0 var(--spacing-sm) 0`,
+                  margin: 0,
                   color: "var(--text-color-secondary)",
+                  fontSize: "0.9rem",
                   whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
                 },
               },
               task.description
             ),
 
           React.createElement(
+            // Pie de la tarea con estado y selector
             "div",
             {
-              key: "status",
+              key: "task-footer",
               style: {
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
-                gap: "var(--spacing-xs)",
+                marginTop: "var(--spacing-xs)",
               },
             },
             [
               React.createElement(
-                "label",
-                {
-                  key: "label",
-                  htmlFor: `${pluginId}-status-${task.id}`,
-                  style: { color: "var(--text-color-secondary)" },
-                },
-                "Estado: "
+                "span",
+                { key: "status-badge", style: getStatusStyle(task.status) },
+                STATUS_LABELS[task.status]
               ),
               React.createElement(
                 "select",
                 {
-                  key: "select",
-                  id: `${pluginId}-status-${task.id}`,
+                  key: "status-select",
                   value: task.status,
                   onChange: (e) => onStatusChange(e.target.value),
+                  title: "Cambiar estado",
                   style: {
                     padding: "var(--spacing-xs) var(--spacing-sm)",
                     borderRadius: "var(--border-radius-sm)",
                     border: `1px solid var(--border-color)`,
                     backgroundColor: "var(--input-bg)",
                     color: "var(--text-color)",
+                    fontSize: "0.85rem",
                   },
                 },
                 Object.keys(TASK_STATUS).map((statusKey) =>
@@ -4189,6 +4873,23 @@ export default {
               ),
             ]
           ),
+          React.createElement(
+            "small",
+            {
+              key: "task-timestamps",
+              style: {
+                color: "var(--text-color-secondary)",
+                fontSize: "0.75rem",
+                textAlign: "right",
+                marginTop: "var(--spacing-xs)",
+              },
+            },
+            `Creado: ${new Date(
+              task.createdAt
+            ).toLocaleDateString()} | Actualizado: ${new Date(
+              task.updatedAt
+            ).toLocaleDateString()}`
+          ),
         ]
       );
     }
@@ -4198,11 +4899,12 @@ export default {
       const { existingTask, onSave, onCancel, pluginId } = props;
 
       const [formData, setFormData] = React.useState({
-        title: "",
-        description: "",
-        status: TASK_STATUS.PENDING,
+        title: existingTask?.title || "",
+        description: existingTask?.description || "",
+        status: existingTask?.status || TASK_STATUS.PENDING,
       });
 
+      // Sincronizar formData si existingTask cambia (ej. al reabrir el form para editar otra tarea)
       React.useEffect(() => {
         if (existingTask) {
           setFormData({
@@ -4211,6 +4913,7 @@ export default {
             status: existingTask.status || TASK_STATUS.PENDING,
           });
         } else {
+          // Resetea para nueva tarea
           setFormData({
             title: "",
             description: "",
@@ -4227,10 +4930,11 @@ export default {
       const handleSubmit = (e) => {
         e.preventDefault();
         if (!formData.title.trim()) {
-          alert("El título es obligatorio."); // Usar un sistema de notificaciones de Atlas si está disponible
+          // Considerar un sistema de notificaciones de Atlas si está disponible
+          alert("El título es obligatorio.");
           return;
         }
-        onSave(formData);
+        onSave(formData); // Llama al callback onSave pasado desde TaskManagerPage
       };
 
       const commonInputStyle = {
@@ -4240,13 +4944,28 @@ export default {
         border: `1px solid var(--border-color)`,
         backgroundColor: "var(--input-bg)",
         color: "var(--text-color)",
-        boxSizing: "border-box",
-        marginTop: "var(--spacing-xs)",
+        boxSizing: "border-box", // Importante para que padding no aumente el width
+        fontSize: "0.9rem",
+      };
+      const labelStyle = {
+        display: "block",
+        color: "var(--text-color-secondary)",
+        marginBottom: "var(--spacing-xs)",
+        fontSize: "0.85rem",
+        fontWeight: "500",
       };
 
       return React.createElement(
         "form",
-        { onSubmit: handleSubmit, className: `${pluginId}-task-form` },
+        {
+          onSubmit: handleSubmit,
+          className: `${pluginId}-task-form`,
+          style: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "var(--spacing-md)",
+          },
+        },
         [
           React.createElement(
             "h2",
@@ -4254,151 +4973,136 @@ export default {
               key: "form-title",
               style: {
                 marginTop: 0,
-                marginBottom: "var(--spacing-md)",
+                marginBottom: 0,
                 color: "var(--text-color)",
+                fontSize: "1.3rem",
               },
             },
             existingTask ? "Editar Tarea" : "Nueva Tarea"
           ),
 
-          React.createElement(
-            "div",
-            {
-              key: "title-field",
-              style: { marginBottom: "var(--spacing-md)" },
-            },
-            [
-              React.createElement(
-                "label",
-                {
-                  key: "label",
-                  htmlFor: `${pluginId}-task-title`,
-                  style: {
-                    display: "block",
-                    color: "var(--text-color-secondary)",
-                  },
-                },
-                "Título:"
-              ),
-              React.createElement("input", {
-                key: "input",
-                id: `${pluginId}-task-title`,
-                type: "text",
-                name: "title",
-                value: formData.title,
+          React.createElement("div", { key: "title-group" }, [
+            React.createElement(
+              "label",
+              {
+                key: "title-label",
+                htmlFor: `${pluginId}-task-title`,
+                style: labelStyle,
+              },
+              "Título:"
+            ),
+            React.createElement("input", {
+              key: "title-input",
+              id: `${pluginId}-task-title`,
+              type: "text",
+              name: "title",
+              value: formData.title,
+              onChange: handleChange,
+              required: true,
+              style: commonInputStyle,
+              placeholder: "Ej: Preparar informe mensual",
+            }),
+          ]),
+
+          React.createElement("div", { key: "description-group" }, [
+            React.createElement(
+              "label",
+              {
+                key: "desc-label",
+                htmlFor: `${pluginId}-task-description`,
+                style: labelStyle,
+              },
+              "Descripción (opcional):"
+            ),
+            React.createElement("textarea", {
+              key: "desc-textarea",
+              id: `${pluginId}-task-description`,
+              name: "description",
+              value: formData.description,
+              onChange: handleChange,
+              rows: 4,
+              style: {
+                ...commonInputStyle,
+                resize: "vertical",
+                minHeight: "80px",
+              },
+              placeholder: "Ej: Recopilar datos de ventas, analizar KPIs...",
+            }),
+          ]),
+
+          React.createElement("div", { key: "status-group" }, [
+            React.createElement(
+              "label",
+              {
+                key: "status-label",
+                htmlFor: `${pluginId}-task-status`,
+                style: labelStyle,
+              },
+              "Estado:"
+            ),
+            React.createElement(
+              "select",
+              {
+                key: "status-select",
+                id: `${pluginId}-task-status`,
+                name: "status",
+                value: formData.status,
                 onChange: handleChange,
-                required: true,
                 style: commonInputStyle,
-              }),
-            ]
-          ),
-
-          React.createElement(
-            "div",
-            {
-              key: "description-field",
-              style: { marginBottom: "var(--spacing-md)" },
-            },
-            [
-              React.createElement(
-                "label",
-                {
-                  key: "label",
-                  htmlFor: `${pluginId}-task-description`,
-                  style: {
-                    display: "block",
-                    color: "var(--text-color-secondary)",
+              },
+              Object.keys(TASK_STATUS).map((statusKey) =>
+                React.createElement(
+                  "option",
+                  {
+                    key: TASK_STATUS[statusKey],
+                    value: TASK_STATUS[statusKey],
                   },
-                },
-                "Descripción:"
-              ),
-              React.createElement("textarea", {
-                key: "textarea",
-                id: `${pluginId}-task-description`,
-                name: "description",
-                value: formData.description,
-                onChange: handleChange,
-                rows: 4,
-                style: { ...commonInputStyle, resize: "vertical" },
-              }),
-            ]
-          ),
-
-          React.createElement(
-            "div",
-            {
-              key: "status-field",
-              style: { marginBottom: "var(--spacing-lg)" },
-            },
-            [
-              React.createElement(
-                "label",
-                {
-                  key: "label",
-                  htmlFor: `${pluginId}-task-status`,
-                  style: {
-                    display: "block",
-                    color: "var(--text-color-secondary)",
-                  },
-                },
-                "Estado:"
-              ),
-              React.createElement(
-                "select",
-                {
-                  key: "select",
-                  id: `${pluginId}-task-status`,
-                  name: "status",
-                  value: formData.status,
-                  onChange: handleChange,
-                  style: commonInputStyle,
-                },
-                Object.keys(TASK_STATUS).map((statusKey) =>
-                  React.createElement(
-                    "option",
-                    {
-                      key: TASK_STATUS[statusKey],
-                      value: TASK_STATUS[statusKey],
-                    },
-                    STATUS_LABELS[TASK_STATUS[statusKey]]
-                  )
+                  STATUS_LABELS[TASK_STATUS[statusKey]]
                 )
-              ),
-            ]
-          ),
+              )
+            ),
+          ]),
 
           React.createElement(
+            // Contenedor para los botones de acción
             "div",
             {
-              key: "buttons",
+              key: "form-actions",
               style: {
                 display: "flex",
                 gap: "var(--spacing-sm)",
                 justifyContent: "flex-end",
+                marginTop: "var(--spacing-sm)",
               },
             },
             [
               React.createElement(
                 "button",
                 {
-                  key: "cancel",
+                  key: "cancel-btn",
                   type: "button",
                   onClick: onCancel,
                   style: {
                     padding: "var(--spacing-sm) var(--spacing-md)",
                     borderRadius: "var(--border-radius-sm)",
                     border: `1px solid var(--border-color)`,
-                    backgroundColor: "transparent",
+                    backgroundColor: "var(--bg-color-secondary)",
                     color: "var(--text-color)",
                     cursor: "pointer",
+                    transition: "background-color var(--transition-fast)",
                   },
+                  onMouseEnter: (e) =>
+                    (e.target.style.backgroundColor = "var(--hover-color)"),
+                  onMouseLeave: (e) =>
+                    (e.target.style.backgroundColor =
+                      "var(--bg-color-secondary)"),
                 },
                 "Cancelar"
               ),
               React.createElement(
                 "button",
                 {
-                  key: "submit",
+                  key: "submit-btn",
                   type: "submit",
                   style: {
                     padding: "var(--spacing-sm) var(--spacing-md)",
@@ -4407,9 +5111,14 @@ export default {
                     backgroundColor: "var(--primary-color)",
                     color: "var(--color-button-primary-text)",
                     cursor: "pointer",
+                    transition: "background-color var(--transition-fast)",
                   },
+                  onMouseEnter: (e) =>
+                    (e.target.style.backgroundColor = "var(--primary-hover)"),
+                  onMouseLeave: (e) =>
+                    (e.target.style.backgroundColor = "var(--primary-color)"),
                 },
-                existingTask ? "Actualizar" : "Crear"
+                existingTask ? "Actualizar Tarea" : "Crear Tarea"
               ),
             ]
           ),
@@ -4424,9 +5133,9 @@ export default {
       this._core.ui.getExtensionZones().PLUGIN_PAGES,
       pageWrapper,
       {
-        order: 100,
+        order: 100, // Orden de la página si hubiera múltiples
         props: {
-          pageId: this._PAGE_ID,
+          pageId: this._PAGE_ID, // ID de la página, crucial para la navegación
         },
       }
     );
