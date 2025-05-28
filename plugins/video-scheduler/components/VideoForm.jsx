@@ -11,6 +11,7 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
     tags: Array.isArray(videoData?.tags) ? videoData.tags.join(", ") : "",
   });
 
+  // ... (resto de los hooks React.useEffect, handleChange, handleSubmit sin cambios) ...
   React.useEffect(() => {
     setFormData({
       detailedDescription: videoData?.detailedDescription || "",
@@ -62,7 +63,6 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
         .map((tag) => tag.trim())
         .filter(Boolean),
     };
-    // Pasamos el videoData original para que en onSave se sepa a qué video corresponden los detalles
     onSave(videoData.day, videoData.slotIndex, detailsToSave);
   };
 
@@ -75,12 +75,27 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
       [
         React.createElement(
           "div",
-          { key: "video-form-header", className: "video-form-header" }, // <-- Añadido key
+          { key: "video-form-header", className: "video-form-header" },
           [
             React.createElement(
               "h3",
-              { key: "title" },
-              `📝 Detalles de: ${videoData?.name || "Video"}`
+              {
+                key: "title",
+                // Mantener flex y gap para el layout del título
+                style: { display: "flex", alignItems: "center", gap: "8px" },
+              },
+              [
+                React.createElement(
+                  "span",
+                  {
+                    key: "title-icon",
+                    // Añadir clase específica además de material-icons
+                    className: "material-icons video-form-title-icon",
+                  },
+                  "edit_note"
+                ),
+                `Detalles de: ${videoData?.name || "Video"}`,
+              ]
             ),
             React.createElement(
               "button",
@@ -94,25 +109,26 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
             ),
           ]
         ),
+        // ... (resto del formulario sin cambios) ...
         React.createElement(
           "form",
           {
-            key: "video-form-main", // <-- Añadido key
+            key: "video-form-main",
             onSubmit: handleSubmit,
             className: "video-form-content",
           },
           [
             React.createElement(
               "div",
-              { key: "field-detailedDescription", className: "form-group" }, // <-- key para cada grupo
+              { key: "field-detailedDescription", className: "form-group" },
               [
                 React.createElement(
                   "label",
-                  { key: "label-desc", htmlFor: "detailedDescription" }, // <-- key para label
+                  { key: "label-desc", htmlFor: "detailedDescription" },
                   "Descripción Detallada:"
                 ),
                 React.createElement("textarea", {
-                  key: "input-desc", // <-- key para input/textarea
+                  key: "input-desc",
                   id: "detailedDescription",
                   name: "detailedDescription",
                   value: formData.detailedDescription,
@@ -123,19 +139,19 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
             ),
             React.createElement(
               "div",
-              { key: "fields-grid", className: "video-form-grid" }, // <-- key para el grid
+              { key: "fields-grid", className: "video-form-grid" },
               [
                 React.createElement(
                   "div",
-                  { key: "field-platform", className: "form-group" }, // <-- key
+                  { key: "field-platform", className: "form-group" },
                   [
                     React.createElement(
                       "label",
-                      { key: "label-platform", htmlFor: "platform" }, // <-- key
+                      { key: "label-platform", htmlFor: "platform" },
                       "Plataforma:"
                     ),
                     React.createElement("input", {
-                      key: "input-platform", // <-- key
+                      key: "input-platform",
                       type: "text",
                       id: "platform",
                       name: "platform",
@@ -147,15 +163,15 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
                 ),
                 React.createElement(
                   "div",
-                  { key: "field-url", className: "form-group" }, // <-- key
+                  { key: "field-url", className: "form-group" },
                   [
                     React.createElement(
                       "label",
-                      { key: "label-url", htmlFor: "url" }, // <-- key
+                      { key: "label-url", htmlFor: "url" },
                       "URL:"
                     ),
                     React.createElement("input", {
-                      key: "input-url", // <-- key
+                      key: "input-url",
                       type: "url",
                       id: "url",
                       name: "url",
@@ -167,15 +183,15 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
                 ),
                 React.createElement(
                   "div",
-                  { key: "field-duration", className: "form-group" }, // <-- key
+                  { key: "field-duration", className: "form-group" },
                   [
                     React.createElement(
                       "label",
-                      { key: "label-duration", htmlFor: "duration" }, // <-- key
+                      { key: "label-duration", htmlFor: "duration" },
                       "Duración:"
                     ),
                     React.createElement("input", {
-                      key: "input-duration", // <-- key
+                      key: "input-duration",
                       type: "text",
                       id: "duration",
                       name: "duration",
@@ -187,15 +203,15 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
                 ),
                 React.createElement(
                   "div",
-                  { key: "field-tags", className: "form-group" }, // <-- key
+                  { key: "field-tags", className: "form-group" },
                   [
                     React.createElement(
                       "label",
-                      { key: "label-tags", htmlFor: "tags" }, // <-- key
+                      { key: "label-tags", htmlFor: "tags" },
                       "Tags (separados por coma):"
                     ),
                     React.createElement("input", {
-                      key: "input-tags", // <-- key
+                      key: "input-tags",
                       type: "text",
                       id: "tags",
                       name: "tags",
@@ -209,12 +225,12 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
             ),
             React.createElement(
               "div",
-              { key: "video-form-actions", className: "form-actions" }, // <-- key
+              { key: "video-form-actions", className: "form-actions" },
               [
                 React.createElement(
                   "button",
                   {
-                    key: "cancel-action", // <-- key
+                    key: "cancel-action",
                     type: "button",
                     onClick: onCancel,
                     className: "button-secondary",
@@ -224,7 +240,7 @@ function VideoForm({ videoData, onSave, onCancel, plugin }) {
                 React.createElement(
                   "button",
                   {
-                    key: "submit-action", // <-- key
+                    key: "submit-action",
                     type: "submit",
                     className: "button-primary",
                   },

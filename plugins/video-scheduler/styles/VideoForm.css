@@ -224,3 +224,26 @@
     width: 100%;
   }
 }
+
+/* Estilo para el icono en el título del modal VideoForm */
+.video-form-header h3 .video-form-title-icon {
+  font-family: "Material Icons"; /* Asegurar la fuente de Material Icons */
+  font-weight: normal; /* Resetear peso si es afectado por h3 */
+  font-style: normal; /* Resetear estilo si es afectado por h3 */
+  font-size: 1.5em;
+  line-height: 1; /* Para un renderizado consistente */
+  letter-spacing: normal; /* Resetear */
+  text-transform: none; /* Resetear */
+  display: inline-block; /* Comportamiento de icono estándar */
+  white-space: nowrap; /* Resetear */
+  word-wrap: normal; /* Resetear */
+  direction: ltr; /* Para consistencia de iconos */
+  -webkit-font-smoothing: antialiased; /* Mejor renderizado de fuente */
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga"; /* Habilitar ligaduras de iconos */
+  vertical-align: middle; /* Mejor alineación con el texto del título */
+  color: var(
+    --primary-color
+  ); /* Color del icono, puede ser var(--text-color) si prefieres heredar */
+}
