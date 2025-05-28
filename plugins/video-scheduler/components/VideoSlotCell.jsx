@@ -187,7 +187,7 @@ function VideoSlotCell(props) {
               React.createElement(
                 "span",
                 { className: "material-icons" },
-                "more_vert" // o "edit_note", "settings_ethernet"
+                "edit_note" // o "edit_note", "settings_ethernet"
               )
             ),
           ]
