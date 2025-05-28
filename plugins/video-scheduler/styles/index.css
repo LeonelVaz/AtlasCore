@@ -1,7 +1,6 @@
 /* video-scheduler/styles/index.css - Importa todos los estilos de componentes */
 
 @import "./VideoSchedulerMainPage.css";
-@import "./VideoSchedulerNavItem.css";
 @import "./DayCell.css";
 @import "./VideoSlotCell.css";
 @import "./DaySummaryCell.css";
