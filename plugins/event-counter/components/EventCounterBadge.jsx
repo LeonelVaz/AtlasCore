@@ -3,9 +3,10 @@ import React from "react";
 function EventCounterBadge(props) {
   const [eventCount, setEventCount] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [badgeColor, setBadgeColor] = React.useState("#4f46e5");
 
-  // Función para calcular eventos del día
-  const updateEventCount = React.useCallback(() => {
+  // Función para calcular eventos del día y determinar color
+  const updateEventCountAndColor = React.useCallback(() => {
     try {
       // Obtener el módulo de calendario
       const calendar = props.core.getModule("calendar");
@@ -19,18 +20,23 @@ function EventCounterBadge(props) {
       const eventsForDay = calendar.getEventsForDate(props.date);
       const count = eventsForDay ? eventsForDay.length : 0;
 
+      // Determinar color usando la API del plugin
+      const color = props.plugin.publicAPI.getColorForEventCount(count);
+
       setEventCount(count);
+      setBadgeColor(color || "#4f46e5"); // Fallback al color por defecto
       setIsLoading(false);
 
       console.log(
-        `[EventCounterBadge] ${props.date.toDateString()}: ${count} eventos`
+        `[EventCounterBadge] ${props.date.toDateString()}: ${count} eventos, color: ${color}`
       );
     } catch (error) {
       console.error("[EventCounterBadge] Error al calcular eventos:", error);
       setEventCount(0);
+      setBadgeColor("#4f46e5");
       setIsLoading(false);
     }
-  }, [props.date, props.core]);
+  }, [props.date, props.core, props.plugin]);
 
   // Función para formatear el número mostrado
   const formatCount = React.useCallback((count) => {
@@ -46,25 +52,50 @@ function EventCounterBadge(props) {
     return "Más de 99 eventos este día";
   }, []);
 
+  // Función para calcular color de texto con buen contraste
+  const getTextColor = React.useCallback((backgroundColor) => {
+    // Convertir hex a RGB
+    const hex = backgroundColor.replace("#", "");
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+
+    // Calcular luminancia
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Retornar blanco para colores oscuros, negro para colores claros
+    return luminance > 0.5 ? "#000000" : "#ffffff";
+  }, []);
+
   // Efecto para calcular eventos inicialmente y suscribirse a actualizaciones
   React.useEffect(() => {
     // Calcular eventos inicialmente
-    updateEventCount();
+    updateEventCountAndColor();
 
     // Suscribirse a actualizaciones del contador
-    const unsub = props.core.events.subscribe(
+    const unsubUpdate = props.core.events.subscribe(
       "event-counter-badge",
       "contadorEventos.actualizar",
-      updateEventCount
+      updateEventCountAndColor
     );
 
-    // Cleanup: cancelar suscripción
+    // Suscribirse a cambios de configuración
+    const unsubConfig = props.core.events.subscribe(
+      "event-counter-badge",
+      "contadorEventos.configChanged",
+      updateEventCountAndColor
+    );
+
+    // Cleanup: cancelar suscripciones
     return () => {
-      if (typeof unsub === "function") {
-        unsub();
+      if (typeof unsubUpdate === "function") {
+        unsubUpdate();
+      }
+      if (typeof unsubConfig === "function") {
+        unsubConfig();
       }
     };
-  }, [updateEventCount, props.core]);
+  }, [updateEventCountAndColor, props.core]);
 
   // Si está cargando, no mostrar nada
   if (isLoading) {
@@ -76,16 +107,25 @@ function EventCounterBadge(props) {
     return null;
   }
 
-  // Usar una sola clase CSS sin variantes
+  // Usar una sola clase CSS base
   const badgeClass = "event-counter-badge";
 
-  // Generar props para el elemento
+  // Calcular color de texto para buen contraste
+  const textColor = getTextColor(badgeColor);
+
+  // Generar props para el elemento con estilos dinámicos
   const badgeProps = {
     className: badgeClass,
     title: getTooltipText(eventCount),
     "data-count": formatCount(eventCount),
     "aria-label": getTooltipText(eventCount),
     role: "status",
+    style: {
+      backgroundColor: badgeColor,
+      color: textColor,
+      // Añadir una sombra sutil que combine con el color
+      boxShadow: `0 2px 4px ${badgeColor}20, 0 1px 2px ${badgeColor}40`,
+    },
   };
 
   // Mostrar el contador de eventos
