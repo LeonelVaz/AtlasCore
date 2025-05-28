@@ -1,0 +1,681 @@
+/* ==========================================================================
+   SettingsPanel - Estilos del Panel de Configuración Pro
+   Plugin: contador-eventos-dia v2.0.0
+   ========================================================================== */
+
+/* ==========================================================================
+   Panel principal
+   ========================================================================== */
+
+.event-counter-settings-panel {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-xl);
+  padding: var(--plugin-spacing-xl);
+  margin: var(--plugin-spacing-lg) 0;
+  box-shadow: var(--plugin-shadow-lg);
+  max-width: 800px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+}
+
+/* ==========================================================================
+     Header del panel
+     ========================================================================== */
+
+.settings-header {
+  text-align: center;
+  margin-bottom: var(--plugin-spacing-xl);
+  padding-bottom: var(--plugin-spacing-lg);
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+.settings-title {
+  margin: 0 0 var(--plugin-spacing-sm) 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-color, #1f2937);
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.settings-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-color-secondary, #6b7280);
+  font-weight: 400;
+}
+
+.saving-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+  padding: var(--plugin-spacing-sm) var(--plugin-spacing-md);
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border-radius: var(--plugin-radius-lg);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: var(--plugin-spacing-md);
+  animation: plugin-pulse 2s infinite;
+}
+
+/* ==========================================================================
+     Estados de carga y error
+     ========================================================================== */
+
+.settings-panel-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--plugin-spacing-xl);
+  text-align: center;
+  gap: var(--plugin-spacing-md);
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.settings-panel-error {
+  padding: var(--plugin-spacing-xl);
+  text-align: center;
+  color: var(--danger-color, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--plugin-radius-lg);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+     Secciones del panel
+     ========================================================================== */
+
+.settings-section {
+  margin-bottom: var(--plugin-spacing-xl);
+  padding: var(--plugin-spacing-lg);
+  background: var(--bg-color-secondary, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-lg);
+}
+
+.settings-section h4 {
+  margin: 0 0 var(--plugin-spacing-md) 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color, #1f2937);
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+}
+
+.subsection-title {
+  margin: var(--plugin-spacing-lg) 0 var(--plugin-spacing-md) 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color, #1f2937);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  padding-bottom: var(--plugin-spacing-sm);
+}
+
+/* ==========================================================================
+     Vista previa del badge
+     ========================================================================== */
+
+.badge-preview-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--plugin-spacing-md);
+  align-items: center;
+}
+
+.badge-preview-area {
+  position: relative;
+  width: 120px;
+  height: 80px;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  border: 2px dashed var(--border-color, #d1d5db);
+  border-radius: var(--plugin-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.badge-preview-area::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(
+      circle at 25% 25%,
+      rgba(79, 70, 229, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 75% 75%,
+      rgba(124, 58, 237, 0.1) 0%,
+      transparent 50%
+    );
+  animation: plugin-pulse 3s ease-in-out infinite;
+}
+
+.badge-preview-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-md);
+  font-size: 14px;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.preview-slider {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-color, #e5e7eb);
+  outline: none;
+  cursor: pointer;
+  transition: var(--plugin-transition-fast);
+}
+
+.preview-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color, #4f46e5);
+  cursor: pointer;
+  box-shadow: var(--plugin-shadow-sm);
+}
+
+.preview-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary-color, #4f46e5);
+  cursor: pointer;
+  border: none;
+  box-shadow: var(--plugin-shadow-sm);
+}
+
+/* ==========================================================================
+     Presets rápidos
+     ========================================================================== */
+
+.presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--plugin-spacing-md);
+}
+
+.preset-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--plugin-spacing-xs);
+  padding: var(--plugin-spacing-md);
+  background: var(--card-bg, #ffffff);
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-lg);
+  cursor: pointer;
+  transition: var(--plugin-transition-normal);
+  text-align: left;
+  font-family: inherit;
+}
+
+.preset-button:hover {
+  border-color: var(--primary-color, #4f46e5);
+  background: var(--bg-color-secondary, #f9fafb);
+  transform: translateY(-2px);
+  box-shadow: var(--plugin-shadow-md);
+}
+
+.preset-button:active {
+  transform: translateY(0);
+}
+
+.preset-button strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color, #1f2937);
+}
+
+.preset-button small {
+  font-size: 12px;
+  color: var(--text-color-secondary, #6b7280);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+     Navegación por pestañas
+     ========================================================================== */
+
+.settings-tabs {
+  display: flex;
+  gap: var(--plugin-spacing-xs);
+  margin-bottom: var(--plugin-spacing-lg);
+  padding: var(--plugin-spacing-sm);
+  background: var(--bg-color-secondary, #f3f4f6);
+  border-radius: var(--plugin-radius-lg);
+  overflow-x: auto;
+}
+
+.tab-button {
+  flex: 1;
+  min-width: max-content;
+  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
+  background: transparent;
+  border: none;
+  border-radius: var(--plugin-radius-md);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color-secondary, #6b7280);
+  transition: var(--plugin-transition-fast);
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--primary-color, #4f46e5);
+}
+
+.tab-button.active {
+  background: var(--primary-color, #4f46e5);
+  color: white;
+  font-weight: 600;
+  box-shadow: var(--plugin-shadow-sm);
+}
+
+/* ==========================================================================
+     Contenido de pestañas
+     ========================================================================== */
+
+.tab-content {
+  min-height: 300px;
+}
+
+.tab-panel {
+  animation: plugin-fade-in 0.3s ease-out;
+}
+
+/* ==========================================================================
+     Grupos de configuración
+     ========================================================================== */
+
+.setting-group {
+  margin-bottom: var(--plugin-spacing-lg);
+  padding: var(--plugin-spacing-md);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-md);
+  background: var(--card-bg, #ffffff);
+  transition: var(--plugin-transition-fast);
+}
+
+.setting-group:hover {
+  border-color: rgba(79, 70, 229, 0.3);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.05);
+}
+
+.setting-label {
+  display: block;
+  margin-bottom: var(--plugin-spacing-sm);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color, #1f2937);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-sm);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color, #4f46e5);
+  cursor: pointer;
+}
+
+.setting-description {
+  margin: var(--plugin-spacing-sm) 0 0 0;
+  font-size: 12px;
+  color: var(--text-color-secondary, #6b7280);
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.setting-indent {
+  margin-left: var(--plugin-spacing-lg);
+  margin-top: var(--plugin-spacing-sm);
+}
+
+/* ==========================================================================
+     Controles de formulario
+     ========================================================================== */
+
+.setting-select,
+.setting-number-input,
+.setting-textarea {
+  width: 100%;
+  padding: var(--plugin-spacing-md);
+  border: 1px solid var(--border-color, #d1d5db);
+  border-radius: var(--plugin-radius-md);
+  background: var(--input-bg, #ffffff);
+  color: var(--text-color, #1f2937);
+  font-size: 14px;
+  font-family: inherit;
+  transition: var(--plugin-transition-fast);
+}
+
+.setting-select:focus,
+.setting-number-input:focus,
+.setting-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color, #4f46e5);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.setting-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+    monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.setting-color-input {
+  width: 50px;
+  height: 40px;
+  padding: 0;
+  border: 2px solid var(--border-color, #d1d5db);
+  border-radius: var(--plugin-radius-md);
+  background: none;
+  cursor: pointer;
+  transition: var(--plugin-transition-fast);
+}
+
+.setting-color-input:hover {
+  border-color: var(--primary-color, #4f46e5);
+  transform: scale(1.05);
+}
+
+.setting-color-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+/* ==========================================================================
+     Inputs de color específicos
+     ========================================================================== */
+
+.color-input-group {
+  display: flex;
+  align-items: center;
+  gap: var(--plugin-spacing-md);
+  flex-wrap: wrap;
+}
+
+.color-preview-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 24px;
+  padding: 4px 8px;
+  background: var(--primary-color, #4f46e5);
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.color-code {
+  font-family: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono", Consolas,
+    monospace;
+  font-size: 12px;
+  color: var(--text-color-secondary, #6b7280);
+  background: var(--bg-color-secondary, #f3f4f6);
+  padding: 4px 8px;
+  border-radius: var(--plugin-radius-sm);
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+/* ==========================================================================
+     Configuración de rangos
+     ========================================================================== */
+
+.range-config {
+  padding: var(--plugin-spacing-md);
+  background: var(--bg-color-secondary, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: var(--plugin-radius-md);
+  margin-bottom: var(--plugin-spacing-md);
+  transition: var(--plugin-transition-fast);
+}
+
+.range-config:hover {
+  background: var(--hover-color, rgba(0, 0, 0, 0.02));
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+.range-config h5 {
+  margin: 0 0 var(--plugin-spacing-md) 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-color, #1f2937);
+}
+
+.range-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--plugin-spacing-md);
+  align-items: end;
+}
+
+.range-input label {
+  display: block;
+  margin-bottom: var(--plugin-spacing-xs);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.border-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--plugin-spacing-md);
+  align-items: end;
+}
+
+.border-input {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+     Footer del panel
+     ========================================================================== */
+
+.settings-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--plugin-spacing-xl);
+  padding-top: var(--plugin-spacing-lg);
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.reset-button {
+  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
+  background: var(--danger-color, #ef4444);
+  color: white;
+  border: none;
+  border-radius: var(--plugin-radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--plugin-transition-fast);
+}
+
+.reset-button:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: var(--plugin-shadow-md);
+}
+
+.reset-button:active {
+  transform: translateY(0);
+}
+
+.settings-footer small {
+  color: var(--text-color-secondary, #6b7280);
+  font-size: 12px;
+}
+
+/* ==========================================================================
+     Responsive Design
+     ========================================================================== */
+
+@media (max-width: 768px) {
+  .event-counter-settings-panel {
+    padding: var(--plugin-spacing-lg);
+    margin: var(--plugin-spacing-md) 0;
+  }
+
+  .settings-title {
+    font-size: 20px;
+  }
+
+  .presets-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-button {
+    flex: none;
+    min-width: 140px;
+  }
+
+  .range-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .color-input-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .border-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-footer {
+    flex-direction: column;
+    gap: var(--plugin-spacing-md);
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .badge-preview-controls {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .preview-slider {
+    width: 100%;
+  }
+}
+
+/* ==========================================================================
+     Accesibilidad
+     ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-panel *,
+  .tab-panel,
+  .preset-button,
+  .setting-group {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .preset-button:hover,
+  .reset-button:hover {
+    transform: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .event-counter-settings-panel {
+    border-width: 2px;
+  }
+
+  .setting-group {
+    border-width: 2px;
+  }
+
+  .tab-button.active {
+    border: 2px solid white;
+  }
+
+  .setting-select:focus,
+  .setting-number-input:focus,
+  .setting-textarea:focus {
+    border-width: 3px;
+  }
+}
+
+/* ==========================================================================
+     Modo oscuro
+     ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  .badge-preview-area {
+    background: linear-gradient(135deg, #374151, #4b5563);
+    border-color: #6b7280;
+  }
+
+  .color-code {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  .settings-tabs {
+    background: #374151;
+  }
+
+  .range-config {
+    background: #374151;
+    border-color: #4b5563;
+  }
+}
+
+/* ==========================================================================
+     Utilidades y animaciones adicionales
+     ========================================================================== */
+
+.setting-highlight {
+  animation: plugin-pulse 1s ease-in-out;
+  border-color: var(--primary-color, #4f46e5) !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+}
+
+.setting-success {
+  border-color: var(--success-color, #10b981) !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+.setting-error {
+  border-color: var(--danger-color, #ef4444) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}

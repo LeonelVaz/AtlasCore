@@ -3,132 +3,197 @@ import React from "react";
 function EventCounterBadge(props) {
   const [eventCount, setEventCount] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [badgeColor, setBadgeColor] = React.useState("#4f46e5");
+  const [isVisible, setIsVisible] = React.useState(false);
 
-  // Función para calcular eventos del día y determinar color
-  const updateEventCountAndColor = React.useCallback(() => {
+  // Función principal para actualizar datos
+  const updateBadgeData = React.useCallback(() => {
     try {
-      // Obtener el módulo de calendario
       const calendar = props.core.getModule("calendar");
       if (!calendar) {
         setEventCount(0);
         setIsLoading(false);
+        setIsVisible(false);
         return;
       }
 
-      // Obtener eventos para esta fecha específica
       const eventsForDay = calendar.getEventsForDate(props.date);
       const count = eventsForDay ? eventsForDay.length : 0;
 
-      // Determinar color usando la API del plugin
-      const color = props.plugin.publicAPI.getColorForEventCount(count);
+      // Verificar si debe mostrarse el badge
+      const shouldShow = props.plugin.publicAPI.shouldShowBadge(
+        props.date,
+        count
+      );
 
       setEventCount(count);
-      setBadgeColor(color || "#4f46e5"); // Fallback al color por defecto
+      setIsVisible(shouldShow);
       setIsLoading(false);
 
       console.log(
-        `[EventCounterBadge] ${props.date.toDateString()}: ${count} eventos, color: ${color}`
+        `[EventCounterBadge Pro] ${props.date.toDateString()}: ${count} eventos, visible: ${shouldShow}`
       );
     } catch (error) {
-      console.error("[EventCounterBadge] Error al calcular eventos:", error);
+      console.error(
+        "[EventCounterBadge Pro] Error al calcular eventos:",
+        error
+      );
       setEventCount(0);
-      setBadgeColor("#4f46e5");
+      setIsVisible(false);
       setIsLoading(false);
     }
   }, [props.date, props.core, props.plugin]);
 
-  // Función para formatear el número mostrado
+  // Formatear número mostrado
   const formatCount = React.useCallback((count) => {
+    if (count > 999) return "999+";
     if (count > 99) return "99+";
     return count.toString();
   }, []);
 
-  // Función para generar el título del tooltip
+  // Generar texto del tooltip
   const getTooltipText = React.useCallback((count) => {
     if (count === 0) return "Sin eventos";
     if (count === 1) return "1 evento este día";
     if (count <= 99) return `${count} eventos este día`;
-    return "Más de 99 eventos este día";
+    if (count <= 999) return `${count} eventos este día`;
+    return "Más de 999 eventos este día";
   }, []);
 
-  // Función para calcular color de texto con buen contraste
-  const getTextColor = React.useCallback((backgroundColor) => {
-    // Convertir hex a RGB
-    const hex = backgroundColor.replace("#", "");
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-
-    // Calcular luminancia
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    // Retornar blanco para colores oscuros, negro para colores claros
-    return luminance > 0.5 ? "#000000" : "#ffffff";
+  // Obtener icono según cantidad (opcional)
+  const getEventIcon = React.useCallback((count) => {
+    if (count === 0) return null;
+    if (count === 1) return "●";
+    if (count <= 5) return "●●";
+    if (count <= 10) return "●●●";
+    return "●●●+";
   }, []);
 
-  // Efecto para calcular eventos inicialmente y suscribirse a actualizaciones
+  // Configurar efectos y suscripciones
   React.useEffect(() => {
-    // Calcular eventos inicialmente
-    updateEventCountAndColor();
+    updateBadgeData();
 
-    // Suscribirse a actualizaciones del contador
+    // Suscribirse a eventos de actualización
     const unsubUpdate = props.core.events.subscribe(
-      "event-counter-badge",
+      "event-counter-badge-pro",
       "contadorEventos.actualizar",
-      updateEventCountAndColor
+      updateBadgeData
     );
 
-    // Suscribirse a cambios de configuración
     const unsubConfig = props.core.events.subscribe(
-      "event-counter-badge",
+      "event-counter-badge-pro",
       "contadorEventos.configChanged",
-      updateEventCountAndColor
+      updateBadgeData
     );
 
-    // Cleanup: cancelar suscripciones
+    // Cleanup
     return () => {
-      if (typeof unsubUpdate === "function") {
-        unsubUpdate();
-      }
-      if (typeof unsubConfig === "function") {
-        unsubConfig();
-      }
+      if (typeof unsubUpdate === "function") unsubUpdate();
+      if (typeof unsubConfig === "function") unsubConfig();
     };
-  }, [updateEventCountAndColor, props.core]);
+  }, [updateBadgeData, props.core]);
 
-  // Si está cargando, no mostrar nada
-  if (isLoading) {
-    return null;
-  }
+  // Estados de carga y visibilidad
+  if (isLoading) return null;
+  if (!isVisible) return null;
 
-  // Si no hay eventos, no mostrar contador
-  if (eventCount === 0) {
-    return null;
-  }
+  // Obtener clases y estilos dinámicos
+  const badgeClasses = props.plugin.publicAPI.getBadgeClasses(eventCount);
+  const badgeStyles = props.plugin.publicAPI.getBadgeStyles(eventCount);
 
-  // Usar una sola clase CSS base
-  const badgeClass = "event-counter-badge";
-
-  // Calcular color de texto para buen contraste
-  const textColor = getTextColor(badgeColor);
-
-  // Generar props para el elemento con estilos dinámicos
+  // Props del elemento badge
   const badgeProps = {
-    className: badgeClass,
+    className: badgeClasses,
     title: getTooltipText(eventCount),
     "data-count": formatCount(eventCount),
+    "data-original-count": eventCount,
     "aria-label": getTooltipText(eventCount),
     role: "status",
-    style: {
-      backgroundColor: badgeColor,
-      color: textColor,
-      // Añadir una sombra sutil que combine con el color
-      boxShadow: `0 2px 4px ${badgeColor}20, 0 1px 2px ${badgeColor}40`,
-    },
+    style: badgeStyles,
   };
 
-  // Mostrar el contador de eventos
+  // Obtener configuraciones actuales
+  const settings = props.plugin.publicAPI.getSettings();
+
+  // Renderizado condicional según estilo
+  if (settings.badgeStyle === "minimal") {
+    return React.createElement(
+      "span",
+      {
+        ...badgeProps,
+        className: `${badgeClasses} badge-minimal-style`,
+      },
+      formatCount(eventCount)
+    );
+  }
+
+  if (settings.badgeStyle === "modern") {
+    return React.createElement(
+      "div",
+      {
+        ...badgeProps,
+        className: `${badgeClasses} badge-modern-container`,
+      },
+      [
+        React.createElement(
+          "span",
+          { key: "count", className: "badge-count" },
+          formatCount(eventCount)
+        ),
+        eventCount > 1 &&
+          React.createElement(
+            "span",
+            { key: "indicator", className: "badge-indicator" },
+            "+"
+          ),
+      ]
+    );
+  }
+
+  if (settings.badgeStyle === "circular") {
+    return React.createElement(
+      "div",
+      {
+        ...badgeProps,
+        className: `${badgeClasses} badge-circular-container`,
+      },
+      React.createElement(
+        "span",
+        { className: "badge-count-text" },
+        formatCount(eventCount)
+      )
+    );
+  }
+
+  if (settings.badgeStyle === "square") {
+    return React.createElement(
+      "div",
+      {
+        ...badgeProps,
+        className: `${badgeClasses} badge-square-container`,
+      },
+      [
+        React.createElement(
+          "div",
+          { key: "content", className: "badge-square-content" },
+          [
+            React.createElement(
+              "span",
+              { key: "number", className: "badge-number" },
+              formatCount(eventCount)
+            ),
+            eventCount > 1 &&
+              React.createElement(
+                "div",
+                { key: "dots", className: "badge-dots" },
+                getEventIcon(eventCount)
+              ),
+          ]
+        ),
+      ]
+    );
+  }
+
+  // Badge estilo por defecto (rounded)
   return React.createElement("span", badgeProps, formatCount(eventCount));
 }
 
