@@ -4,13 +4,6 @@ function EventCounterBadge(props) {
   const [eventCount, setEventCount] = React.useState(0);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  // Función para determinar la variante del badge basada en la cantidad de eventos
-  const getBadgeVariant = React.useCallback((count) => {
-    if (count <= 2) return "low";
-    if (count <= 5) return "medium";
-    return "high";
-  }, []);
-
   // Función para calcular eventos del día
   const updateEventCount = React.useCallback(() => {
     try {
@@ -42,7 +35,6 @@ function EventCounterBadge(props) {
   // Función para formatear el número mostrado
   const formatCount = React.useCallback((count) => {
     if (count > 99) return "99+";
-    if (count > 9) return count.toString();
     return count.toString();
   }, []);
 
@@ -84,16 +76,14 @@ function EventCounterBadge(props) {
     return null;
   }
 
-  // Determinar la clase CSS basada en la cantidad de eventos
-  const badgeVariant = getBadgeVariant(eventCount);
-  const badgeClass = `event-counter-badge event-counter-badge--${badgeVariant}`;
+  // Usar una sola clase CSS sin variantes
+  const badgeClass = "event-counter-badge";
 
   // Generar props para el elemento
   const badgeProps = {
     className: badgeClass,
     title: getTooltipText(eventCount),
-    "data-count": eventCount,
-    "data-variant": badgeVariant,
+    "data-count": formatCount(eventCount),
     "aria-label": getTooltipText(eventCount),
     role: "status",
   };
