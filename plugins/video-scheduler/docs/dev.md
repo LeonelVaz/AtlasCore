@@ -122,14 +122,14 @@
 
 1. **Alta Prioridad:** (TERMINADO)
 
-   - Panel de Estadísticas (es muy visual y útil)
-   - Botones de acción globales en encabezado
-   - BulkAddForm (muy demandado por usuarios)
+   - Panel de Estadísticas (es muy visual y útil) (TERMINADO)
+   - Botones de acción globales en encabezado (TERMINADO)
+   - BulkAddForm (muy demandado por usuarios) (TERMINADO)
 
 2. **Prioridad Media:**
 
-   - Configuración de tasas de cambio
-   - VideoForm para detalles extendidos (Añadir un botón casi indistigible en la casilla de cada video ubicado en el extremo arriba a la derecha de la casilla)
+   - Configuración de tasas de cambio (TERMINADO)
+   - VideoForm para detalles extendidos - Añadir un botón casi indistigible en la casilla de cada video ubicado en el extremo arriba a la derecha de la casilla (TERMINADO)
    - Widget de configuración
 
 3. **Prioridad Baja:**
