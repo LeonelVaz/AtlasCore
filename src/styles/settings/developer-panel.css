@@ -187,11 +187,11 @@
   .developer-panel {
     padding: 1rem;
   }
-  
+
   .debug-tools {
     flex-direction: column;
   }
-  
+
   .debug-tool-button {
     width: 100%;
     justify-content: center;

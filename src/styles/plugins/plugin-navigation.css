@@ -25,7 +25,7 @@
 
 .navigation-item .sidebar-item.active {
   background-color: var(--accent-color-light, rgba(45, 75, 148, 0.1));
-  color: var(--accent-color, #2D4B94);
+  color: var(--accent-color, #2d4b94);
 }
 
 .navigation-item .sidebar-item-icon {
@@ -118,7 +118,7 @@
 
 /* Botones específicos para plugins */
 .plugin-button {
-  background-color: var(--accent-color, #2D4B94);
+  background-color: var(--accent-color, #2d4b94);
   color: white;
   border: none;
   border-radius: 4px;

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import eventBus, { CalendarEvents } from '../core/bus/event-bus';
+import { useState } from "react";
+import eventBus, { CalendarEvents } from "../core/bus/event-bus";
 
 /**
  * Hook personalizado para gestionar la navegación del calendario
@@ -8,18 +8,18 @@ import eventBus, { CalendarEvents } from '../core/bus/event-bus';
 function useCalendarNavigation() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
-  
+
   // Navegación entre semanas
   const goToPreviousWeek = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() - 7);
     setCurrentDate(newDate);
-    
+
     // Publicar evento de cambio de fecha
     eventBus.publish(CalendarEvents.DATE_CHANGED, {
       date: newDate,
       previousDate: currentDate,
-      navigation: 'previousWeek'
+      navigation: "previousWeek",
     });
   };
 
@@ -27,12 +27,12 @@ function useCalendarNavigation() {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + 7);
     setCurrentDate(newDate);
-    
+
     // Publicar evento de cambio de fecha
     eventBus.publish(CalendarEvents.DATE_CHANGED, {
       date: newDate,
       previousDate: currentDate,
-      navigation: 'nextWeek'
+      navigation: "nextWeek",
     });
   };
 
@@ -40,12 +40,12 @@ function useCalendarNavigation() {
     const today = new Date();
     const previousDate = new Date(currentDate);
     setCurrentDate(today);
-    
+
     // Publicar evento de cambio de fecha
     eventBus.publish(CalendarEvents.DATE_CHANGED, {
       date: today,
       previousDate: previousDate,
-      navigation: 'today'
+      navigation: "today",
     });
   };
 
@@ -54,12 +54,12 @@ function useCalendarNavigation() {
     const prevDay = new Date(selectedDay);
     prevDay.setDate(prevDay.getDate() - 1);
     setSelectedDay(prevDay);
-    
+
     // Publicar evento de cambio de fecha
     eventBus.publish(CalendarEvents.DATE_CHANGED, {
       date: prevDay,
       previousDate: selectedDay,
-      navigation: 'previousDay'
+      navigation: "previousDay",
     });
   };
 
@@ -67,12 +67,12 @@ function useCalendarNavigation() {
     const nextDay = new Date(selectedDay);
     nextDay.setDate(nextDay.getDate() + 1);
     setSelectedDay(nextDay);
-    
+
     // Publicar evento de cambio de fecha
     eventBus.publish(CalendarEvents.DATE_CHANGED, {
       date: nextDay,
       previousDate: selectedDay,
-      navigation: 'nextDay'
+      navigation: "nextDay",
     });
   };
 
@@ -81,15 +81,15 @@ function useCalendarNavigation() {
     const previousDay = new Date(selectedDay);
     setSelectedDay(today);
     setCurrentDate(today); // También actualizar la semana actual para sincronizar ambas vistas
-    
+
     // Publicar evento de cambio de fecha
     eventBus.publish(CalendarEvents.DATE_CHANGED, {
       date: today,
       previousDate: previousDay,
-      navigation: 'today'
+      navigation: "today",
     });
   };
-  
+
   return {
     currentDate,
     selectedDay,
@@ -100,7 +100,7 @@ function useCalendarNavigation() {
     goToCurrentWeek,
     goToPreviousDay,
     goToNextDay,
-    goToToday
+    goToToday,
   };
 }
 

@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ThemeProvider from './theme-context';
-import TimeScaleProvider from './time-scale-context';
+import React from "react";
+import PropTypes from "prop-types";
+import ThemeProvider from "./theme-context";
+import TimeScaleProvider from "./time-scale-context";
 
 /**
  * Componente que proporciona todos los contextos configurables de la aplicación
@@ -10,15 +10,13 @@ import TimeScaleProvider from './time-scale-context';
 const ConfigProvider = ({ children }) => {
   return (
     <ThemeProvider>
-      <TimeScaleProvider>
-        {children}
-      </TimeScaleProvider>
+      <TimeScaleProvider>{children}</TimeScaleProvider>
     </ThemeProvider>
   );
 };
 
 ConfigProvider.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 export default ConfigProvider;

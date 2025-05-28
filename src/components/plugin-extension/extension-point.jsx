@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import eventBus from '../../core/bus/event-bus';
-import uiExtensionManager from '../../core/plugins/ui-extension-manager';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import eventBus from "../../core/bus/event-bus";
+import uiExtensionManager from "../../core/plugins/ui-extension-manager";
 
 /**
  * Componente para renderizar extensiones de plugins en un punto específico
@@ -22,17 +22,20 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
     setExtensions(initialExtensions);
 
     // Suscribirse a cambios en el punto de extensión
-    const unsubscribe = eventBus.subscribe(`pluginSystem.extension.${zoneId}`, (data) => {
-      if (data && Array.isArray(data.extensions)) {
-        setExtensions(data.extensions);
-        
-        // Resetear error si había uno previo y ahora hay nuevas extensiones
-        if (hasError && data.extensions.length > 0) {
-          setHasError(false);
-          setError(null);
+    const unsubscribe = eventBus.subscribe(
+      `pluginSystem.extension.${zoneId}`,
+      (data) => {
+        if (data && Array.isArray(data.extensions)) {
+          setExtensions(data.extensions);
+
+          // Resetear error si había uno previo y ahora hay nuevas extensiones
+          if (hasError && data.extensions.length > 0) {
+            setHasError(false);
+            setError(null);
+          }
         }
       }
-    });
+    );
 
     return () => {
       unsubscribe();
@@ -44,7 +47,7 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
 
   try {
     // Si hay un renderizador personalizado, usarlo
-    if (typeof render === 'function') {
+    if (typeof render === "function") {
       return render(extensions);
     }
 
@@ -59,7 +62,9 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
         <div className="plugin-extension-error">
           <div className="plugin-extension-error-title">Error en extensión</div>
           <div className="plugin-extension-error-message">
-            {error ? error.message : 'Error desconocido al renderizar extensión'}
+            {error
+              ? error.message
+              : "Error desconocido al renderizar extensión"}
           </div>
         </div>
       );
@@ -68,30 +73,33 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
     // Renderizar componentes en contenedor estándar
     return (
       <div className="plugin-extension-container" data-extension-zone={zoneId}>
-        {extensions.map(extension => {
+        {extensions.map((extension) => {
           try {
             const ExtComponent = extension.component;
-            
+
             // Renderizar cada componente con sus props y props adicionales
             return (
-              <div 
-                key={extension.id} 
+              <div
+                key={extension.id}
                 className="plugin-extension-item"
                 data-plugin-id={extension.pluginId}
               >
-                <ExtComponent 
-                  {...extension.props} 
+                <ExtComponent
+                  {...extension.props}
                   pluginId={extension.pluginId}
                   extensionId={extension.id}
                 />
               </div>
             );
           } catch (componentError) {
-            console.error(`Error al renderizar componente de plugin ${extension.pluginId}:`, componentError);
-            
+            console.error(
+              `Error al renderizar componente de plugin ${extension.pluginId}:`,
+              componentError
+            );
+
             // Renderizar error para este componente específico
             return (
-              <div 
+              <div
                 key={extension.id}
                 className="plugin-extension-item plugin-extension-error"
                 data-plugin-id={extension.pluginId}
@@ -100,7 +108,7 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
                   Error en extensión de plugin {extension.pluginId}
                 </div>
                 <div className="plugin-extension-error-message">
-                  {componentError.message || 'Error desconocido'}
+                  {componentError.message || "Error desconocido"}
                 </div>
               </div>
             );
@@ -109,18 +117,23 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
       </div>
     );
   } catch (renderError) {
-    console.error(`Error al renderizar punto de extensión ${zoneId}:`, renderError);
-    
+    console.error(
+      `Error al renderizar punto de extensión ${zoneId}:`,
+      renderError
+    );
+
     // Marcar que hay un error para futuras renderizaciones
     setHasError(true);
     setError(renderError);
-    
+
     // Renderizar fallback en caso de error general
     return (
       <div className="plugin-extension-error">
-        <div className="plugin-extension-error-title">Error en punto de extensión</div>
+        <div className="plugin-extension-error-title">
+          Error en punto de extensión
+        </div>
         <div className="plugin-extension-error-message">
-          {renderError.message || 'Error desconocido al renderizar extensiones'}
+          {renderError.message || "Error desconocido al renderizar extensiones"}
         </div>
       </div>
     );
@@ -130,7 +143,7 @@ const ExtensionPoint = ({ zoneId, render, fallback = null }) => {
 ExtensionPoint.propTypes = {
   zoneId: PropTypes.string.isRequired,
   render: PropTypes.func,
-  fallback: PropTypes.node
+  fallback: PropTypes.node,
 };
 
 export default ExtensionPoint;

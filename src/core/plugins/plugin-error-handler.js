@@ -1,7 +1,7 @@
 /**
  * Manejador de errores para plugins
  */
-import eventBus from '../bus/event-bus';
+import eventBus from "../bus/event-bus";
 
 class PluginErrorHandler {
   constructor() {
@@ -12,21 +12,21 @@ class PluginErrorHandler {
   }
 
   registerHandler(handler) {
-    if (typeof handler !== 'function') {
-      throw new Error('El handler debe ser una función');
+    if (typeof handler !== "function") {
+      throw new Error("El handler debe ser una función");
     }
-    
+
     const id = ++this.lastId;
     this.handlers.push({ id, handler });
-    
+
     return id;
   }
 
   unregisterHandler(handlerId) {
-    const index = this.handlers.findIndex(h => h.id === handlerId);
-    
+    const index = this.handlers.findIndex((h) => h.id === handlerId);
+
     if (index === -1) return false;
-    
+
     this.handlers.splice(index, 1);
     return true;
   }
@@ -35,24 +35,24 @@ class PluginErrorHandler {
     const errorInfo = this._formatError(pluginId, operation, error, metadata);
     this._addToLog(errorInfo);
     this._notifyHandlers(errorInfo);
-    
-    eventBus.publish('pluginSystem.error', errorInfo);
-    
+
+    eventBus.publish("pluginSystem.error", errorInfo);
+
     return errorInfo;
   }
 
   _formatError(pluginId, operation, error, metadata) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : null;
-    
+
     return {
       id: this._generateErrorId(),
-      pluginId: pluginId || 'unknown',
-      operation: operation || 'unknown',
+      pluginId: pluginId || "unknown",
+      operation: operation || "unknown",
       message: errorMessage,
       stack: errorStack,
       timestamp: Date.now(),
-      metadata
+      metadata,
     };
   }
 
@@ -62,7 +62,7 @@ class PluginErrorHandler {
 
   _addToLog(errorInfo) {
     this.errorLog.unshift(errorInfo);
-    
+
     if (this.errorLog.length > this.maxLogSize) {
       this.errorLog = this.errorLog.slice(0, this.maxLogSize);
     }
@@ -73,7 +73,7 @@ class PluginErrorHandler {
       try {
         handler(errorInfo);
       } catch (handlerError) {
-        console.error('Error en handler de errores de plugin:', handlerError);
+        console.error("Error en handler de errores de plugin:", handlerError);
       }
     });
   }
@@ -88,7 +88,7 @@ class PluginErrorHandler {
 
   getPluginErrors(pluginId) {
     if (!pluginId) return [];
-    return this.errorLog.filter(error => error.pluginId === pluginId);
+    return this.errorLog.filter((error) => error.pluginId === pluginId);
   }
 }
 

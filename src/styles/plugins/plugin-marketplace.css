@@ -156,7 +156,9 @@
   color: var(--color-text-tertiary);
 }
 
-.plugin-author, .plugin-version, .plugin-downloads {
+.plugin-author,
+.plugin-version,
+.plugin-downloads {
   display: inline-block;
 }
 

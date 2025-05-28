@@ -1,6 +1,5 @@
-
-import React, { createContext, useState, useContext, useCallback } from 'react';
-import CustomDialog from '../components/ui/dialog-system/custom-dialog';
+import React, { createContext, useState, useContext, useCallback } from "react";
+import CustomDialog from "../components/ui/dialog-system/custom-dialog";
 
 const DialogContext = createContext();
 
@@ -11,126 +10,149 @@ const DialogContext = createContext();
 export const DialogProvider = ({ children }) => {
   const [dialogState, setDialogState] = useState({
     isOpen: false,
-    type: 'alert',
-    title: '',
-    message: '',
-    defaultValue: '',
-    confirmText: 'Aceptar',
-    cancelText: 'Cancelar',
+    type: "alert",
+    title: "",
+    message: "",
+    defaultValue: "",
+    confirmText: "Aceptar",
+    cancelText: "Cancelar",
     onConfirm: null,
     onCancel: null,
-    onClose: null
+    onClose: null,
   });
 
   // Función para cerrar el diálogo
   const closeDialog = useCallback(() => {
-    setDialogState(prev => ({
+    setDialogState((prev) => ({
       ...prev,
-      isOpen: false
+      isOpen: false,
     }));
   }, []);
 
   // Función para mostrar alert personalizado
-  const showAlert = useCallback((message, title = 'Información', confirmText = 'Aceptar') => {
-    return new Promise((resolve) => {
-      setDialogState({
-        isOpen: true,
-        type: 'alert',
-        title,
-        message,
-        confirmText,
-        onConfirm: () => {
-          closeDialog();
-          resolve(true);
-        },
-        onClose: () => {
-          closeDialog();
-          resolve(true);
-        }
+  const showAlert = useCallback(
+    (message, title = "Información", confirmText = "Aceptar") => {
+      return new Promise((resolve) => {
+        setDialogState({
+          isOpen: true,
+          type: "alert",
+          title,
+          message,
+          confirmText,
+          onConfirm: () => {
+            closeDialog();
+            resolve(true);
+          },
+          onClose: () => {
+            closeDialog();
+            resolve(true);
+          },
+        });
       });
-    });
-  }, [closeDialog]);
+    },
+    [closeDialog]
+  );
 
   // Función para mostrar confirm personalizado
-  const showConfirm = useCallback((message, title = 'Confirmación', confirmText = 'Aceptar', cancelText = 'Cancelar') => {
-    return new Promise((resolve) => {
-      setDialogState({
-        isOpen: true,
-        type: 'confirm',
-        title,
-        message,
-        confirmText,
-        cancelText,
-        onConfirm: () => {
-          closeDialog();
-          resolve(true);
-        },
-        onCancel: () => {
-          closeDialog();
-          resolve(false);
-        }
+  const showConfirm = useCallback(
+    (
+      message,
+      title = "Confirmación",
+      confirmText = "Aceptar",
+      cancelText = "Cancelar"
+    ) => {
+      return new Promise((resolve) => {
+        setDialogState({
+          isOpen: true,
+          type: "confirm",
+          title,
+          message,
+          confirmText,
+          cancelText,
+          onConfirm: () => {
+            closeDialog();
+            resolve(true);
+          },
+          onCancel: () => {
+            closeDialog();
+            resolve(false);
+          },
+        });
       });
-    });
-  }, [closeDialog]);
+    },
+    [closeDialog]
+  );
 
   // Función para mostrar prompt personalizado
-  const showPrompt = useCallback((message, defaultValue = '', title = 'Entrada de datos', confirmText = 'Aceptar', cancelText = 'Cancelar') => {
-    return new Promise((resolve) => {
-      setDialogState({
-        isOpen: true,
-        type: 'prompt',
-        title,
-        message,
-        defaultValue,
-        confirmText,
-        cancelText,
-        onConfirm: (value) => {
-          closeDialog();
-          resolve(value);
-        },
-        onCancel: () => {
-          closeDialog();
-          resolve(null);
-        }
+  const showPrompt = useCallback(
+    (
+      message,
+      defaultValue = "",
+      title = "Entrada de datos",
+      confirmText = "Aceptar",
+      cancelText = "Cancelar"
+    ) => {
+      return new Promise((resolve) => {
+        setDialogState({
+          isOpen: true,
+          type: "prompt",
+          title,
+          message,
+          defaultValue,
+          confirmText,
+          cancelText,
+          onConfirm: (value) => {
+            closeDialog();
+            resolve(value);
+          },
+          onCancel: () => {
+            closeDialog();
+            resolve(null);
+          },
+        });
       });
-    });
-  }, [closeDialog]);
+    },
+    [closeDialog]
+  );
 
   // Función para mostrar diálogo personalizado con opciones avanzadas
-  const showCustomDialog = useCallback((options) => {
-    return new Promise((resolve) => {
-      const {
-        type = 'alert',
-        title = '',
-        message = '',
-        defaultValue = '',
-        confirmText = 'Aceptar',
-        cancelText = 'Cancelar',
-        onConfirm = null,
-        onCancel = null
-      } = options;
+  const showCustomDialog = useCallback(
+    (options) => {
+      return new Promise((resolve) => {
+        const {
+          type = "alert",
+          title = "",
+          message = "",
+          defaultValue = "",
+          confirmText = "Aceptar",
+          cancelText = "Cancelar",
+          onConfirm = null,
+          onCancel = null,
+        } = options;
 
-      setDialogState({
-        isOpen: true,
-        type,
-        title,
-        message,
-        defaultValue,
-        confirmText,
-        cancelText,
-        onConfirm: (result) => {
-          closeDialog();
-          if (onConfirm) onConfirm(result);
-          resolve(result);
-        },
-        onCancel: (result) => {
-          closeDialog();
-          if (onCancel) onCancel(result);
-          resolve(result);
-        }
+        setDialogState({
+          isOpen: true,
+          type,
+          title,
+          message,
+          defaultValue,
+          confirmText,
+          cancelText,
+          onConfirm: (result) => {
+            closeDialog();
+            if (onConfirm) onConfirm(result);
+            resolve(result);
+          },
+          onCancel: (result) => {
+            closeDialog();
+            if (onCancel) onCancel(result);
+            resolve(result);
+          },
+        });
       });
-    });
-  }, [closeDialog]);
+    },
+    [closeDialog]
+  );
 
   // Valor del contexto
   const contextValue = {
@@ -138,7 +160,7 @@ export const DialogProvider = ({ children }) => {
     showConfirm,
     showPrompt,
     showCustomDialog,
-    closeDialog
+    closeDialog,
   };
 
   return (
@@ -168,11 +190,11 @@ export const DialogProvider = ({ children }) => {
  */
 export const useDialog = () => {
   const context = useContext(DialogContext);
-  
+
   if (!context) {
-    throw new Error('useDialog debe ser usado dentro de un DialogProvider');
+    throw new Error("useDialog debe ser usado dentro de un DialogProvider");
   }
-  
+
   return context;
 };
 

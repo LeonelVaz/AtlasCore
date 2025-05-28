@@ -41,7 +41,8 @@
 
 /* Encabezado */
 .custom-dialog-header {
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm) var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm)
+    var(--spacing-lg);
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-dialog-header);
 }
@@ -83,7 +84,8 @@
   background-color: var(--color-input-bg);
   color: var(--color-text);
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .custom-dialog-input:focus {
@@ -93,7 +95,8 @@
 
 /* Pie del diálogo */
 .custom-dialog-footer {
-  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg)
+    var(--spacing-lg);
   display: flex;
   gap: var(--spacing-sm);
   justify-content: flex-end;
@@ -229,20 +232,20 @@
     margin: var(--spacing-lg);
     max-width: none;
   }
-  
+
   .custom-dialog-header {
     padding: var(--spacing-md);
   }
-  
+
   .custom-dialog-body {
     padding: var(--spacing-md);
   }
-  
+
   .custom-dialog-footer {
     padding: var(--spacing-md);
     flex-direction: column-reverse;
   }
-  
+
   .custom-dialog-button {
     width: 100%;
   }
@@ -254,11 +257,11 @@
     margin: var(--spacing-sm);
     border-radius: var(--border-radius-md);
   }
-  
+
   .custom-dialog-title {
     font-size: 1rem;
   }
-  
+
   .custom-dialog-message {
     font-size: 0.8125rem;
   }

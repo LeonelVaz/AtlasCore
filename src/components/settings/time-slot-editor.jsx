@@ -1,22 +1,18 @@
 // src/components/settings/time-slot-editor.jsx
-import React, { useState, useEffect } from 'react';
-import useTimeGrid from '../../hooks/use-time-grid';
+import React, { useState, useEffect } from "react";
+import useTimeGrid from "../../hooks/use-time-grid";
 
 /**
  * Componente para editar franjas horarias
  */
 const TimeSlotEditor = () => {
-  const {
-    customSlots,
-    addCustomTimeSlot,
-    removeCustomTimeSlot,
-    isLoading
-  } = useTimeGrid(0, 24);
+  const { customSlots, addCustomTimeSlot, removeCustomTimeSlot, isLoading } =
+    useTimeGrid(0, 24);
 
   const [showForm, setShowForm] = useState(false);
   const [formValues, setFormValues] = useState({
     hour: 9,
-    minutes: 30
+    minutes: 30,
   });
 
   // Generar opciones para select de horas
@@ -31,24 +27,24 @@ const TimeSlotEditor = () => {
   // Manejar cambios en el formulario
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({
+    setFormValues((prev) => ({
       ...prev,
-      [name]: parseInt(value, 10)
+      [name]: parseInt(value, 10),
     }));
   };
 
   // Manejar envío del formulario
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    
+
     const { hour, minutes } = formValues;
     const success = addCustomTimeSlot(hour, minutes);
-    
+
     if (success) {
       setShowForm(false);
       setFormValues({
         hour: 9,
-        minutes: 30
+        minutes: 30,
       });
     }
   };
@@ -65,22 +61,26 @@ const TimeSlotEditor = () => {
 
   // Verificar si existen franjas personalizadas
   const hasCustomSlots = Object.keys(customSlots).length > 0;
-  
+
   // Ordenar las horas para visualización
   const sortedHours = Object.keys(customSlots)
-    .map(hour => parseInt(hour, 10))
+    .map((hour) => parseInt(hour, 10))
     .sort((a, b) => a - b);
 
   if (isLoading) {
-    return <div className="loading-indicator">Cargando franjas horarias...</div>;
+    return (
+      <div className="loading-indicator">Cargando franjas horarias...</div>
+    );
   }
 
   return (
     <div className="time-slot-editor">
-      <h3 className="settings-section-title">Franjas Horarias Personalizadas</h3>
+      <h3 className="settings-section-title">
+        Franjas Horarias Personalizadas
+      </h3>
       <p className="settings-section-description">
-        Las franjas horarias personalizadas te permiten dividir las horas estándar 
-        en intervalos más pequeños para una planificación más precisa.
+        Las franjas horarias personalizadas te permiten dividir las horas
+        estándar en intervalos más pequeños para una planificación más precisa.
       </p>
 
       {/* Visualizador de franjas personalizadas */}
@@ -91,40 +91,45 @@ const TimeSlotEditor = () => {
           </div>
           <div className="custom-time-scales">
             <div className="custom-time-hour">
-              {sortedHours.map(hour => (
+              {sortedHours.map((hour) => (
                 <div key={`hour-${hour}`} className="custom-time-hour-label">
                   {hour}:00
                 </div>
               ))}
             </div>
             <div className="custom-time-slots">
-              {sortedHours.map(hour => {
+              {sortedHours.map((hour) => {
                 // Obtener todas las franjas de esta hora, incluida la estándar
                 const hourSlots = [
                   // Agregar implícitamente la franja estándar
-                  { hour, minutes: 0, type: 'standard' },
+                  { hour, minutes: 0, type: "standard" },
                   // Agregar las franjas personalizadas
-                  ...(customSlots[hour] || []).map(slot => ({
+                  ...(customSlots[hour] || []).map((slot) => ({
                     hour,
                     minutes: slot.minutes,
-                    type: slot.minutes === 30 ? 'medium' : 'short'
-                  }))
+                    type: slot.minutes === 30 ? "medium" : "short",
+                  })),
                 ];
-                
+
                 // Ordenar por minutos
                 hourSlots.sort((a, b) => a.minutes - b.minutes);
-                
-                return hourSlots.map(slot => (
-                  <div 
-                    key={`slot-${hour}-${slot.minutes}`} 
+
+                return hourSlots.map((slot) => (
+                  <div
+                    key={`slot-${hour}-${slot.minutes}`}
                     className={`custom-time-slot custom-time-slot-${
-                      slot.minutes === 15 ? 'short' : 
-                      slot.minutes === 30 ? 'medium' : 
-                      slot.minutes === 45 ? 'large' : 
-                      'standard'
+                      slot.minutes === 15
+                        ? "short"
+                        : slot.minutes === 30
+                        ? "medium"
+                        : slot.minutes === 45
+                        ? "large"
+                        : "standard"
                     }`}
                   >
-                    <span>{`${hour}:${slot.minutes.toString().padStart(2, '0')}`}</span>
+                    <span>{`${hour}:${slot.minutes
+                      .toString()
+                      .padStart(2, "0")}`}</span>
                     {slot.minutes > 0 && (
                       <div className="custom-time-slot-actions">
                         <button
@@ -143,13 +148,16 @@ const TimeSlotEditor = () => {
         </div>
       ) : (
         <div className="custom-time-empty">
-          <p>No hay franjas horarias personalizadas. Añade tu primera franja para comenzar.</p>
+          <p>
+            No hay franjas horarias personalizadas. Añade tu primera franja para
+            comenzar.
+          </p>
         </div>
       )}
 
       {/* Botón para mostrar el formulario */}
       {!showForm && (
-        <button 
+        <button
           className="add-custom-slot-button"
           onClick={() => setShowForm(true)}
         >
@@ -165,13 +173,13 @@ const TimeSlotEditor = () => {
             <div className="custom-slot-form-row">
               <div className="custom-slot-form-field">
                 <label htmlFor="slot-hour">Hora</label>
-                <select 
+                <select
                   id="slot-hour"
                   name="hour"
                   value={formValues.hour}
                   onChange={handleFormChange}
                 >
-                  {hourOptions.map(hour => (
+                  {hourOptions.map((hour) => (
                     <option key={`hour-option-${hour}`} value={hour}>
                       {hour}:00
                     </option>
@@ -180,13 +188,13 @@ const TimeSlotEditor = () => {
               </div>
               <div className="custom-slot-form-field">
                 <label htmlFor="slot-minutes">Minutos</label>
-                <select 
+                <select
                   id="slot-minutes"
                   name="minutes"
                   value={formValues.minutes}
                   onChange={handleFormChange}
                 >
-                  {minuteOptions.map(minutes => (
+                  {minuteOptions.map((minutes) => (
                     <option key={`minutes-option-${minutes}`} value={minutes}>
                       {minutes}
                     </option>
@@ -195,17 +203,14 @@ const TimeSlotEditor = () => {
               </div>
             </div>
             <div className="custom-slot-form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="cancel-button"
                 onClick={handleCancelForm}
               >
                 Cancelar
               </button>
-              <button 
-                type="submit" 
-                className="save-button"
-              >
+              <button type="submit" className="save-button">
                 Guardar
               </button>
             </div>
@@ -217,9 +222,16 @@ const TimeSlotEditor = () => {
         <h4>Sobre las franjas horarias</h4>
         <ul>
           <li>Puedes crear franjas de 15, 30 o 45 minutos.</li>
-          <li>También puedes agregar franjas intermedias directamente en el calendario haciendo clic en el botón "+" que aparece entre dos franjas.</li>
+          <li>
+            También puedes agregar franjas intermedias directamente en el
+            calendario haciendo clic en el botón "+" que aparece entre dos
+            franjas.
+          </li>
           <li>La franja más pequeña permitida es de 15 minutos.</li>
-          <li>Las franjas personalizadas aparecerán en el calendario con un sombreado distinto para diferenciarlas.</li>
+          <li>
+            Las franjas personalizadas aparecerán en el calendario con un
+            sombreado distinto para diferenciarlas.
+          </li>
         </ul>
       </div>
     </div>

@@ -34,7 +34,7 @@
 .settings-sections .sidebar-item-icon .material-icons {
   font-size: 20px;
   color: var(--color-text);
-  transition: color .2s;
+  transition: color 0.2s;
 }
 
 .settings-sections .sidebar-item.active .sidebar-item-icon .material-icons,
@@ -64,24 +64,24 @@
   .settings-panel {
     flex-direction: column;
   }
-  
+
   .settings-sidebar {
     width: 100%;
     border-right: none;
     border-bottom: 1px solid var(--color-border);
     padding: 15px 0;
   }
-  
+
   .settings-title {
     margin-bottom: 10px;
   }
-  
+
   .settings-sections {
     flex-direction: row;
     overflow-x: auto;
     padding: 0 10px;
   }
-  
+
   .settings-sections .sidebar-item {
     padding: 8px 12px;
     white-space: nowrap;

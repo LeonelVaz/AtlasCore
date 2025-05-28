@@ -54,7 +54,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: .8rem;
+  font-size: 0.8rem;
   color: var(--color-calendar-time-label);
   border-right: 2px solid var(--color-calendar-grid-border);
   background-color: var(--color-calendar-header);
@@ -66,7 +66,7 @@
   padding: 0;
   overflow: visible;
   background-color: var(--color-calendar-grid);
-  transition: background-color .2s ease;
+  transition: background-color 0.2s ease;
   cursor: pointer;
 }
 
@@ -81,8 +81,8 @@
 
 /* Estados de arrastre */
 .drag-target-active {
-  background-color: rgba(41,98,255,.15) !important;
-  box-shadow: inset 0 0 0 2px rgba(41,98,255,.5);
+  background-color: rgba(41, 98, 255, 0.15) !important;
+  box-shadow: inset 0 0 0 2px rgba(41, 98, 255, 0.5);
   transition: none !important;
   position: relative;
   z-index: 5;
@@ -94,17 +94,17 @@ body.dragging-active .calendar-time-slot:hover:not(.drag-target-active) {
 
 /* Límite de eventos */
 .exceed-limit {
-  background-color: rgba(229,57,53,.1);
+  background-color: rgba(229, 57, 53, 0.1);
 }
 
 .exceed-limit-slot {
-  background-color: rgba(229,57,53,.15);
-  border: 1px dashed rgba(229,57,53,.5);
+  background-color: rgba(229, 57, 53, 0.15);
+  border: 1px dashed rgba(229, 57, 53, 0.5);
 }
 
 .calendar-event.cannot-place {
-  opacity: .6 !important;
-  border: 1px dashed rgba(229,57,53,.8);
+  opacity: 0.6 !important;
+  border: 1px dashed rgba(229, 57, 53, 0.8);
 }
 
 @media (max-width: 768px) {
@@ -112,9 +112,9 @@ body.dragging-active .calendar-time-slot:hover:not(.drag-target-active) {
   .calendar-time {
     flex: 0 0 50px;
   }
-  
+
   .calendar-day-header {
-    font-size: .8rem;
+    font-size: 0.8rem;
     padding: var(--spacing-xs);
   }
 }

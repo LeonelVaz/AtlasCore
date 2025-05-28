@@ -1,28 +1,31 @@
-import React from 'react';
-import useTheme from '../../hooks/use-theme';
+import React from "react";
+import useTheme from "../../hooks/use-theme";
 
 /**
  * Componente para la configuración de temas
  */
 const ThemeConfig = () => {
   const { currentTheme, availableThemes, changeTheme } = useTheme();
-  
+
   const handleThemeChange = (themeId) => {
     changeTheme(themeId);
   };
-  
+
   return (
     <div className="theme-config">
       <h3 className="theme-config-title">Tema de la Aplicación</h3>
       <p className="theme-config-description">
-        Elige el tema que más te guste para personalizar la apariencia de la aplicación.
+        Elige el tema que más te guste para personalizar la apariencia de la
+        aplicación.
       </p>
-      
+
       <div className="theme-options">
-        {availableThemes.map(theme => (
-          <div 
+        {availableThemes.map((theme) => (
+          <div
             key={theme.id}
-            className={`theme-option ${currentTheme === theme.id ? 'selected' : ''}`}
+            className={`theme-option ${
+              currentTheme === theme.id ? "selected" : ""
+            }`}
             onClick={() => handleThemeChange(theme.id)}
           >
             <div className={`theme-preview ${theme.id}`}>
@@ -51,7 +54,7 @@ const ThemeConfig = () => {
           </div>
         ))}
       </div>
-      
+
       <div className="theme-section">
         <h3 className="theme-section-title">Estilo de Encabezados de Días</h3>
         <p className="theme-section-description">
@@ -61,11 +64,14 @@ const ThemeConfig = () => {
           Esta funcionalidad se implementará próximamente
         </div>
       </div>
-      
+
       <div className="theme-section">
-        <h3 className="theme-section-title">Visualización de Hora en Eventos</h3>
+        <h3 className="theme-section-title">
+          Visualización de Hora en Eventos
+        </h3>
         <p className="theme-section-description">
-          Configura cómo se muestra la hora dentro de los eventos del calendario.
+          Configura cómo se muestra la hora dentro de los eventos del
+          calendario.
         </p>
         <div className="theme-section-placeholder">
           Esta funcionalidad se implementará próximamente

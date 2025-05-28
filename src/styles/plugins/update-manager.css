@@ -69,13 +69,15 @@
   color: var(--color-heading);
 }
 
-.updates-list, .history-list {
+.updates-list,
+.history-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.update-item, .history-item {
+.update-item,
+.history-item {
   display: flex;
   justify-content: space-between;
   padding: 15px;
@@ -88,11 +90,13 @@
   border-left: 3px solid var(--color-warning);
 }
 
-.update-info, .history-info {
+.update-info,
+.history-info {
   flex: 1;
 }
 
-.update-name, .history-name {
+.update-name,
+.history-name {
   font-weight: 600;
   color: var(--color-heading);
   font-size: 1.05rem;
@@ -120,18 +124,22 @@
   color: var(--color-text-tertiary);
 }
 
-.update-detected, .history-count, .history-last-update {
+.update-detected,
+.history-count,
+.history-last-update {
   font-size: 0.85rem;
   color: var(--color-text-tertiary);
 }
 
-.update-actions, .history-actions {
+.update-actions,
+.history-actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.no-updates, .no-history {
+.no-updates,
+.no-history {
   text-align: center;
   padding: 20px;
   background: var(--bg-color-tertiary);

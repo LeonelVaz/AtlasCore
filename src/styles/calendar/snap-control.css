@@ -12,7 +12,7 @@
   color: var(--color-button-secondary-text);
   border: none;
   cursor: pointer;
-  transition: all .2s;
+  transition: all 0.2s;
 }
 
 .snap-control-toggle {
@@ -38,7 +38,7 @@
 }
 
 .snap-value-indicator:hover {
-  background-color: rgba(255,255,255,.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .snap-icon {
@@ -58,13 +58,13 @@
   z-index: 100;
   margin-top: 4px;
   overflow: hidden;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 .snap-option {
   padding: 6px 10px;
   cursor: pointer;
-  transition: background-color .2s;
+  transition: background-color 0.2s;
   color: var(--color-text);
 }
 
@@ -96,11 +96,11 @@
   background-color: var(--color-input-bg);
   color: var(--color-text);
   border: 1px solid var(--color-border);
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 .snap-custom-input span {
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 .snap-apply-custom {
@@ -111,7 +111,7 @@
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 .snap-apply-custom:hover {
@@ -121,5 +121,5 @@
 /* Transiciones durante snap */
 .snap-active .calendar-time-slot,
 .snap-active .day-view-hour-slot {
-  transition: background-color .05s;
+  transition: background-color 0.05s;
 }

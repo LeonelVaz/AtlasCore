@@ -2,8 +2,8 @@
  * Servicio de almacenamiento abstracto unificado (web o escritorio)
  */
 
-import eventBus, { EventCategories } from '../core/bus/event-bus';
-import { STORAGE_KEYS } from '../core/config/constants';
+import eventBus, { EventCategories } from "../core/bus/event-bus";
+import { STORAGE_KEYS } from "../core/config/constants";
 
 // Detectar entorno Electron
 const isElectron = () => window && window.process && window.process.type;
@@ -18,7 +18,7 @@ class StorageService {
     try {
       isElectron() ? this.initElectronStore() : this.initLocalStorage();
     } catch (error) {
-      console.error('Error al inicializar almacenamiento:', error);
+      console.error("Error al inicializar almacenamiento:", error);
       this.initLocalStorage(); // Fallback a localStorage
     }
   }
@@ -33,7 +33,7 @@ class StorageService {
           return defaultValue;
         }
       },
-      
+
       set: (key, value) => {
         try {
           localStorage.setItem(key, JSON.stringify(value));
@@ -42,7 +42,7 @@ class StorageService {
           return false;
         }
       },
-      
+
       remove: (key) => {
         try {
           localStorage.removeItem(key);
@@ -51,7 +51,7 @@ class StorageService {
           return false;
         }
       },
-      
+
       clear: () => {
         try {
           localStorage.clear();
@@ -59,7 +59,7 @@ class StorageService {
         } catch (error) {
           return false;
         }
-      }
+      },
     };
   }
 
@@ -74,7 +74,7 @@ class StorageService {
             return defaultValue;
           }
         },
-        
+
         set: async (key, value) => {
           try {
             await window.electron.store.set(key, value);
@@ -83,7 +83,7 @@ class StorageService {
             return false;
           }
         },
-        
+
         remove: async (key) => {
           try {
             await window.electron.store.delete(key);
@@ -92,7 +92,7 @@ class StorageService {
             return false;
           }
         },
-        
+
         clear: async () => {
           try {
             await window.electron.store.clear();
@@ -100,7 +100,7 @@ class StorageService {
           } catch (error) {
             return false;
           }
-        }
+        },
       };
     } else {
       this.initLocalStorage();
@@ -122,15 +122,18 @@ class StorageService {
 
     try {
       const result = await this.storageAdapter.set(key, value);
-      
+
       if (result) {
-        eventBus.publish(`${EventCategories.STORAGE}.dataChanged`, { key, value });
-        
+        eventBus.publish(`${EventCategories.STORAGE}.dataChanged`, {
+          key,
+          value,
+        });
+
         if (key === STORAGE_KEYS.EVENTS) {
           eventBus.publish(`${EventCategories.STORAGE}.eventsUpdated`, value);
         }
       }
-      
+
       return result;
     } catch (error) {
       return false;
@@ -142,11 +145,11 @@ class StorageService {
 
     try {
       const result = await this.storageAdapter.remove(key);
-      
+
       if (result) {
         eventBus.publish(`${EventCategories.STORAGE}.dataRemoved`, { key });
       }
-      
+
       return result;
     } catch (error) {
       return false;
@@ -158,11 +161,11 @@ class StorageService {
 
     try {
       const result = await this.storageAdapter.clear();
-      
+
       if (result) {
         eventBus.publish(`${EventCategories.STORAGE}.dataCleared`, {});
       }
-      
+
       return result;
     } catch (error) {
       return false;

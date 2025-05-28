@@ -6,9 +6,9 @@
   color: white;
   border-radius: 4px;
   padding: 4px;
-  font-size: .85rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   z-index: 10;
   display: flex;
@@ -18,13 +18,13 @@
 }
 
 .calendar-event:hover {
-  box-shadow: 0 3px 6px rgba(0,0,0,.25);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
 }
 
 /* Estados */
 .calendar-event.dragging,
 .calendar-event.resizing {
-  opacity: .8;
+  opacity: 0.8;
   z-index: 100;
 }
 
@@ -41,12 +41,12 @@
   right: 0;
   height: 8px;
   cursor: ns-resize;
-  background: rgba(255,255,255,.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 0 0 4px 4px;
 }
 
 .event-resize-handle:hover {
-  background: rgba(255,255,255,.5);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* Contenido */
@@ -59,8 +59,8 @@
 }
 
 .event-time {
-  font-size: .75rem;
-  opacity: .9;
+  font-size: 0.75rem;
+  opacity: 0.9;
 }
 
 /* Wrapper */
@@ -102,19 +102,19 @@
 .calendar-event.continues-next-day {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  border-bottom: 2px dashed rgba(255,255,255,.5);
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.5);
 }
 
 .calendar-event.continues-from-prev-day {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  border-top: 2px dashed rgba(255,255,255,.5);
+  border-top: 2px dashed rgba(255, 255, 255, 0.5);
 }
 
 .event-wrapper.continues-next-day .calendar-event {
-  box-shadow: 0 4px 0 -2px rgba(0,0,0,.2);
+  box-shadow: 0 4px 0 -2px rgba(0, 0, 0, 0.2);
 }
 
 .event-wrapper.continues-from-prev-day .calendar-event {
-  box-shadow: 0 -4px 0 -2px rgba(0,0,0,.2);
+  box-shadow: 0 -4px 0 -2px rgba(0, 0, 0, 0.2);
 }

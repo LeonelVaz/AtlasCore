@@ -1,25 +1,23 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-
+import React, { useState, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 
 /**
  * Componente de diálogo personalizado que reemplaza alert(), confirm() y prompt()
  * Funciona tanto en web como en Electron sin problemas de foco
  */
-const CustomDialog = ({ 
-  isOpen, 
-  type, 
-  title, 
-  message, 
+const CustomDialog = ({
+  isOpen,
+  type,
+  title,
+  message,
   defaultValue,
-  confirmText = 'Aceptar',
-  cancelText = 'Cancelar',
+  confirmText = "Aceptar",
+  cancelText = "Cancelar",
   onConfirm,
   onCancel,
-  onClose
+  onClose,
 }) => {
-  const [inputValue, setInputValue] = useState(defaultValue || '');
+  const [inputValue, setInputValue] = useState(defaultValue || "");
   const [isVisible, setIsVisible] = useState(false);
   const inputRef = useRef(null);
   const dialogRef = useRef(null);
@@ -29,7 +27,7 @@ const CustomDialog = ({
     if (isOpen) {
       setIsVisible(true);
       // Enfocar input si es un prompt
-      if (type === 'prompt' && inputRef.current) {
+      if (type === "prompt" && inputRef.current) {
         setTimeout(() => {
           inputRef.current.focus();
           inputRef.current.select();
@@ -45,12 +43,12 @@ const CustomDialog = ({
     const handleKeyDown = (e) => {
       if (!isOpen) return;
 
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         handleCancel();
-      } else if (e.key === 'Enter') {
-        if (type === 'prompt') {
+      } else if (e.key === "Enter") {
+        if (type === "prompt") {
           // Solo confirmar si no estamos en un textarea
-          if (e.target.tagName !== 'TEXTAREA') {
+          if (e.target.tagName !== "TEXTAREA") {
             handleConfirm();
           }
         } else {
@@ -60,29 +58,29 @@ const CustomDialog = ({
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, type, inputValue]);
 
   // Prevenir scroll del body cuando el diálogo está abierto
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
   const handleConfirm = () => {
-    if (type === 'prompt') {
+    if (type === "prompt") {
       onConfirm(inputValue);
     } else {
       onConfirm(true);
@@ -90,7 +88,7 @@ const CustomDialog = ({
   };
 
   const handleCancel = () => {
-    if (type === 'alert') {
+    if (type === "alert") {
       onClose();
     } else {
       onCancel(false);
@@ -103,7 +101,7 @@ const CustomDialog = ({
 
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
-      if (type === 'alert') {
+      if (type === "alert") {
         handleConfirm();
       } else {
         handleCancel();
@@ -114,11 +112,11 @@ const CustomDialog = ({
   if (!isOpen) return null;
 
   return (
-    <div 
-      className={`custom-dialog-overlay ${isVisible ? 'visible' : ''}`}
+    <div
+      className={`custom-dialog-overlay ${isVisible ? "visible" : ""}`}
       onClick={handleBackdropClick}
     >
-      <div 
+      <div
         ref={dialogRef}
         className={`custom-dialog custom-dialog-${type}`}
         role="dialog"
@@ -144,7 +142,7 @@ const CustomDialog = ({
           )}
 
           {/* Input para prompt */}
-          {type === 'prompt' && (
+          {type === "prompt" && (
             <div className="custom-dialog-input-container">
               <input
                 ref={inputRef}
@@ -160,7 +158,7 @@ const CustomDialog = ({
 
         {/* Botones */}
         <div className="custom-dialog-footer">
-          {type === 'alert' ? (
+          {type === "alert" ? (
             <button
               className="custom-dialog-button custom-dialog-button-primary"
               onClick={handleConfirm}
@@ -179,7 +177,7 @@ const CustomDialog = ({
               <button
                 className="custom-dialog-button custom-dialog-button-primary"
                 onClick={handleConfirm}
-                autoFocus={type !== 'prompt'}
+                autoFocus={type !== "prompt"}
               >
                 {confirmText}
               </button>
@@ -193,7 +191,7 @@ const CustomDialog = ({
 
 CustomDialog.propTypes = {
   isOpen: PropTypes.bool.isRequired,
-  type: PropTypes.oneOf(['alert', 'confirm', 'prompt']).isRequired,
+  type: PropTypes.oneOf(["alert", "confirm", "prompt"]).isRequired,
   title: PropTypes.string,
   message: PropTypes.string.isRequired,
   defaultValue: PropTypes.string,
@@ -201,7 +199,7 @@ CustomDialog.propTypes = {
   cancelText: PropTypes.string,
   onConfirm: PropTypes.func.isRequired,
   onCancel: PropTypes.func,
-  onClose: PropTypes.func
+  onClose: PropTypes.func,
 };
 
 export default CustomDialog;

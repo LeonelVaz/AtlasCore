@@ -1,30 +1,33 @@
 // rich-text-editor.jsx
 
-import React, { useState, useRef, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useRef, useEffect } from "react";
+import PropTypes from "prop-types";
 
 /**
  * Editor de texto enriquecido para plugins de Atlas
  * Proporciona herramientas básicas de formato (negrita, cursiva, listas, enlaces, etc.)
  */
-function RichTextEditor({ 
-  value, 
-  onChange, 
-  placeholder = 'Escribe aquí...', 
-  height = '200px',
-  toolbar = 'full',
-  className = ''
+function RichTextEditor({
+  value,
+  onChange,
+  placeholder = "Escribe aquí...",
+  height = "200px",
+  toolbar = "full",
+  className = "",
 }) {
-  const [htmlContent, setHtmlContent] = useState(value || '');
+  const [htmlContent, setHtmlContent] = useState(value || "");
   const editorRef = useRef(null);
   const toolbarRef = useRef(null);
   const isInitialized = useRef(false);
-  
+
   // Solo sincronizar valor externo al inicializar o cuando cambia externamente
   useEffect(() => {
     if (editorRef.current && value !== undefined) {
       // Solo actualizar si es la primera vez o si el valor cambió desde fuera
-      if (!isInitialized.current || (value !== htmlContent && value !== editorRef.current.innerHTML)) {
+      if (
+        !isInitialized.current ||
+        (value !== htmlContent && value !== editorRef.current.innerHTML)
+      ) {
         editorRef.current.innerHTML = value;
         setHtmlContent(value);
         isInitialized.current = true;
@@ -53,22 +56,22 @@ function RichTextEditor({
   // Crear enlaces
   const createLink = () => {
     const selection = window.getSelection();
-    if (selection.rangeCount === 0 || selection.toString().trim() === '') {
-      alert('Por favor, selecciona el texto que quieres convertir en enlace');
+    if (selection.rangeCount === 0 || selection.toString().trim() === "") {
+      alert("Por favor, selecciona el texto que quieres convertir en enlace");
       return;
     }
-    
-    const url = prompt('Ingresa la URL del enlace:', 'https://');
+
+    const url = prompt("Ingresa la URL del enlace:", "https://");
     if (url) {
-      execCommand('createLink', url);
+      execCommand("createLink", url);
     }
   };
 
   // Insertar imagen
   const insertImage = () => {
-    const url = prompt('Ingresa la URL de la imagen:', 'https://');
+    const url = prompt("Ingresa la URL de la imagen:", "https://");
     if (url) {
-      execCommand('insertImage', url);
+      execCommand("insertImage", url);
     }
   };
 
@@ -76,17 +79,17 @@ function RichTextEditor({
   const handleKeyDown = (e) => {
     if (e.ctrlKey || e.metaKey) {
       switch (e.key.toLowerCase()) {
-        case 'b':
+        case "b":
           e.preventDefault();
-          execCommand('bold');
+          execCommand("bold");
           break;
-        case 'i':
+        case "i":
           e.preventDefault();
-          execCommand('italic');
+          execCommand("italic");
           break;
-        case 'u':
+        case "u":
           e.preventDefault();
-          execCommand('underline');
+          execCommand("underline");
           break;
         default:
           break;
@@ -97,16 +100,28 @@ function RichTextEditor({
   // Renderizar controles según el tipo de barra de herramientas
   const renderToolbar = () => {
     // Barra de herramientas mínima
-    if (toolbar === 'minimal') {
+    if (toolbar === "minimal") {
       return (
         <div className="rich-editor-toolbar" ref={toolbarRef}>
-          <button type="button" onClick={() => execCommand('bold')} title="Negrita (Ctrl+B)">
+          <button
+            type="button"
+            onClick={() => execCommand("bold")}
+            title="Negrita (Ctrl+B)"
+          >
             <span className="material-icons">format_bold</span>
           </button>
-          <button type="button" onClick={() => execCommand('italic')} title="Cursiva (Ctrl+I)">
+          <button
+            type="button"
+            onClick={() => execCommand("italic")}
+            title="Cursiva (Ctrl+I)"
+          >
             <span className="material-icons">format_italic</span>
           </button>
-          <button type="button" onClick={() => execCommand('underline')} title="Subrayado (Ctrl+U)">
+          <button
+            type="button"
+            onClick={() => execCommand("underline")}
+            title="Subrayado (Ctrl+U)"
+          >
             <span className="material-icons">format_underlined</span>
           </button>
           <span className="toolbar-separator"></span>
@@ -122,13 +137,25 @@ function RichTextEditor({
       <div className="rich-editor-toolbar" ref={toolbarRef}>
         {/* Formato básico */}
         <div className="toolbar-group">
-          <button type="button" onClick={() => execCommand('bold')} title="Negrita (Ctrl+B)">
+          <button
+            type="button"
+            onClick={() => execCommand("bold")}
+            title="Negrita (Ctrl+B)"
+          >
             <span className="material-icons">format_bold</span>
           </button>
-          <button type="button" onClick={() => execCommand('italic')} title="Cursiva (Ctrl+I)">
+          <button
+            type="button"
+            onClick={() => execCommand("italic")}
+            title="Cursiva (Ctrl+I)"
+          >
             <span className="material-icons">format_italic</span>
           </button>
-          <button type="button" onClick={() => execCommand('underline')} title="Subrayado (Ctrl+U)">
+          <button
+            type="button"
+            onClick={() => execCommand("underline")}
+            title="Subrayado (Ctrl+U)"
+          >
             <span className="material-icons">format_underlined</span>
           </button>
         </div>
@@ -137,13 +164,25 @@ function RichTextEditor({
 
         {/* Alineación */}
         <div className="toolbar-group">
-          <button type="button" onClick={() => execCommand('justifyLeft')} title="Alinear a la izquierda">
+          <button
+            type="button"
+            onClick={() => execCommand("justifyLeft")}
+            title="Alinear a la izquierda"
+          >
             <span className="material-icons">format_align_left</span>
           </button>
-          <button type="button" onClick={() => execCommand('justifyCenter')} title="Centrar">
+          <button
+            type="button"
+            onClick={() => execCommand("justifyCenter")}
+            title="Centrar"
+          >
             <span className="material-icons">format_align_center</span>
           </button>
-          <button type="button" onClick={() => execCommand('justifyRight')} title="Alinear a la derecha">
+          <button
+            type="button"
+            onClick={() => execCommand("justifyRight")}
+            title="Alinear a la derecha"
+          >
             <span className="material-icons">format_align_right</span>
           </button>
         </div>
@@ -152,10 +191,18 @@ function RichTextEditor({
 
         {/* Listas */}
         <div className="toolbar-group">
-          <button type="button" onClick={() => execCommand('insertUnorderedList')} title="Lista con viñetas">
+          <button
+            type="button"
+            onClick={() => execCommand("insertUnorderedList")}
+            title="Lista con viñetas"
+          >
             <span className="material-icons">format_list_bulleted</span>
           </button>
-          <button type="button" onClick={() => execCommand('insertOrderedList')} title="Lista numerada">
+          <button
+            type="button"
+            onClick={() => execCommand("insertOrderedList")}
+            title="Lista numerada"
+          >
             <span className="material-icons">format_list_numbered</span>
           </button>
         </div>
@@ -176,13 +223,25 @@ function RichTextEditor({
 
         {/* Formato avanzado */}
         <div className="toolbar-group">
-          <button type="button" onClick={() => execCommand('formatBlock', '<h2>')} title="Encabezado">
+          <button
+            type="button"
+            onClick={() => execCommand("formatBlock", "<h2>")}
+            title="Encabezado"
+          >
             <span className="material-icons">title</span>
           </button>
-          <button type="button" onClick={() => execCommand('formatBlock', '<blockquote>')} title="Cita">
+          <button
+            type="button"
+            onClick={() => execCommand("formatBlock", "<blockquote>")}
+            title="Cita"
+          >
             <span className="material-icons">format_quote</span>
           </button>
-          <button type="button" onClick={() => execCommand('removeFormat')} title="Eliminar formato">
+          <button
+            type="button"
+            onClick={() => execCommand("removeFormat")}
+            title="Eliminar formato"
+          >
             <span className="material-icons">format_clear</span>
           </button>
         </div>
@@ -193,7 +252,7 @@ function RichTextEditor({
   return (
     <div className={`rich-text-editor ${className}`}>
       {renderToolbar()}
-      <div 
+      <div
         ref={editorRef}
         className="rich-editor-content"
         contentEditable="true"
@@ -214,8 +273,8 @@ RichTextEditor.propTypes = {
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
   height: PropTypes.string,
-  toolbar: PropTypes.oneOf(['full', 'minimal']),
-  className: PropTypes.string
+  toolbar: PropTypes.oneOf(["full", "minimal"]),
+  className: PropTypes.string,
 };
 
 export default RichTextEditor;

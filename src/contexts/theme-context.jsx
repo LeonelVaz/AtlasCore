@@ -1,8 +1,8 @@
 // src/contexts/theme-context.jsx
-import React, { createContext, useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import themeService from '../services/theme-service';
-import { THEMES } from '../core/config/constants';
+import React, { createContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import themeService from "../services/theme-service";
+import { THEMES } from "../core/config/constants";
 
 // Crear el contexto
 export const ThemeContext = createContext();
@@ -26,12 +26,12 @@ export const ThemeProvider = ({ children }) => {
         // Inicializar el servicio de temas
         const theme = await themeService.initialize();
         setCurrentTheme(theme);
-        
+
         // Obtener los temas disponibles
         const themes = themeService.getAvailableThemes();
         setAvailableThemes(themes);
       } catch (error) {
-        console.error('Error al inicializar el tema:', error);
+        console.error("Error al inicializar el tema:", error);
       } finally {
         setLoading(false);
       }
@@ -49,7 +49,7 @@ export const ThemeProvider = ({ children }) => {
       }
       return success;
     } catch (error) {
-      console.error('Error al cambiar el tema:', error);
+      console.error("Error al cambiar el tema:", error);
       return false;
     }
   };
@@ -59,18 +59,16 @@ export const ThemeProvider = ({ children }) => {
     currentTheme,
     availableThemes,
     changeTheme,
-    loading
+    loading,
   };
 
   return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 };
 
 ThemeProvider.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 export default ThemeProvider;

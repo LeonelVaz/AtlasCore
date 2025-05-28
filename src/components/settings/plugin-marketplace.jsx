@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import Button from '../ui/button';
-import Dialog from '../ui/dialog';
-import pluginRepositoryManager from '../../core/plugins/plugin-repository-manager';
-import pluginPackageManager from '../../core/plugins/plugin-package-manager';
-import pluginManager from '../../core/plugins/plugin-manager';
-import pluginUpdateManager from '../../core/plugins/plugin-update-manager';
-import eventBus from '../../core/bus/event-bus';
+import React, { useState, useEffect } from "react";
+import Button from "../ui/button";
+import Dialog from "../ui/dialog";
+import pluginRepositoryManager from "../../core/plugins/plugin-repository-manager";
+import pluginPackageManager from "../../core/plugins/plugin-package-manager";
+import pluginManager from "../../core/plugins/plugin-manager";
+import pluginUpdateManager from "../../core/plugins/plugin-update-manager";
+import eventBus from "../../core/bus/event-bus";
 
 /**
  * Componente para la tienda de plugins
@@ -18,11 +18,11 @@ const PluginMarketplace = ({ onBack }) => {
   // Estado de carga
   const [loading, setLoading] = useState(true);
   // Estado de búsqueda
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   // Estado para filtro
   const [filterInstalled, setFilterInstalled] = useState(false);
   // Estado para ordenamiento
-  const [sortOrder, setSortOrder] = useState('popular'); // 'popular', 'recent', 'name'
+  const [sortOrder, setSortOrder] = useState("popular"); // 'popular', 'recent', 'name'
   // Estado para diálogo de detalles
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   // Plugin seleccionado para detalles
@@ -30,7 +30,7 @@ const PluginMarketplace = ({ onBack }) => {
   // Estado para operación en progreso
   const [operationInProgress, setOperationInProgress] = useState({
     type: null, // 'install', 'update', 'uninstall'
-    pluginId: null
+    pluginId: null,
   });
   // Estado para error
   const [error, setError] = useState(null);
@@ -42,56 +42,64 @@ const PluginMarketplace = ({ onBack }) => {
     async function loadMarketplaceData() {
       try {
         setLoading(true);
-        
+
         // Inicializar managers si no lo están
         if (!pluginRepositoryManager.initialized) {
           await pluginRepositoryManager.initialize();
         }
-        
+
         if (!pluginPackageManager.initialized) {
           await pluginPackageManager.initialize();
         }
-        
+
         if (!pluginUpdateManager.initialized) {
           await pluginUpdateManager.initialize();
         }
-        
+
         // Obtener plugins instalados
         const installed = pluginPackageManager.getInstalledPlugins();
         setInstalledPlugins(installed);
-        
+
         // Buscar plugins disponibles
-        await searchPlugins('');
-        
+        await searchPlugins("");
       } catch (error) {
-        console.error('Error al cargar datos del marketplace:', error);
-        setError('No se pudieron cargar los datos del marketplace');
+        console.error("Error al cargar datos del marketplace:", error);
+        setError("No se pudieron cargar los datos del marketplace");
       } finally {
         setLoading(false);
       }
     }
-    
+
     loadMarketplaceData();
-    
+
     // Suscribirse a eventos
-    const unsubscribeInstalled = eventBus.subscribe('pluginSystem.pluginInstalled', ({ pluginId }) => {
-      setInstalledPlugins(prev => ({ ...prev }));
-      refreshPluginList();
-    });
-    
-    const unsubscribeUninstalled = eventBus.subscribe('pluginSystem.pluginUninstalled', ({ pluginId }) => {
-      setInstalledPlugins(prev => {
-        const newState = { ...prev };
-        delete newState[pluginId];
-        return newState;
-      });
-      refreshPluginList();
-    });
-    
-    const unsubscribeSync = eventBus.subscribe('pluginSystem.repositorySyncCompleted', () => {
-      refreshPluginList();
-    });
-    
+    const unsubscribeInstalled = eventBus.subscribe(
+      "pluginSystem.pluginInstalled",
+      ({ pluginId }) => {
+        setInstalledPlugins((prev) => ({ ...prev }));
+        refreshPluginList();
+      }
+    );
+
+    const unsubscribeUninstalled = eventBus.subscribe(
+      "pluginSystem.pluginUninstalled",
+      ({ pluginId }) => {
+        setInstalledPlugins((prev) => {
+          const newState = { ...prev };
+          delete newState[pluginId];
+          return newState;
+        });
+        refreshPluginList();
+      }
+    );
+
+    const unsubscribeSync = eventBus.subscribe(
+      "pluginSystem.repositorySyncCompleted",
+      () => {
+        refreshPluginList();
+      }
+    );
+
     return () => {
       unsubscribeInstalled();
       unsubscribeUninstalled();
@@ -104,7 +112,7 @@ const PluginMarketplace = ({ onBack }) => {
     try {
       await searchPlugins(searchQuery);
     } catch (error) {
-      console.error('Error al refrescar lista de plugins:', error);
+      console.error("Error al refrescar lista de plugins:", error);
     }
   };
 
@@ -112,17 +120,16 @@ const PluginMarketplace = ({ onBack }) => {
   const searchPlugins = async (query) => {
     try {
       setLoading(true);
-      
+
       // Buscar en repositorios
       const results = await pluginRepositoryManager.searchPlugins(query);
-      
+
       // Actualizar plugins disponibles
       setAvailablePlugins(results);
       setSearchQuery(query);
-      
     } catch (error) {
-      console.error('Error al buscar plugins:', error);
-      setError('No se pudieron buscar plugins');
+      console.error("Error al buscar plugins:", error);
+      setError("No se pudieron buscar plugins");
     } finally {
       setLoading(false);
     }
@@ -132,12 +139,12 @@ const PluginMarketplace = ({ onBack }) => {
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     // Buscar con debounce
     const handler = setTimeout(() => {
       searchPlugins(query);
     }, 300);
-    
+
     return () => clearTimeout(handler);
   };
 
@@ -146,24 +153,24 @@ const PluginMarketplace = ({ onBack }) => {
     try {
       setError(null);
       setOperationInProgress({
-        type: 'install',
-        pluginId: plugin.id
+        type: "install",
+        pluginId: plugin.id,
       });
-      
+
       // En una implementación real, se descargaría el paquete
       // Simulamos una descarga y un paquete
-      
+
       // Obtener manifiesto desde el API del repositorio
       const repositoryId = plugin.repositoryId;
       const repository = pluginRepositoryManager.getRepository(repositoryId);
-      
+
       if (!repository) {
         throw new Error(`Repositorio no encontrado: ${repositoryId}`);
       }
-      
+
       // Simular descarga del paquete
       await simulateNetworkDelay();
-      
+
       // Simular paquete
       const pluginPackage = {
         manifest: {
@@ -172,26 +179,26 @@ const PluginMarketplace = ({ onBack }) => {
           version: plugin.version,
           author: plugin.author,
           description: plugin.description,
-          minAppVersion: plugin.minAppVersion || '0.3.0',
-          maxAppVersion: plugin.maxAppVersion || '1.0.0',
+          minAppVersion: plugin.minAppVersion || "0.3.0",
+          maxAppVersion: plugin.maxAppVersion || "1.0.0",
           dependencies: plugin.dependencies || [],
           conflicts: plugin.conflicts || [],
-          permissions: plugin.permissions || ['storage', 'events', 'ui'],
+          permissions: plugin.permissions || ["storage", "events", "ui"],
           packagedAt: Date.now(),
           packagedBy: repository.name,
           checksums: {},
-          signature: repository.official ? 'simulation' : null
+          signature: repository.official ? "simulation" : null,
         },
         files: {
-          'index.js': {
+          "index.js": {
             content: `export default {
               id: "${plugin.id}",
               name: "${plugin.name}",
               version: "${plugin.version}",
               author: "${plugin.author}",
               description: "${plugin.description}",
-              minAppVersion: "${plugin.minAppVersion || '0.3.0'}",
-              maxAppVersion: "${plugin.maxAppVersion || '1.0.0'}",
+              minAppVersion: "${plugin.minAppVersion || "0.3.0"}",
+              maxAppVersion: "${plugin.maxAppVersion || "1.0.0"}",
               dependencies: [],
               conflicts: [],
               permissions: ["storage", "events", "ui"],
@@ -206,35 +213,34 @@ const PluginMarketplace = ({ onBack }) => {
                 return true;
               }
             }`,
-            type: 'application/javascript'
+            type: "application/javascript",
           },
-          'README.md': {
+          "README.md": {
             content: `# ${plugin.name}\n\n${plugin.description}\n\nAutor: ${plugin.author}\nVersión: ${plugin.version}`,
-            type: 'text/markdown'
-          }
-        }
+            type: "text/markdown",
+          },
+        },
       };
-      
+
       // Instalar plugin
       await pluginPackageManager.installPlugin(pluginPackage);
-      
+
       // Actualizar estado
       setOperationInProgress({
         type: null,
-        pluginId: null
+        pluginId: null,
       });
-      
+
       // Cerrar diálogo si está abierto
       if (showDetailsDialog) {
         setShowDetailsDialog(false);
       }
-      
     } catch (error) {
-      console.error('Error al instalar plugin:', error);
+      console.error("Error al instalar plugin:", error);
       setError(`Error al instalar plugin: ${error.message}`);
       setOperationInProgress({
         type: null,
-        pluginId: null
+        pluginId: null,
       });
     }
   };
@@ -244,30 +250,29 @@ const PluginMarketplace = ({ onBack }) => {
     try {
       setError(null);
       setOperationInProgress({
-        type: 'update',
-        pluginId: plugin.id
+        type: "update",
+        pluginId: plugin.id,
       });
-      
+
       // Actualizar mediante el gestor de actualizaciones
       await pluginUpdateManager.applyUpdate(plugin.id);
-      
+
       // Actualizar estado
       setOperationInProgress({
         type: null,
-        pluginId: null
+        pluginId: null,
       });
-      
+
       // Cerrar diálogo si está abierto
       if (showDetailsDialog) {
         setShowDetailsDialog(false);
       }
-      
     } catch (error) {
-      console.error('Error al actualizar plugin:', error);
+      console.error("Error al actualizar plugin:", error);
       setError(`Error al actualizar plugin: ${error.message}`);
       setOperationInProgress({
         type: null,
-        pluginId: null
+        pluginId: null,
       });
     }
   };
@@ -277,30 +282,29 @@ const PluginMarketplace = ({ onBack }) => {
     try {
       setError(null);
       setOperationInProgress({
-        type: 'uninstall',
-        pluginId: plugin.id
+        type: "uninstall",
+        pluginId: plugin.id,
       });
-      
+
       // Desinstalar plugin
       await pluginPackageManager.uninstallPlugin(plugin.id);
-      
+
       // Actualizar estado
       setOperationInProgress({
         type: null,
-        pluginId: null
+        pluginId: null,
       });
-      
+
       // Cerrar diálogo si está abierto
       if (showDetailsDialog) {
         setShowDetailsDialog(false);
       }
-      
     } catch (error) {
-      console.error('Error al desinstalar plugin:', error);
+      console.error("Error al desinstalar plugin:", error);
       setError(`Error al desinstalar plugin: ${error.message}`);
       setOperationInProgress({
         type: null,
-        pluginId: null
+        pluginId: null,
       });
     }
   };
@@ -320,30 +324,30 @@ const PluginMarketplace = ({ onBack }) => {
   const hasUpdate = (plugin) => {
     const installed = installedPlugins[plugin.id];
     if (!installed) return false;
-    
+
     // Comparar versiones
     return compareVersions(plugin.version, installed.version) > 0;
   };
 
   // Comparar versiones semánticas
   const compareVersions = (v1, v2) => {
-    const parts1 = v1.split('.').map(Number);
-    const parts2 = v2.split('.').map(Number);
-    
+    const parts1 = v1.split(".").map(Number);
+    const parts2 = v2.split(".").map(Number);
+
     for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
       const p1 = parts1[i] || 0;
       const p2 = parts2[i] || 0;
-      
+
       if (p1 < p2) return -1;
       if (p1 > p2) return 1;
     }
-    
+
     return 0;
   };
 
   // Simular retraso de red
   const simulateNetworkDelay = () => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       setTimeout(resolve, Math.random() * 1000 + 500);
     });
   };
@@ -351,40 +355,40 @@ const PluginMarketplace = ({ onBack }) => {
   // Filtrar y ordenar plugins
   const filterAndSortPlugins = () => {
     let filtered = [...availablePlugins];
-    
+
     // Filtrar por instalados
     if (filterInstalled) {
-      filtered = filtered.filter(plugin => isPluginInstalled(plugin.id));
+      filtered = filtered.filter((plugin) => isPluginInstalled(plugin.id));
     }
-    
+
     // Ordenar según criterio
     switch (sortOrder) {
-      case 'popular':
+      case "popular":
         filtered.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
         break;
-      case 'recent':
+      case "recent":
         filtered.sort((a, b) => (b.lastUpdated || 0) - (a.lastUpdated || 0));
         break;
-      case 'name':
+      case "name":
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       default:
         break;
     }
-    
+
     return filtered;
   };
 
   // Renderizar etiqueta de repositorio
   const renderRepositoryBadge = (plugin) => {
-    const isOfficial = plugin.repositoryId === 'atlas-official';
-    
+    const isOfficial = plugin.repositoryId === "atlas-official";
+
     return (
-      <span 
-        className={`repository-badge ${isOfficial ? 'official' : 'community'}`}
+      <span
+        className={`repository-badge ${isOfficial ? "official" : "community"}`}
         title={`Repositorio: ${plugin.repositoryName}`}
       >
-        {isOfficial ? 'Oficial' : 'Comunidad'}
+        {isOfficial ? "Oficial" : "Comunidad"}
       </span>
     );
   };
@@ -393,23 +397,17 @@ const PluginMarketplace = ({ onBack }) => {
   const renderStatusBadge = (plugin) => {
     const installed = isPluginInstalled(plugin.id);
     const update = installed && hasUpdate(plugin);
-    
+
     if (update) {
       return (
-        <span className="status-badge update">
-          Actualización disponible
-        </span>
+        <span className="status-badge update">Actualización disponible</span>
       );
     }
-    
+
     if (installed) {
-      return (
-        <span className="status-badge installed">
-          Instalado
-        </span>
-      );
+      return <span className="status-badge installed">Instalado</span>;
     }
-    
+
     return null;
   };
 
@@ -419,35 +417,32 @@ const PluginMarketplace = ({ onBack }) => {
     const update = installed && hasUpdate(plugin);
     const inProgress = operationInProgress.pluginId === plugin.id;
     const operation = operationInProgress.type;
-    
+
     if (inProgress) {
-      let text = 'Procesando...';
-      
+      let text = "Procesando...";
+
       switch (operation) {
-        case 'install':
-          text = 'Instalando...';
+        case "install":
+          text = "Instalando...";
           break;
-        case 'update':
-          text = 'Actualizando...';
+        case "update":
+          text = "Actualizando...";
           break;
-        case 'uninstall':
-          text = 'Desinstalando...';
+        case "uninstall":
+          text = "Desinstalando...";
           break;
       }
-      
+
       return (
-        <Button 
-          disabled={true}
-          size="small"
-        >
+        <Button disabled={true} size="small">
           {text}
         </Button>
       );
     }
-    
+
     if (update) {
       return (
-        <Button 
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             handleUpdatePlugin(plugin);
@@ -459,10 +454,10 @@ const PluginMarketplace = ({ onBack }) => {
         </Button>
       );
     }
-    
+
     if (installed) {
       return (
-        <Button 
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             handleUninstallPlugin(plugin);
@@ -474,9 +469,9 @@ const PluginMarketplace = ({ onBack }) => {
         </Button>
       );
     }
-    
+
     return (
-      <Button 
+      <Button
         onClick={(e) => {
           e.stopPropagation();
           handleInstallPlugin(plugin);
@@ -497,7 +492,7 @@ const PluginMarketplace = ({ onBack }) => {
         <h2>Marketplace de Plugins</h2>
         <div className="marketplace-controls">
           <div className="search-container">
-            <input 
+            <input
               type="text"
               className="search-input"
               placeholder="Buscar plugins..."
@@ -505,7 +500,7 @@ const PluginMarketplace = ({ onBack }) => {
               onChange={handleSearchChange}
             />
           </div>
-          
+
           <div className="filter-controls">
             <label className="filter-label">
               <input
@@ -515,8 +510,8 @@ const PluginMarketplace = ({ onBack }) => {
               />
               Solo instalados
             </label>
-            
-            <select 
+
+            <select
               className="sort-select"
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
@@ -526,46 +521,43 @@ const PluginMarketplace = ({ onBack }) => {
               <option value="name">Por nombre</option>
             </select>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={() => setShowRepositories(!showRepositories)}
             variant="text"
           >
-            {showRepositories ? 'Ocultar repositorios' : 'Mostrar repositorios'}
+            {showRepositories ? "Ocultar repositorios" : "Mostrar repositorios"}
           </Button>
-          
-          <Button 
-            onClick={onBack}
-            variant="text"
-          >
+
+          <Button onClick={onBack} variant="text">
             Volver
           </Button>
         </div>
       </div>
-      
+
       {error && (
         <div className="error-message">
           <p>{error}</p>
-          <Button 
-            onClick={() => setError(null)}
-            variant="text"
-            size="small"
-          >
+          <Button onClick={() => setError(null)} variant="text" size="small">
             Cerrar
           </Button>
         </div>
       )}
-      
+
       {/* Información de repositorios */}
       {showRepositories && (
         <div className="repositories-info">
           <h3>Repositorios activos</h3>
           <div className="repositories-list-mini">
-            {Object.values(pluginRepositoryManager.getEnabledRepositories()).map(repo => (
+            {Object.values(
+              pluginRepositoryManager.getEnabledRepositories()
+            ).map((repo) => (
               <div key={repo.id} className="repository-item-mini">
                 <div className="repository-item-header">
                   <span className="repository-name">{repo.name}</span>
-                  {repo.official && <span className="repository-badge official">Oficial</span>}
+                  {repo.official && (
+                    <span className="repository-badge official">Oficial</span>
+                  )}
                 </div>
                 <div className="repository-item-info">
                   <span className="repository-url">{repo.url}</span>
@@ -575,7 +567,7 @@ const PluginMarketplace = ({ onBack }) => {
           </div>
         </div>
       )}
-      
+
       {loading ? (
         <div className="marketplace-loading">
           <p>Cargando plugins disponibles...</p>
@@ -587,27 +579,31 @@ const PluginMarketplace = ({ onBack }) => {
               <p>No se encontraron plugins.</p>
             </div>
           ) : (
-            filteredPlugins.map(plugin => (
-              <div 
-                key={plugin.id} 
-                className={`plugin-card ${isPluginInstalled(plugin.id) ? 'installed' : ''} ${hasUpdate(plugin) ? 'has-update' : ''}`}
+            filteredPlugins.map((plugin) => (
+              <div
+                key={plugin.id}
+                className={`plugin-card ${
+                  isPluginInstalled(plugin.id) ? "installed" : ""
+                } ${hasUpdate(plugin) ? "has-update" : ""}`}
                 onClick={() => showPluginDetails(plugin)}
               >
                 <div className="plugin-card-header">
                   <h3 className="plugin-name">{plugin.name}</h3>
                   {renderRepositoryBadge(plugin)}
                 </div>
-                
+
                 <p className="plugin-description">{plugin.description}</p>
-                
+
                 <div className="plugin-meta">
                   <span className="plugin-author">Por {plugin.author}</span>
                   <span className="plugin-version">v{plugin.version}</span>
                   {plugin.downloads && (
-                    <span className="plugin-downloads">{plugin.downloads} descargas</span>
+                    <span className="plugin-downloads">
+                      {plugin.downloads} descargas
+                    </span>
                   )}
                 </div>
-                
+
                 <div className="plugin-footer">
                   {renderStatusBadge(plugin)}
                   {renderActionButton(plugin)}
@@ -617,29 +613,31 @@ const PluginMarketplace = ({ onBack }) => {
           )}
         </div>
       )}
-      
+
       {/* Diálogo de detalles del plugin - CORREGIDO */}
       {showDetailsDialog && selectedPlugin && (
         <Dialog
           isOpen={true}
           onClose={() => setShowDetailsDialog(false)}
-          title={selectedPlugin.name || 'Detalles del Plugin'}
+          title={selectedPlugin.name || "Detalles del Plugin"}
         >
           <div className="plugin-details">
             <div className="plugin-detail-header">
               <h3>{selectedPlugin.name}</h3>
               {renderRepositoryBadge(selectedPlugin)}
             </div>
-            
+
             <div className="plugin-detail-version">
               <span className="plugin-author">Por {selectedPlugin.author}</span>
-              <span className="plugin-version">Versión {selectedPlugin.version}</span>
+              <span className="plugin-version">
+                Versión {selectedPlugin.version}
+              </span>
             </div>
-            
+
             <div className="plugin-detail-description">
               {selectedPlugin.description}
             </div>
-            
+
             <div className="plugin-detail-meta">
               {selectedPlugin.downloads && (
                 <div className="meta-item">
@@ -647,53 +645,69 @@ const PluginMarketplace = ({ onBack }) => {
                   <span className="meta-value">{selectedPlugin.downloads}</span>
                 </div>
               )}
-              
+
               {selectedPlugin.rating && (
                 <div className="meta-item">
                   <span className="meta-label">Valoración:</span>
                   <span className="meta-value">{selectedPlugin.rating}/5</span>
                 </div>
               )}
-              
+
               {selectedPlugin.lastUpdated && (
                 <div className="meta-item">
                   <span className="meta-label">Última actualización:</span>
-                  <span className="meta-value">{new Date(selectedPlugin.lastUpdated).toLocaleDateString()}</span>
+                  <span className="meta-value">
+                    {new Date(selectedPlugin.lastUpdated).toLocaleDateString()}
+                  </span>
                 </div>
               )}
             </div>
-            
+
             {selectedPlugin.tags && selectedPlugin.tags.length > 0 && (
               <div className="plugin-tags">
-                {selectedPlugin.tags.map(tag => (
-                  <span key={tag} className="plugin-tag">{tag}</span>
+                {selectedPlugin.tags.map((tag) => (
+                  <span key={tag} className="plugin-tag">
+                    {tag}
+                  </span>
                 ))}
               </div>
             )}
-            
+
             <div className="plugin-detail-compatibility">
               <h4>Compatibilidad</h4>
               <div className="compatibility-item">
-                <span className="compatibility-label">Versión mínima de Atlas:</span>
-                <span className="compatibility-value">{selectedPlugin.minAppVersion || '0.3.0'}</span>
+                <span className="compatibility-label">
+                  Versión mínima de Atlas:
+                </span>
+                <span className="compatibility-value">
+                  {selectedPlugin.minAppVersion || "0.3.0"}
+                </span>
               </div>
               <div className="compatibility-item">
-                <span className="compatibility-label">Versión máxima de Atlas:</span>
-                <span className="compatibility-value">{selectedPlugin.maxAppVersion || '1.0.0'}</span>
+                <span className="compatibility-label">
+                  Versión máxima de Atlas:
+                </span>
+                <span className="compatibility-value">
+                  {selectedPlugin.maxAppVersion || "1.0.0"}
+                </span>
               </div>
             </div>
-            
+
             <div className="plugin-detail-repository">
               <h4>Repositorio</h4>
               <div className="repository-info">
-                <span className="repository-name">{selectedPlugin.repositoryName}</span>
-                <span className="repository-url">{selectedPlugin.repositoryId}</span>
+                <span className="repository-name">
+                  {selectedPlugin.repositoryName}
+                </span>
+                <span className="repository-url">
+                  {selectedPlugin.repositoryId}
+                </span>
               </div>
             </div>
-            
+
             <div className="plugin-detail-actions">
               {renderActionButton(selectedPlugin)}
-              <Button 
+              <Button
                 onClick={() => setShowDetailsDialog(false)}
                 variant="secondary"
               >

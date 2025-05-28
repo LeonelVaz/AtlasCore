@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
-import eventBus, { EventCategories, CalendarEvents } from '../core/bus/event-bus';
-import storageService from '../services/storage-service';
-import { STORAGE_KEYS } from '../core/config/constants';
+import { useState, useEffect } from "react";
+import eventBus, {
+  EventCategories,
+  CalendarEvents,
+} from "../core/bus/event-bus";
+import storageService from "../services/storage-service";
+import { STORAGE_KEYS } from "../core/config/constants";
 
 /**
  * Hook para la gestión de eventos del calendario
@@ -12,13 +15,13 @@ function useCalendarEvents() {
   // Cargar eventos al iniciar
   useEffect(() => {
     loadEvents();
-    
+
     // Suscribirse a eventos de almacenamiento
     const unsubscribe = eventBus.subscribe(
-      `${EventCategories.STORAGE}.eventsUpdated`, 
+      `${EventCategories.STORAGE}.eventsUpdated`,
       loadEvents
     );
-    
+
     return () => unsubscribe && unsubscribe();
   }, []);
 
@@ -26,30 +29,31 @@ function useCalendarEvents() {
   const loadEvents = async () => {
     try {
       const storedEvents = await storageService.get(STORAGE_KEYS.EVENTS, []);
-      
+
       if (!Array.isArray(storedEvents)) {
-        console.error('Los datos cargados no son un array válido');
+        console.error("Los datos cargados no son un array válido");
         setEvents([]);
         return;
       }
-      
+
       // Filtrar eventos válidos
-      const validEvents = storedEvents.filter(event => {
+      const validEvents = storedEvents.filter((event) => {
         try {
-          if (!event?.id || !event?.title || !event?.start || !event?.end) return false;
-          
+          if (!event?.id || !event?.title || !event?.start || !event?.end)
+            return false;
+
           const startDate = new Date(event.start);
           const endDate = new Date(event.end);
-          
+
           return !isNaN(startDate.getTime()) && !isNaN(endDate.getTime());
         } catch (error) {
           return false;
         }
       });
-      
+
       setEvents(validEvents);
     } catch (error) {
-      console.error('Error al cargar eventos:', error);
+      console.error("Error al cargar eventos:", error);
       setEvents([]);
     }
   };
@@ -60,7 +64,7 @@ function useCalendarEvents() {
       if (!Array.isArray(updatedEvents)) return false;
       return await storageService.set(STORAGE_KEYS.EVENTS, updatedEvents);
     } catch (error) {
-      console.error('Error al guardar eventos:', error);
+      console.error("Error al guardar eventos:", error);
       return false;
     }
   };
@@ -70,21 +74,21 @@ function useCalendarEvents() {
     try {
       const newEventWithId = {
         ...eventData,
-        id: Date.now().toString()
+        id: Date.now().toString(),
       };
-      
+
       const updatedEvents = [...events, newEventWithId];
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
-      
+
       // Publicar evento de creación con el nombre correcto
-      eventBus.publish(CalendarEvents.EVENT_CREATED, { 
-        event: newEventWithId 
+      eventBus.publish(CalendarEvents.EVENT_CREATED, {
+        event: newEventWithId,
       });
-      
+
       return newEventWithId;
     } catch (error) {
-      console.error('Error al crear evento:', error);
+      console.error("Error al crear evento:", error);
       return null;
     }
   };
@@ -93,32 +97,32 @@ function useCalendarEvents() {
   const updateEvent = (eventId, eventData) => {
     try {
       // Obtener el evento anterior antes de actualizar
-      const oldEvent = events.find(e => e.id === eventId);
+      const oldEvent = events.find((e) => e.id === eventId);
       if (!oldEvent) {
-        console.error('Evento no encontrado:', eventId);
+        console.error("Evento no encontrado:", eventId);
         return null;
       }
 
-      const updatedEvents = events.map(event => 
+      const updatedEvents = events.map((event) =>
         event.id === eventId ? { ...eventData } : event
       );
-      
+
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
-      
-      const updatedEvent = updatedEvents.find(e => e.id === eventId);
-      
+
+      const updatedEvent = updatedEvents.find((e) => e.id === eventId);
+
       // Publicar evento de actualización con el nombre correcto y datos completos
       if (updatedEvent) {
-        eventBus.publish(CalendarEvents.EVENT_UPDATED, { 
+        eventBus.publish(CalendarEvents.EVENT_UPDATED, {
           oldEvent: oldEvent,
-          newEvent: updatedEvent 
+          newEvent: updatedEvent,
         });
       }
-      
+
       return updatedEvent;
     } catch (error) {
-      console.error('Error al actualizar evento:', error);
+      console.error("Error al actualizar evento:", error);
       return null;
     }
   };
@@ -126,23 +130,23 @@ function useCalendarEvents() {
   // Eliminar evento
   const deleteEvent = (eventId) => {
     try {
-      const eventToDelete = events.find(e => e.id === eventId);
+      const eventToDelete = events.find((e) => e.id === eventId);
       if (!eventToDelete) {
-        console.error('Evento no encontrado:', eventId);
+        console.error("Evento no encontrado:", eventId);
         return;
       }
 
-      const updatedEvents = events.filter(event => event.id !== eventId);
-      
+      const updatedEvents = events.filter((event) => event.id !== eventId);
+
       setEvents(updatedEvents);
       saveEvents(updatedEvents);
-      
+
       // Publicar evento de eliminación con el nombre correcto
-      eventBus.publish(CalendarEvents.EVENT_DELETED, { 
-        event: eventToDelete 
+      eventBus.publish(CalendarEvents.EVENT_DELETED, {
+        event: eventToDelete,
       });
     } catch (error) {
-      console.error('Error al eliminar evento:', error);
+      console.error("Error al eliminar evento:", error);
     }
   };
 
@@ -151,12 +155,12 @@ function useCalendarEvents() {
     // Disparar evento de carga de eventos completada solo cuando cambia el contador
     if (events.length > 0) {
       const timeoutId = setTimeout(() => {
-        eventBus.publish(CalendarEvents.EVENTS_LOADED, { 
+        eventBus.publish(CalendarEvents.EVENTS_LOADED, {
           events: events,
-          count: events.length
+          count: events.length,
         });
       }, 100);
-      
+
       return () => clearTimeout(timeoutId);
     }
   }, [events.length]); // Solo cuando cambia la cantidad de eventos
@@ -168,7 +172,7 @@ function useCalendarEvents() {
     saveEvents,
     createEvent,
     updateEvent,
-    deleteEvent
+    deleteEvent,
   };
 }
 

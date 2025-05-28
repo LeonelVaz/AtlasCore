@@ -2,25 +2,25 @@
 
 /**
  * EventBus - Sistema centralizado de comunicación entre módulos
- * 
+ *
  * Implementa el patrón publicador/suscriptor para comunicación desacoplada
  */
 
 // Categorías de eventos
 export const EventCategories = {
-  CALENDAR: 'calendar',
-  APP: 'app',
-  STORAGE: 'storage',
+  CALENDAR: "calendar",
+  APP: "app",
+  STORAGE: "storage",
 };
 
 // Re-exportar todos los eventos desde events.js para compatibilidad
-export { 
-  CalendarEvents, 
-  AppEvents, 
-  StorageEvents, 
+export {
+  CalendarEvents,
+  AppEvents,
+  StorageEvents,
   UIEvents,
-  default as Events 
-} from './events';
+  default as Events,
+} from "./events";
 
 class EventBus {
   constructor() {
@@ -38,18 +38,18 @@ class EventBus {
    */
   subscribe(eventType, callback) {
     const id = this.getNextId();
-    
+
     if (!this.subscribers[eventType]) {
       this.subscribers[eventType] = {};
     }
-    
+
     this.subscribers[eventType][id] = callback;
-    
+
     // Devolver función para cancelar suscripción
     return () => {
       if (this.subscribers[eventType] && this.subscribers[eventType][id]) {
         delete this.subscribers[eventType][id];
-        
+
         if (Object.keys(this.subscribers[eventType]).length === 0) {
           delete this.subscribers[eventType];
         }
@@ -64,7 +64,7 @@ class EventBus {
    */
   unsubscribe(eventType, callback) {
     if (!eventType || !callback || !this.subscribers[eventType]) return;
-    
+
     // Buscar el id del callback
     const entries = Object.entries(this.subscribers[eventType] || {});
     for (const [id, registeredCallback] of entries) {
@@ -73,9 +73,12 @@ class EventBus {
         break;
       }
     }
-    
+
     // Limpiar categoría si está vacía
-    if (this.subscribers[eventType] && Object.keys(this.subscribers[eventType]).length === 0) {
+    if (
+      this.subscribers[eventType] &&
+      Object.keys(this.subscribers[eventType]).length === 0
+    ) {
       delete this.subscribers[eventType];
     }
   }
@@ -87,26 +90,28 @@ class EventBus {
    */
   publish(eventType, data) {
     if (!eventType) return;
-    
+
     // Solo log si el debug está habilitado
     if (this.debugEnabled) {
       console.log(`[EventBus] Publicando evento: ${eventType}`, data);
     }
-    
+
     if (!this.subscribers[eventType]) {
       if (this.debugEnabled) {
         console.log(`[EventBus] No hay suscriptores para: ${eventType}`);
       }
       return;
     }
-    
+
     const subscriberCount = Object.keys(this.subscribers[eventType]).length;
     if (this.debugEnabled && subscriberCount > 0) {
-      console.log(`[EventBus] Notificando a ${subscriberCount} suscriptores de ${eventType}`);
+      console.log(
+        `[EventBus] Notificando a ${subscriberCount} suscriptores de ${eventType}`
+      );
     }
-    
-    Object.values(this.subscribers[eventType] || {}).forEach(callback => {
-      if (typeof callback === 'function') {
+
+    Object.values(this.subscribers[eventType] || {}).forEach((callback) => {
+      if (typeof callback === "function") {
         try {
           callback(data);
         } catch (error) {
@@ -123,17 +128,19 @@ class EventBus {
   getNextId() {
     return ++this.lastId;
   }
-  
+
   /**
    * Verifica si un evento tiene suscriptores
    * @param {string} eventType - Tipo de evento
    * @returns {boolean} - true si tiene suscriptores
    */
   hasSubscribers(eventType) {
-    return !!this.subscribers[eventType] && 
-           Object.keys(this.subscribers[eventType] || {}).length > 0;
+    return (
+      !!this.subscribers[eventType] &&
+      Object.keys(this.subscribers[eventType] || {}).length > 0
+    );
   }
-  
+
   /**
    * Obtiene la cantidad de suscriptores de un evento
    * @param {string} eventType - Tipo de evento
@@ -143,14 +150,14 @@ class EventBus {
     if (!eventType || !this.subscribers[eventType]) return 0;
     return Object.keys(this.subscribers[eventType] || {}).length;
   }
-  
+
   /**
    * Elimina todas las suscripciones
    */
   clear() {
     this.subscribers = {};
   }
-  
+
   /**
    * Obtiene lista de todos los eventos con suscriptores
    * Útil para depuración
@@ -158,7 +165,7 @@ class EventBus {
   getActiveEvents() {
     return Object.keys(this.subscribers);
   }
-  
+
   /**
    * Habilita o deshabilita el modo debug
    * @param {boolean} enabled - true para habilitar debug

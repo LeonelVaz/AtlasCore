@@ -1,10 +1,10 @@
 /* Estilos principales para la sección de plugins */
 
-@import './plugin-extensions.css';
-@import './repository-manager.css';
-@import './plugin-marketplace.css';
-@import './update-manager.css';
-@import './plugin-navigation.css';
+@import "./plugin-extensions.css";
+@import "./repository-manager.css";
+@import "./plugin-marketplace.css";
+@import "./update-manager.css";
+@import "./plugin-navigation.css";
 
 /* Actualizaciones para el panel de plugins */
 
@@ -113,8 +113,8 @@
 
 /* Variables de color adicionales */
 :root {
-  --color-warning: #FFB300;
-  --color-success: #26A69A;
+  --color-warning: #ffb300;
+  --color-success: #26a69a;
   --color-tag-bg: rgba(45, 75, 148, 0.1);
   --color-tag-text: var(--color-atlas-blue);
 }

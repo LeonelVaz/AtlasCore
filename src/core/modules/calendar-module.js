@@ -2,8 +2,8 @@
  * API Mejorada del Módulo de Calendario para Plugins
  * Proporciona acceso a información detallada sobre eventos, vistas y configuraciones del calendario
  */
-import { CALENDAR_VIEWS } from '../config/constants';
-import eventBus, { CalendarEvents } from '../bus/event-bus';
+import { CALENDAR_VIEWS } from "../config/constants";
+import eventBus, { CalendarEvents } from "../bus/event-bus";
 
 class CalendarModule {
   constructor() {
@@ -12,7 +12,7 @@ class CalendarModule {
       currentView: CALENDAR_VIEWS.WEEK,
       selectedDate: new Date(),
       events: [],
-      lastUpdate: null
+      lastUpdate: null,
     };
     this._eventListeners = [];
     this._initialized = false;
@@ -25,30 +25,30 @@ class CalendarModule {
    */
   init(calendarService) {
     if (!calendarService) {
-      console.error('CalendarModule: No se proporcionó servicio de calendario');
+      console.error("CalendarModule: No se proporcionó servicio de calendario");
       return false;
     }
-    
+
     // Si ya está inicializado, limpiar primero
     if (this._initialized) {
       this.cleanup();
     }
-    
+
     this._calendarService = calendarService;
-    
+
     // Realizar inicialización específica si es necesario
     this._syncState();
-    
+
     // Configurar escucha de eventos del calendario solo una vez
     if (!this._subscriptionsActive) {
       this._setupEventListeners();
       this._subscriptionsActive = true;
     }
-    
+
     this._initialized = true;
     // Solo log en la primera inicialización real
     if (!this._subscriptionsActive) {
-      console.log('CalendarModule: Inicializado correctamente');
+      console.log("CalendarModule: Inicializado correctamente");
     }
     return true;
   }
@@ -60,43 +60,61 @@ class CalendarModule {
   _setupEventListeners() {
     // Limpiar suscripciones anteriores si existen
     this._cleanupEventListeners();
-    
+
     // Escuchar cuando se cargan eventos
-    const loadedSub = eventBus.subscribe(CalendarEvents.EVENTS_LOADED, (data) => {
-      this._calendarState.events = data.events || [];
-      this._calendarState.lastUpdate = Date.now();
-    });
-
-    // Escuchar creación de eventos
-    const createdSub = eventBus.subscribe(CalendarEvents.EVENT_CREATED, (data) => {
-      if (data.event) {
-        // Verificar que el evento no exista ya
-        const exists = this._calendarState.events.some(e => e.id === data.event.id);
-        if (!exists) {
-          this._calendarState.events.push(data.event);
-          this._calendarState.lastUpdate = Date.now();
-        }
-      }
-    });
-
-    // Escuchar actualización de eventos
-    const updatedSub = eventBus.subscribe(CalendarEvents.EVENT_UPDATED, (data) => {
-      if (data.newEvent) {
-        const index = this._calendarState.events.findIndex(e => e.id === data.newEvent.id);
-        if (index !== -1) {
-          this._calendarState.events[index] = data.newEvent;
-          this._calendarState.lastUpdate = Date.now();
-        }
-      }
-    });
-
-    // Escuchar eliminación de eventos
-    const deletedSub = eventBus.subscribe(CalendarEvents.EVENT_DELETED, (data) => {
-      if (data.event) {
-        this._calendarState.events = this._calendarState.events.filter(e => e.id !== data.event.id);
+    const loadedSub = eventBus.subscribe(
+      CalendarEvents.EVENTS_LOADED,
+      (data) => {
+        this._calendarState.events = data.events || [];
         this._calendarState.lastUpdate = Date.now();
       }
-    });
+    );
+
+    // Escuchar creación de eventos
+    const createdSub = eventBus.subscribe(
+      CalendarEvents.EVENT_CREATED,
+      (data) => {
+        if (data.event) {
+          // Verificar que el evento no exista ya
+          const exists = this._calendarState.events.some(
+            (e) => e.id === data.event.id
+          );
+          if (!exists) {
+            this._calendarState.events.push(data.event);
+            this._calendarState.lastUpdate = Date.now();
+          }
+        }
+      }
+    );
+
+    // Escuchar actualización de eventos
+    const updatedSub = eventBus.subscribe(
+      CalendarEvents.EVENT_UPDATED,
+      (data) => {
+        if (data.newEvent) {
+          const index = this._calendarState.events.findIndex(
+            (e) => e.id === data.newEvent.id
+          );
+          if (index !== -1) {
+            this._calendarState.events[index] = data.newEvent;
+            this._calendarState.lastUpdate = Date.now();
+          }
+        }
+      }
+    );
+
+    // Escuchar eliminación de eventos
+    const deletedSub = eventBus.subscribe(
+      CalendarEvents.EVENT_DELETED,
+      (data) => {
+        if (data.event) {
+          this._calendarState.events = this._calendarState.events.filter(
+            (e) => e.id !== data.event.id
+          );
+          this._calendarState.lastUpdate = Date.now();
+        }
+      }
+    );
 
     // Guardar referencias para limpieza
     this._eventListeners = [loadedSub, createdSub, updatedSub, deletedSub];
@@ -108,8 +126,8 @@ class CalendarModule {
    */
   _cleanupEventListeners() {
     if (this._eventListeners.length > 0) {
-      this._eventListeners.forEach(unsub => {
-        if (typeof unsub === 'function') {
+      this._eventListeners.forEach((unsub) => {
+        if (typeof unsub === "function") {
           unsub();
         }
       });
@@ -123,25 +141,27 @@ class CalendarModule {
    */
   _syncState() {
     if (!this._calendarService) return;
-    
+
     try {
       // Obtener datos actuales del servicio de calendario
       if (this._calendarService.getCurrentDate) {
-        this._calendarState.selectedDate = this._calendarService.getCurrentDate();
+        this._calendarState.selectedDate =
+          this._calendarService.getCurrentDate();
       }
-      
+
       if (this._calendarService.getEvents) {
         this._calendarState.events = this._calendarService.getEvents();
       }
-      
+
       // Determinar vista actual
       if (this._calendarService.getCurrentView) {
-        this._calendarState.currentView = this._calendarService.getCurrentView();
+        this._calendarState.currentView =
+          this._calendarService.getCurrentView();
       }
-      
+
       this._calendarState.lastUpdate = Date.now();
     } catch (error) {
-      console.error('Error al sincronizar estado del calendario:', error);
+      console.error("Error al sincronizar estado del calendario:", error);
     }
   }
 
@@ -160,26 +180,28 @@ class CalendarModule {
    */
   getEventsForDate(date) {
     if (!date) return [];
-    
-    const targetDate = typeof date === 'string' ? new Date(date) : date;
-    
+
+    const targetDate = typeof date === "string" ? new Date(date) : date;
+
     // Normalizar a inicio de día
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     // Normalizar a fin de día
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
-    
+
     // Filtrar eventos que ocurren en el día
-    return this._calendarState.events.filter(event => {
+    return this._calendarState.events.filter((event) => {
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
-      
+
       // El evento comienza, termina o abarca completamente el día
-      return (eventStart >= startOfDay && eventStart <= endOfDay) || // Comienza hoy
-             (eventEnd >= startOfDay && eventEnd <= endOfDay) ||     // Termina hoy
-             (eventStart <= startOfDay && eventEnd >= endOfDay);     // Abarca todo el día
+      return (
+        (eventStart >= startOfDay && eventStart <= endOfDay) || // Comienza hoy
+        (eventEnd >= startOfDay && eventEnd <= endOfDay) || // Termina hoy
+        (eventStart <= startOfDay && eventEnd >= endOfDay)
+      ); // Abarca todo el día
     });
   }
 
@@ -191,21 +213,22 @@ class CalendarModule {
    */
   getEventsForDateRange(startDate, endDate) {
     if (!startDate || !endDate) return [];
-    
-    const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
-    const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
-    
+
+    const start =
+      typeof startDate === "string" ? new Date(startDate) : startDate;
+    const end = typeof endDate === "string" ? new Date(endDate) : endDate;
+
     // Normalizar fechas
     start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
-    
+
     // Filtrar eventos en el rango
-    return this._calendarState.events.filter(event => {
+    return this._calendarState.events.filter((event) => {
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
-      
+
       // El evento se solapa con el rango
-      return (eventStart <= end && eventEnd >= start);
+      return eventStart <= end && eventEnd >= start;
     });
   }
 
@@ -216,10 +239,10 @@ class CalendarModule {
    */
   getUpcomingEvents(limit = 10) {
     const now = new Date();
-    
+
     // Filtrar eventos futuros o en curso
     const upcomingEvents = this._calendarState.events
-      .filter(event => {
+      .filter((event) => {
         const eventEnd = new Date(event.end);
         return eventEnd >= now;
       })
@@ -228,7 +251,7 @@ class CalendarModule {
         const startB = new Date(b.start);
         return startA - startB;
       });
-    
+
     return upcomingEvents.slice(0, limit);
   }
 
@@ -239,8 +262,10 @@ class CalendarModule {
    */
   getEvent(eventId) {
     if (!eventId) return null;
-    
-    return this._calendarState.events.find(event => event.id === eventId) || null;
+
+    return (
+      this._calendarState.events.find((event) => event.id === eventId) || null
+    );
   }
 
   /**
@@ -266,16 +291,18 @@ class CalendarModule {
    */
   createEvent(eventData) {
     if (!this._calendarService || !this._calendarService.createEvent) {
-      console.error('CalendarModule: No se puede crear evento, método no disponible');
+      console.error(
+        "CalendarModule: No se puede crear evento, método no disponible"
+      );
       return null;
     }
-    
+
     try {
       const createdEvent = this._calendarService.createEvent(eventData);
       // No es necesario publicar aquí, el servicio lo hará
       return createdEvent;
     } catch (error) {
-      console.error('Error al crear evento:', error);
+      console.error("Error al crear evento:", error);
       return null;
     }
   }
@@ -288,12 +315,17 @@ class CalendarModule {
    */
   updateEvent(eventId, eventData) {
     if (!this._calendarService || !this._calendarService.updateEvent) {
-      console.error('CalendarModule: No se puede actualizar evento, método no disponible');
+      console.error(
+        "CalendarModule: No se puede actualizar evento, método no disponible"
+      );
       return null;
     }
-    
+
     try {
-      const updatedEvent = this._calendarService.updateEvent(eventId, eventData);
+      const updatedEvent = this._calendarService.updateEvent(
+        eventId,
+        eventData
+      );
       // No es necesario publicar aquí, el servicio lo hará
       return updatedEvent;
     } catch (error) {
@@ -309,10 +341,12 @@ class CalendarModule {
    */
   deleteEvent(eventId) {
     if (!this._calendarService || !this._calendarService.deleteEvent) {
-      console.error('CalendarModule: No se puede eliminar evento, método no disponible');
+      console.error(
+        "CalendarModule: No se puede eliminar evento, método no disponible"
+      );
       return false;
     }
-    
+
     try {
       this._calendarService.deleteEvent(eventId);
       // No es necesario publicar aquí, el servicio lo hará
@@ -328,19 +362,19 @@ class CalendarModule {
    * @param {string} categoryField - Campo a usar para agrupar (por defecto: 'color')
    * @returns {Object} Eventos agrupados por categoría
    */
-  getEventsByCategory(categoryField = 'color') {
+  getEventsByCategory(categoryField = "color") {
     const grouped = {};
-    
-    this._calendarState.events.forEach(event => {
-      const category = event[categoryField] || 'default';
-      
+
+    this._calendarState.events.forEach((event) => {
+      const category = event[categoryField] || "default";
+
       if (!grouped[category]) {
         grouped[category] = [];
       }
-      
+
       grouped[category].push(event);
     });
-    
+
     return grouped;
   }
 
@@ -351,38 +385,46 @@ class CalendarModule {
    * @returns {Array} Metadatos de días con información sobre eventos
    */
   getMonthMetadata(month) {
-    const targetDate = month ? (typeof month === 'string' ? new Date(month) : month) : new Date();
+    const targetDate = month
+      ? typeof month === "string"
+        ? new Date(month)
+        : month
+      : new Date();
     const year = targetDate.getFullYear();
     const monthIndex = targetDate.getMonth();
-    
+
     const firstDay = new Date(year, monthIndex, 1);
-    const lastDay = new Date(year, monthIndex + 1, 0); 
+    const lastDay = new Date(year, monthIndex + 1, 0);
     const daysInMonth = lastDay.getDate();
-    
+
     // DEBUGGING:
     console.log(`getMonthMetadata - Input month: ${month}`);
-    console.log(`TargetDate: ${targetDate.toISOString()}, Year: ${year}, MonthIndex: ${monthIndex}`);
+    console.log(
+      `TargetDate: ${targetDate.toISOString()}, Year: ${year}, MonthIndex: ${monthIndex}`
+    );
     console.log(`LastDay object: ${lastDay.toISOString()}`);
     console.log(`Calculated daysInMonth: ${daysInMonth}`);
     // FIN DEBUGGING
-    
+
     const metadata = [];
-    
+
     // Para cada día del mes
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, monthIndex, day);
       const events = this.getEventsForDate(date);
-      
+
       metadata.push({
         date,
         day,
         hasEvents: events.length > 0,
         eventCount: events.length,
         // Agrupar por color para indicadores visuales
-        eventColors: [...new Set(events.map(event => event.color || 'default'))]
+        eventColors: [
+          ...new Set(events.map((event) => event.color || "default")),
+        ],
       });
     }
-    
+
     return metadata;
   }
 
@@ -395,17 +437,17 @@ class CalendarModule {
     if (this._calendarService && this._calendarService.getConfig) {
       return this._calendarService.getConfig();
     }
-    
+
     // Devolver configuración básica
     return {
       timeScale: {
-        id: 'standard',
-        pixelsPerHour: 60
+        id: "standard",
+        pixelsPerHour: 60,
       },
       maxSimultaneousEvents: 3,
       snapValue: 0,
-      dayHeaderStyle: 'default',
-      timeDisplayStyle: 'start-end'
+      dayHeaderStyle: "default",
+      timeDisplayStyle: "start-end",
     };
   }
 

@@ -1,14 +1,14 @@
 /**
  * Sistema de compatibilidad para plugins de Atlas
  */
-import { compareVersions } from './plugin-validator';
-import pluginRegistry from './plugin-registry';
-import { PLUGIN_CONSTANTS } from '../config/constants';
-import eventBus from '../bus/event-bus';
+import { compareVersions } from "./plugin-validator";
+import pluginRegistry from "./plugin-registry";
+import { PLUGIN_CONSTANTS } from "../config/constants";
+import eventBus from "../bus/event-bus";
 
 class PluginCompatibility {
   constructor() {
-    this.appVersion = PLUGIN_CONSTANTS.CURRENT_APP_VERSION || '0.4.0';
+    this.appVersion = PLUGIN_CONSTANTS.CURRENT_APP_VERSION || "0.4.0";
     this.incompatibilities = {};
     this.conflicts = {};
   }
@@ -17,24 +17,24 @@ class PluginCompatibility {
     if (!plugin || !plugin.id) {
       return {
         compatible: false,
-        reason: 'Plugin inválido'
+        reason: "Plugin inválido",
       };
     }
 
     try {
       // Verificar versión mínima
-      if (!plugin.minAppVersion || typeof plugin.minAppVersion !== 'string') {
+      if (!plugin.minAppVersion || typeof plugin.minAppVersion !== "string") {
         return {
           compatible: false,
-          reason: 'No se especificó la versión mínima de la aplicación'
+          reason: "No se especificó la versión mínima de la aplicación",
         };
       }
 
       // Verificar versión máxima
-      if (!plugin.maxAppVersion || typeof plugin.maxAppVersion !== 'string') {
+      if (!plugin.maxAppVersion || typeof plugin.maxAppVersion !== "string") {
         return {
           compatible: false,
-          reason: 'No se especificó la versión máxima de la aplicación'
+          reason: "No se especificó la versión máxima de la aplicación",
         };
       }
 
@@ -42,25 +42,28 @@ class PluginCompatibility {
       if (compareVersions(this.appVersion, plugin.minAppVersion) < 0) {
         return {
           compatible: false,
-          reason: `El plugin requiere la versión ${plugin.minAppVersion} o superior (actual: ${this.appVersion})`
+          reason: `El plugin requiere la versión ${plugin.minAppVersion} o superior (actual: ${this.appVersion})`,
         };
       }
 
       if (compareVersions(this.appVersion, plugin.maxAppVersion) > 0) {
         return {
           compatible: false,
-          reason: `El plugin solo es compatible hasta la versión ${plugin.maxAppVersion} (actual: ${this.appVersion})`
+          reason: `El plugin solo es compatible hasta la versión ${plugin.maxAppVersion} (actual: ${this.appVersion})`,
         };
       }
 
       return {
-        compatible: true
+        compatible: true,
       };
     } catch (error) {
-      console.error(`Error al verificar compatibilidad del plugin ${plugin.id}:`, error);
+      console.error(
+        `Error al verificar compatibilidad del plugin ${plugin.id}:`,
+        error
+      );
       return {
         compatible: false,
-        reason: `Error al verificar compatibilidad: ${error.message}`
+        reason: `Error al verificar compatibilidad: ${error.message}`,
       };
     }
   }
@@ -70,16 +73,20 @@ class PluginCompatibility {
       return {
         satisfied: false,
         missing: [],
-        reason: 'Plugin inválido'
+        reason: "Plugin inválido",
       };
     }
 
     try {
       // Si no hay dependencias, está satisfecho
-      if (!plugin.dependencies || !Array.isArray(plugin.dependencies) || plugin.dependencies.length === 0) {
+      if (
+        !plugin.dependencies ||
+        !Array.isArray(plugin.dependencies) ||
+        plugin.dependencies.length === 0
+      ) {
         return {
           satisfied: true,
-          missing: []
+          missing: [],
         };
       }
 
@@ -91,8 +98,8 @@ class PluginCompatibility {
         // Verificar formato correcto de dependencia
         if (!dependency.id || !dependency.version) {
           missingDependencies.push({
-            id: dependency.id || 'desconocido',
-            reason: 'Formato de dependencia inválido'
+            id: dependency.id || "desconocido",
+            reason: "Formato de dependencia inválido",
           });
           continue;
         }
@@ -103,7 +110,7 @@ class PluginCompatibility {
           missingDependencies.push({
             id: dependency.id,
             version: dependency.version,
-            reason: 'Plugin no encontrado'
+            reason: "Plugin no encontrado",
           });
           continue;
         }
@@ -114,7 +121,7 @@ class PluginCompatibility {
             id: dependency.id,
             required: dependency.version,
             actual: dependencyPlugin.version,
-            reason: `Se requiere versión ${dependency.version} o superior`
+            reason: `Se requiere versión ${dependency.version} o superior`,
           });
           continue;
         }
@@ -125,15 +132,20 @@ class PluginCompatibility {
       return {
         satisfied: allMissing.length === 0,
         missing: allMissing,
-        reason: allMissing.length > 0 ? 
-          `Faltan ${allMissing.length} dependencias` : null
+        reason:
+          allMissing.length > 0
+            ? `Faltan ${allMissing.length} dependencias`
+            : null,
       };
     } catch (error) {
-      console.error(`Error al verificar dependencias del plugin ${plugin.id}:`, error);
+      console.error(
+        `Error al verificar dependencias del plugin ${plugin.id}:`,
+        error
+      );
       return {
         satisfied: false,
         missing: [],
-        reason: `Error al verificar dependencias: ${error.message}`
+        reason: `Error al verificar dependencias: ${error.message}`,
       };
     }
   }
@@ -143,16 +155,20 @@ class PluginCompatibility {
       return {
         hasConflicts: true,
         conflicts: [],
-        reason: 'Plugin inválido'
+        reason: "Plugin inválido",
       };
     }
 
     try {
       // Si no hay definición de conflictos, no hay conflicto
-      if (!plugin.conflicts || !Array.isArray(plugin.conflicts) || plugin.conflicts.length === 0) {
+      if (
+        !plugin.conflicts ||
+        !Array.isArray(plugin.conflicts) ||
+        plugin.conflicts.length === 0
+      ) {
         return {
           hasConflicts: false,
-          conflicts: []
+          conflicts: [],
         };
       }
 
@@ -162,21 +178,27 @@ class PluginCompatibility {
 
       for (const conflict of plugin.conflicts) {
         // Verificar formato correcto
-        if (typeof conflict !== 'string' && (!conflict.id || !conflict.reason)) {
+        if (
+          typeof conflict !== "string" &&
+          (!conflict.id || !conflict.reason)
+        ) {
           continue;
         }
 
-        const conflictId = typeof conflict === 'string' ? conflict : conflict.id;
-        const conflictReason = typeof conflict === 'string' ? 
-          'Conflicto declarado con este plugin' : conflict.reason;
+        const conflictId =
+          typeof conflict === "string" ? conflict : conflict.id;
+        const conflictReason =
+          typeof conflict === "string"
+            ? "Conflicto declarado con este plugin"
+            : conflict.reason;
 
         // Verificar si el plugin conflictivo está activo
-        const isActiveConflict = activePlugins.some(p => p.id === conflictId);
-        
+        const isActiveConflict = activePlugins.some((p) => p.id === conflictId);
+
         if (isActiveConflict) {
           foundConflicts.push({
             id: conflictId,
-            reason: conflictReason
+            reason: conflictReason,
           });
         }
       }
@@ -184,15 +206,20 @@ class PluginCompatibility {
       return {
         hasConflicts: foundConflicts.length > 0,
         conflicts: foundConflicts,
-        reason: foundConflicts.length > 0 ? 
-          `Conflicto con ${foundConflicts.length} plugins activos` : null
+        reason:
+          foundConflicts.length > 0
+            ? `Conflicto con ${foundConflicts.length} plugins activos`
+            : null,
       };
     } catch (error) {
-      console.error(`Error al verificar conflictos del plugin ${plugin.id}:`, error);
+      console.error(
+        `Error al verificar conflictos del plugin ${plugin.id}:`,
+        error
+      );
       return {
         hasConflicts: true,
         conflicts: [],
-        reason: `Error al verificar conflictos: ${error.message}`
+        reason: `Error al verificar conflictos: ${error.message}`,
       };
     }
   }
@@ -202,7 +229,7 @@ class PluginCompatibility {
       return {
         hasConflicts: true,
         conflicts: [],
-        reason: 'Plugin inválido'
+        reason: "Plugin inválido",
       };
     }
 
@@ -217,8 +244,8 @@ class PluginCompatibility {
         }
 
         // Buscar si este plugin está en la lista de conflictos
-        const conflictEntry = activePlugin.conflicts.find(conflict => {
-          if (typeof conflict === 'string') {
+        const conflictEntry = activePlugin.conflicts.find((conflict) => {
+          if (typeof conflict === "string") {
             return conflict === plugin.id;
           }
           return conflict.id === plugin.id;
@@ -228,9 +255,10 @@ class PluginCompatibility {
           reversedConflicts.push({
             id: activePlugin.id,
             name: activePlugin.name,
-            reason: typeof conflictEntry === 'string' ? 
-              'Conflicto declarado con este plugin' : 
-              conflictEntry.reason
+            reason:
+              typeof conflictEntry === "string"
+                ? "Conflicto declarado con este plugin"
+                : conflictEntry.reason,
           });
         }
       }
@@ -238,15 +266,20 @@ class PluginCompatibility {
       return {
         hasConflicts: reversedConflicts.length > 0,
         conflicts: reversedConflicts,
-        reason: reversedConflicts.length > 0 ? 
-          `${reversedConflicts.length} plugins activos declaran conflicto con este plugin` : null
+        reason:
+          reversedConflicts.length > 0
+            ? `${reversedConflicts.length} plugins activos declaran conflicto con este plugin`
+            : null,
       };
     } catch (error) {
-      console.error(`Error al verificar conflictos inversos del plugin ${plugin.id}:`, error);
+      console.error(
+        `Error al verificar conflictos inversos del plugin ${plugin.id}:`,
+        error
+      );
       return {
         hasConflicts: true,
         conflicts: [],
-        reason: `Error al verificar conflictos inversos: ${error.message}`
+        reason: `Error al verificar conflictos inversos: ${error.message}`,
       };
     }
   }
@@ -254,9 +287,9 @@ class PluginCompatibility {
   runFullCompatibilityCheck(plugin) {
     if (!plugin || !plugin.id) {
       return {
-        pluginId: 'desconocido',
+        pluginId: "desconocido",
         compatible: false,
-        reason: 'Plugin inválido'
+        reason: "Plugin inválido",
       };
     }
 
@@ -267,24 +300,25 @@ class PluginCompatibility {
       const reversedConflicts = this.checkReversedConflicts(plugin);
 
       // Determinar compatibilidad general
-      const isCompatible = appCompat.compatible && 
-                          dependencies.satisfied && 
-                          !conflicts.hasConflicts && 
-                          !reversedConflicts.hasConflicts;
+      const isCompatible =
+        appCompat.compatible &&
+        dependencies.satisfied &&
+        !conflicts.hasConflicts &&
+        !reversedConflicts.hasConflicts;
 
       // Determinar razón principal de incompatibilidad
-      let reason = '';
+      let reason = "";
       if (!appCompat.compatible) {
-        reason += appCompat.reason + '; ';
+        reason += appCompat.reason + "; ";
       }
       if (!dependencies.satisfied) {
-        reason += dependencies.reason + '; ';
+        reason += dependencies.reason + "; ";
       }
       if (conflicts.hasConflicts) {
-        reason += conflicts.reason + '; ';
+        reason += conflicts.reason + "; ";
       }
       if (reversedConflicts.hasConflicts) {
-        reason += reversedConflicts.reason + '; ';
+        reason += reversedConflicts.reason + "; ";
       }
 
       // Almacenar para referencia futura
@@ -295,9 +329,9 @@ class PluginCompatibility {
             appCompat,
             dependencies,
             conflicts,
-            reversedConflicts
+            reversedConflicts,
           },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
       } else {
         // Limpiar incompatibilidades previas
@@ -309,7 +343,7 @@ class PluginCompatibility {
         this.conflicts[plugin.id] = {
           declared: conflicts.conflicts,
           reversed: reversedConflicts.conflicts,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
       } else {
         // Limpiar conflictos previos
@@ -317,7 +351,7 @@ class PluginCompatibility {
       }
 
       // Publicar evento de compatibilidad
-      eventBus.publish('pluginSystem.compatibilityChecked', {
+      eventBus.publish("pluginSystem.compatibilityChecked", {
         pluginId: plugin.id,
         compatible: isCompatible,
         reason: reason.trim(),
@@ -325,27 +359,30 @@ class PluginCompatibility {
           appCompat,
           dependencies,
           conflicts,
-          reversedConflicts
-        }
+          reversedConflicts,
+        },
       });
 
       return {
         pluginId: plugin.id,
         compatible: isCompatible,
-        reason: isCompatible ? 'Compatible' : reason,
+        reason: isCompatible ? "Compatible" : reason,
         details: {
           appCompat,
           dependencies,
           conflicts,
-          reversedConflicts
-        }
+          reversedConflicts,
+        },
       };
     } catch (error) {
-      console.error(`Error en verificación completa de compatibilidad del plugin ${plugin.id}:`, error);
-      
+      console.error(
+        `Error en verificación completa de compatibilidad del plugin ${plugin.id}:`,
+        error
+      );
+
       this.incompatibilities[plugin.id] = {
         reason: `Error en verificación: ${error.message}`,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       return {
@@ -353,8 +390,8 @@ class PluginCompatibility {
         compatible: false,
         reason: `Error en verificación: ${error.message}`,
         details: {
-          error: error.message
-        }
+          error: error.message,
+        },
       };
     }
   }

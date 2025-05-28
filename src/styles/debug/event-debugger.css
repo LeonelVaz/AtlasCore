@@ -34,7 +34,11 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
   border-radius: 10px 10px 0 0;
   user-select: none;
 }
@@ -128,7 +132,11 @@
 }
 
 .event-stat-card.total {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
   border-color: var(--primary-hover);
   color: var(--color-button-primary-text);
 }
@@ -326,7 +334,8 @@
 
 /* Animaciones */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -346,11 +355,11 @@
     min-width: 280px;
     max-width: calc(100vw - 20px);
   }
-  
+
   .debug-tools-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .event-stats-grid {
     grid-template-columns: 1fr;
   }

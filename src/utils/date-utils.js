@@ -25,7 +25,7 @@ export function getLastDayOfWeek(date) {
 /**
  * Formatea una fecha en formato localizado
  */
-export function formatDate(date, options = {}, locale = 'es-ES') {
+export function formatDate(date, options = {}, locale = "es-ES") {
   return new Date(date).toLocaleDateString(locale, options);
 }
 
@@ -33,14 +33,16 @@ export function formatDate(date, options = {}, locale = 'es-ES') {
  * Formatea una hora en formato HH:MM
  */
 export function formatTime(hour, minute = 0) {
-  return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  return `${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 /**
  * Formatea la hora para mostrar (00:00 formato)
  */
 export function formatHour(hour) {
-  return `${hour.toString().padStart(2, '0')}:00`;
+  return `${hour.toString().padStart(2, "0")}:00`;
 }
 
 /**
@@ -65,11 +67,11 @@ export function addDays(date, days) {
 export function generateWeekDays(date) {
   const firstDay = getFirstDayOfWeek(date);
   const days = [];
-  
+
   for (let i = 0; i < 7; i++) {
     days.push(addDays(firstDay, i));
   }
-  
+
   return days;
 }
 
@@ -88,10 +90,12 @@ export function isPastDate(date) {
 export function isSameDay(date1, date2) {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
-  
-  return d1.getFullYear() === d2.getFullYear() && 
-         d1.getMonth() === d2.getMonth() && 
-         d1.getDate() === d2.getDate();
+
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
 }
 
 /**
@@ -99,10 +103,10 @@ export function isSameDay(date1, date2) {
  */
 export function formatDateForInput(date) {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }

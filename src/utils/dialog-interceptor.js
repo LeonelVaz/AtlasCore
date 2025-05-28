@@ -18,7 +18,7 @@ const originalPrompt = window.prompt;
  */
 export const initializeDialogInterceptor = (context) => {
   dialogContext = context;
-  
+
   // Reemplazar alert global
   window.alert = async (message) => {
     if (dialogContext && dialogContext.showAlert) {
@@ -27,7 +27,7 @@ export const initializeDialogInterceptor = (context) => {
     // Fallback a alert nativo si no hay contexto
     return originalAlert(message);
   };
-  
+
   // Reemplazar confirm global
   window.confirm = async (message) => {
     if (dialogContext && dialogContext.showConfirm) {
@@ -36,17 +36,22 @@ export const initializeDialogInterceptor = (context) => {
     // Fallback a confirm nativo si no hay contexto
     return originalConfirm(message);
   };
-  
+
   // Reemplazar prompt global
-  window.prompt = async (message, defaultValue = '') => {
+  window.prompt = async (message, defaultValue = "") => {
     if (dialogContext && dialogContext.showPrompt) {
-      return await dialogContext.showPrompt(String(message), String(defaultValue));
+      return await dialogContext.showPrompt(
+        String(message),
+        String(defaultValue)
+      );
     }
     // Fallback a prompt nativo si no hay contexto
     return originalPrompt(message, defaultValue);
   };
-  
-  console.log('Dialog interceptor inicializado - Los diálogos nativos ahora son personalizados');
+
+  console.log(
+    "Dialog interceptor inicializado - Los diálogos nativos ahora son personalizados"
+  );
 };
 
 /**
@@ -57,8 +62,8 @@ export const restoreNativeDialogs = () => {
   window.confirm = originalConfirm;
   window.prompt = originalPrompt;
   dialogContext = null;
-  
-  console.log('Diálogos nativos restaurados');
+
+  console.log("Diálogos nativos restaurados");
 };
 
 /**
@@ -76,7 +81,7 @@ export const safeAlert = async (message, title) => {
     return await dialogContext.showAlert(String(message), title);
   }
   // Fallback seguro
-  console.warn('Dialog context no disponible, usando console.log:', message);
+  console.warn("Dialog context no disponible, usando console.log:", message);
   return true;
 };
 
@@ -85,16 +90,26 @@ export const safeConfirm = async (message, title) => {
     return await dialogContext.showConfirm(String(message), title);
   }
   // Fallback seguro - por defecto false para confirmaciones
-  console.warn('Dialog context no disponible, retornando false para confirm:', message);
+  console.warn(
+    "Dialog context no disponible, retornando false para confirm:",
+    message
+  );
   return false;
 };
 
-export const safePrompt = async (message, defaultValue = '', title) => {
+export const safePrompt = async (message, defaultValue = "", title) => {
   if (dialogContext && dialogContext.showPrompt) {
-    return await dialogContext.showPrompt(String(message), String(defaultValue), title);
+    return await dialogContext.showPrompt(
+      String(message),
+      String(defaultValue),
+      title
+    );
   }
   // Fallback seguro - retornar null
-  console.warn('Dialog context no disponible, retornando null para prompt:', message);
+  console.warn(
+    "Dialog context no disponible, retornando null para prompt:",
+    message
+  );
   return null;
 };
 
@@ -106,14 +121,14 @@ export const createPluginDialogAPI = () => {
     alert: safeAlert,
     confirm: safeConfirm,
     prompt: safePrompt,
-    
+
     // Función más avanzada para diálogos personalizados
     showDialog: (options) => {
       if (dialogContext && dialogContext.showCustomDialog) {
         return dialogContext.showCustomDialog(options);
       }
-      console.warn('Dialog context no disponible para showDialog');
+      console.warn("Dialog context no disponible para showDialog");
       return Promise.resolve(null);
-    }
+    },
   };
 };

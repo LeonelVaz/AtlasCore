@@ -1,9 +1,9 @@
 // src/contexts/time-scale-context.jsx
-import React, { createContext, useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import timeScaleService from '../services/time-scale-service';
-import { TIME_SCALES } from '../core/config/constants';
-import eventBus from '../core/bus/event-bus';
+import React, { createContext, useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import timeScaleService from "../services/time-scale-service";
+import { TIME_SCALES } from "../core/config/constants";
+import eventBus from "../core/bus/event-bus";
 
 // Crear el contexto
 export const TimeScaleContext = createContext();
@@ -14,7 +14,9 @@ export const TimeScaleContext = createContext();
  */
 export const TimeScaleProvider = ({ children }) => {
   // Estado para la escala de tiempo actual
-  const [currentTimeScale, setCurrentTimeScale] = useState(TIME_SCALES.STANDARD);
+  const [currentTimeScale, setCurrentTimeScale] = useState(
+    TIME_SCALES.STANDARD
+  );
   // Estado para las escalas disponibles
   const [availableTimeScales, setAvailableTimeScales] = useState([]);
   // Estado de carga
@@ -27,25 +29,25 @@ export const TimeScaleProvider = ({ children }) => {
         // Inicializar el servicio de escalas de tiempo
         const timeScale = await timeScaleService.initialize();
         setCurrentTimeScale(timeScale);
-        
+
         // Obtener las escalas disponibles
         const scales = timeScaleService.getAvailableTimeScales();
         setAvailableTimeScales(scales);
       } catch (error) {
-        console.error('Error al inicializar la escala de tiempo:', error);
+        console.error("Error al inicializar la escala de tiempo:", error);
       } finally {
         setLoading(false);
       }
     };
 
     initializeTimeScale();
-    
+
     // Suscribirse a cambios de escala
-    const unsubscribe = eventBus.subscribe('app.timeScaleChanged', async () => {
+    const unsubscribe = eventBus.subscribe("app.timeScaleChanged", async () => {
       const timeScale = await timeScaleService.getCurrentTimeScale();
       setCurrentTimeScale(timeScale);
     });
-    
+
     return () => {
       unsubscribe && unsubscribe();
     };
@@ -61,11 +63,11 @@ export const TimeScaleProvider = ({ children }) => {
       }
       return success;
     } catch (error) {
-      console.error('Error al cambiar la escala de tiempo:', error);
+      console.error("Error al cambiar la escala de tiempo:", error);
       return false;
     }
   };
-  
+
   // Función para crear una escala personalizada
   const createCustomTimeScale = async (height) => {
     try {
@@ -76,7 +78,7 @@ export const TimeScaleProvider = ({ children }) => {
       }
       return success;
     } catch (error) {
-      console.error('Error al crear escala personalizada:', error);
+      console.error("Error al crear escala personalizada:", error);
       return false;
     }
   };
@@ -87,7 +89,7 @@ export const TimeScaleProvider = ({ children }) => {
     availableTimeScales,
     changeTimeScale,
     createCustomTimeScale,
-    loading
+    loading,
   };
 
   return (
@@ -98,7 +100,7 @@ export const TimeScaleProvider = ({ children }) => {
 };
 
 TimeScaleProvider.propTypes = {
-  children: PropTypes.node.isRequired
+  children: PropTypes.node.isRequired,
 };
 
 export default TimeScaleProvider;

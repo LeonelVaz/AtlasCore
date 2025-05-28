@@ -1,6 +1,6 @@
 // src/services/theme-service.js
-import { THEMES, STORAGE_KEYS } from '../core/config/constants';
-import storageService from './storage-service';
+import { THEMES, STORAGE_KEYS } from "../core/config/constants";
+import storageService from "./storage-service";
 
 /**
  * Servicio para gestionar los temas de la aplicación
@@ -9,29 +9,29 @@ class ThemeService {
   constructor() {
     // Tema predeterminado
     this.defaultTheme = THEMES.LIGHT;
-    
+
     // Temas disponibles
     this.availableThemes = [
       {
         id: THEMES.LIGHT,
-        name: 'Light',
+        name: "Light",
       },
       {
         id: THEMES.DARK,
-        name: 'Dark',
+        name: "Dark",
       },
       {
         id: THEMES.ATLAS_DARK_BLUE,
-        name: 'Atlas Dark Blue',
+        name: "Atlas Dark Blue",
       },
       {
         id: THEMES.PURPLE_NIGHT,
-        name: 'Purple Night',
+        name: "Purple Night",
       },
       {
         id: THEMES.DEEP_OCEAN,
-        name: 'Deep Ocean',
-      }
+        name: "Deep Ocean",
+      },
     ];
   }
 
@@ -52,7 +52,7 @@ class ThemeService {
       const theme = await storageService.get(STORAGE_KEYS.THEME);
       return theme || this.defaultTheme;
     } catch (error) {
-      console.error('Error al obtener el tema actual:', error);
+      console.error("Error al obtener el tema actual:", error);
       return this.defaultTheme;
     }
   }
@@ -69,18 +69,18 @@ class ThemeService {
         console.error(`Tema no válido: ${themeId}`);
         return false;
       }
-      
+
       // Guardar el tema en el almacenamiento
       const result = await storageService.set(STORAGE_KEYS.THEME, themeId);
-      
+
       // Aplicar el tema al elemento html
       if (result) {
         this.applyTheme(themeId);
       }
-      
+
       return result;
     } catch (error) {
-      console.error('Error al establecer el tema:', error);
+      console.error("Error al establecer el tema:", error);
       return false;
     }
   }
@@ -93,21 +93,21 @@ class ThemeService {
     try {
       // Obtener el elemento html
       const htmlElement = document.documentElement;
-      
+
       // Eliminar clases de tema anteriores
-      Object.values(THEMES).forEach(theme => {
+      Object.values(THEMES).forEach((theme) => {
         htmlElement.classList.remove(`theme-${theme}`);
       });
-      
+
       // Añadir la clase del nuevo tema
       htmlElement.classList.add(`theme-${themeId}`);
-      
+
       // Actualizar el atributo data-theme para selectores CSS
-      htmlElement.setAttribute('data-theme', themeId);
-      
+      htmlElement.setAttribute("data-theme", themeId);
+
       console.log(`Tema aplicado: ${themeId}`);
     } catch (error) {
-      console.error('Error al aplicar el tema:', error);
+      console.error("Error al aplicar el tema:", error);
     }
   }
 
@@ -121,7 +121,7 @@ class ThemeService {
       this.applyTheme(currentTheme);
       return currentTheme;
     } catch (error) {
-      console.error('Error al inicializar el servicio de temas:', error);
+      console.error("Error al inicializar el servicio de temas:", error);
       this.applyTheme(this.defaultTheme);
       return this.defaultTheme;
     }

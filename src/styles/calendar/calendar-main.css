@@ -42,21 +42,21 @@
 }
 
 .calendar-navigation button {
-  font-size: .8rem;
+  font-size: 0.8rem;
   background-color: var(--tertiary-color-button-bg);
   color: var(--color-button-secondary-text);
   border: 0;
   border-radius: 4px;
   padding: 6px 12px;
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .calendar-navigation button:hover {
-  background-color: rgba(255,255,255,.048);
+  background-color: rgba(255, 255, 255, 0.048);
 }
 
 .calendar-navigation button.active {
@@ -77,7 +77,7 @@
     justify-content: space-between;
     padding: var(--spacing-sm);
   }
-  
+
   .calendar-title {
     position: static;
     transform: none;
@@ -90,7 +90,7 @@
     order: 1;
     margin-right: 0;
   }
-  
+
   .calendar-view-toggle {
     order: 3;
     margin-left: 0;

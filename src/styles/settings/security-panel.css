@@ -243,11 +243,11 @@
 }
 
 .trend-up {
-  color: #E53935;
+  color: #e53935;
 }
 
 .trend-down {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .trend-neutral {
@@ -429,22 +429,22 @@
 
 .threat-severity.critical {
   background-color: rgba(229, 57, 53, 0.1);
-  color: #E53935;
+  color: #e53935;
 }
 
 .threat-severity.high {
   background-color: rgba(255, 87, 34, 0.1);
-  color: #FF5722;
+  color: #ff5722;
 }
 
 .threat-severity.medium {
   background-color: rgba(255, 179, 0, 0.1);
-  color: #FFB300;
+  color: #ffb300;
 }
 
 .threat-severity.low {
   background-color: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .threat-details {
@@ -456,7 +456,7 @@
   padding: 0.75rem;
 }
 
-.threat-type, 
+.threat-type,
 .threat-action {
   display: flex;
   gap: 0.5rem;
@@ -611,17 +611,17 @@
 
 .status-approved {
   background-color: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .status-pending {
   background-color: rgba(255, 179, 0, 0.1);
-  color: #FFB300;
+  color: #ffb300;
 }
 
 .status-rejected {
   background-color: rgba(229, 57, 53, 0.1);
-  color: #E53935;
+  color: #e53935;
 }
 
 .permissions-by-type {
@@ -670,22 +670,22 @@
 
 .risk-critical {
   background-color: rgba(229, 57, 53, 0.1);
-  color: #E53935;
+  color: #e53935;
 }
 
 .risk-high {
   background-color: rgba(255, 87, 34, 0.1);
-  color: #FF5722;
+  color: #ff5722;
 }
 
 .risk-medium {
   background-color: rgba(255, 179, 0, 0.1);
-  color: #FFB300;
+  color: #ffb300;
 }
 
 .risk-low {
   background-color: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .permissions-empty {
@@ -765,7 +765,7 @@
   bottom: 0;
   background-color: rgba(var(--primary-color-rgb), 0.3);
   border-radius: 24px;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .toggle-slider:before {
@@ -777,7 +777,7 @@
   bottom: 3px;
   background-color: white;
   border-radius: 50%;
-  transition: .3s;
+  transition: 0.3s;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -1094,7 +1094,7 @@ input:checked + .toggle-slider:before {
 .blacklisted-status {
   padding: 0.25rem 0.5rem;
   background-color: rgba(229, 57, 53, 0.1);
-  color: #E53935;
+  color: #e53935;
   border-radius: 4px;
   font-weight: 600;
   display: inline-block;
@@ -1104,7 +1104,7 @@ input:checked + .toggle-slider:before {
 .normal-status {
   padding: 0.25rem 0.5rem;
   background-color: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+  color: #4caf50;
   border-radius: 4px;
   font-weight: 600;
   display: inline-block;
@@ -1231,12 +1231,12 @@ input:checked + .toggle-slider:before {
 
 .audit-type {
   background-color: rgba(76, 175, 80, 0.1);
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .audit-event {
   background-color: rgba(33, 150, 243, 0.1);
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .plugin-security-actions {
@@ -1395,36 +1395,36 @@ input:checked + .toggle-slider:before {
   .security-status-section {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .audit-chart-container {
     grid-template-columns: 1fr;
   }
-  
+
   .security-level-option {
     flex-direction: column;
     align-items: flex-start;
     padding: 0.75rem;
   }
-  
+
   .level-name {
     margin-bottom: 0.25rem;
   }
-  
+
   .audit-filters {
     grid-template-columns: 1fr;
   }
-  
+
   .permissions-grid,
   .permission-row {
     grid-template-columns: 1fr;
   }
-  
+
   .permission-plugin,
   .permission-scope,
   .permission-status {
     margin-bottom: 0.5rem;
   }
-  
+
   .permissions-filter-input {
     max-width: 100%;
   }
@@ -1435,11 +1435,11 @@ input:checked + .toggle-slider:before {
   .audit-summary {
     grid-template-columns: 1fr;
   }
-  
+
   .resource-metrics {
     grid-template-columns: 1fr;
   }
-  
+
   .threat-header,
   .log-header,
   .request-header {
@@ -1447,22 +1447,21 @@ input:checked + .toggle-slider:before {
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   .audit-controls,
   .plugin-security-actions {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .audit-mode-selector {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
 }
-
