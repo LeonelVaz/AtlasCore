@@ -2,8 +2,9 @@
 import React from "react";
 import VideoSchedulerNavItemComponent from "./components/VideoSchedulerNavItem.jsx";
 import VideoSchedulerMainPageComponent from "./components/VideoSchedulerMainPage.jsx";
-// highlight-next-line
-import SettingsPanelWidgetComponent from "./components/SettingsPanelWidget.jsx"; // Nueva importación
+import SettingsPanelWidgetComponent from "./components/SettingsPanelWidget.jsx";
+import ImportExportModalComponent from "./components/ImportExportModal.jsx";
+import ResetDataModalComponent from "./components/ResetDataModal.jsx";
 import {
   DEFAULT_SLOT_VIDEO_STRUCTURE,
   VIDEO_MAIN_STATUS,
@@ -18,12 +19,12 @@ import {
 import "./styles/index.css";
 
 const PLUGIN_PAGE_ID = "videoscheduler";
-const STORAGE_KEY_DATA = "video_scheduler_plugin_data_v2"; // Mantener v2 si la estructura no cambia drásticamente
+const STORAGE_KEY_DATA = "video_scheduler_plugin_data_v2";
 
 export default {
   id: "video-scheduler",
   name: "Video Scheduler",
-  version: "0.8.2", // Incrementar versión
+  version: "0.8.4", // Incrementar versión por los cambios
   description:
     "Planificador visual de videos con estados, multimes, moneda personalizable y detalles extendidos.",
   author: "Atlas Plugin Developer",
@@ -34,8 +35,7 @@ export default {
   _core: null,
   _navigationExtensionId: null,
   _pageExtensionId: null,
-  // highlight-next-line
-  _settingsWidgetExtensionId: null, // Para el nuevo widget
+  _settingsWidgetExtensionId: null,
 
   _pluginData: {
     videosBySlotKey: {},
@@ -44,8 +44,6 @@ export default {
       mainUserCurrency: "USD",
       currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
       configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
-      // Podríamos añadir aquí más configuraciones en el futuro
-      // ejemploEnableNotifications: true,
     },
   },
 
@@ -64,7 +62,6 @@ export default {
         self.publicAPI = self._createPublicAPI(self);
         self._core.plugins.registerAPI(self.id, self.publicAPI);
 
-        // Helper para crear wrappers de componentes
         const createComponentWrapper = (Component, extraProps = {}) => {
           return (propsFromAtlas) =>
             React.createElement(Component, {
@@ -76,7 +73,6 @@ export default {
             });
         };
 
-        // Registrar NavItem
         self._navigationExtensionId = self._core.ui.registerExtension(
           self.id,
           self._core.ui.getExtensionZones().MAIN_NAVIGATION,
@@ -86,23 +82,22 @@ export default {
           { order: 150 }
         );
 
-        // Registrar MainPage
         self._pageExtensionId = self._core.ui.registerExtension(
           self.id,
           self._core.ui.getExtensionZones().PLUGIN_PAGES,
-          createComponentWrapper(VideoSchedulerMainPageComponent),
+          createComponentWrapper(VideoSchedulerMainPageComponent, {
+            ImportExportModal: ImportExportModalComponent,
+            ResetDataModal: ResetDataModalComponent,
+          }),
           { order: 100, props: { pageId: PLUGIN_PAGE_ID } }
         );
 
-        // highlight-start
-        // Registrar SettingsPanelWidget
         self._settingsWidgetExtensionId = self._core.ui.registerExtension(
           self.id,
-          self._core.ui.getExtensionZones().SETTINGS_PANEL, // Zona correcta
-          createComponentWrapper(SettingsPanelWidgetComponent), // Usar el wrapper
-          { order: 100 } // Opcional: ajustar orden si hay otros widgets
+          self._core.ui.getExtensionZones().SETTINGS_PANEL,
+          createComponentWrapper(SettingsPanelWidgetComponent),
+          { order: 100 }
         );
-        // highlight-end
 
         console.log(`[${self.id}] Plugin inicializado.`);
         resolve(true);
@@ -117,9 +112,8 @@ export default {
     const self = this;
     console.log(`[${self.id}] Limpiando plugin...`);
     try {
-      await self._savePluginData(); // Guardar datos antes de limpiar
+      await self._savePluginData();
 
-      // Limpiar extensiones específicas
       if (self._core && self._core.ui) {
         if (self._navigationExtensionId) {
           self._core.ui.removeExtension(self.id, self._navigationExtensionId);
@@ -127,19 +121,16 @@ export default {
         if (self._pageExtensionId) {
           self._core.ui.removeExtension(self.id, self._pageExtensionId);
         }
-        // highlight-start
         if (self._settingsWidgetExtensionId) {
           self._core.ui.removeExtension(
             self.id,
             self._settingsWidgetExtensionId
           );
         }
-        // highlight-end
       }
 
       self._navigationExtensionId = null;
       self._pageExtensionId = null;
-      // highlight-next-line
       self._settingsWidgetExtensionId = null;
 
       console.log(`[${self.id}] Plugin limpiado.`);
@@ -150,7 +141,7 @@ export default {
     }
   },
 
-  publicAPI: {}, // Se define en _createPublicAPI
+  publicAPI: {},
   _createPublicAPI: function (self) {
     return {
       getMonthViewData: async (year, month) =>
@@ -185,10 +176,8 @@ export default {
       deleteDailyIncome: async (dateStr) =>
         self._internalDeleteDailyIncome(dateStr),
       getCurrencyConfiguration: async () =>
-        // Usado por SettingsPanelWidget y CurrencyRateForm
         self._internalGetCurrencyConfiguration(),
       saveCurrencyConfiguration: async (
-        // Usado por SettingsPanelWidget y CurrencyRateForm
         mainCurrency,
         incomeCurrencies,
         rates
@@ -198,16 +187,140 @@ export default {
           incomeCurrencies,
           rates
         ),
-      getAllSupportedCurrencies: () => ALL_SUPPORTED_CURRENCIES, // Usado por SettingsPanelWidget y otros forms
+      getAllSupportedCurrencies: () => ALL_SUPPORTED_CURRENCIES,
       getCurrencySymbol: (currencyCode) => getCurrencySymbol(currencyCode),
-      // Aquí podrían ir más funciones para otras configuraciones si las añades
-      // Ejemplo:
-      // getPluginSpecificSetting: async (key) => self._pluginData.settings[key],
-      // savePluginSpecificSetting: async (key, value) => {
-      //   self._pluginData.settings[key] = value;
-      //   await self._savePluginData();
-      //   return self._pluginData.settings[key];
-      // }
+      getCurrentViewDate: async () => {
+        // Esta función es un placeholder. La forma correcta es que VideoSchedulerMainPage
+        // pase su `currentDate` a los modales que lo necesiten (como ResetDataModal).
+        // Si se llama sin esa prop, usamos la fecha actual del sistema como fallback.
+        console.warn(
+          `[${self.id}] API getCurrentViewDate: Usando fecha actual del sistema. Para mayor precisión, asegúrese de que la página principal pase su fecha de vista actual al modal de reseteo.`
+        );
+        return new Date();
+      },
+      exportAllData: async () => {
+        console.log(
+          `[${self.id}] Exportando datos:`,
+          JSON.parse(JSON.stringify(self._pluginData))
+        );
+        return JSON.parse(JSON.stringify(self._pluginData));
+      },
+      importAllData: async (dataToImport) => {
+        console.log(`[${self.id}] Iniciando importación de datos...`);
+        if (typeof dataToImport !== "object" || dataToImport === null) {
+          throw new Error(
+            "Los datos a importar deben ser un objeto JSON válido."
+          );
+        }
+
+        if (
+          !dataToImport.hasOwnProperty("videosBySlotKey") ||
+          !dataToImport.hasOwnProperty("dailyIncomes") ||
+          !dataToImport.hasOwnProperty("settings")
+        ) {
+          throw new Error(
+            "El archivo JSON importado no tiene la estructura esperada."
+          );
+        }
+        if (
+          typeof dataToImport.videosBySlotKey !== "object" ||
+          typeof dataToImport.dailyIncomes !== "object" ||
+          typeof dataToImport.settings !== "object"
+        ) {
+          throw new Error(
+            "Las propiedades videosBySlotKey, dailyIncomes o settings no son objetos válidos."
+          );
+        }
+
+        self._pluginData = JSON.parse(JSON.stringify(dataToImport));
+        console.log(
+          `[${self.id}] _pluginData reemplazado con datos importados.`
+        );
+
+        await self._loadPluginData(); // Re-normalizar los datos importados
+        console.log(
+          `[${self.id}] _pluginData normalizado después de la importación.`
+        );
+
+        await self._savePluginData();
+        console.log(`[${self.id}] Datos importados y guardados.`);
+
+        if (self._core.events) {
+          self._core.events.publish(
+            self.id,
+            `${self.id}.dataImportedRefresh`,
+            {}
+          );
+          console.log(`[${self.id}] Evento dataImportedRefresh publicado.`);
+        }
+        return true;
+      },
+      resetPluginData: async (scope = "current_month", currentViewDate) => {
+        console.log(`[${self.id}] Iniciando reseteo de datos. Scope: ${scope}`);
+        if (scope === "current_month" && !currentViewDate) {
+          currentViewDate = new Date(); // Fallback
+          console.warn(
+            `[${self.id}] resetPluginData: currentViewDate no proporcionada para reset del mes, usando fecha actual del sistema.`
+          );
+        }
+
+        if (scope === "all_data") {
+          self._pluginData = {
+            videosBySlotKey: {},
+            dailyIncomes: {},
+            settings: {
+              mainUserCurrency: "USD",
+              currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
+              configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+            },
+          };
+          console.log(`[${self.id}] Todos los datos han sido reseteados.`);
+        } else if (scope === "current_month") {
+          const year = currentViewDate.getFullYear();
+          const month = currentViewDate.getMonth();
+          const monthKeyPrefix = `${year}-${String(month + 1).padStart(
+            2,
+            "0"
+          )}-`;
+
+          let videosDeleted = 0;
+          Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
+            if (key.startsWith(monthKeyPrefix)) {
+              delete self._pluginData.videosBySlotKey[key];
+              videosDeleted++;
+            }
+          });
+          console.log(
+            `[${self.id}] ${videosDeleted} videos eliminados para el mes ${monthKeyPrefix}.`
+          );
+
+          let incomesReset = 0;
+          Object.keys(self._pluginData.dailyIncomes).forEach((key) => {
+            if (key.startsWith(monthKeyPrefix)) {
+              self._pluginData.dailyIncomes[key] = {
+                ...DEFAULT_DAILY_INCOME_STRUCTURE,
+                currency: self._pluginData.settings.mainUserCurrency,
+              };
+              incomesReset++;
+            }
+          });
+          console.log(
+            `[${self.id}] ${incomesReset} ingresos reseteados para el mes ${monthKeyPrefix}.`
+          );
+        } else {
+          throw new Error("Alcance de reseteo no válido.");
+        }
+
+        await self._savePluginData();
+        console.log(`[${self.id}] Datos reseteados y guardados.`);
+        if (self._core.events) {
+          self._core.events.publish(self.id, `${self.id}.dataResetRefresh`, {
+            scope,
+          });
+          console.log(`[${self.id}] Evento dataResetRefresh publicado.`);
+        }
+        return true;
+      },
     };
   },
 
@@ -217,59 +330,63 @@ export default {
       console.warn(
         `[${self.id}] Core o storage no disponible en _loadPluginData.`
       );
-      self._pluginData.settings = {
-        // Asegurar que settings exista incluso si falla la carga
+      self._pluginData = self._pluginData || {}; // Asegurar que _pluginData exista
+      self._pluginData.settings = self._pluginData.settings || {
         mainUserCurrency: "USD",
-        currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
-        configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
+        currencyRates: { USD: 1 },
+        configuredIncomeCurrencies: ["USD"],
       };
+      self._pluginData.videosBySlotKey = self._pluginData.videosBySlotKey || {};
+      self._pluginData.dailyIncomes = self._pluginData.dailyIncomes || {};
       return;
     }
-    const loadedData = await self._core.storage.getItem(
-      self.id,
-      STORAGE_KEY_DATA,
-      {} // Default a objeto vacío si no hay nada
-    );
-    const safeLoadedData = loadedData || {};
 
-    // Definir estructura de settings por defecto más robusta
+    // Si _pluginData ya tiene contenido (ej. de una importación previa en la misma sesión),
+    // usamos esos datos como base para la normalización. Sino, cargamos de storage.
+    const hasPreloadedData =
+      self._pluginData &&
+      (Object.keys(self._pluginData.videosBySlotKey || {}).length > 0 ||
+        Object.keys(self._pluginData.dailyIncomes || {}).length > 0 ||
+        self._pluginData.settings); // Chequeo más robusto
+
+    const baseData = hasPreloadedData
+      ? JSON.parse(JSON.stringify(self._pluginData)) // Usar copia profunda si hay datos pre-cargados
+      : await self._core.storage.getItem(self.id, STORAGE_KEY_DATA, {});
+
+    const safeLoadedData = baseData || {};
+
     const defaultSettings = {
       mainUserCurrency: "USD",
-      currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 }, // Tasas base
-      configuredIncomeCurrencies: ["USD", "EUR", "ARS"], // Monedas de ingreso base
-      // ejemploEnableNotifications: true, // otras configuraciones
+      currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
+      configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
     };
 
-    const loadedSettings = safeLoadedData.settings || {};
+    const loadedSettingsSource = safeLoadedData.settings || {};
+    const finalSettings = {
+      mainUserCurrency:
+        loadedSettingsSource.mainUserCurrency ||
+        defaultSettings.mainUserCurrency,
+      currencyRates: {
+        ...defaultSettings.currencyRates,
+        ...(loadedSettingsSource.currencyRates || {}),
+      },
+      configuredIncomeCurrencies:
+        Array.isArray(loadedSettingsSource.configuredIncomeCurrencies) &&
+        loadedSettingsSource.configuredIncomeCurrencies.length > 0
+          ? [...new Set(loadedSettingsSource.configuredIncomeCurrencies)] // Asegurar unicidad
+          : [...defaultSettings.configuredIncomeCurrencies],
+    };
 
-    // Fusionar configuraciones cargadas con las por defecto
-    // Esto asegura que si se añaden nuevas claves de settings en el futuro,
-    // el plugin no falle al cargarlas si no existen en los datos guardados.
-    const finalSettings = { ...defaultSettings, ...loadedSettings };
-
-    // Re-validar y asegurar consistencia de la configuración de moneda
     if (
       !ALL_SUPPORTED_CURRENCIES.find(
         (c) => c.code === finalSettings.mainUserCurrency
       )
     ) {
-      finalSettings.mainUserCurrency = defaultSettings.mainUserCurrency; // Fallback a USD
+      finalSettings.mainUserCurrency = defaultSettings.mainUserCurrency;
     }
 
-    finalSettings.currencyRates = {
-      ...defaultSettings.currencyRates,
-      ...(finalSettings.currencyRates || {}),
-    };
-    finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1; // Moneda principal siempre tasa 1
+    finalSettings.currencyRates[finalSettings.mainUserCurrency] = 1;
 
-    if (
-      !Array.isArray(finalSettings.configuredIncomeCurrencies) ||
-      finalSettings.configuredIncomeCurrencies.length === 0
-    ) {
-      finalSettings.configuredIncomeCurrencies = [
-        ...defaultSettings.configuredIncomeCurrencies,
-      ];
-    }
     if (
       !finalSettings.configuredIncomeCurrencies.includes(
         finalSettings.mainUserCurrency
@@ -282,9 +399,12 @@ export default {
         ...new Set(finalSettings.configuredIncomeCurrencies),
       ];
     }
-    // Asegurar que todas las configuredIncomeCurrencies tengan una tasa
+
     finalSettings.configuredIncomeCurrencies.forEach((code) => {
-      if (finalSettings.currencyRates[code] === undefined) {
+      if (
+        finalSettings.currencyRates[code] === undefined ||
+        finalSettings.currencyRates[code] <= 0
+      ) {
         finalSettings.currencyRates[code] =
           code === finalSettings.mainUserCurrency
             ? 1
@@ -292,37 +412,54 @@ export default {
       }
     });
 
+    const ratesToKeep = {};
+    finalSettings.configuredIncomeCurrencies.forEach((code) => {
+      if (finalSettings.currencyRates.hasOwnProperty(code)) {
+        // Solo mantener si existe
+        ratesToKeep[code] = finalSettings.currencyRates[code];
+      } else {
+        // Si no existe, asignar 1 (o 1 si es la moneda principal)
+        ratesToKeep[code] = code === finalSettings.mainUserCurrency ? 1 : 1;
+      }
+    });
+    finalSettings.currencyRates = ratesToKeep;
+
     self._pluginData = {
       videosBySlotKey: safeLoadedData.videosBySlotKey || {},
       dailyIncomes: safeLoadedData.dailyIncomes || {},
       settings: finalSettings,
     };
 
-    // Normalizar videos (ya existente)
     Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
+      const videoData = self._pluginData.videosBySlotKey[key] || {};
       self._pluginData.videosBySlotKey[key] = {
         ...DEFAULT_SLOT_VIDEO_STRUCTURE,
-        ...self._pluginData.videosBySlotKey[key],
-        stackableStatuses: Array.isArray(
-          self._pluginData.videosBySlotKey[key].stackableStatuses
-        )
-          ? self._pluginData.videosBySlotKey[key].stackableStatuses
+        ...videoData,
+        id: key,
+        stackableStatuses: Array.isArray(videoData.stackableStatuses)
+          ? videoData.stackableStatuses
           : [],
-        tags: Array.isArray(self._pluginData.videosBySlotKey[key].tags)
-          ? self._pluginData.videosBySlotKey[key].tags
-          : [],
+        tags: Array.isArray(videoData.tags) ? videoData.tags : [],
       };
     });
 
-    // Normalizar dailyIncomes (ya existente)
     const validIncomeCurrencies =
       self._pluginData.settings.configuredIncomeCurrencies;
     const mainCurrencyForIncomes = self._pluginData.settings.mainUserCurrency;
-    Object.values(self._pluginData.dailyIncomes).forEach((income) => {
-      if (!validIncomeCurrencies.includes(income.currency)) {
-        income.currency = mainCurrencyForIncomes;
-      }
+    Object.keys(self._pluginData.dailyIncomes).forEach((dateKey) => {
+      const income = self._pluginData.dailyIncomes[dateKey] || {};
+      const currencyIsValid = validIncomeCurrencies.includes(income.currency);
+
+      self._pluginData.dailyIncomes[dateKey] = {
+        ...DEFAULT_DAILY_INCOME_STRUCTURE,
+        ...income, // Sobrescribir con datos existentes
+        currency: currencyIsValid ? income.currency : mainCurrencyForIncomes, // Corregir moneda si es inválida
+      };
     });
+    console.log(
+      `[${self.id}] Datos cargados/normalizados:`,
+      JSON.parse(JSON.stringify(self._pluginData))
+    );
   },
 
   _savePluginData: async function () {
@@ -334,7 +471,6 @@ export default {
       return;
     }
     try {
-      // Asegurar que la configuración de moneda sea consistente antes de guardar
       if (
         self._pluginData.settings?.mainUserCurrency &&
         self._pluginData.settings?.currencyRates
@@ -343,12 +479,21 @@ export default {
           self._pluginData.settings.mainUserCurrency
         ] = 1;
       } else {
-        // Fallback si settings está corrupto o incompleto
-        self._pluginData.settings = {
-          mainUserCurrency: "USD",
-          currencyRates: { USD: 1, EUR: 1.08, ARS: 0.0011 },
-          configuredIncomeCurrencies: ["USD", "EUR", "ARS"],
-        };
+        console.warn(
+          `[${self.id}] Settings de moneda incompletos al guardar, usando defaults.`
+        );
+        self._pluginData.settings = self._pluginData.settings || {};
+        self._pluginData.settings.mainUserCurrency =
+          self._pluginData.settings.mainUserCurrency || "USD";
+        self._pluginData.settings.currencyRates = self._pluginData.settings
+          .currencyRates || { USD: 1 };
+        self._pluginData.settings.currencyRates[
+          self._pluginData.settings.mainUserCurrency
+        ] = 1;
+        self._pluginData.settings.configuredIncomeCurrencies = self._pluginData
+          .settings.configuredIncomeCurrencies || [
+          self._pluginData.settings.mainUserCurrency,
+        ];
       }
       await self._core.storage.setItem(
         self.id,
@@ -360,18 +505,14 @@ export default {
     }
   },
 
-  // _getVideoSlotKey, _ensureVideoSlotExists, _filterDataByMonth, _applySystemWarnings
-  // _internalGetMonthViewData, _internalUpdateVideoName, _internalUpdateVideoDescription
-  // _internalUpdateVideoStatus, _internalUpdateVideoDetails, _internalSetDailyIncome
-  // _internalGetDailyIncome, _internalDeleteDailyIncome
-  // (Estas funciones internas no necesitan cambios para el widget de configuración,
-  // a menos que el widget fuera a modificar directamente videos o ingresos, lo cual no es el caso)
-
-  _getVideoSlotKey: (dateStr, slotIndex) => `${dateStr}-${slotIndex}`,
+  _getVideoSlotKey: function (dateStr, slotIndex) {
+    return `${dateStr}-${slotIndex}`;
+  },
 
   _ensureVideoSlotExists: function (dateStr, slotIndex) {
     const key = this._getVideoSlotKey(dateStr, slotIndex);
-    if (!this._pluginData.videosBySlotKey[key]) {
+    const existingVideo = this._pluginData.videosBySlotKey[key];
+    if (!existingVideo) {
       this._pluginData.videosBySlotKey[key] = {
         ...DEFAULT_SLOT_VIDEO_STRUCTURE,
         id: key,
@@ -379,29 +520,25 @@ export default {
     } else {
       this._pluginData.videosBySlotKey[key] = {
         ...DEFAULT_SLOT_VIDEO_STRUCTURE,
-        ...this._pluginData.videosBySlotKey[key],
-        stackableStatuses: Array.isArray(
-          this._pluginData.videosBySlotKey[key].stackableStatuses
-        )
-          ? this._pluginData.videosBySlotKey[key].stackableStatuses
+        ...existingVideo,
+        id: key, // Asegurar que el ID sea correcto
+        stackableStatuses: Array.isArray(existingVideo.stackableStatuses)
+          ? existingVideo.stackableStatuses
           : [],
-        tags: Array.isArray(this._pluginData.videosBySlotKey[key].tags)
-          ? this._pluginData.videosBySlotKey[key].tags
-          : [],
+        tags: Array.isArray(existingVideo.tags) ? existingVideo.tags : [],
       };
     }
     return this._pluginData.videosBySlotKey[key];
   },
 
   _filterDataByMonth: function (year, month_idx) {
-    const self = this;
     const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, "0")}-`;
     const videosForMonth = {};
-    Object.entries(self._pluginData.videosBySlotKey).forEach(([key, video]) => {
+    Object.entries(this._pluginData.videosBySlotKey).forEach(([key, video]) => {
       if (key.startsWith(monthKeyPrefix)) videosForMonth[key] = { ...video };
     });
     const incomesForMonth = {};
-    Object.entries(self._pluginData.dailyIncomes).forEach(([key, income]) => {
+    Object.entries(this._pluginData.dailyIncomes).forEach(([key, income]) => {
       if (key.startsWith(monthKeyPrefix)) incomesForMonth[key] = { ...income };
     });
     return { videos: videosForMonth, dailyIncomes: incomesForMonth };
@@ -409,56 +546,86 @@ export default {
 
   _applySystemWarnings: function (video, dateStr) {
     if (!video || !dateStr) return;
-    const isPast = isDateInPast(dateStr);
+    const isPastDate = isDateInPast(dateStr); // Renombrado para claridad
     const stackableStatuses = Array.isArray(video.stackableStatuses)
       ? [...video.stackableStatuses]
       : [];
     const hasName = video.name && video.name.trim() !== "";
     let shouldHaveWarning = false;
-    if (isPast && INVALID_PAST_STATUSES.includes(video.status))
+
+    if (isPastDate && INVALID_PAST_STATUSES.includes(video.status)) {
       shouldHaveWarning = true;
-    if (video.status === VIDEO_MAIN_STATUS.PENDING && hasName)
+    }
+    if (video.status === VIDEO_MAIN_STATUS.PENDING && hasName) {
       shouldHaveWarning = true;
-    if (video.status === VIDEO_MAIN_STATUS.EMPTY && hasName)
+    }
+    if (video.status === VIDEO_MAIN_STATUS.EMPTY && hasName) {
       shouldHaveWarning = true;
+    }
+
     const warningIndex = stackableStatuses.indexOf(
       VIDEO_STACKABLE_STATUS.WARNING
     );
-    if (shouldHaveWarning && warningIndex === -1)
+    if (shouldHaveWarning && warningIndex === -1) {
       stackableStatuses.push(VIDEO_STACKABLE_STATUS.WARNING);
-    else if (!shouldHaveWarning && warningIndex > -1)
+    } else if (!shouldHaveWarning && warningIndex > -1) {
       stackableStatuses.splice(warningIndex, 1);
+    }
     video.stackableStatuses = stackableStatuses;
   },
 
   _internalGetMonthViewData: async function (year, month_idx) {
-    const self = this;
     const daysInMonth = new Date(year, month_idx + 1, 0).getDate();
-    let dataChanged = false;
+    let dataChangedByGet = false;
+
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month_idx + 1).padStart(
         2,
         "0"
       )}-${String(day).padStart(2, "0")}`;
       for (let slotIndex = 0; slotIndex < 3; slotIndex++) {
-        self._ensureVideoSlotExists(dateStr, slotIndex);
+        const key = this._getVideoSlotKey(dateStr, slotIndex);
+        const videoBeforeEnsure = this._pluginData.videosBySlotKey[key]
+          ? JSON.stringify(this._pluginData.videosBySlotKey[key])
+          : null;
+        this._ensureVideoSlotExists(dateStr, slotIndex);
+        const videoAfterEnsure = JSON.stringify(
+          this._pluginData.videosBySlotKey[key]
+        );
+        if (videoBeforeEnsure !== videoAfterEnsure) dataChangedByGet = true;
       }
-      if (!self._pluginData.dailyIncomes[dateStr]) {
-        self._pluginData.dailyIncomes[dateStr] = {
+      if (!this._pluginData.dailyIncomes[dateStr]) {
+        this._pluginData.dailyIncomes[dateStr] = {
           ...DEFAULT_DAILY_INCOME_STRUCTURE,
-          currency: self._pluginData.settings.mainUserCurrency,
+          currency: this._pluginData.settings.mainUserCurrency,
         };
-        dataChanged = true;
+        dataChangedByGet = true;
+      } else {
+        // Asegurar que los ingresos existentes tengan la estructura completa
+        const income = this._pluginData.dailyIncomes[dateStr];
+        const incomeBeforeEnsure = JSON.stringify(income);
+        this._pluginData.dailyIncomes[dateStr] = {
+          ...DEFAULT_DAILY_INCOME_STRUCTURE,
+          currency: this._pluginData.settings.mainUserCurrency,
+          ...income,
+        };
+        if (
+          JSON.stringify(this._pluginData.dailyIncomes[dateStr]) !==
+          incomeBeforeEnsure
+        )
+          dataChangedByGet = true;
       }
     }
+
     const monthKeyPrefix = `${year}-${String(month_idx + 1).padStart(2, "0")}-`;
-    Object.keys(self._pluginData.videosBySlotKey).forEach((key) => {
+    Object.keys(this._pluginData.videosBySlotKey).forEach((key) => {
       if (!key.startsWith(monthKeyPrefix)) return;
-      const video = self._pluginData.videosBySlotKey[key];
-      const dateStrOfVideo = key.substring(0, 10); // Asegurar que usamos dateStr del video
-      const isPast = isDateInPast(dateStrOfVideo);
+      const video = this._pluginData.videosBySlotKey[key];
+      const dateStrOfVideo = key.substring(0, 10);
+      const isPastDate = isDateInPast(dateStrOfVideo);
       const originalState = JSON.stringify(video);
-      if (isPast) {
+
+      if (isPastDate) {
         if (video.status === VIDEO_MAIN_STATUS.PENDING) {
           video.status = VIDEO_MAIN_STATUS.EMPTY;
           video.name = "";
@@ -469,34 +636,39 @@ export default {
         if (
           video.status === VIDEO_MAIN_STATUS.PUBLISHED &&
           video.subStatus === VIDEO_SUB_STATUS.SCHEDULED
-        )
+        ) {
           video.subStatus = null;
+        }
       }
-      self._applySystemWarnings(video, dateStrOfVideo);
-      if (JSON.stringify(video) !== originalState) dataChanged = true;
+      this._applySystemWarnings(video, dateStrOfVideo);
+
+      if (JSON.stringify(video) !== originalState) dataChangedByGet = true;
     });
-    if (dataChanged) await self._savePluginData();
-    return self._filterDataByMonth(year, month_idx);
+
+    if (dataChangedByGet) await this._savePluginData();
+    return this._filterDataByMonth(year, month_idx);
   },
 
   _internalUpdateVideoName: async function (dateStr, slotIndex, newName) {
-    const self = this;
-    const video = self._ensureVideoSlotExists(dateStr, slotIndex);
+    const video = this._ensureVideoSlotExists(dateStr, slotIndex);
     const oldName = video.name;
     video.name = newName.trim();
-    const isPast = isDateInPast(dateStr);
-    if (isPast) {
-      if (video.status === VIDEO_MAIN_STATUS.EMPTY && video.name !== "")
+    const isPastDate = isDateInPast(dateStr);
+
+    if (isPastDate) {
+      if (video.status === VIDEO_MAIN_STATUS.EMPTY && video.name !== "") {
         video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
-      else if (video.name === "" && oldName !== "") {
+      } else if (video.name === "" && oldName !== "") {
+        // Solo cambiar a EMPTY si se borra un nombre que existía
         video.status = VIDEO_MAIN_STATUS.EMPTY;
         video.subStatus = null;
-        video.stackableStatuses = [];
+        video.stackableStatuses = []; // Resetear estados apilables al vaciar
       }
     } else {
-      if (video.status === VIDEO_MAIN_STATUS.PENDING && video.name !== "")
+      // Para fechas futuras o presentes
+      if (video.status === VIDEO_MAIN_STATUS.PENDING && video.name !== "") {
         video.status = VIDEO_MAIN_STATUS.DEVELOPMENT;
-      else if (
+      } else if (
         video.name === "" &&
         oldName !== "" &&
         video.status !== VIDEO_MAIN_STATUS.EMPTY
@@ -506,10 +678,10 @@ export default {
         video.stackableStatuses = [];
       }
     }
-    self._applySystemWarnings(video, dateStr);
+    this._applySystemWarnings(video, dateStr);
     video.updatedAt = new Date().toISOString();
-    await self._savePluginData();
-    return video;
+    await this._savePluginData();
+    return JSON.parse(JSON.stringify(video)); // Devolver copia
   },
 
   _internalUpdateVideoDescription: async function (
@@ -517,12 +689,11 @@ export default {
     slotIndex,
     newDescription
   ) {
-    const self = this;
-    const video = self._ensureVideoSlotExists(dateStr, slotIndex);
+    const video = this._ensureVideoSlotExists(dateStr, slotIndex);
     video.description = newDescription.trim();
     video.updatedAt = new Date().toISOString();
-    await self._savePluginData();
-    return video;
+    await this._savePluginData();
+    return JSON.parse(JSON.stringify(video));
   },
 
   _internalUpdateVideoStatus: async function (
@@ -532,36 +703,44 @@ export default {
     newSubStatus,
     newStackableStatuses = []
   ) {
-    const self = this;
-    const video = self._ensureVideoSlotExists(dateStr, slotIndex);
-    const isPast = isDateInPast(dateStr);
+    const video = this._ensureVideoSlotExists(dateStr, slotIndex);
+    const isPastDate = isDateInPast(dateStr);
+
     if (
-      isPast &&
+      isPastDate &&
       newMainStatus === VIDEO_MAIN_STATUS.PUBLISHED &&
       newSubStatus === VIDEO_SUB_STATUS.SCHEDULED
-    )
-      newSubStatus = null;
-    if (newMainStatus === VIDEO_MAIN_STATUS.EMPTY) {
-      video.name = "";
-      video.description = "";
-      newSubStatus = null;
-      newStackableStatuses = [];
+    ) {
+      newSubStatus = null; // No puede estar "SCHEDULED" en el pasado si ya está "PUBLISHED"
     }
+
+    // Si se cambia a EMPTY, limpiar nombre, descripción y sub-estados
+    if (newMainStatus === VIDEO_MAIN_STATUS.EMPTY) {
+      video.name = ""; // Borrar nombre al pasar a EMPTY
+      video.description = ""; // Borrar descripción
+      newSubStatus = null; // No hay sub-estado para EMPTY
+      newStackableStatuses = []; // Limpiar estados apilables
+    } else if (newMainStatus === VIDEO_MAIN_STATUS.PENDING) {
+      // Si se cambia a PENDING, usualmente se borra el sub-estado.
+      // Los stackable statuses pueden mantenerse si el usuario los puso intencionalmente.
+      newSubStatus = null;
+    }
+
     video.status = newMainStatus;
     video.subStatus = newSubStatus;
+
     const userStackableStatuses = (newStackableStatuses || []).filter(
-      (status) => status !== VIDEO_STACKABLE_STATUS.WARNING
+      (status) => status !== VIDEO_STACKABLE_STATUS.WARNING // El sistema maneja WARNING
     );
     video.stackableStatuses = [...userStackableStatuses];
-    self._applySystemWarnings(video, dateStr);
+    this._applySystemWarnings(video, dateStr);
     video.updatedAt = new Date().toISOString();
-    await self._savePluginData();
-    return video;
+    await this._savePluginData();
+    return JSON.parse(JSON.stringify(video));
   },
 
   _internalUpdateVideoDetails: async function (dateStr, slotIndex, details) {
-    const self = this;
-    const video = self._ensureVideoSlotExists(dateStr, slotIndex);
+    const video = this._ensureVideoSlotExists(dateStr, slotIndex);
     if (details.hasOwnProperty("detailedDescription"))
       video.detailedDescription = details.detailedDescription;
     if (details.hasOwnProperty("platform")) video.platform = details.platform;
@@ -570,57 +749,56 @@ export default {
     if (details.hasOwnProperty("tags"))
       video.tags = Array.isArray(details.tags) ? details.tags : [];
     video.updatedAt = new Date().toISOString();
-    await self._savePluginData();
-    return video;
+    await this._savePluginData();
+    return JSON.parse(JSON.stringify(video));
   },
 
   _internalSetDailyIncome: async function (dateStr, incomeData) {
-    const self = this;
-    const mainCurrency = self._pluginData.settings.mainUserCurrency;
-    if (parseFloat(incomeData.amount) === 0 || incomeData.amount === "") {
-      self._pluginData.dailyIncomes[dateStr] = {
+    const mainCurrency = this._pluginData.settings.mainUserCurrency;
+    const currentIncome = this._pluginData.dailyIncomes[dateStr] || {};
+
+    let newAmount = parseFloat(incomeData.amount);
+    if (isNaN(newAmount) || newAmount <= 0) {
+      // Si el monto es 0, vacío, o inválido
+      this._pluginData.dailyIncomes[dateStr] = {
         ...DEFAULT_DAILY_INCOME_STRUCTURE,
-        currency: incomeData.currency || mainCurrency,
+        currency: incomeData.currency || currentIncome.currency || mainCurrency, // Mantener moneda si existe, sino la del form, sino la principal
       };
     } else {
-      self._pluginData.dailyIncomes[dateStr] = {
-        ...DEFAULT_DAILY_INCOME_STRUCTURE,
-        currency: mainCurrency,
-        ...(self._pluginData.dailyIncomes[dateStr] || {}),
-        ...incomeData,
+      this._pluginData.dailyIncomes[dateStr] = {
+        ...DEFAULT_DAILY_INCOME_STRUCTURE, // Empezar con la base
+        ...currentIncome, // Mantener datos existentes como payer, status si no se proveen nuevos
+        ...incomeData, // Sobrescribir con los nuevos datos
+        amount: newAmount, // Usar el monto parseado
+        currency: incomeData.currency || currentIncome.currency || mainCurrency, // Priorizar moneda del form, luego existente, luego principal
       };
     }
-    await self._savePluginData();
-    return self._pluginData.dailyIncomes[dateStr];
+    await this._savePluginData();
+    return JSON.parse(JSON.stringify(this._pluginData.dailyIncomes[dateStr]));
   },
 
   _internalGetDailyIncome: async function (dateStr) {
-    const self = this;
-    return (
-      self._pluginData.dailyIncomes[dateStr] || {
-        ...DEFAULT_DAILY_INCOME_STRUCTURE,
-        currency: self._pluginData.settings.mainUserCurrency,
-      }
-    );
+    const income = this._pluginData.dailyIncomes[dateStr] || {
+      ...DEFAULT_DAILY_INCOME_STRUCTURE,
+      currency: this._pluginData.settings.mainUserCurrency,
+    };
+    return JSON.parse(JSON.stringify(income));
   },
 
   _internalDeleteDailyIncome: async function (dateStr) {
-    const self = this;
-    if (self._pluginData.dailyIncomes[dateStr]) {
-      self._pluginData.dailyIncomes[dateStr] = {
+    if (this._pluginData.dailyIncomes[dateStr]) {
+      this._pluginData.dailyIncomes[dateStr] = {
         ...DEFAULT_DAILY_INCOME_STRUCTURE,
-        currency: self._pluginData.settings.mainUserCurrency,
+        currency: this._pluginData.settings.mainUserCurrency, // Resetear a la moneda principal
       };
-      await self._savePluginData();
+      await this._savePluginData();
       return true;
     }
     return false;
   },
 
   _internalGetCurrencyConfiguration: async function () {
-    const self = this;
-    // Devolver una copia profunda para evitar mutaciones externas
-    return JSON.parse(JSON.stringify(self._pluginData.settings));
+    return JSON.parse(JSON.stringify(this._pluginData.settings));
   },
 
   _internalSaveCurrencyConfiguration: async function (
@@ -628,13 +806,11 @@ export default {
     incomeCurrencies,
     rates
   ) {
-    const self = this;
-    // Validación y lógica de guardado (ya existente y parece robusta)
     if (!ALL_SUPPORTED_CURRENCIES.find((c) => c.code === mainCurrency)) {
-      console.error(`[${self.id}] Moneda principal inválida: ${mainCurrency}`);
-      return self._pluginData.settings; // Retorna la configuración actual sin cambios
+      console.error(`[${this.id}] Moneda principal inválida: ${mainCurrency}`);
+      return JSON.parse(JSON.stringify(this._pluginData.settings)); // Devolver sin cambios
     }
-    self._pluginData.settings.mainUserCurrency = mainCurrency;
+    this._pluginData.settings.mainUserCurrency = mainCurrency;
 
     const validatedIncomeCurrencies = incomeCurrencies.filter((code) =>
       ALL_SUPPORTED_CURRENCIES.find((c) => c.code === code)
@@ -642,49 +818,50 @@ export default {
     if (!validatedIncomeCurrencies.includes(mainCurrency)) {
       validatedIncomeCurrencies.push(mainCurrency);
     }
-    // Usar Set para eliminar duplicados y luego convertir a array
-    self._pluginData.settings.configuredIncomeCurrencies = [
+    this._pluginData.settings.configuredIncomeCurrencies = [
       ...new Set(validatedIncomeCurrencies),
     ];
 
     const validatedRates = {};
-    self._pluginData.settings.configuredIncomeCurrencies.forEach((code) => {
+    this._pluginData.settings.configuredIncomeCurrencies.forEach((code) => {
       if (code === mainCurrency) {
         validatedRates[code] = 1;
       } else if (rates && typeof rates[code] === "number" && rates[code] > 0) {
         validatedRates[code] = rates[code];
       } else {
-        // Si no hay tasa nueva o es inválida, intentar mantener la existente o default a 1
+        // Si la tasa no es válida o no existe, intentar mantener la anterior o default a 1
+        const existingRate = this._pluginData.settings.currencyRates
+          ? this._pluginData.settings.currencyRates[code]
+          : undefined;
         validatedRates[code] =
-          self._pluginData.settings.currencyRates &&
-          self._pluginData.settings.currencyRates[code] > 0
-            ? self._pluginData.settings.currencyRates[code]
+          typeof existingRate === "number" && existingRate > 0
+            ? existingRate
             : 1;
       }
     });
-    self._pluginData.settings.currencyRates = validatedRates;
+    this._pluginData.settings.currencyRates = validatedRates;
 
-    // Limpiar tasas de monedas que ya no están en configuredIncomeCurrencies (excepto la principal)
-    Object.keys(self._pluginData.settings.currencyRates).forEach(
+    // Limpiar tasas de monedas que ya no están en configuredIncomeCurrencies
+    Object.keys(this._pluginData.settings.currencyRates).forEach(
       (rateCurrency) => {
         if (
-          rateCurrency !== self._pluginData.settings.mainUserCurrency &&
-          !self._pluginData.settings.configuredIncomeCurrencies.includes(
+          !this._pluginData.settings.configuredIncomeCurrencies.includes(
             rateCurrency
           )
         ) {
-          delete self._pluginData.settings.currencyRates[rateCurrency];
+          delete this._pluginData.settings.currencyRates[rateCurrency];
         }
       }
     );
 
-    await self._savePluginData();
-    // Emitir un evento indicando que la configuración de moneda ha cambiado
-    if (self._core && self._core.events && self._core.events.publish) {
-      self._core.events.publish(self.id, `${self.id}.currencyConfigChanged`, {
-        ...self._pluginData.settings,
-      });
+    await this._savePluginData();
+    if (this._core && this._core.events && this._core.events.publish) {
+      this._core.events.publish(
+        this.id,
+        `${this.id}.currencyConfigChanged`,
+        JSON.parse(JSON.stringify(this._pluginData.settings))
+      );
     }
-    return JSON.parse(JSON.stringify(self._pluginData.settings)); // Devolver copia
+    return JSON.parse(JSON.stringify(this._pluginData.settings));
   },
 };

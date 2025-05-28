@@ -1,0 +1,338 @@
+/* video-scheduler/styles/ResetDataModal.css */
+
+.reset-data-modal-overlay {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100vh - 50px);
+  background: rgba(
+    var(--danger-color-rgb, 220, 53, 69),
+    0.15
+  ); /* Tinte rojo sutil */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1035; /* Ligeramente por encima de otros modales comunes */
+  backdrop-filter: blur(4px);
+  padding: 20px;
+  box-sizing: border-box;
+  animation: fadeInModalOverlayDanger 0.2s ease-out forwards;
+}
+
+.reset-data-modal {
+  background: var(--bg-color);
+  border: 1px solid var(--danger-color, #dc3545); /* Borde rojo */
+  box-shadow: 0 8px 24px rgba(var(--danger-color-rgb, 220, 53, 69), 0.3); /* Sombra roja */
+  border-radius: 12px;
+  color: var(--text-color);
+  width: 100%;
+  max-width: 550px;
+  max-height: calc(100% - 40px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideInModalDanger 0.3s ease-out forwards;
+}
+
+.reset-data-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(var(--danger-color-rgb, 220, 53, 69), 0.3);
+  background: rgba(
+    var(--danger-color-rgb, 220, 53, 69),
+    0.1
+  ); /* Fondo rojo claro */
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+}
+
+.reset-data-modal .modal-title-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reset-data-modal .modal-header-icon {
+  font-family: "Material Icons";
+  font-size: 1.6em;
+  color: var(--danger-color, #dc3545);
+}
+
+.reset-data-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600; /* Más énfasis por ser una acción peligrosa */
+  color: var(--danger-color, #dc3545);
+}
+
+.reset-data-modal .modal-close-button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color-secondary);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reset-data-modal .modal-close-button:hover:not(:disabled) {
+  background: var(--hover-color);
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+  transform: rotate(90deg);
+}
+.reset-data-modal .modal-close-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.reset-data-modal .modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+.reset-data-modal .modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+.reset-data-modal .modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.reset-data-modal .modal-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+.reset-data-modal .modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color-secondary);
+}
+
+.reset-data-modal .modal-description.warning {
+  font-size: 0.9rem;
+  color: var(--warning-color, #856404);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  background: rgba(var(--warning-color-rgb, 255, 193, 7), 0.1);
+  padding: 12px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--warning-color-rgb, 255, 193, 7), 0.3);
+  font-weight: 500;
+}
+
+.reset-data-modal .action-group {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-color-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+.reset-data-modal .action-group:last-child {
+  margin-bottom: 0;
+}
+
+.reset-data-modal .action-group h4 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.reset-data-modal .radio-group {
+  margin-bottom: 10px;
+}
+.reset-data-modal .radio-group:last-child {
+  margin-bottom: 0;
+}
+
+.reset-data-modal .radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.reset-data-modal .radio-label input[type="radio"] {
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.reset-data-modal .radio-description {
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+  margin-left: 26px; /* Alineado con el texto del radio, no con el input */
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.reset-data-modal .modal-divider {
+  border: none;
+  border-top: 1px dashed var(--border-color);
+  margin: 24px 0;
+}
+
+.reset-data-modal .confirmation-instructions {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin-bottom: 8px;
+}
+.reset-data-modal .confirmation-instructions strong {
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+.reset-data-modal .confirmation-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  text-transform: uppercase; /* Para que coincida con la confirmación */
+}
+.reset-data-modal .confirmation-input:focus {
+  border-color: var(--danger-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--danger-color-rgb), 0.2);
+}
+
+.reset-data-modal .action-button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.reset-data-modal .action-button.danger {
+  background-color: var(--danger-color, #dc3545);
+  color: white;
+  border-color: var(--danger-color, #dc3545);
+}
+.reset-data-modal .action-button.danger:hover:not(:disabled) {
+  background-color: hsl(
+    var(--danger-color-hsl-h, 354),
+    calc(var(--danger-color-hsl-s, 70%) + 10%),
+    calc(var(--danger-color-hsl-l, 53%) - 10%)
+  );
+  border-color: hsl(
+    var(--danger-color-hsl-h, 354),
+    calc(var(--danger-color-hsl-s, 70%) + 10%),
+    calc(var(--danger-color-hsl-l, 53%) - 10%)
+  );
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(var(--danger-color-rgb), 0.3);
+}
+
+.reset-data-modal .action-button.secondary {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+.reset-data-modal .action-button.secondary:hover:not(:disabled) {
+  background-color: var(--hover-color);
+  border-color: var(--text-color-secondary);
+}
+
+.reset-data-modal .action-button:disabled {
+  background-color: var(--border-color) !important;
+  color: var(--text-color-secondary) !important;
+  border-color: var(--border-color) !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.reset-data-modal .feedback-message {
+  margin-top: 16px;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+}
+.reset-data-modal .feedback-message.success {
+  background-color: var(--success-bg, #d4edda);
+  color: var(--success-text, #155724);
+  border: 1px solid var(--success-color, #c3e6cb);
+}
+.reset-data-modal .feedback-message.error {
+  background-color: var(--danger-bg, #f8d7da);
+  color: var(--danger-text, #721c24);
+  border: 1px solid var(--danger-color, #f5c6cb);
+}
+
+.reset-data-modal .modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid rgba(var(--danger-color-rgb, 220, 53, 69), 0.3);
+  background: rgba(var(--danger-color-rgb, 220, 53, 69), 0.05);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-radius: 0 0 12px 12px;
+  flex-shrink: 0;
+}
+
+@keyframes slideInModalDanger {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fadeInModalOverlayDanger {
+  from {
+    opacity: 0;
+    background: rgba(0, 0, 0, 0);
+  }
+  to {
+    opacity: 1;
+    background: rgba(var(--danger-color-rgb, 220, 53, 69), 0.15);
+  }
+}
+
+@media (max-width: 600px) {
+  .reset-data-modal {
+    max-width: calc(100% - 20px);
+    max-height: calc(100% - 20px);
+  }
+  .reset-data-modal .modal-header {
+    padding: 12px 16px;
+  }
+  .reset-data-modal .modal-header h3 {
+    font-size: 1.1rem;
+  }
+  .reset-data-modal .modal-content {
+    padding: 16px;
+  }
+  .reset-data-modal .action-group {
+    padding: 12px;
+  }
+  .reset-data-modal .action-button {
+    font-size: 0.85rem;
+    padding: 10px 16px;
+  }
+  .reset-data-modal .modal-footer {
+    padding: 12px 16px;
+  }
+}

@@ -11,10 +11,11 @@ import StatsOverviewPanel from "./StatsOverviewPanel.jsx";
 import BulkAddForm from "./BulkAddForm.jsx";
 import CurrencyRateForm from "./CurrencyRateForm.jsx";
 import VideoForm from "./VideoForm.jsx";
+// Los modales ImportExportModal y ResetDataModal se reciben como props
 import {
   VIDEO_MAIN_STATUS,
   DEFAULT_SLOT_VIDEO_STRUCTURE,
-  ALL_SUPPORTED_CURRENCIES,
+  // ALL_SUPPORTED_CURRENCIES, // No se usa directamente aquí
 } from "../utils/constants.js";
 
 function getMonthDetails(year, month) {
@@ -24,7 +25,7 @@ function getMonthDetails(year, month) {
 const WEEKDAY_NAMES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 function VideoSchedulerMainPage(props) {
-  const { plugin, core, pluginId } = props;
+  const { plugin, core, pluginId, ImportExportModal, ResetDataModal } = props;
 
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [monthData, setMonthData] = React.useState({
@@ -44,6 +45,9 @@ function VideoSchedulerMainPage(props) {
   const [showCurrencyRateForm, setShowCurrencyRateForm] = React.useState(false);
   const [showVideoForm, setShowVideoForm] = React.useState(false);
   const [videoFormContext, setVideoFormContext] = React.useState(null);
+  const [showImportExportModal, setShowImportExportModal] =
+    React.useState(false);
+  const [showResetDataModal, setShowResetDataModal] = React.useState(false);
 
   const [currencyConfiguration, setCurrencyConfiguration] = React.useState({
     mainUserCurrency: "USD",
@@ -64,62 +68,158 @@ function VideoSchedulerMainPage(props) {
   };
 
   React.useEffect(() => {
+    const anyPopupOpen =
+      showIncomeForm ||
+      showStatusSelector ||
+      showCurrencyRateForm ||
+      showVideoForm ||
+      showBulkAddForm ||
+      showImportExportModal ||
+      showResetDataModal;
+
+    if (!anyPopupOpen) return; // No añadir listener si no hay popups/modales
+
     const handleScroll = () => {
-      if (
-        showIncomeForm ||
-        showStatusSelector ||
-        showCurrencyRateForm ||
-        showVideoForm
-      ) {
-        setShowIncomeForm(false);
-        setIncomeFormContext(null);
-        setShowStatusSelector(false);
-        setStatusSelectorContext(null);
-        setShowCurrencyRateForm(false);
-        setShowVideoForm(false);
-        setVideoFormContext(null);
-      }
+      closeAllPopups();
     };
     const scrollContainer = findScrollContainer();
-    if (scrollContainer && scrollContainer.addEventListener) {
-      const target =
-        scrollContainer === document.documentElement ||
-        scrollContainer === document.body
-          ? window
-          : scrollContainer;
-      target.addEventListener("scroll", handleScroll, { passive: true });
-      return () => target.removeEventListener("scroll", handleScroll);
+    let target = window;
+    if (
+      scrollContainer &&
+      scrollContainer !== document.documentElement &&
+      scrollContainer !== document.body
+    ) {
+      target = scrollContainer;
     }
-  }, [showIncomeForm, showStatusSelector, showCurrencyRateForm, showVideoForm]);
+
+    target.addEventListener("scroll", handleScroll, { passive: true });
+    return () => target.removeEventListener("scroll", handleScroll);
+  }, [
+    showIncomeForm,
+    showStatusSelector,
+    showCurrencyRateForm,
+    showVideoForm,
+    showBulkAddForm,
+    showImportExportModal,
+    showResetDataModal, // Dependencias de todos los popups/modales
+  ]);
 
   const refreshCalendarDataSilently = React.useCallback(async () => {
     if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
-      const data = await plugin.publicAPI.getMonthViewData(year, month);
-      setMonthData(data);
-      const config = await plugin.publicAPI.getCurrencyConfiguration();
-      setCurrencyConfiguration(config);
+      try {
+        const data = await plugin.publicAPI.getMonthViewData(year, month);
+        setMonthData(data);
+        const config = await plugin.publicAPI.getCurrencyConfiguration();
+        setCurrencyConfiguration(config);
+      } catch (error) {
+        console.error(
+          `[${pluginId}] Error en refreshCalendarDataSilently:`,
+          error
+        );
+      }
     }
-  }, [plugin, currentDate]);
+  }, [plugin, currentDate, pluginId]);
 
-  const refreshCalendarData = React.useCallback(async () => {
-    if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
-      if (isInitialLoad) setIsLoading(true);
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
-      const data = await plugin.publicAPI.getMonthViewData(year, month);
-      setMonthData(data);
-      const config = await plugin.publicAPI.getCurrencyConfiguration();
-      setCurrencyConfiguration(config);
-      setIsLoading(false);
-      setIsInitialLoad(false);
-    }
-  }, [plugin, currentDate, isInitialLoad]);
+  const refreshCalendarData = React.useCallback(
+    async (forceInitialState = false) => {
+      if (plugin && plugin.publicAPI && plugin.publicAPI.getMonthViewData) {
+        if (forceInitialState || isInitialLoad) {
+          // Usar isInitialLoad para la primera carga real
+          setIsLoading(true);
+        }
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        try {
+          console.log(
+            `[${pluginId}-MainPage] Refreshing calendar data for ${year}-${
+              month + 1
+            }`
+          );
+          const data = await plugin.publicAPI.getMonthViewData(year, month);
+          console.log(`[${pluginId}-MainPage] Data received:`, data);
+          setMonthData(data);
+          const config = await plugin.publicAPI.getCurrencyConfiguration();
+          setCurrencyConfiguration(config);
+        } catch (error) {
+          console.error(`[${pluginId}] Error en refreshCalendarData:`, error);
+        } finally {
+          setIsLoading(false);
+          if (isInitialLoad) {
+            // Solo setear isInitialLoad a false en la primera carga real del mes
+            setIsInitialLoad(false);
+          }
+        }
+      }
+    },
+    [plugin, currentDate, isInitialLoad, pluginId]
+  );
 
   React.useEffect(() => {
-    refreshCalendarData();
-  }, [refreshCalendarData]);
+    // El primer refreshCalendarData se hace aquí, marcándolo como la carga inicial.
+    // El argumento `true` es para `forceInitialState` en refreshCalendarData.
+    if (isInitialLoad) {
+      // Solo si es la carga inicial del componente o cambio de mes
+      refreshCalendarData(true);
+    }
+  }, [currentDate, isInitialLoad, refreshCalendarData]); // Depender de isInitialLoad y currentDate
+
+  React.useEffect(() => {
+    if (!core || !core.events || !pluginId) return;
+
+    const handleCurrencyConfigChanged = () => {
+      console.log(
+        `[${pluginId}-MainPage] Currency config changed event received, refreshing silently.`
+      );
+      refreshCalendarDataSilently();
+    };
+    const handleDataImportedOrReset = () => {
+      console.log(
+        `[${pluginId}-MainPage] Data imported/reset event received, forcing full calendar refresh.`
+      );
+      setIsInitialLoad(true); // Forzar a que la próxima carga de datos muestre "Cargando..."
+      // No llamamos a refreshCalendarData aquí directamente,
+      // el cambio de isInitialLoad y el useEffect de currentDate/isInitialLoad se encargarán.
+      // O, para forzarlo inmediatamente si currentDate no cambia:
+      refreshCalendarData(true);
+    };
+    const handleRequestOpenCurrencyModal = () => {
+      console.log(
+        `[${pluginId}-MainPage] Request to open currency modal received.`
+      );
+      closeAllPopups();
+      setShowCurrencyRateForm(true);
+    };
+
+    const unsubConfig = core.events.subscribe(
+      pluginId,
+      `${pluginId}.currencyConfigChanged`,
+      handleCurrencyConfigChanged
+    );
+    const unsubImport = core.events.subscribe(
+      pluginId,
+      `${pluginId}.dataImportedRefresh`,
+      handleDataImportedOrReset
+    );
+    const unsubReset = core.events.subscribe(
+      pluginId,
+      `${pluginId}.dataResetRefresh`,
+      handleDataImportedOrReset
+    );
+    const unsubOpenModal = core.events.subscribe(
+      pluginId,
+      `${pluginId}.requestOpenCurrencyModal`,
+      handleRequestOpenCurrencyModal
+    );
+
+    return () => {
+      if (typeof unsubConfig === "function") unsubConfig();
+      if (typeof unsubImport === "function") unsubImport();
+      if (typeof unsubReset === "function") unsubReset();
+      if (typeof unsubOpenModal === "function") unsubOpenModal();
+    };
+  }, [core, pluginId, refreshCalendarDataSilently, refreshCalendarData]); // Añadido refreshCalendarData como dependencia
 
   const closeAllPopups = () => {
     setShowStatusSelector(false);
@@ -130,6 +230,8 @@ function VideoSchedulerMainPage(props) {
     setShowVideoForm(false);
     setVideoFormContext(null);
     setShowBulkAddForm(false);
+    setShowImportExportModal(false);
+    setShowResetDataModal(false);
   };
 
   const handlePrevMonth = () => {
@@ -193,29 +295,28 @@ function VideoSchedulerMainPage(props) {
       width: popupWidth,
       margin: popupMargin,
       gapToIcon,
-    } = statusSelectorPopupConfig; // height es auto
+    } = statusSelectorPopupConfig;
     let finalLeft = iconRect.right - wrapperRect.left + gapToIcon;
     if (finalLeft + popupWidth > wrapper.clientWidth - popupMargin)
       finalLeft = iconRect.left - wrapperRect.left - popupWidth - gapToIcon;
     if (finalLeft < popupMargin)
       finalLeft = Math.max(popupMargin, (wrapper.clientWidth - popupWidth) / 2);
 
-    // Ajuste de top para que no se salga de la pantalla, considerando altura dinámica
-    const tempPopup = document.createElement("div"); // Crear un popup temporal para medir su altura
-    tempPopup.className = "status-selector-popup"; // Asignar la clase del popup
+    const tempPopup = document.createElement("div");
+    tempPopup.className = "status-selector-popup";
     tempPopup.style.visibility = "hidden";
     tempPopup.style.position = "absolute";
-    document.body.appendChild(tempPopup); // Añadir al DOM para que tenga dimensiones
-    const popupHeightEstimate = tempPopup.offsetHeight || 280; // Usar altura medida o fallback
-    document.body.removeChild(tempPopup); // Remover del DOM
+    document.body.appendChild(tempPopup);
+    const popupHeightEstimate = tempPopup.offsetHeight || 280;
+    document.body.removeChild(tempPopup);
 
     let finalTop =
       iconRect.top -
       wrapperRect.top +
       iconRect.height / 2 -
       popupHeightEstimate / 2;
-    const header = wrapper.querySelector(".page-header-controls");
-    const headerHeight = header ? header.offsetHeight : 0;
+    const headerEl = wrapper.querySelector(".page-header-controls");
+    const headerHeight = headerEl ? headerEl.offsetHeight : 0;
     const minTopPosition = headerHeight + popupMargin;
     const maxBottomEdgeOfPopup = wrapper.clientHeight - popupMargin;
     if (finalTop < minTopPosition) finalTop = minTopPosition;
@@ -235,22 +336,19 @@ function VideoSchedulerMainPage(props) {
   };
 
   const handleStatusChange = async (
-    newMainStatusFromSelector, // Estado principal seleccionado en el popup
-    newSubStatusFromSelector, // Sub-estado calculado/seleccionado en el popup
-    newStackableStatusesFromSelector = [] // Estados apilables del popup
+    newMainStatusFromSelector,
+    newSubStatusFromSelector,
+    newStackableStatusesFromSelector = []
   ) => {
     if (statusSelectorContext && statusSelectorContext.video) {
       const {
         day,
         slotIndex,
         video: videoBeforeChangeInPopup,
-      } = statusSelectorContext; // No necesitamos 'position' para reconstruir el video
+      } = statusSelectorContext;
       const dateStr = `${currentDate.getFullYear()}-${String(
         currentDate.getMonth() + 1
       ).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-
-      // 1. Llamar a la API del plugin para actualizar el estado.
-      // Esta función interna se encarga de la lógica de sub-estados, alertas y updatedAt.
       const videoAfterUpdateInBackend =
         await plugin.publicAPI.updateVideoStatus(
           dateStr,
@@ -259,27 +357,19 @@ function VideoSchedulerMainPage(props) {
           newSubStatusFromSelector,
           newStackableStatusesFromSelector
         );
-
-      // 2. Actualizar el contexto del selector de estado para que el popup se re-renderice.
-      // Mantenemos los campos del video que no cambian (como 'name', 'description')
-      // y actualizamos los campos relacionados con el estado desde la respuesta del backend.
       setStatusSelectorContext((prevContext) => {
-        if (!prevContext) return null; // Seguridad por si el contexto se limpió
+        if (!prevContext) return null;
         return {
-          ...prevContext, // Mantiene day, slotIndex, position
+          ...prevContext,
           video: {
-            ...videoBeforeChangeInPopup, // Base con nombre, descripción, etc.
-            status: videoAfterUpdateInBackend.status, // Actualizado desde el backend
-            subStatus: videoAfterUpdateInBackend.subStatus, // Actualizado desde el backend
-            stackableStatuses: videoAfterUpdateInBackend.stackableStatuses, // Actualizado desde el backend
-            updatedAt: videoAfterUpdateInBackend.updatedAt, // También el updatedAt
-            // Otros campos como detailedDescription, platform, etc., se mantienen del video original del contexto.
+            ...videoBeforeChangeInPopup,
+            status: videoAfterUpdateInBackend.status,
+            subStatus: videoAfterUpdateInBackend.subStatus,
+            stackableStatuses: videoAfterUpdateInBackend.stackableStatuses,
+            updatedAt: videoAfterUpdateInBackend.updatedAt,
           },
         };
       });
-
-      // 3. Refrescar los datos de la tabla principal silenciosamente.
-      // Esto asegura que la tabla refleje los cambios si el popup permanece abierto.
       refreshCalendarDataSilently();
     }
   };
@@ -296,7 +386,7 @@ function VideoSchedulerMainPage(props) {
     if (!wrapper) return;
     const cellRect = event.currentTarget.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
-    const { width: popupWidth, margin, gapToCell } = incomePopupConfig; // height es auto
+    const { width: popupWidth, margin, gapToCell } = incomePopupConfig;
     let finalLeft = cellRect.left - wrapperRect.left - popupWidth - gapToCell;
     if (finalLeft < margin)
       finalLeft = cellRect.right - wrapperRect.left + gapToCell;
@@ -307,14 +397,14 @@ function VideoSchedulerMainPage(props) {
     tempPopup.className = "daily-income-form-popup";
     tempPopup.style.visibility = "hidden";
     tempPopup.style.position = "absolute";
-    tempPopup.style.width = `${popupWidth}px`; // Importante para medir altura correcta
+    tempPopup.style.width = `${popupWidth}px`;
     document.body.appendChild(tempPopup);
     const popupHeight = tempPopup.offsetHeight || 300;
     document.body.removeChild(tempPopup);
 
     let finalTop = cellRect.top - wrapperRect.top;
-    const header = wrapper.querySelector(".page-header-controls");
-    const headerHeight = header ? header.offsetHeight : 0;
+    const headerEl = wrapper.querySelector(".page-header-controls");
+    const headerHeight = headerEl ? headerEl.offsetHeight : 0;
     const footerStatsPanel = wrapper.querySelector(".stats-tab-content");
     const footerStatsPanelHeight = footerStatsPanel
       ? footerStatsPanel.offsetHeight
@@ -392,12 +482,18 @@ function VideoSchedulerMainPage(props) {
           schedule.map((item) => `${getMonthName(item.month)} ${item.year}`)
         ),
       ];
-      alert(
-        `✅ ${schedule.length} videos creados (${monthsInvolved.join(", ")})`
-      );
+      const successMessage = `✅ ${
+        schedule.length
+      } videos creados (${monthsInvolved.join(", ")})`;
+      if (core && core.dialogs && core.dialogs.alert)
+        await core.dialogs.alert(successMessage, "Creación en Lote Exitosa");
+      else alert(successMessage);
     } catch (error) {
       console.error("Error al crear videos en lote:", error);
-      alert("❌ Error al crear los videos. Revisa la consola.");
+      const errorMessage = "❌ Error al crear los videos. Revisa la consola.";
+      if (core && core.dialogs && core.dialogs.alert)
+        await core.dialogs.alert(errorMessage, "Error en Creación en Lote");
+      else alert(errorMessage);
       throw error;
     }
   };
@@ -417,10 +513,12 @@ function VideoSchedulerMainPage(props) {
       "Noviembre",
       "Diciembre",
     ][monthIndex] || "Mes desconocido";
+
   const handleOpenCurrencyRateForm = () => {
     closeAllPopups();
     setShowCurrencyRateForm(true);
   };
+
   const handleCurrencyRateSave = async (
     mainCurrency,
     incomeCurrencies,
@@ -432,14 +530,18 @@ function VideoSchedulerMainPage(props) {
         incomeCurrencies,
         rates
       );
-      const newConfig = await plugin.publicAPI.getCurrencyConfiguration();
-      setCurrencyConfiguration(newConfig);
-      refreshCalendarDataSilently();
       setShowCurrencyRateForm(false);
-      alert("✅ Configuración de moneda guardada.");
+      const successMessage = "✅ Configuración de moneda guardada.";
+      if (core && core.dialogs && core.dialogs.alert)
+        await core.dialogs.alert(successMessage, "Configuración Guardada");
+      else alert(successMessage);
+      // El evento 'currencyConfigChanged' escuchado en useEffect se encargará de llamar a refreshCalendarDataSilently
     } catch (error) {
       console.error("Error al guardar config. de moneda:", error);
-      alert("❌ Error al guardar la configuración.");
+      const errorMessage = "❌ Error al guardar la configuración.";
+      if (core && core.dialogs && core.dialogs.alert)
+        await core.dialogs.alert(errorMessage, "Error al Guardar");
+      else alert(errorMessage);
     }
   };
 
@@ -481,7 +583,9 @@ function VideoSchedulerMainPage(props) {
       )
     )
   );
+
   const tableBodyRows = [];
+  // Solo generar filas si NO está cargando Y hay datos
   if (!isLoading && monthData && monthData.videos && monthData.dailyIncomes) {
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(
@@ -544,12 +648,18 @@ function VideoSchedulerMainPage(props) {
     tableBodyRows
   );
 
-  if (isLoading && isInitialLoad)
+  if (isLoading) {
+    // Mostrar mensaje de carga si isLoading es true
     return React.createElement(
-      "p",
-      { key: "loading", className: "loading-message-placeholder" },
-      "Cargando calendario..."
+      "div",
+      { className: "video-scheduler-page-loading" }, // Usar una clase para estilizar el contenedor de carga
+      React.createElement(
+        "p",
+        { key: "loading", className: "loading-message-placeholder" },
+        "Cargando calendario..."
+      )
     );
+  }
 
   return React.createElement("div", { className: "video-scheduler-page" }, [
     React.createElement(
@@ -600,6 +710,7 @@ function VideoSchedulerMainPage(props) {
                       closeAllPopups();
                       setShowBulkAddForm(true);
                     },
+                    title: "Añadir videos en lote",
                   },
                   [
                     React.createElement(
@@ -607,7 +718,7 @@ function VideoSchedulerMainPage(props) {
                       { className: "material-icons", key: "icon" },
                       "playlist_add"
                     ),
-                    "Añadir en Lote",
+                    "Añadir Lote",
                   ]
                 ),
                 React.createElement(
@@ -616,6 +727,7 @@ function VideoSchedulerMainPage(props) {
                     key: "currency-rate-btn",
                     className: "global-action-button",
                     onClick: handleOpenCurrencyRateForm,
+                    title: "Configurar monedas y tasas de cambio",
                   },
                   [
                     React.createElement(
@@ -635,6 +747,7 @@ function VideoSchedulerMainPage(props) {
                       closeAllPopups();
                       setShowStatsPanel(true);
                     },
+                    title: "Ver estadísticas del mes",
                   },
                   [
                     React.createElement(
@@ -643,6 +756,46 @@ function VideoSchedulerMainPage(props) {
                       "insights"
                     ),
                     "Estadísticas",
+                  ]
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    key: "import-export-btn",
+                    className: "global-action-button",
+                    onClick: () => {
+                      closeAllPopups();
+                      setShowImportExportModal(true);
+                    },
+                    title: "Importar o exportar datos del plugin",
+                  },
+                  [
+                    React.createElement(
+                      "span",
+                      { className: "material-icons", key: "icon" },
+                      "import_export"
+                    ),
+                    "Import/Export",
+                  ]
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    key: "reset-data-btn",
+                    className: "global-action-button danger",
+                    onClick: () => {
+                      closeAllPopups();
+                      setShowResetDataModal(true);
+                    },
+                    title: "Restablecer datos del plugin",
+                  },
+                  [
+                    React.createElement(
+                      "span",
+                      { className: "material-icons", key: "icon" },
+                      "restart_alt"
+                    ),
+                    "Resetear",
                   ]
                 ),
               ]
@@ -677,7 +830,6 @@ function VideoSchedulerMainPage(props) {
             },
             styleProps: { ...statusSelectorContext.position, height: "auto" },
           }),
-
         showIncomeForm &&
           incomeFormContext &&
           React.createElement(DailyIncomeForm, {
@@ -693,7 +845,6 @@ function VideoSchedulerMainPage(props) {
             styleProps: { ...incomeFormContext.position, height: "auto" },
             plugin: plugin,
           }),
-
         showStatsPanel &&
           React.createElement(StatsPanel, {
             key: "stats-panel-instance",
@@ -731,6 +882,25 @@ function VideoSchedulerMainPage(props) {
               setVideoFormContext(null);
             },
             plugin: plugin,
+          }),
+        ImportExportModal &&
+          showImportExportModal &&
+          React.createElement(ImportExportModal, {
+            key: "import-export-modal-instance",
+            plugin: plugin,
+            core: core,
+            pluginId: pluginId,
+            onClose: () => setShowImportExportModal(false),
+          }),
+        ResetDataModal &&
+          showResetDataModal &&
+          React.createElement(ResetDataModal, {
+            key: "reset-data-modal-instance",
+            plugin: plugin,
+            core: core,
+            pluginId: pluginId,
+            onClose: () => setShowResetDataModal(false),
+            currentViewDate: currentDate,
           }),
       ]
     ),
