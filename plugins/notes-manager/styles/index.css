@@ -1,9 +1,1 @@
 /* plugins\notes-manager\styles\index.css */
-
-@import "./global.css";
-@import "./notes-navigation-item.css";
-@import "./notes-page.css";
-@import "./note-card.css";
-@import "./create-note-form.css";
-@import "./event-notes-extension.css";
-@import "./event-selector.css";
