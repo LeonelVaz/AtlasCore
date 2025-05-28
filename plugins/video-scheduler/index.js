@@ -24,7 +24,7 @@ export default {
   version: "0.8.1",
   description:
     "Planificador visual de videos con estados, multimes, moneda personalizable y detalles extendidos.",
-  author: "Tu Nombre/Equipo",
+  author: "Atlas Plugin Developer",
   minAppVersion: "0.3.0",
   maxAppVersion: "0.9.9",
   permissions: ["ui", "storage"],
