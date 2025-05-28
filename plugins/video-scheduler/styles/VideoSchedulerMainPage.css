@@ -88,6 +88,7 @@
           color: var(--text-color-secondary);
           padding: 8px 16px;
           border-radius: 6px;
+          border: 1px solid var(--border-color);
           cursor: pointer;
           font-size: 0.875rem;
           font-weight: 500;
@@ -98,9 +99,10 @@
 
           &:hover {
             background: var(--primary-hover);
+            color: var(--text-color);
             transform: translateY(-1px);
             box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.3);
-            border: none;
+            border: 1px solid var(--border-color);
           }
 
           .material-icons {
