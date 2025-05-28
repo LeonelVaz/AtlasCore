@@ -62,154 +62,272 @@
 
 /**
  * @jest-environment jsdom
-*/
-import React from 'react';
-import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
-import '@testing-library/jest-dom';
+ */
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  within,
+} from "@testing-library/react";
+import "@testing-library/jest-dom";
 
 // --- Definición de Mocks ANTES de cualquier importación de la app ---
 
-jest.mock('../../../../../src/components/ui/button', () => {
-  return jest.fn(({ children, onClick, variant, size, disabled, className }) => (
-    <button
-      onClick={onClick}
-      data-variant={variant}
-      data-size={size}
-      disabled={disabled}
-      className={className || 'mocked-button'}
-    >
-      {children}
-    </button>
-  ));
+jest.mock("../../../../../src/components/ui/button", () => {
+  return jest.fn(
+    ({ children, onClick, variant, size, disabled, className }) => (
+      <button
+        onClick={onClick}
+        data-variant={variant}
+        data-size={size}
+        disabled={disabled}
+        className={className || "mocked-button"}
+      >
+        {children}
+      </button>
+    )
+  );
 });
 
-const MOCK_SECURITY_MANAGER_PATH = '../../../../../src/core/plugins/plugin-security-manager';
+const MOCK_SECURITY_MANAGER_PATH =
+  "../../../../../src/core/plugins/plugin-security-manager";
 
 const mockSecurityStatsData = {
   detectedThreats: {
     total: 5,
     bySeverity: { critical: 1, high: 2, medium: 1, low: 1 },
     recent: [
-      { pluginId: 'pluginX', timestamp: new Date('2023-10-26T10:00:00Z').getTime(), severity: 'critical', type: 'malware', actionTaken: 'quarantined' },
-      { pluginId: 'pluginY', timestamp: new Date('2023-10-26T09:00:00Z').getTime(), severity: 'high', type: 'phishingAttempt', actionTaken: 'blocked' },
-      { pluginId: 'pluginZ', timestamp: new Date('2023-10-26T08:00:00Z').getTime(), severity: 'medium', type: 'suspiciousLogin', actionTaken: 'alerted' },
+      {
+        pluginId: "pluginX",
+        timestamp: new Date("2023-10-26T10:00:00Z").getTime(),
+        severity: "critical",
+        type: "malware",
+        actionTaken: "quarantined",
+      },
+      {
+        pluginId: "pluginY",
+        timestamp: new Date("2023-10-26T09:00:00Z").getTime(),
+        severity: "high",
+        type: "phishingAttempt",
+        actionTaken: "blocked",
+      },
+      {
+        pluginId: "pluginZ",
+        timestamp: new Date("2023-10-26T08:00:00Z").getTime(),
+        severity: "medium",
+        type: "suspiciousLogin",
+        actionTaken: "alerted",
+      },
     ],
     byType: { malware: 1, phishingAttempt: 2, suspiciousLogin: 1, dataLeak: 1 },
   },
   overallScore: 75,
-  activeProtections: ['firewall', 'antivirus'],
+  activeProtections: ["firewall", "antivirus"],
 };
 
 jest.doMock(MOCK_SECURITY_MANAGER_PATH, () => {
   return {
-    __esModule: true, 
+    __esModule: true,
     default: {
       getSecurityStats: jest.fn(() => mockSecurityStatsData),
-    }
+    },
   };
 });
 
 // --- Importaciones de la App DESPUÉS de los mocks ---
-const ThreatsDashboard = require('../../../../../src/components/security/threats-dashboard').default; 
-const pluginSecurityManager = require(MOCK_SECURITY_MANAGER_PATH).default; 
+const ThreatsDashboard =
+  require("../../../../../src/components/security/threats-dashboard").default;
+const pluginSecurityManager = require(MOCK_SECURITY_MANAGER_PATH).default;
 
-
-describe('ThreatsDashboard Component', () => {
+describe("ThreatsDashboard Component", () => {
   beforeEach(() => {
-    jest.clearAllMocks(); 
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.useRealTimers(); 
+    jest.useRealTimers();
   });
 
-  test('debe renderizar el dashboard completo y cargar datos iniciales', async () => {
+  test("debe renderizar el dashboard completo y cargar datos iniciales", async () => {
     render(<ThreatsDashboard />);
-    expect(await screen.findByText('Dashboard de Amenazas', {}, {timeout: 3000})).toBeInTheDocument();
+    expect(
+      await screen.findByText("Dashboard de Amenazas", {}, { timeout: 3000 })
+    ).toBeInTheDocument();
     expect(pluginSecurityManager.getSecurityStats).toHaveBeenCalledTimes(1);
 
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Total de Amenazas5')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Críticas1')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Altas2')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Medias1')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Bajas1')).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node
+          .closest(".summary-card")
+          ?.textContent.includes("Total de Amenazas5")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node
+          .closest(".summary-card")
+          ?.textContent.includes("Amenazas Críticas1")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node.closest(".summary-card")?.textContent.includes("Amenazas Altas2")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node.closest(".summary-card")?.textContent.includes("Amenazas Medias1")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node.closest(".summary-card")?.textContent.includes("Amenazas Bajas1")
+      ).length
+    ).toBeGreaterThan(0);
 
-    const threatsByTypeTitle = screen.getByText('Amenazas por Tipo');
-    const threatsByTypeSection = threatsByTypeTitle.closest('.threats-by-type');
+    const threatsByTypeTitle = screen.getByText("Amenazas por Tipo");
+    const threatsByTypeSection = threatsByTypeTitle.closest(".threats-by-type");
     expect(threatsByTypeSection).toBeInTheDocument();
-    
-    expect(within(threatsByTypeSection).getByText('malware')).toBeInTheDocument();
-    expect(within(threatsByTypeSection).getByText('phishingAttempt')).toBeInTheDocument();
-    
-    const recentThreatsTitle = await screen.findByText('Amenazas Recientes'); 
-    const recentThreatsSection = recentThreatsTitle.closest('.recent-threats');
+
+    expect(
+      within(threatsByTypeSection).getByText("malware")
+    ).toBeInTheDocument();
+    expect(
+      within(threatsByTypeSection).getByText("phishingAttempt")
+    ).toBeInTheDocument();
+
+    const recentThreatsTitle = await screen.findByText("Amenazas Recientes");
+    const recentThreatsSection = recentThreatsTitle.closest(".recent-threats");
     expect(recentThreatsSection).toBeInTheDocument();
 
-    expect(within(recentThreatsSection).getByText((content, node) => 
-      node.classList.contains('threat-type') && (node.textContent || "").includes('Tipo: malware')
-    )).toBeInTheDocument();
-    
-    expect(within(recentThreatsSection).getByText((content, node) => 
-      node.classList.contains('threat-type') && (node.textContent || "").includes('Tipo: phishingAttempt')
-    )).toBeInTheDocument();
+    expect(
+      within(recentThreatsSection).getByText(
+        (content, node) =>
+          node.classList.contains("threat-type") &&
+          (node.textContent || "").includes("Tipo: malware")
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      within(recentThreatsSection).getByText(
+        (content, node) =>
+          node.classList.contains("threat-type") &&
+          (node.textContent || "").includes("Tipo: phishingAttempt")
+      )
+    ).toBeInTheDocument();
   });
 
-  test('debe renderizar la vista compacta y mostrar datos resumidos', async () => {
+  test("debe renderizar la vista compacta y mostrar datos resumidos", async () => {
     const mockOnPluginClick = jest.fn();
-    render(<ThreatsDashboard compact={true} onPluginClick={mockOnPluginClick} />);
-    expect(await screen.findByText('Resumen de Amenazas', {}, {timeout: 3000})).toBeInTheDocument();
+    render(
+      <ThreatsDashboard compact={true} onPluginClick={mockOnPluginClick} />
+    );
+    expect(
+      await screen.findByText("Resumen de Amenazas", {}, { timeout: 3000 })
+    ).toBeInTheDocument();
     expect(pluginSecurityManager.getSecurityStats).toHaveBeenCalledTimes(1);
 
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Total de Amenazas5')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Críticas1')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Altas2')).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node
+          .closest(".summary-card")
+          ?.textContent.includes("Total de Amenazas5")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node
+          .closest(".summary-card")
+          ?.textContent.includes("Amenazas Críticas1")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node.closest(".summary-card")?.textContent.includes("Amenazas Altas2")
+      ).length
+    ).toBeGreaterThan(0);
 
-    const recentThreatsTitleCompact = await screen.findByText('Amenazas Recientes');
-    const recentThreatsSectionCompact = recentThreatsTitleCompact.closest('.recent-threats.compact');
-    expect(recentThreatsSectionCompact).toBeInTheDocument();
-    
-    expect(within(recentThreatsSectionCompact).getByText((content, node) => 
-      node.classList.contains('threat-type') && (node.textContent || "").includes('Tipo: malware')
-    )).toBeInTheDocument();
-    
-    const detailsButtons = within(recentThreatsSectionCompact).getAllByText('Ver Detalles');
-    expect(detailsButtons.length).toBeGreaterThan(0);
-    fireEvent.click(detailsButtons[0]); 
-    expect(mockOnPluginClick).toHaveBeenCalledWith('pluginX');
-  });
-
-  test('debe refrescar los datos al hacer clic en el botón Refrescar', async () => {
-    render(<ThreatsDashboard />);
-    await screen.findByText('Dashboard de Amenazas'); 
-    pluginSecurityManager.getSecurityStats.mockClear();
-    const refreshButton = screen.getByText('Refrescar');
-    await act(async () => { fireEvent.click(refreshButton); });
-    await waitFor(() => expect(pluginSecurityManager.getSecurityStats).toHaveBeenCalledTimes(1));
-  });
-
-  test('debe manejar correctamente la ausencia de datos de amenazas', async () => {
-    pluginSecurityManager.getSecurityStats.mockReturnValueOnce({
-      detectedThreats: { total: 0, bySeverity: {}, recent: [], byType: {} }
-    });
-    
-    render(<ThreatsDashboard />);
-    await screen.findByText('Dashboard de Amenazas');
-
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Total de Amenazas0')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText((content, node) => node.closest('.summary-card')?.textContent.includes('Amenazas Críticas0')).length).toBeGreaterThan(0);
-    
-    const threatsByTypeSection = screen.getByText('Amenazas por Tipo').closest('.threats-by-type');
-    expect(within(threatsByTypeSection).getByText('No hay datos disponibles')).toBeInTheDocument();
-    expect(screen.queryByText('Amenazas Recientes')).not.toBeInTheDocument();
-  });
-
-  test('debe renderizar la sección de amenazas a lo largo del tiempo', async () => {
-    render(<ThreatsDashboard />);
-    await screen.findByText('Dashboard de Amenazas');
-    expect(screen.getByText('Amenazas a lo Largo del Tiempo')).toBeInTheDocument();
-    const timePoints = (await screen.findAllByText(/\d{1,2}\/\d{1,2}\/\d{4}/)).filter(
-        (el) => el.classList.contains('time-label')
+    const recentThreatsTitleCompact = await screen.findByText(
+      "Amenazas Recientes"
     );
+    const recentThreatsSectionCompact = recentThreatsTitleCompact.closest(
+      ".recent-threats.compact"
+    );
+    expect(recentThreatsSectionCompact).toBeInTheDocument();
+
+    expect(
+      within(recentThreatsSectionCompact).getByText(
+        (content, node) =>
+          node.classList.contains("threat-type") &&
+          (node.textContent || "").includes("Tipo: malware")
+      )
+    ).toBeInTheDocument();
+
+    const detailsButtons = within(recentThreatsSectionCompact).getAllByText(
+      "Ver Detalles"
+    );
+    expect(detailsButtons.length).toBeGreaterThan(0);
+    fireEvent.click(detailsButtons[0]);
+    expect(mockOnPluginClick).toHaveBeenCalledWith("pluginX");
+  });
+
+  test("debe refrescar los datos al hacer clic en el botón Refrescar", async () => {
+    render(<ThreatsDashboard />);
+    await screen.findByText("Dashboard de Amenazas");
+    pluginSecurityManager.getSecurityStats.mockClear();
+    const refreshButton = screen.getByText("Refrescar");
+    await act(async () => {
+      fireEvent.click(refreshButton);
+    });
+    await waitFor(() =>
+      expect(pluginSecurityManager.getSecurityStats).toHaveBeenCalledTimes(1)
+    );
+  });
+
+  test("debe manejar correctamente la ausencia de datos de amenazas", async () => {
+    pluginSecurityManager.getSecurityStats.mockReturnValueOnce({
+      detectedThreats: { total: 0, bySeverity: {}, recent: [], byType: {} },
+    });
+
+    render(<ThreatsDashboard />);
+    await screen.findByText("Dashboard de Amenazas");
+
+    expect(
+      screen.getAllByText((content, node) =>
+        node
+          .closest(".summary-card")
+          ?.textContent.includes("Total de Amenazas0")
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText((content, node) =>
+        node
+          .closest(".summary-card")
+          ?.textContent.includes("Amenazas Críticas0")
+      ).length
+    ).toBeGreaterThan(0);
+
+    const threatsByTypeSection = screen
+      .getByText("Amenazas por Tipo")
+      .closest(".threats-by-type");
+    expect(
+      within(threatsByTypeSection).getByText("No hay datos disponibles")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Amenazas Recientes")).not.toBeInTheDocument();
+  });
+
+  test("debe renderizar la sección de amenazas a lo largo del tiempo", async () => {
+    render(<ThreatsDashboard />);
+    await screen.findByText("Dashboard de Amenazas");
+    expect(
+      screen.getByText("Amenazas a lo Largo del Tiempo")
+    ).toBeInTheDocument();
+    const timePoints = (
+      await screen.findAllByText(/\d{1,2}\/\d{1,2}\/\d{4}/)
+    ).filter((el) => el.classList.contains("time-label"));
     expect(timePoints.length).toBe(7);
   });
 });

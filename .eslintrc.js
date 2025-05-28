@@ -3,33 +3,30 @@ module.exports = {
     browser: true,
     es2021: true,
     node: true,
-    jest: true
+    jest: true,
   },
   extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended'
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
   ],
   parserOptions: {
     ecmaFeatures: {
-      jsx: true
+      jsx: true,
     },
     ecmaVersion: 12,
-    sourceType: 'module'
+    sourceType: "module",
   },
-  plugins: [
-    'react',
-    'react-hooks'
-  ],
+  plugins: ["react", "react-hooks"],
   rules: {
-    'react/react-in-jsx-scope': 'off', // No necesario en React 17+
-    'react/prop-types': 'warn',
-    'no-unused-vars': 'warn',
-    'no-console': ['warn', { allow: ['warn', 'error'] }]
+    "react/react-in-jsx-scope": "off", // No necesario en React 17+
+    "react/prop-types": "warn",
+    "no-unused-vars": "warn",
+    "no-console": ["warn", { allow: ["warn", "error"] }],
   },
   settings: {
     react: {
-      version: 'detect'
-    }
-  }
+      version: "detect",
+    },
+  },
 };

@@ -107,65 +107,114 @@
 
 /**
  * @jest-environment jsdom
-*/
-import React from 'react';
-import { render, screen, fireEvent, waitFor, act, within } from '@testing-library/react';
-import '@testing-library/jest-dom';
+ */
+import React from "react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+  within,
+} from "@testing-library/react";
+import "@testing-library/jest-dom";
 
 // --- Definición de Mocks ANTES de cualquier importación de la app ---
 
-jest.mock('../../../../../src/components/ui/button', () => {
-  return jest.fn(({ children, onClick, variant, size, disabled, className }) => (
-    <button
-      onClick={onClick}
-      data-variant={variant}
-      data-size={size}
-      disabled={disabled}
-      className={className || 'mocked-button'}
-    >
-      {children}
-    </button>
-  ));
+jest.mock("../../../../../src/components/ui/button", () => {
+  return jest.fn(
+    ({ children, onClick, variant, size, disabled, className }) => (
+      <button
+        onClick={onClick}
+        data-variant={variant}
+        data-size={size}
+        disabled={disabled}
+        className={className || "mocked-button"}
+      >
+        {children}
+      </button>
+    )
+  );
 });
 
-const MOCK_PLUGIN_SECURITY_AUDIT_PATH = '../../../../../src/core/plugins/plugin-security-audit';
-const mockAuditStatsData = { 
+const MOCK_PLUGIN_SECURITY_AUDIT_PATH =
+  "../../../../../src/core/plugins/plugin-security-audit";
+const mockAuditStatsData = {
   totalEntries: 150,
-  auditMode: 'immediate',
-}; 
-const mockRecentLogsData = [ 
-  { timestamp: new Date('2023-10-26T10:00:00Z').getTime(), auditType: 'securityEvent', pluginId: 'pluginA', eventType: 'loginSuccess', details: { user: 'admin' } },
-  { timestamp: new Date('2023-10-26T09:30:00Z').getTime(), auditType: 'permissionChange', eventType: 'permissionGranted', details: { permission: 'readData' } },
-  { timestamp: new Date('2023-10-26T09:00:00Z').getTime(), auditType: 'suspiciousActivity', pluginId: 'pluginB', eventType: 'failedLoginAttempt', details: {} },
-  { timestamp: new Date('2023-10-25T18:00:00Z').getTime(), auditType: 'securityEvent', eventType: 'configChange', details: {} },
-  { timestamp: new Date('2023-10-25T17:00:00Z').getTime(), auditType: 'permissionRequest', pluginId: 'pluginC', eventType: 'requestStorage', details: {} },
+  auditMode: "immediate",
+};
+const mockRecentLogsData = [
+  {
+    timestamp: new Date("2023-10-26T10:00:00Z").getTime(),
+    auditType: "securityEvent",
+    pluginId: "pluginA",
+    eventType: "loginSuccess",
+    details: { user: "admin" },
+  },
+  {
+    timestamp: new Date("2023-10-26T09:30:00Z").getTime(),
+    auditType: "permissionChange",
+    eventType: "permissionGranted",
+    details: { permission: "readData" },
+  },
+  {
+    timestamp: new Date("2023-10-26T09:00:00Z").getTime(),
+    auditType: "suspiciousActivity",
+    pluginId: "pluginB",
+    eventType: "failedLoginAttempt",
+    details: {},
+  },
+  {
+    timestamp: new Date("2023-10-25T18:00:00Z").getTime(),
+    auditType: "securityEvent",
+    eventType: "configChange",
+    details: {},
+  },
+  {
+    timestamp: new Date("2023-10-25T17:00:00Z").getTime(),
+    auditType: "permissionRequest",
+    pluginId: "pluginC",
+    eventType: "requestStorage",
+    details: {},
+  },
 ];
 
 jest.doMock(MOCK_PLUGIN_SECURITY_AUDIT_PATH, () => {
   return {
-      __esModule: true, 
-      default: {
-        getAuditStats: jest.fn(() => mockAuditStatsData),
-        getAuditLog: jest.fn((options) => mockRecentLogsData.slice(0, options?.limit || 50)),
-        setAuditMode: jest.fn().mockResolvedValue(true),
-        exportAuditData: jest.fn(() => ({ logs: mockRecentLogsData, stats: mockAuditStatsData })),
-        clearAllAuditLogs: jest.fn().mockResolvedValue(true),
-      }
+    __esModule: true,
+    default: {
+      getAuditStats: jest.fn(() => mockAuditStatsData),
+      getAuditLog: jest.fn((options) =>
+        mockRecentLogsData.slice(0, options?.limit || 50)
+      ),
+      setAuditMode: jest.fn().mockResolvedValue(true),
+      exportAuditData: jest.fn(() => ({
+        logs: mockRecentLogsData,
+        stats: mockAuditStatsData,
+      })),
+      clearAllAuditLogs: jest.fn().mockResolvedValue(true),
+    },
   };
 });
 
 // --- Importaciones de la App DESPUÉS de los mocks ---
-const AuditDashboard = require('../../../../../src/components/security/audit-dashboard').default; 
-const pluginSecurityAudit = require(MOCK_PLUGIN_SECURITY_AUDIT_PATH).default; 
+const AuditDashboard =
+  require("../../../../../src/components/security/audit-dashboard").default;
+const pluginSecurityAudit = require(MOCK_PLUGIN_SECURITY_AUDIT_PATH).default;
 
-describe('AuditDashboard Component', () => {
+describe("AuditDashboard Component", () => {
   let originalConfirm, originalAlert;
   // Spies del DOM para el test de exportar, se declaran aquí para ser accesibles en afterEach
-  let createElementSpy, appendChildSpy, removeChildSpy, clickSpy, createObjectURLSpy, revokeObjectURLSpy;
-  let originalDocumentCreateElement; 
+  let createElementSpy,
+    appendChildSpy,
+    removeChildSpy,
+    clickSpy,
+    createObjectURLSpy,
+    revokeObjectURLSpy;
+  let originalDocumentCreateElement;
 
   beforeEach(() => {
-    jest.clearAllMocks(); 
+    jest.clearAllMocks();
     originalConfirm = window.confirm;
     originalAlert = window.alert;
     window.confirm = jest.fn();
@@ -176,201 +225,291 @@ describe('AuditDashboard Component', () => {
     window.confirm = originalConfirm;
     window.alert = originalAlert;
     // Restaurar spies si fueron creados en algún test
-    if (createElementSpy && typeof createElementSpy.mockRestore === 'function') createElementSpy.mockRestore(); 
-    if (appendChildSpy && typeof appendChildSpy.mockRestore === 'function') appendChildSpy.mockRestore();
-    if (removeChildSpy && typeof removeChildSpy.mockRestore === 'function') removeChildSpy.mockRestore();
-    if (createObjectURLSpy && typeof createObjectURLSpy.mockRestore === 'function') createObjectURLSpy.mockRestore();
-    if (revokeObjectURLSpy && typeof revokeObjectURLSpy.mockRestore === 'function') revokeObjectURLSpy.mockRestore();
-    
+    if (createElementSpy && typeof createElementSpy.mockRestore === "function")
+      createElementSpy.mockRestore();
+    if (appendChildSpy && typeof appendChildSpy.mockRestore === "function")
+      appendChildSpy.mockRestore();
+    if (removeChildSpy && typeof removeChildSpy.mockRestore === "function")
+      removeChildSpy.mockRestore();
+    if (
+      createObjectURLSpy &&
+      typeof createObjectURLSpy.mockRestore === "function"
+    )
+      createObjectURLSpy.mockRestore();
+    if (
+      revokeObjectURLSpy &&
+      typeof revokeObjectURLSpy.mockRestore === "function"
+    )
+      revokeObjectURLSpy.mockRestore();
+
     // Limpiar las referencias para el siguiente test
     createElementSpy = null;
     appendChildSpy = null;
     removeChildSpy = null;
-    clickSpy = null; 
+    clickSpy = null;
     createObjectURLSpy = null;
     revokeObjectURLSpy = null;
     originalDocumentCreateElement = null;
 
-    jest.useRealTimers(); 
+    jest.useRealTimers();
   });
 
-  test('debe renderizar el dashboard y cargar datos iniciales correctamente', async () => {
+  test("debe renderizar el dashboard y cargar datos iniciales correctamente", async () => {
     render(<AuditDashboard />);
-    expect(await screen.findByText('Dashboard de Auditoría', {}, {timeout: 3000})).toBeInTheDocument();
-    
+    expect(
+      await screen.findByText("Dashboard de Auditoría", {}, { timeout: 3000 })
+    ).toBeInTheDocument();
+
     expect(pluginSecurityAudit.getAuditStats).toHaveBeenCalledTimes(1);
     expect(pluginSecurityAudit.getAuditLog).toHaveBeenCalledWith({ limit: 50 });
 
-    expect(screen.getByText('Total de Eventos')).toBeInTheDocument();
-    expect(screen.getByText(mockAuditStatsData.totalEntries.toString())).toBeInTheDocument(); 
-    expect(screen.getByText('Inmediato')).toBeInTheDocument();
-    
-    const latestEventsTitle = await screen.findByText('Últimos Eventos de Auditoría');
-    const auditLatestSection = latestEventsTitle.closest('.audit-latest');
+    expect(screen.getByText("Total de Eventos")).toBeInTheDocument();
+    expect(
+      screen.getByText(mockAuditStatsData.totalEntries.toString())
+    ).toBeInTheDocument();
+    expect(screen.getByText("Inmediato")).toBeInTheDocument();
+
+    const latestEventsTitle = await screen.findByText(
+      "Últimos Eventos de Auditoría"
+    );
+    const auditLatestSection = latestEventsTitle.closest(".audit-latest");
     expect(auditLatestSection).toBeInTheDocument();
 
     const { getAllByText: getAllByTextInLogs } = within(auditLatestSection);
-    const logPluginAEntries = getAllByTextInLogs((content, node) => (node.textContent || "").includes('Plugin: pluginA') && (node.textContent || "").includes('Evento: loginSuccess'));
+    const logPluginAEntries = getAllByTextInLogs(
+      (content, node) =>
+        (node.textContent || "").includes("Plugin: pluginA") &&
+        (node.textContent || "").includes("Evento: loginSuccess")
+    );
     expect(logPluginAEntries.length).toBeGreaterThan(0);
-    const logPermissionEntries = getAllByTextInLogs((content, node) => (node.textContent || "").includes('Evento del sistema: permissionGranted'));
+    const logPermissionEntries = getAllByTextInLogs((content, node) =>
+      (node.textContent || "").includes("Evento del sistema: permissionGranted")
+    );
     expect(logPermissionEntries.length).toBeGreaterThan(0);
 
-    expect(screen.getByText('Eventos por Tipo')).toBeInTheDocument();
-    expect(screen.getByText('Eventos por Tiempo')).toBeInTheDocument();
-    expect(screen.getByText('Limpiar Logs')).toBeInTheDocument();
-    expect(screen.getByText('Exportar Datos')).toBeInTheDocument();
+    expect(screen.getByText("Eventos por Tipo")).toBeInTheDocument();
+    expect(screen.getByText("Eventos por Tiempo")).toBeInTheDocument();
+    expect(screen.getByText("Limpiar Logs")).toBeInTheDocument();
+    expect(screen.getByText("Exportar Datos")).toBeInTheDocument();
   });
 
-  test('debe renderizar el dashboard compacto y cargar datos', async () => {
+  test("debe renderizar el dashboard compacto y cargar datos", async () => {
     const mockOnPluginClick = jest.fn();
     render(<AuditDashboard compact={true} onPluginClick={mockOnPluginClick} />);
-    await screen.findByText('Resumen de Auditoría', {}, {timeout: 3000});
+    await screen.findByText("Resumen de Auditoría", {}, { timeout: 3000 });
 
     expect(pluginSecurityAudit.getAuditStats).toHaveBeenCalledTimes(1);
     expect(pluginSecurityAudit.getAuditLog).toHaveBeenCalledWith({ limit: 50 });
 
-    expect(screen.getByText('Total de Eventos')).toBeInTheDocument();
-    expect(screen.getByText(mockAuditStatsData.totalEntries.toString())).toBeInTheDocument();
-    expect(screen.getByText('Inmediato')).toBeInTheDocument();
+    expect(screen.getByText("Total de Eventos")).toBeInTheDocument();
+    expect(
+      screen.getByText(mockAuditStatsData.totalEntries.toString())
+    ).toBeInTheDocument();
+    expect(screen.getByText("Inmediato")).toBeInTheDocument();
 
-    const latestEventsTitleCompact = await screen.findByText('Últimos Eventos', {}, {timeout:1000});
-    const compactLatestEntries = latestEventsTitleCompact.closest('.latest-entries.compact');
+    const latestEventsTitleCompact = await screen.findByText(
+      "Últimos Eventos",
+      {},
+      { timeout: 1000 }
+    );
+    const compactLatestEntries = latestEventsTitleCompact.closest(
+      ".latest-entries.compact"
+    );
     expect(compactLatestEntries).toBeInTheDocument();
 
-    const { getAllByText: getAllByTextInCompactLogs, queryByText: queryByTextInCompactLogs } = within(compactLatestEntries);
-    const logPluginACompact = getAllByTextInCompactLogs((content, node) => (node.textContent || "").includes('Plugin: pluginA') && (node.textContent || "").includes('Evento: loginSuccess'));
+    const {
+      getAllByText: getAllByTextInCompactLogs,
+      queryByText: queryByTextInCompactLogs,
+    } = within(compactLatestEntries);
+    const logPluginACompact = getAllByTextInCompactLogs(
+      (content, node) =>
+        (node.textContent || "").includes("Plugin: pluginA") &&
+        (node.textContent || "").includes("Evento: loginSuccess")
+    );
     expect(logPluginACompact.length).toBeGreaterThan(0);
-    expect(queryByTextInCompactLogs(/Evento del sistema: configChange/)).not.toBeInTheDocument();
+    expect(
+      queryByTextInCompactLogs(/Evento del sistema: configChange/)
+    ).not.toBeInTheDocument();
 
-    const verButtons = within(compactLatestEntries).getAllByText('Ver'); 
+    const verButtons = within(compactLatestEntries).getAllByText("Ver");
     fireEvent.click(verButtons[0]);
-    expect(mockOnPluginClick).toHaveBeenCalledWith('pluginA');
+    expect(mockOnPluginClick).toHaveBeenCalledWith("pluginA");
   });
 
-  test('debe refrescar los datos al hacer clic en el botón Refrescar', async () => {
+  test("debe refrescar los datos al hacer clic en el botón Refrescar", async () => {
     render(<AuditDashboard />);
-    await screen.findByText('Dashboard de Auditoría'); 
-    pluginSecurityAudit.getAuditStats.mockClear(); 
+    await screen.findByText("Dashboard de Auditoría");
+    pluginSecurityAudit.getAuditStats.mockClear();
     pluginSecurityAudit.getAuditLog.mockClear();
 
-    const refreshButton = screen.getByText('Refrescar');
-    await act(async () => { fireEvent.click(refreshButton); });
-    await waitFor(() => expect(pluginSecurityAudit.getAuditStats).toHaveBeenCalledTimes(1)); 
-    await waitFor(() => expect(pluginSecurityAudit.getAuditLog).toHaveBeenCalledTimes(1));
+    const refreshButton = screen.getByText("Refrescar");
+    await act(async () => {
+      fireEvent.click(refreshButton);
+    });
+    await waitFor(() =>
+      expect(pluginSecurityAudit.getAuditStats).toHaveBeenCalledTimes(1)
+    );
+    await waitFor(() =>
+      expect(pluginSecurityAudit.getAuditLog).toHaveBeenCalledTimes(1)
+    );
   });
 
-  test('debe cambiar el modo de auditoría', async () => {
+  test("debe cambiar el modo de auditoría", async () => {
     render(<AuditDashboard />);
-    await screen.findByText('Dashboard de Auditoría'); 
-    const toggle = screen.getByRole('checkbox'); 
-    expect(toggle).toBeChecked(); 
-    
-    pluginSecurityAudit.setAuditMode.mockClear(); 
-    await act(async () => { fireEvent.click(toggle); });
-    await screen.findByText('Por lotes'); 
-    expect(pluginSecurityAudit.setAuditMode).toHaveBeenCalledWith('batch');
+    await screen.findByText("Dashboard de Auditoría");
+    const toggle = screen.getByRole("checkbox");
+    expect(toggle).toBeChecked();
+
+    pluginSecurityAudit.setAuditMode.mockClear();
+    await act(async () => {
+      fireEvent.click(toggle);
+    });
+    await screen.findByText("Por lotes");
+    expect(pluginSecurityAudit.setAuditMode).toHaveBeenCalledWith("batch");
     expect(toggle).not.toBeChecked();
 
     pluginSecurityAudit.setAuditMode.mockClear();
-    await act(async () => { fireEvent.click(toggle); });
-    await screen.findByText('Inmediato');
-    expect(pluginSecurityAudit.setAuditMode).toHaveBeenCalledWith('immediate');
+    await act(async () => {
+      fireEvent.click(toggle);
+    });
+    await screen.findByText("Inmediato");
+    expect(pluginSecurityAudit.setAuditMode).toHaveBeenCalledWith("immediate");
     expect(toggle).toBeChecked();
   });
 
-  test('debe limpiar los logs de auditoría después de confirmación', async () => {
+  test("debe limpiar los logs de auditoría después de confirmación", async () => {
     window.confirm.mockReturnValue(true);
     render(<AuditDashboard />);
-    await screen.findByText('Dashboard de Auditoría');
-    pluginSecurityAudit.getAuditStats.mockClear(); 
+    await screen.findByText("Dashboard de Auditoría");
+    pluginSecurityAudit.getAuditStats.mockClear();
     pluginSecurityAudit.getAuditLog.mockClear();
     pluginSecurityAudit.clearAllAuditLogs.mockClear();
 
-    const clearButton = screen.getByText('Limpiar Logs');
-    await act(async () => { fireEvent.click(clearButton); });
-    expect(window.confirm).toHaveBeenCalledWith('¿Estás seguro de que deseas limpiar todos los logs de auditoría? Esta acción no se puede deshacer.');
+    const clearButton = screen.getByText("Limpiar Logs");
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
+    expect(window.confirm).toHaveBeenCalledWith(
+      "¿Estás seguro de que deseas limpiar todos los logs de auditoría? Esta acción no se puede deshacer."
+    );
     expect(pluginSecurityAudit.clearAllAuditLogs).toHaveBeenCalledTimes(1);
-    await waitFor(() => expect(pluginSecurityAudit.getAuditStats).toHaveBeenCalledTimes(1)); 
-    await waitFor(() => expect(pluginSecurityAudit.getAuditLog).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(pluginSecurityAudit.getAuditStats).toHaveBeenCalledTimes(1)
+    );
+    await waitFor(() =>
+      expect(pluginSecurityAudit.getAuditLog).toHaveBeenCalledTimes(1)
+    );
   });
 
-  test('no debe limpiar los logs si el usuario cancela', async () => {
+  test("no debe limpiar los logs si el usuario cancela", async () => {
     window.confirm.mockReturnValue(false);
     render(<AuditDashboard />);
-    await screen.findByText('Dashboard de Auditoría');
+    await screen.findByText("Dashboard de Auditoría");
     pluginSecurityAudit.clearAllAuditLogs.mockClear();
-    pluginSecurityAudit.getAuditStats.mockClear(); 
+    pluginSecurityAudit.getAuditStats.mockClear();
 
-    const clearButton = screen.getByText('Limpiar Logs');
-    await act(async () => { fireEvent.click(clearButton); });
+    const clearButton = screen.getByText("Limpiar Logs");
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
     expect(window.confirm).toHaveBeenCalled();
     expect(pluginSecurityAudit.clearAllAuditLogs).not.toHaveBeenCalled();
     expect(pluginSecurityAudit.getAuditStats).not.toHaveBeenCalled();
   });
-  
-  test('debe mostrar alerta si falla la exportación (datos nulos)', async () => {
+
+  test("debe mostrar alerta si falla la exportación (datos nulos)", async () => {
     pluginSecurityAudit.exportAuditData.mockReturnValueOnce(null);
     render(<AuditDashboard />);
-    await screen.findByText('Dashboard de Auditoría');
+    await screen.findByText("Dashboard de Auditoría");
 
-    const exportButton = screen.getByText('Exportar Datos');
-    await act(async () => { fireEvent.click(exportButton); });
-    expect(window.alert).toHaveBeenCalledWith('Error al exportar: No se pudieron obtener datos para exportar');
+    const exportButton = screen.getByText("Exportar Datos");
+    await act(async () => {
+      fireEvent.click(exportButton);
+    });
+    expect(window.alert).toHaveBeenCalledWith(
+      "Error al exportar: No se pudieron obtener datos para exportar"
+    );
   });
-  
-  test('debe manejar el clic en un plugin en la vista completa si onPluginClick se proporciona', async () => {
+
+  test("debe manejar el clic en un plugin en la vista completa si onPluginClick se proporciona", async () => {
     const mockOnPluginClick = jest.fn();
-    render(<AuditDashboard onPluginClick={mockOnPluginClick}/>);
-    await screen.findByText('Dashboard de Auditoría');
-    const pluginLink = await screen.findByText((content, node) => 
-        node.classList.contains('audit-plugin-link') && (node.textContent || "").trim() === 'pluginA'
+    render(<AuditDashboard onPluginClick={mockOnPluginClick} />);
+    await screen.findByText("Dashboard de Auditoría");
+    const pluginLink = await screen.findByText(
+      (content, node) =>
+        node.classList.contains("audit-plugin-link") &&
+        (node.textContent || "").trim() === "pluginA"
     );
     fireEvent.click(pluginLink);
-    expect(mockOnPluginClick).toHaveBeenCalledWith('pluginA');
+    expect(mockOnPluginClick).toHaveBeenCalledWith("pluginA");
   });
 
-  test('debe exportar los datos de auditoría', async () => {
-    jest.useRealTimers(); 
+  test("debe exportar los datos de auditoría", async () => {
+    jest.useRealTimers();
     render(<AuditDashboard />);
-    
-    await screen.findByText('Dashboard de Auditoría', {}, {timeout: 7000});
-    await screen.findByText(mockAuditStatsData.totalEntries.toString(), {}, {timeout: 3000}); 
+
+    await screen.findByText("Dashboard de Auditoría", {}, { timeout: 7000 });
+    await screen.findByText(
+      mockAuditStatsData.totalEntries.toString(),
+      {},
+      { timeout: 3000 }
+    );
 
     // Configurar spies del DOM DENTRO del test
-    originalDocumentCreateElement = document.createElement; 
-    clickSpy = jest.fn(); 
-    createElementSpy = jest.spyOn(document, 'createElement').mockImplementation((tagName) => {
-      if (tagName?.toLowerCase() === 'a') {
-        return { href: '', download: '', click: clickSpy, style: {}, setAttribute: jest.fn(), removeAttribute: jest.fn(), remove: jest.fn() };
-      }
-      return originalDocumentCreateElement.call(document, tagName);
-    });
-    appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(node => node);
-    removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(node => node);
-    
-    if (typeof URL.createObjectURL === 'undefined') URL.createObjectURL = jest.fn();
-    if (typeof URL.revokeObjectURL === 'undefined') URL.revokeObjectURL = jest.fn();
-    createObjectURLSpy = jest.spyOn(URL, 'createObjectURL').mockReturnValue('mock-url');
-    revokeObjectURLSpy = jest.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    originalDocumentCreateElement = document.createElement;
+    clickSpy = jest.fn();
+    createElementSpy = jest
+      .spyOn(document, "createElement")
+      .mockImplementation((tagName) => {
+        if (tagName?.toLowerCase() === "a") {
+          return {
+            href: "",
+            download: "",
+            click: clickSpy,
+            style: {},
+            setAttribute: jest.fn(),
+            removeAttribute: jest.fn(),
+            remove: jest.fn(),
+          };
+        }
+        return originalDocumentCreateElement.call(document, tagName);
+      });
+    appendChildSpy = jest
+      .spyOn(document.body, "appendChild")
+      .mockImplementation((node) => node);
+    removeChildSpy = jest
+      .spyOn(document.body, "removeChild")
+      .mockImplementation((node) => node);
 
-    jest.useFakeTimers(); 
+    if (typeof URL.createObjectURL === "undefined")
+      URL.createObjectURL = jest.fn();
+    if (typeof URL.revokeObjectURL === "undefined")
+      URL.revokeObjectURL = jest.fn();
+    createObjectURLSpy = jest
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("mock-url");
+    revokeObjectURLSpy = jest
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
 
-    const exportButton = screen.getByText('Exportar Datos');
+    jest.useFakeTimers();
+
+    const exportButton = screen.getByText("Exportar Datos");
     await act(async () => {
-        fireEvent.click(exportButton);
+      fireEvent.click(exportButton);
     });
 
     expect(pluginSecurityAudit.exportAuditData).toHaveBeenCalledTimes(1);
-    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(createElementSpy).toHaveBeenCalledWith("a");
     expect(appendChildSpy).toHaveBeenCalled();
     expect(clickSpy).toHaveBeenCalled();
 
-    await act(async () => { 
-        jest.runAllTimers(); 
+    await act(async () => {
+      jest.runAllTimers();
     });
 
     expect(removeChildSpy).toHaveBeenCalled();
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith('mock-url');
+    expect(revokeObjectURLSpy).toHaveBeenCalledWith("mock-url");
     // Los spies se restaurarán en el afterEach global.
-  }, 15000); 
+  }, 15000);
 });

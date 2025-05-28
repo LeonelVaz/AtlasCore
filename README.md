@@ -27,6 +27,7 @@ Actualmente, Atlas se encuentra en la **Versión 0.2.0 (Stage 2: Mejoras de Inte
 ### Pasos de Instalación
 
 1. Clona el repositorio:
+
    ```bash
    git clone [url-del-repositorio]
    cd AtlasCore
@@ -86,14 +87,14 @@ npm run test:unit
 
 Atlas sigue un plan de desarrollo por etapas:
 
-| Stage | Versión | Descripción |
-|-------|---------|-------------|
+| Stage | Versión | Descripción                                                      |
+| ----- | ------- | ---------------------------------------------------------------- |
 | 1     | 0.1.0   | ✅ Fundamentos - Arquitectura base y calendario funcional mínimo |
-| 2     | 0.2.0   | ✅ Mejoras de Interacción y Persistencia |
-| 3     | 0.3.0   | Personalización y Primeros Plugins |
-| 4     | 0.4.0   | Robustez y Plugins Esenciales |
-| 5     | 0.5.0   | Análisis y Ecosistema Completo |
-| 6     | 1.0.0   | Pulido y Lanzamiento - Primera versión estable |
+| 2     | 0.2.0   | ✅ Mejoras de Interacción y Persistencia                         |
+| 3     | 0.3.0   | Personalización y Primeros Plugins                               |
+| 4     | 0.4.0   | Robustez y Plugins Esenciales                                    |
+| 5     | 0.5.0   | Análisis y Ecosistema Completo                                   |
+| 6     | 1.0.0   | Pulido y Lanzamiento - Primera versión estable                   |
 
 ## Documentación
 
@@ -112,7 +113,7 @@ Si deseas contribuir al proyecto, por favor:
 
 ## Licencia
 
-Commons Clause	
+Commons Clause
 
 ---
 

@@ -1,24 +1,35 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import WeekView from '../../../../../src/components/calendar/week-view';
-import { generateWeekDays } from '../../../../../src/utils/date-utils';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import WeekView from "../../../../../src/components/calendar/week-view";
+import { generateWeekDays } from "../../../../../src/utils/date-utils";
 
 // Mock TimeGrid component
-jest.mock('../../../../../src/components/calendar/time-grid', () => {
-  return jest.fn(({ days, events, onEventClick, onCellClick, onUpdateEvent, snapValue, renderDayHeader, maxSimultaneousEvents }) => (
-    <div data-testid="time-grid-mock">
-      {days.map(day => (
-        <div key={day.toISOString()} data-testid="day-header-rendered">
-          {renderDayHeader(day)}
-        </div>
-      ))}
-      <div>Days Count: {days.length}</div>
-      <div>Events Count: {events.length}</div>
-      <div>Snap: {snapValue}</div>
-      <div>Max Simultaneous: {maxSimultaneousEvents}</div>
-    </div>
-  ));
+jest.mock("../../../../../src/components/calendar/time-grid", () => {
+  return jest.fn(
+    ({
+      days,
+      events,
+      onEventClick,
+      onCellClick,
+      onUpdateEvent,
+      snapValue,
+      renderDayHeader,
+      maxSimultaneousEvents,
+    }) => (
+      <div data-testid="time-grid-mock">
+        {days.map((day) => (
+          <div key={day.toISOString()} data-testid="day-header-rendered">
+            {renderDayHeader(day)}
+          </div>
+        ))}
+        <div>Days Count: {days.length}</div>
+        <div>Events Count: {events.length}</div>
+        <div>Snap: {snapValue}</div>
+        <div>Max Simultaneous: {maxSimultaneousEvents}</div>
+      </div>
+    )
+  );
 });
 
 // Mock date-utils
@@ -31,13 +42,20 @@ const mockGeneratedWeekDays = [
   new Date(2023, 0, 6), // Fri
   new Date(2023, 0, 7), // Sat
 ];
-jest.mock('../../../../../src/utils/date-utils', () => ({
+jest.mock("../../../../../src/utils/date-utils", () => ({
   generateWeekDays: jest.fn(() => mockGeneratedWeekDays),
 }));
 
-describe('WeekView Component', () => {
+describe("WeekView Component", () => {
   const mockCurrentDate = new Date(2023, 0, 4); // A Wednesday
-  const mockEvents = [{ id: '1', title: 'Event 1', start: new Date(2023,0,4,10,0,0), end: new Date(2023,0,4,11,0,0) }];
+  const mockEvents = [
+    {
+      id: "1",
+      title: "Event 1",
+      start: new Date(2023, 0, 4, 10, 0, 0),
+      end: new Date(2023, 0, 4, 11, 0, 0),
+    },
+  ];
   const mockOnEventClick = jest.fn();
   const mockOnCellClick = jest.fn();
   const mockOnUpdateEvent = jest.fn();
@@ -46,7 +64,7 @@ describe('WeekView Component', () => {
     jest.clearAllMocks();
   });
 
-  test('renders TimeGrid with correct props', () => {
+  test("renders TimeGrid with correct props", () => {
     render(
       <WeekView
         currentDate={mockCurrentDate}
@@ -61,25 +79,28 @@ describe('WeekView Component', () => {
 
     expect(generateWeekDays).toHaveBeenCalledWith(mockCurrentDate);
 
-    const timeGridMock = screen.getByTestId('time-grid-mock');
+    const timeGridMock = screen.getByTestId("time-grid-mock");
     expect(timeGridMock).toBeInTheDocument();
-    expect(screen.getByText(`Days Count: ${mockGeneratedWeekDays.length}`)).toBeInTheDocument();
-    expect(screen.getByText('Events Count: 1')).toBeInTheDocument();
-    expect(screen.getByText('Snap: 30')).toBeInTheDocument();
-    expect(screen.getByText('Max Simultaneous: 4')).toBeInTheDocument();
+    expect(
+      screen.getByText(`Days Count: ${mockGeneratedWeekDays.length}`)
+    ).toBeInTheDocument();
+    expect(screen.getByText("Events Count: 1")).toBeInTheDocument();
+    expect(screen.getByText("Snap: 30")).toBeInTheDocument();
+    expect(screen.getByText("Max Simultaneous: 4")).toBeInTheDocument();
   });
 
-  test('renderDayHeader formats and displays day information correctly for each day', () => {
+  test("renderDayHeader formats and displays day information correctly for each day", () => {
     render(<WeekView currentDate={mockCurrentDate} events={[]} />);
-    
-    const dayHeadersRendered = screen.getAllByTestId('day-header-rendered');
+
+    const dayHeadersRendered = screen.getAllByTestId("day-header-rendered");
     expect(dayHeadersRendered).toHaveLength(mockGeneratedWeekDays.length);
 
     mockGeneratedWeekDays.forEach((day, index) => {
-      const dayName = day.toLocaleDateString('es-ES', { weekday: 'long' });
+      const dayName = day.toLocaleDateString("es-ES", { weekday: "long" });
       const dayNumber = day.getDate();
-      const expectedDayName = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-      
+      const expectedDayName =
+        dayName.charAt(0).toUpperCase() + dayName.slice(1);
+
       // Check if the content is within the specific header div
       const headerContent = dayHeadersRendered[index];
       expect(headerContent).toHaveTextContent(expectedDayName);
@@ -87,7 +108,7 @@ describe('WeekView Component', () => {
     });
   });
 
-  test('passes event handlers and other props to TimeGrid', () => {
+  test("passes event handlers and other props to TimeGrid", () => {
     render(
       <WeekView
         currentDate={mockCurrentDate}
@@ -100,8 +121,9 @@ describe('WeekView Component', () => {
       />
     );
     // Access the mock directly to check passed props
-    const TimeGrid = require('../../../../../src/components/calendar/time-grid');
-    const lastCallProps = TimeGrid.mock.calls[TimeGrid.mock.calls.length - 1][0];
+    const TimeGrid = require("../../../../../src/components/calendar/time-grid");
+    const lastCallProps =
+      TimeGrid.mock.calls[TimeGrid.mock.calls.length - 1][0];
 
     expect(lastCallProps.onEventClick).toBe(mockOnEventClick);
     expect(lastCallProps.onCellClick).toBe(mockOnCellClick);
@@ -110,8 +132,8 @@ describe('WeekView Component', () => {
     expect(lastCallProps.maxSimultaneousEvents).toBe(2);
   });
 
-  test('defaults maxSimultaneousEvents if not provided', () => {
-     render(
+  test("defaults maxSimultaneousEvents if not provided", () => {
+    render(
       <WeekView
         currentDate={mockCurrentDate}
         events={mockEvents}
@@ -122,8 +144,9 @@ describe('WeekView Component', () => {
         // maxSimultaneousEvents not provided
       />
     );
-    const TimeGrid = require('../../../../../src/components/calendar/time-grid');
-    const lastCallProps = TimeGrid.mock.calls[TimeGrid.mock.calls.length - 1][0];
+    const TimeGrid = require("../../../../../src/components/calendar/time-grid");
+    const lastCallProps =
+      TimeGrid.mock.calls[TimeGrid.mock.calls.length - 1][0];
     expect(lastCallProps.maxSimultaneousEvents).toBe(3); // Default from WeekView
   });
 });
