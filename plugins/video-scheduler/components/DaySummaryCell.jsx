@@ -1,6 +1,6 @@
 // video-scheduler/components/DaySummaryCell.jsx
-import React from 'react';
-import { STATUS_EMOJIS } from '../utils/constants.js';
+import React from "react";
+import { STATUS_EMOJIS } from "../utils/constants.js";
 
 function DaySummaryCell({ videosForDay }) {
   const videoSummaryElements = (videosForDay || []).map((video, index) => {
@@ -9,28 +9,40 @@ function DaySummaryCell({ videosForDay }) {
     // 1. Estado Principal (siempre al fondo de la pila visual)
     if (video.status && STATUS_EMOJIS[video.status]) {
       emojiStack.push(
-        React.createElement('span', {
-          key: `main-${index}`,
-          className: 'summary-emoji summary-main-status'
-        }, STATUS_EMOJIS[video.status])
+        React.createElement(
+          "span",
+          {
+            key: `main-${index}`,
+            className: "summary-emoji summary-main-status",
+          },
+          STATUS_EMOJIS[video.status]
+        )
       );
     } else {
       // Placeholder si no hay estado principal (no debería ocurrir con la lógica actual)
       emojiStack.push(
-        React.createElement('span', {
-          key: `main-placeholder-${index}`,
-          className: 'summary-emoji'
-        }, ' ')
+        React.createElement(
+          "span",
+          {
+            key: `main-placeholder-${index}`,
+            className: "summary-emoji",
+          },
+          " "
+        )
       );
     }
 
     // 2. Sub-estado Normal (encima del principal)
     if (video.subStatus && STATUS_EMOJIS[video.subStatus]) {
       emojiStack.push(
-        React.createElement('span', {
-          key: `sub-${index}`,
-          className: 'summary-emoji summary-sub-status'
-        }, STATUS_EMOJIS[video.subStatus])
+        React.createElement(
+          "span",
+          {
+            key: `sub-${index}`,
+            className: "summary-emoji summary-sub-status",
+          },
+          STATUS_EMOJIS[video.subStatus]
+        )
       );
     }
 
@@ -39,43 +51,53 @@ function DaySummaryCell({ videosForDay }) {
       video.stackableStatuses.forEach((stackableStatus, sIndex) => {
         if (STATUS_EMOJIS[stackableStatus]) {
           emojiStack.push(
-            React.createElement('span', {
-              key: `stackable-${index}-${sIndex}`,
-              className: 'summary-emoji summary-stackable-status'
-            }, STATUS_EMOJIS[stackableStatus])
+            React.createElement(
+              "span",
+              {
+                key: `stackable-${index}-${sIndex}`,
+                className: "summary-emoji summary-stackable-status",
+              },
+              STATUS_EMOJIS[stackableStatus]
+            )
           );
         }
       });
     }
-    
-    // Si no hay emojis, mostrar un guion para ese slot
-    if (emojiStack.length === 1 && emojiStack[0].props.children === ' ') {
-        return React.createElement(
-            'div',
-            { key: `video-summary-empty-${index}`, className: 'summary-video-item empty-slot' },
-            '–' // Guion simple para slot vacío visualmente
-        );
-    }
 
+    // Si no hay emojis, mostrar un guion para ese slot
+    if (emojiStack.length === 1 && emojiStack[0].props.children === " ") {
+      return React.createElement(
+        "div",
+        {
+          key: `video-summary-empty-${index}`,
+          className: "summary-video-item empty-slot",
+        },
+        "–" // Guion simple para slot vacío visualmente
+      );
+    }
 
     // El div 'summary-video-item' usará flex-direction: column-reverse
     // por lo que el orden de los hijos aquí es el orden visual de abajo hacia arriba.
     return React.createElement(
-      'div',
-      { key: `video-summary-${index}`, className: 'summary-video-item' },
+      "div",
+      { key: `video-summary-${index}`, className: "summary-video-item" },
       emojiStack // Renderiza los elementos del array
     );
   });
-  
-  const hasContent = videoSummaryElements.some(el => el.props.className !== 'summary-video-item empty-slot');
+
+  const hasContent = videoSummaryElements.some(
+    (el) => el.props.className !== "summary-video-item empty-slot"
+  );
 
   return React.createElement(
-    'td',
-    { className: 'video-scheduler-summary-cell' },
+    "td",
+    { className: "video-scheduler-summary-cell" },
     React.createElement(
-      'div',
-      { className: 'summary-videos-container' },
-      hasContent ? videoSummaryElements : React.createElement('span', null, '---')
+      "div",
+      { className: "summary-videos-container" },
+      hasContent
+        ? videoSummaryElements
+        : React.createElement("span", null, "---")
     )
   );
 }

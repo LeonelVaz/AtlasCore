@@ -2,7 +2,14 @@
 
 /* Reset y contenedor principal */
 .video-scheduler-page {
-  font-family: var(--font-family-body, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-family: var(
+    --font-family-body,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
   color: var(--text-color);
   background: var(--bg-color);
   margin: 0;
@@ -150,12 +157,30 @@
 }
 
 /* Distribución de columnas elegante */
-.calendar-grid th:nth-child(1), .calendar-grid td:nth-child(1) { width: 8%; }
-.calendar-grid th:nth-child(2), .calendar-grid td:nth-child(2) { width: 23%; }
-.calendar-grid th:nth-child(3), .calendar-grid td:nth-child(3) { width: 23%; }
-.calendar-grid th:nth-child(4), .calendar-grid td:nth-child(4) { width: 23%; }
-.calendar-grid th:nth-child(5), .calendar-grid td:nth-child(5) { width: 11%; }
-.calendar-grid th:nth-child(6), .calendar-grid td:nth-child(6) { width: 12%; }
+.calendar-grid th:nth-child(1),
+.calendar-grid td:nth-child(1) {
+  width: 8%;
+}
+.calendar-grid th:nth-child(2),
+.calendar-grid td:nth-child(2) {
+  width: 23%;
+}
+.calendar-grid th:nth-child(3),
+.calendar-grid td:nth-child(3) {
+  width: 23%;
+}
+.calendar-grid th:nth-child(4),
+.calendar-grid td:nth-child(4) {
+  width: 23%;
+}
+.calendar-grid th:nth-child(5),
+.calendar-grid td:nth-child(5) {
+  width: 11%;
+}
+.calendar-grid th:nth-child(6),
+.calendar-grid td:nth-child(6) {
+  width: 12%;
+}
 
 .calendar-grid td {
   padding: 0;
@@ -189,23 +214,25 @@
   .page-header-controls {
     padding: 16px 20px;
   }
-  
+
   .page-header-controls h2 {
     font-size: 1.5rem;
   }
-  
+
   .calendar-grid th {
     padding: 16px 12px;
     font-size: 0.6875rem;
   }
-  
+
   .calendar-grid td {
     height: 70px;
   }
 }
 
-
 .calendar-row:hover .video-scheduler-slot-cell,
 .calendar-row:hover .video-scheduler-summary-cell {
-  background-color: var(--bg-color-tertiary, var(--bg-color-secondary)) !important;
+  background-color: var(
+    --bg-color-tertiary,
+    var(--bg-color-secondary)
+  ) !important;
 }

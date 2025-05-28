@@ -12,21 +12,21 @@
 .summary-videos-container {
   display: flex;
   justify-content: center; /* Centra el grupo de las 3 mini-columnas horizontalmente */
-  align-items: flex-end;   /* Clave: Alinea los items (pilas) en la parte inferior del contenedor flex */
+  align-items: flex-end; /* Clave: Alinea los items (pilas) en la parte inferior del contenedor flex */
   width: 100%;
-  height: 100%;            /* Ocupa toda la altura de la celda */
-  gap: 5px;                /* Espacio horizontal ENTRE las mini-columnas */
+  height: 100%; /* Ocupa toda la altura de la celda */
+  gap: 5px; /* Espacio horizontal ENTRE las mini-columnas */
   margin-bottom: 10px;
 }
 
 .summary-video-item {
   display: flex;
   flex-direction: column-reverse; /* Apila de abajo hacia arriba */
-  align-items: center;            /* Centra emojis horizontalmente en su pila */
-  justify-content: flex-start;    /* Hace que la pila comience desde abajo (debido a column-reverse) */
+  align-items: center; /* Centra emojis horizontalmente en su pila */
+  justify-content: flex-start; /* Hace que la pila comience desde abajo (debido a column-reverse) */
   font-size: 0.9rem;
   line-height: 1;
-  gap: 6px;                       /* Aumentado a 2px para más separación vertical entre emojis */
+  gap: 6px; /* Aumentado a 2px para más separación vertical entre emojis */
   min-width: fit-content;
   opacity: 0.9;
   /* La altura la gestiona el contenedor padre y align-items: flex-end */
@@ -55,7 +55,6 @@
   padding: 0;
 }
 
-
 .summary-main-status {
   opacity: 1;
 }
@@ -67,7 +66,7 @@
 
 .summary-stackable-status {
   position: relative;
-  top: -2px; 
+  top: -2px;
   opacity: 0.8;
   font-size: 0.7rem;
 }

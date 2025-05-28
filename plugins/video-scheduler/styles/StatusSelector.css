@@ -2,7 +2,7 @@
 
 /* Popup selector de estado - minimalista con position absolute */
 .status-selector-popup {
-  position: absolute; 
+  position: absolute;
   background: var(--modal-bg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);
@@ -72,13 +72,13 @@
   font-weight: 500;
 }
 
-.status-selector-popup .status-info-display { /* Para el warning no clickeable */
+.status-selector-popup .status-info-display {
+  /* Para el warning no clickeable */
   background: rgba(var(--warning-color-rgb), 0.05);
   color: var(--warning-color);
   border: 1px solid rgba(var(--warning-color-rgb), 0.3);
   font-style: italic;
 }
-
 
 .status-selector-popup .status-selector-cancel-button {
   background: transparent;

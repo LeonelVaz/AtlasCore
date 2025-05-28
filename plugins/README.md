@@ -29,23 +29,23 @@ export default {
   version: '1.0.0',
   description: 'Descripción de mi plugin',
   author: 'Tu Nombre',
-  
+
   // Restricciones de compatibilidad
   minAppVersion: '0.3.0',
   maxAppVersion: '1.0.0',
-  
+
   // Método de inicialización (obligatorio)
   init: function(core) {
     // Tu código aquí...
     return true;
   },
-  
+
   // Método de limpieza (obligatorio)
   cleanup: function() {
     // Tu código aquí...
     return true;
   },
-  
+
   // API pública (opcional)
   publicAPI: {
     // Métodos expuestos a otros plugins
@@ -63,8 +63,8 @@ Durante la inicialización, el sistema proporciona un objeto `core` con las sigu
 ```javascript
 // Suscribirse a un evento
 const unsubscribe = core.events.subscribe(
-  'mi-plugin',           // ID de tu plugin
-  'calendar.eventCreated', // Nombre del evento
+  "mi-plugin", // ID de tu plugin
+  "calendar.eventCreated", // Nombre del evento
   (data, sourcePlugin) => {
     // Manejar el evento...
   }
@@ -72,16 +72,18 @@ const unsubscribe = core.events.subscribe(
 
 // Publicar un evento
 core.events.publish(
-  'mi-plugin',        // ID de tu plugin
-  'miPlugin.miEvento', // Nombre del evento
-  { /* datos del evento */ }
+  "mi-plugin", // ID de tu plugin
+  "miPlugin.miEvento", // Nombre del evento
+  {
+    /* datos del evento */
+  }
 );
 
 // Cancelar suscripción
 unsubscribe();
 
 // O cancelar todas las suscripciones
-core.events.unsubscribeAll('mi-plugin');
+core.events.unsubscribeAll("mi-plugin");
 ```
 
 ### Sistema de Almacenamiento
@@ -89,33 +91,35 @@ core.events.unsubscribeAll('mi-plugin');
 ```javascript
 // Guardar datos
 await core.storage.setItem(
-  'mi-plugin',     // ID de tu plugin
-  'miClave',       // Nombre de la clave
-  { /* datos */ }  // Datos a guardar
+  "mi-plugin", // ID de tu plugin
+  "miClave", // Nombre de la clave
+  {
+    /* datos */
+  } // Datos a guardar
 );
 
 // Recuperar datos
 const datos = await core.storage.getItem(
-  'mi-plugin',     // ID de tu plugin
-  'miClave',       // Nombre de la clave
-  null             // Valor por defecto
+  "mi-plugin", // ID de tu plugin
+  "miClave", // Nombre de la clave
+  null // Valor por defecto
 );
 
 // Eliminar datos
 await core.storage.removeItem(
-  'mi-plugin',     // ID de tu plugin
-  'miClave'        // Nombre de la clave
+  "mi-plugin", // ID de tu plugin
+  "miClave" // Nombre de la clave
 );
 
 // Limpiar todos los datos
-await core.storage.clearPluginData('mi-plugin');
+await core.storage.clearPluginData("mi-plugin");
 ```
 
 ### Acceso a Módulos
 
 ```javascript
 // Obtener referencia a un módulo
-const calendarModule = core.getModule('calendar');
+const calendarModule = core.getModule("calendar");
 
 // Usar el módulo
 if (calendarModule) {
@@ -141,22 +145,22 @@ Puedes encontrar un plugin de ejemplo en la carpeta `example-plugin`.
 ```javascript
 // Ejemplo mínimo funcional
 export default {
-  id: 'plugin-basico',
-  name: 'Plugin Básico',
-  version: '0.1.0',
-  description: 'Un plugin mínimo de ejemplo',
-  author: 'Atlas Team',
-  minAppVersion: '0.3.0',
-  maxAppVersion: '1.0.0',
-  
-  init: function(core) {
-    console.log('Plugin Básico inicializado');
+  id: "plugin-basico",
+  name: "Plugin Básico",
+  version: "0.1.0",
+  description: "Un plugin mínimo de ejemplo",
+  author: "Atlas Team",
+  minAppVersion: "0.3.0",
+  maxAppVersion: "1.0.0",
+
+  init: function (core) {
+    console.log("Plugin Básico inicializado");
     return true;
   },
-  
-  cleanup: function() {
-    console.log('Plugin Básico desactivado');
+
+  cleanup: function () {
+    console.log("Plugin Básico desactivado");
     return true;
-  }
+  },
 };
 ```

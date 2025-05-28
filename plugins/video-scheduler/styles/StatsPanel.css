@@ -4,7 +4,7 @@
 .video-scheduler-stats-panel {
   position: fixed;
   /* Asumir una altura de header de Atlas de 60px, el modal empieza debajo */
-  top: 50px; 
+  top: 50px;
   left: 0;
   right: 0;
   bottom: 0; /* Opcional, si quieres que llegue hasta abajo */
@@ -27,7 +27,9 @@
   width: 100%; /* Ocupar el ancho disponible dentro del padding del overlay */
   max-width: 1200px; /* Ancho máximo */
   height: 100%; /* Ocupar la altura disponible */
-  max-height: calc(100% - 16%); /* Altura máxima, considerando el top y padding */
+  max-height: calc(
+    100% - 16%
+  ); /* Altura máxima, considerando el top y padding */
   overflow: hidden; /* El scroll estará en el contenido de las pestañas */
   display: flex;
   flex-direction: column;
@@ -39,9 +41,9 @@
   /* justify-content: space-between;  <-- REMOVER ESTO */
   justify-content: center; /* <-- AÑADIR ESTO para centrar el title-section */
   align-items: center;
-  padding: 20px 28px; 
+  padding: 20px 28px;
   border-bottom: 1px solid var(--border-color);
-  background: var(--bg-color-secondary); 
+  background: var(--bg-color-secondary);
   flex-shrink: 0;
   border-radius: 12px 12px 0 0;
   position: relative; /* <-- AÑADIR ESTO para posicionar el botón de cierre */
@@ -53,7 +55,8 @@
   gap: 20px; /* Más espacio entre botones y título */
 }
 
-.month-nav-button { /* Estilo para los botones de navegación de mes */
+.month-nav-button {
+  /* Estilo para los botones de navegación de mes */
   background: var(--primary-color);
   color: white;
   border: none;
@@ -87,20 +90,20 @@
   white-space: nowrap; /* Evitar que el texto se rompa */
 }
 
-.stats-panel-close { 
-  position: absolute; 
+.stats-panel-close {
+  position: absolute;
   right: 28px;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-color-secondary);
-  width: 36px; 
+  width: 36px;
   height: 36px;
-  border-radius: 50%; 
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
   transition: all 0.2s ease;
 }
 
@@ -112,7 +115,8 @@
 }
 
 /* Sistema de pestañas */
-.stats-tab-buttons-container { /* Nuevo contenedor para los botones de pestañas */
+.stats-tab-buttons-container {
+  /* Nuevo contenedor para los botones de pestañas */
   display: flex;
   background: var(--bg-color-secondary);
   border-bottom: 1px solid var(--border-color);
@@ -141,7 +145,10 @@
 .stats-tab.active {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
-  background: rgba(var(--primary-color-rgb), 0.03); /* Fondo muy sutil para la pestaña activa */
+  background: rgba(
+    var(--primary-color-rgb),
+    0.03
+  ); /* Fondo muy sutil para la pestaña activa */
 }
 
 /* Contenedor del contenido activo de pestañas - AREA DE SCROLL */
@@ -156,25 +163,30 @@
    así que si quieres un padding diferente aquí, asegúrate de que esta definición tenga mayor especificidad o se aplique correctamente.
    Por ahora, StatsOverviewPanel y los contenidos de charts/compare usan el mismo padding a través de sus clases.
 */
-.charts-content, 
+.charts-content,
 .compare-content {
   padding: 28px; /* Padding uniforme para contenido de estas pestañas */
 }
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Ajuste para gráficos */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(350px, 1fr)
+  ); /* Ajuste para gráficos */
   gap: 28px;
 }
 
-.simple-bar-chart, .income-chart {
+.simple-bar-chart,
+.income-chart {
   background: var(--bg-color-secondary);
   border-radius: 8px;
   padding: 20px;
   border: 1px solid var(--border-color);
 }
 
-.simple-bar-chart h5, .income-chart h5 {
+.simple-bar-chart h5,
+.income-chart h5 {
   margin: 0 0 16px 0;
   font-size: 1rem;
   font-weight: 600;
@@ -204,7 +216,11 @@
 
 .chart-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+  background: linear-gradient(
+    90deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
   transition: width 0.3s ease;
   border-radius: 4px;
   min-width: 2px; /* Evitar que desaparezca si el valor es muy pequeño */
@@ -218,7 +234,7 @@
   font-size: 0.875rem;
   font-weight: 500;
   color: white;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .income-pie-chart {
@@ -241,15 +257,18 @@
   border-left: 4px solid var(--success-color);
   color: var(--success-color);
 }
-.pie-segment.paid span:last-child { color: var(--success-color); }
-
+.pie-segment.paid span:last-child {
+  color: var(--success-color);
+}
 
 .pie-segment.pending {
   background: rgba(var(--warning-color-rgb), 0.1);
   border-left: 4px solid var(--warning-color);
   color: var(--warning-color);
 }
-.pie-segment.pending span:last-child { color: var(--warning-color); }
+.pie-segment.pending span:last-child {
+  color: var(--warning-color);
+}
 
 .compare-controls {
   display: flex;
@@ -267,7 +286,8 @@
   color: var(--text-color);
 }
 
-.compare-controls input[type="month"] { /* Específico para el input de mes */
+.compare-controls input[type="month"] {
+  /* Específico para el input de mes */
   background: var(--input-bg);
   color: var(--text-color);
   border: 1px solid var(--border-color);
@@ -278,7 +298,10 @@
 
 .comparison-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Ajuste para comparación */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(350px, 1fr)
+  ); /* Ajuste para comparación */
   gap: 28px;
 }
 
@@ -359,24 +382,28 @@
   border-color: var(--primary-color);
   background: rgba(var(--primary-color-rgb), 0.05);
 }
-.month-income.current span:last-child { color: var(--primary-color); }
-
+.month-income.current span:last-child {
+  color: var(--primary-color);
+}
 
 .month-income.compare {
   border-color: var(--text-color-secondary);
   background: rgba(var(--text-color-secondary-rgb), 0.05);
 }
-.month-income.compare span:last-child { color: var(--text-color-secondary); }
+.month-income.compare span:last-child {
+  color: var(--text-color-secondary);
+}
 
-
-.month-income span:first-child { /* Label del mes */
+.month-income span:first-child {
+  /* Label del mes */
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-color-secondary);
   text-transform: uppercase;
 }
 
-.month-income span:last-child { /* Monto */
+.month-income span:last-child {
+  /* Monto */
   font-size: 1.25rem;
   font-weight: 700;
 }
@@ -402,12 +429,12 @@
   font-style: italic;
 }
 
-
 /* Responsive */
 @media (max-width: 1024px) {
   /* .stats-panel-content se ajusta por max-width y height del overlay */
-  
-  .charts-grid, .comparison-grid {
+
+  .charts-grid,
+  .comparison-grid {
     grid-template-columns: 1fr; /* Apilar en pantallas más pequeñas */
   }
 }
@@ -418,36 +445,36 @@
     flex-direction: column; /* Apilar título y cierre */
     gap: 12px;
   }
-  
+
   .stats-panel-title-section {
     flex-direction: column; /* Apilar botones de mes y título */
     gap: 10px;
   }
-  
+
   .stats-panel-header h2 {
     font-size: 1.3rem; /* Título más pequeño */
     min-width: auto; /* Permitir que se ajuste */
   }
-  
+
   .month-nav-button {
     width: 36px;
     height: 36px;
     font-size: 1.1rem;
   }
-  
+
   .stats-tab-buttons-container {
     flex-direction: row; /* Mantener horizontal pero con scroll si es necesario */
     overflow-x: auto; /* Permitir scroll horizontal para pestañas */
   }
-  
+
   .stats-tab {
     padding: 14px 16px; /* Menos padding */
     font-size: 0.85rem;
     white-space: nowrap; /* Evitar que el texto de la pestaña se rompa */
   }
-    
+
   .active-tab-content-container,
-  .charts-content, 
+  .charts-content,
   .compare-content {
     padding: 20px; /* Menos padding en el contenido */
   }
@@ -456,7 +483,8 @@
     grid-template-columns: auto 1fr; /* Simplificar layout del item de comparación */
     gap: 6px;
   }
-  .comparison-item .diff { /* Asegurar que la diferencia esté en su propia línea o bien posicionada */
+  .comparison-item .diff {
+    /* Asegurar que la diferencia esté en su propia línea o bien posicionada */
     grid-column: 1 / -1; /* Ocupar todo el ancho */
     text-align: right;
     margin-top: 4px;

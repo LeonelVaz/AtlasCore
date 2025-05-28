@@ -17,15 +17,19 @@
   color: var(--primary-color); /* Cambiar color de texto al hacer hover */
 }
 
-.video-scheduler-nav-icon { /* Clase específica para el icono */
+.video-scheduler-nav-icon {
+  /* Clase específica para el icono */
   font-size: 1.3em; /* Tamaño del icono */
-  color: var(--text-color); /* Color del icono por defecto, debe ser blanco si el tema es oscuro */
+  color: var(
+    --text-color
+  ); /* Color del icono por defecto, debe ser blanco si el tema es oscuro */
   /* Si se necesita específicamente blanco, se puede forzar aquí, pero es mejor que el tema lo maneje */
-  /* color: white; */ 
+  /* color: white; */
   transition: color 0.2s ease;
 }
 
-.video-scheduler-nav-item span:last-child { /* Texto del ítem */
+.video-scheduler-nav-item span:last-child {
+  /* Texto del ítem */
   font-weight: 500;
   color: var(--text-color); /* Color del texto por defecto */
   font-size: 0.9rem; /* Tamaño de fuente */

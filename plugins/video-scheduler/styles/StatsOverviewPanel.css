@@ -1,7 +1,8 @@
 /* video-scheduler/styles/StatsOverviewPanel.css */
 
 /* Panel de estadísticas inferior O contenido de pestaña 'overview' */
-.stats-tab-content { /* Esta clase se usa para el panel inferior y el contenido de pestañas */
+.stats-tab-content {
+  /* Esta clase se usa para el panel inferior y el contenido de pestañas */
   padding: 20px 32px;
   background: var(--bg-color-secondary); /* Fondo más claro para el contenido */
   border-top: 1px solid var(--border-color);
@@ -36,7 +37,9 @@
 }
 
 .stats-group {
-  background: var(--bg-color); /* Fondo ligeramente más oscuro para los grupos */
+  background: var(
+    --bg-color
+  ); /* Fondo ligeramente más oscuro para los grupos */
   border-radius: 8px;
   padding: 16px;
   border: 1px solid var(--border-color);
@@ -72,13 +75,15 @@
   background: rgba(var(--primary-color-rgb), 0.05);
 }
 
-.stats-item span:first-child { /* Emoji */
+.stats-item span:first-child {
+  /* Emoji */
   font-size: 1em;
   min-width: 20px;
   text-align: center;
 }
 
-.stats-item span:nth-child(2) { /* Label */
+.stats-item span:nth-child(2) {
+  /* Label */
   flex: 1;
   font-size: 0.8125rem;
   color: var(--text-color);
@@ -157,13 +162,15 @@
   border-radius: 4px;
 }
 
-.income-item span:first-child { /* Currency/Label */
+.income-item span:first-child {
+  /* Currency/Label */
   font-size: 0.8125rem;
   color: var(--text-color);
   font-weight: 500;
 }
 
-.income-item span:last-child { /* Amount */
+.income-item span:last-child {
+  /* Amount */
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--primary-color);
@@ -172,21 +179,24 @@
 .income-item.paid span:last-child {
   color: var(--success-color);
 }
-.income-item.paid span:first-child { /* Para el emoji */
+.income-item.paid span:first-child {
+  /* Para el emoji */
   color: var(--success-color);
 }
 
 .income-item.pending span:last-child {
   color: var(--warning-color);
 }
-.income-item.pending span:first-child { /* Para el emoji */
+.income-item.pending span:first-child {
+  /* Para el emoji */
   color: var(--warning-color);
 }
 
 /* Grupo de ingreso total */
 .income-group.total-income {
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.1), 
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-color-rgb), 0.1),
     rgba(var(--primary-color-rgb), 0.05)
   );
   border-color: var(--primary-color);
@@ -202,7 +212,6 @@
   border-radius: 6px;
   border: 2px solid rgba(var(--primary-color-rgb), 0.2);
 }
-
 
 /* Panel de estadísticas inferior - MODO COMPACTO (no usado actualmente, pero se mantiene) */
 .video-scheduler-footer-stats {
@@ -288,8 +297,9 @@
 }
 
 .footer-stats-section.income-section {
-  background: linear-gradient(135deg, 
-    rgba(var(--primary-color-rgb), 0.1), 
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-color-rgb), 0.1),
     rgba(var(--primary-color-rgb), 0.05)
   );
   border-color: var(--primary-color);
@@ -329,23 +339,23 @@
   font-weight: 500;
 }
 
-
 /* Responsive */
 @media (max-width: 1024px) {
-  .stats-tab-content { /* Se aplica al panel inferior y al contenido de pestañas */
+  .stats-tab-content {
+    /* Se aplica al panel inferior y al contenido de pestañas */
     padding: 16px 20px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr; /* Para que los grupos de stats se apilen en pantallas más pequeñas */
     gap: 16px;
   }
-  
+
   .income-stats-grid {
     grid-template-columns: 1fr; /* Igual para los ingresos */
     gap: 12px;
   }
-  
+
   /* Modo compacto (no usado) */
   .video-scheduler-footer-stats {
     padding: 16px 20px;
@@ -371,7 +381,7 @@
   .stats-section {
     margin-bottom: 16px;
   }
-  
+
   /* Modo compacto (no usado) */
   .footer-stats-section {
     padding: 12px;
