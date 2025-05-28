@@ -80,25 +80,25 @@ export const ALL_SUPPORTED_CURRENCIES = [
   { code: "EUR", name: "Euro", symbol: "€" },
   { code: "JPY", name: "Yen japonés", symbol: "¥" },
   { code: "GBP", name: "Libra esterlina", symbol: "£" },
-  { code: "AUD", name: "Dólar australiano", symbol: "A$" },
-  { code: "CAD", name: "Dólar canadiense", symbol: "C$" },
+  { code: "AUD", name: "Dólar australiano", symbol: "$" },
+  { code: "CAD", name: "Dólar canadiense", symbol: "$" },
   { code: "CHF", name: "Franco suizo", symbol: "CHF" },
   { code: "CNY", name: "Yuan chino", symbol: "CN¥" }, // Símbolo más específico para Yuan
-  { code: "HKD", name: "Dólar de Hong Kong", symbol: "HK$" },
-  { code: "NZD", name: "Dólar neozelandés", symbol: "NZ$" },
+  { code: "HKD", name: "Dólar de Hong Kong", symbol: "$" },
+  { code: "NZD", name: "Dólar neozelandés", symbol: "$" },
   { code: "SEK", name: "Corona sueca", symbol: "kr" },
   { code: "KRW", name: "Won surcoreano", symbol: "₩" },
-  { code: "SGD", name: "Dólar de Singapur", symbol: "S$" },
+  { code: "SGD", name: "Dólar de Singapur", symbol: "$" },
   { code: "NOK", name: "Corona noruega", symbol: "kr" },
-  { code: "MXN", name: "Peso mexicano", symbol: "MX$" }, // Símbolo más específico para Peso Mexicano
+  { code: "MXN", name: "Peso mexicano", symbol: "$" }, // Símbolo más específico para Peso Mexicano
   { code: "INR", name: "Rupia india", symbol: "₹" },
   { code: "RUB", name: "Rublo ruso", symbol: "₽" },
   { code: "ZAR", name: "Rand sudafricano", symbol: "R" },
   { code: "BRL", name: "Real brasileño", symbol: "R$" },
   { code: "TRY", name: "Lira turca", symbol: "₺" },
-  { code: "ARS", name: "Peso argentino", symbol: "ARS$" }, // Símbolo más específico
-  { code: "CLP", name: "Peso chileno", symbol: "CLP$" }, // Símbolo más específico
-  { code: "COP", name: "Peso colombiano", symbol: "COP$" }, // Símbolo más específico
+  { code: "ARS", name: "Peso argentino", symbol: "$" }, // Símbolo más específico
+  { code: "CLP", name: "Peso chileno", symbol: "$" }, // Símbolo más específico
+  { code: "COP", name: "Peso colombiano", symbol: "$" }, // Símbolo más específico
   { code: "PEN", name: "Sol peruano", symbol: "S/." },
   { code: "PLN", name: "Złoty polaco", symbol: "zł" },
   { code: "THB", name: "Baht tailandés", symbol: "฿" },
