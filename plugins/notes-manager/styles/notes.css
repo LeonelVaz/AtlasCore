@@ -103,7 +103,10 @@
 
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--notes-grid-min-width), 1fr));
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(var(--notes-grid-min-width), 1fr)
+  );
   gap: var(--spacing-lg);
   width: 100%;
 }
@@ -505,26 +508,26 @@
   .notes-page {
     padding: var(--spacing-md);
   }
-  
+
   .notes-header {
     flex-direction: column;
     gap: var(--spacing-md);
     align-items: flex-start;
   }
-  
+
   .notes-header h1 {
     font-size: 24px;
   }
-  
+
   .notes-grid {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
   }
-  
+
   .create-note-form {
     padding: var(--spacing-md);
   }
-  
+
   .note-actions {
     position: static;
     opacity: 1;
@@ -534,7 +537,7 @@
     padding: var(--spacing-xs);
     border-radius: var(--border-radius-sm);
   }
-  
+
   .note-card h3 {
     padding-right: 0;
     margin-bottom: var(--spacing-sm);
@@ -545,31 +548,31 @@
   .notes-page {
     padding: var(--spacing-sm);
   }
-  
+
   .notes-header h1 {
     font-size: 22px;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-xs);
   }
-  
+
   .create-note-form,
   .note-card {
     border-radius: var(--border-radius-sm);
   }
-  
+
   .note-card .metadata {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-xs);
   }
-  
+
   /* RichText toolbar responsive */
   .note-rich-editor .rich-editor-toolbar {
     flex-wrap: wrap;
     gap: 2px;
   }
-  
+
   .note-rich-editor .rich-editor-toolbar button {
     min-width: 32px;
     min-height: 32px;
@@ -596,11 +599,11 @@
   .note-card {
     border: 2px solid var(--text-color);
   }
-  
+
   .note-actions button {
     border: 1px solid var(--text-color);
   }
-  
+
   .richtext-info {
     border: 2px solid var(--primary-color);
   }
@@ -615,11 +618,11 @@
     transition: none;
     animation: none;
   }
-  
+
   .note-card:hover {
     transform: none;
   }
-  
+
   .create-note-form {
     animation: none;
   }
@@ -659,8 +662,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Estados de carga y error */
@@ -671,7 +678,7 @@
 }
 
 .loading::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -685,8 +692,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error {
@@ -771,7 +782,7 @@ button[key="link-event"] {
 }
 
 button[key="link-event"]:hover {
-  background-color: var(--info-hover, #1976D2);
+  background-color: var(--info-hover, #1976d2);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
@@ -784,9 +795,15 @@ button[key="link-event"]:hover {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ================================================
@@ -815,11 +832,11 @@ button[key="link-event"]:hover {
     max-height: 90vh;
     margin: var(--spacing-md);
   }
-  
+
   .event-selector-item {
     font-size: 13px;
   }
-  
+
   .event-notes-section {
     margin-top: var(--spacing-sm);
     padding: var(--spacing-sm);
@@ -830,11 +847,11 @@ button[key="link-event"]:hover {
   .event-selector-modal {
     padding: var(--spacing-sm);
   }
-  
+
   .event-selector-modal > div {
     max-height: 95vh;
   }
-  
+
   .note-card .material-icons[title^="Vinculada a:"] {
     font-size: 16px;
   }
@@ -872,7 +889,7 @@ button[key="link-event"]:hover {
 }
 
 .event-selector-loading::after {
-  content: '';
+  content: "";
   display: inline-block;
   width: 20px;
   height: 20px;
@@ -946,7 +963,7 @@ button[key="link-event"]:focus {
   .event-selector-item {
     border-width: 2px;
   }
-  
+
   .event-color-indicator {
     outline: 1px solid var(--text-color);
   }
@@ -959,7 +976,7 @@ button[key="link-event"]:focus {
   .note-card.selected {
     animation: none;
   }
-  
+
   .event-note-item:hover {
     transform: none;
   }
