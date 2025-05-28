@@ -2,7 +2,6 @@
 import React from "react";
 
 function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
-  // Recibir currentViewDate
   const modalRef = React.useRef(null);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [resetScope, setResetScope] = React.useState("current_month");
@@ -109,7 +108,7 @@ function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
         return;
       }
 
-      await plugin.publicAPI.resetPluginData(resetScope, currentViewDate); // Pasar currentViewDate
+      await plugin.publicAPI.resetPluginData(resetScope, currentViewDate);
       showTemporaryFeedback(
         "Datos reseteados con éxito. La página se recargará.",
         "success",
@@ -129,7 +128,6 @@ function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
       showTemporaryFeedback(`Error al resetear: ${error.message}`, "error");
       setIsProcessing(false);
     } finally {
-      // No resetear isProcessing aquí si el error fue antes del confirm
       setConfirmationText("");
     }
   };
@@ -209,7 +207,10 @@ function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
 
             React.createElement(
               "div",
-              { key: "scope-selector", className: "action-group" },
+              {
+                key: "scope-selector",
+                className: "video-scheduler-reset-modal__action-group",
+              },
               [
                 React.createElement(
                   "h4",
@@ -220,15 +221,15 @@ function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
                   React.createElement(
                     "div",
                     {
-                      key: `radio-group-${option.value}`,
-                      className: "radio-group",
+                      key: `radio-option-${option.value}`,
+                      className: "video-scheduler-reset-modal__radio-option",
                     },
                     [
                       React.createElement(
                         "label",
                         {
-                          key: `label-${option.value}`,
-                          className: "radio-label",
+                          key: `label-el-${option.value}`, // Clave para el elemento label
+                          className: "video-scheduler-reset-modal__radio-label",
                         },
                         [
                           React.createElement("input", {
@@ -238,16 +239,21 @@ function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
                             checked: resetScope === option.value,
                             onChange: (e) => setResetScope(e.target.value),
                             disabled: isProcessing,
-                            key: `input-${option.value}`,
+                            key: `input-${option.value}`, // Clave para el input
                           }),
-                          option.label,
+                          React.createElement(
+                            "span",
+                            { key: `span-label-${option.value}` }, // CORRECCIÓN: Añadir key al span
+                            option.label
+                          ),
                         ]
                       ),
                       React.createElement(
                         "p",
                         {
-                          key: `desc-${option.value}`,
-                          className: "radio-description",
+                          key: `desc-el-${option.value}`, // Clave para el párrafo
+                          className:
+                            "video-scheduler-reset-modal__radio-description",
                         },
                         option.description
                       ),
@@ -264,7 +270,10 @@ function ResetDataModal({ plugin, core, pluginId, onClose, currentViewDate }) {
 
             React.createElement(
               "div",
-              { key: "confirmation-area", className: "action-group" },
+              {
+                key: "confirmation-area",
+                className: "video-scheduler-reset-modal__action-group",
+              },
               [
                 React.createElement(
                   "h4",

@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1035; /* Ligeramente por encima de otros modales comunes */
+  z-index: 1035;
   backdrop-filter: blur(4px);
   padding: 20px;
   box-sizing: border-box;
@@ -23,8 +23,8 @@
 
 .reset-data-modal {
   background: var(--bg-color);
-  border: 1px solid var(--danger-color, #dc3545); /* Borde rojo */
-  box-shadow: 0 8px 24px rgba(var(--danger-color-rgb, 220, 53, 69), 0.3); /* Sombra roja */
+  border: 1px solid var(--danger-color, #dc3545);
+  box-shadow: 0 8px 24px rgba(var(--danger-color-rgb, 220, 53, 69), 0.3);
   border-radius: 12px;
   color: var(--text-color);
   width: 100%;
@@ -42,10 +42,7 @@
   align-items: center;
   padding: 16px 24px;
   border-bottom: 1px solid rgba(var(--danger-color-rgb, 220, 53, 69), 0.3);
-  background: rgba(
-    var(--danger-color-rgb, 220, 53, 69),
-    0.1
-  ); /* Fondo rojo claro */
+  background: rgba(var(--danger-color-rgb, 220, 53, 69), 0.1);
   border-radius: 12px 12px 0 0;
   flex-shrink: 0;
 }
@@ -65,7 +62,7 @@
 .reset-data-modal .modal-header h3 {
   margin: 0;
   font-size: 1.2rem;
-  font-weight: 600; /* Más énfasis por ser una acción peligrosa */
+  font-weight: 600;
   color: var(--danger-color, #dc3545);
 }
 
@@ -125,52 +122,68 @@
   font-weight: 500;
 }
 
-.reset-data-modal .action-group {
+/* Action Group específico para el modal de reseteo */
+.video-scheduler-reset-modal__action-group {
   margin-bottom: 20px;
-  padding: 16px;
+  padding: 20px; /* Aumentar padding para más aire interno */
   background: var(--bg-color-secondary);
   border-radius: 8px;
   border: 1px solid var(--border-color);
 }
-.reset-data-modal .action-group:last-child {
+.video-scheduler-reset-modal__action-group:last-child {
   margin-bottom: 0;
 }
 
-.reset-data-modal .action-group h4 {
-  margin: 0 0 12px 0;
+.video-scheduler-reset-modal__action-group h4 {
+  margin: 0 0 18px 0; /* Aumentar margen inferior del título */
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-color);
 }
 
-.reset-data-modal .radio-group {
-  margin-bottom: 10px;
+/* Cada opción de radio (contenedor de label + descripción) */
+.video-scheduler-reset-modal__radio-option {
+  margin-bottom: 20px; /* Espacio entre las opciones de radio */
 }
-.reset-data-modal .radio-group:last-child {
+.video-scheduler-reset-modal__radio-option:last-child {
   margin-bottom: 0;
 }
 
-.reset-data-modal .radio-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-  color: var(--text-color);
+/* Label que contiene el input radio y el texto principal */
+.video-scheduler-reset-modal__radio-label {
+  display: flex; /* Clave para alinear radio y texto */
+  align-items: flex-start; /* Alinear al inicio si el texto del label es largo */
+  gap: 12px; /* Espacio entre el radio y el texto del label */
+  margin-bottom: 6px; /* Espacio entre el label principal y su descripción */
   cursor: pointer;
-  margin-bottom: 4px;
 }
-.reset-data-modal .radio-label input[type="radio"] {
+
+.video-scheduler-reset-modal__radio-label input[type="radio"] {
   accent-color: var(--primary-color);
   cursor: pointer;
-  transform: scale(1.1);
+  /* Ajustar tamaño y posición del radio button si es necesario */
+  width: 16px; /* Tamaño fijo para el radio */
+  height: 16px; /* Tamaño fijo para el radio */
+  margin-top: 3px; /* Ajuste fino para alinear con la primera línea de texto */
+  flex-shrink: 0; /* Evita que el radio se encoja */
 }
 
-.reset-data-modal .radio-description {
-  font-size: 0.8rem;
+/* Texto principal de la opción de radio */
+.video-scheduler-reset-modal__radio-label span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  line-height: 1.4; /* Para que el texto multilínea se vea bien */
+}
+
+/* Descripción de la opción de radio */
+.video-scheduler-reset-modal__radio-description {
+  font-size: 0.825rem;
   color: var(--text-color-secondary);
-  margin-left: 26px; /* Alineado con el texto del radio, no con el input */
-  margin-top: 0;
-  margin-bottom: 0;
+  line-height: 1.5;
+  /* Indentación para alinear con el texto del label, no con el radio button */
+  /* El cálculo exacto puede depender del tamaño del radio y el gap */
+  padding-left: calc(16px + 12px); /* (width del radio + gap del label) */
 }
 
 .reset-data-modal .modal-divider {
@@ -199,7 +212,7 @@
   font-size: 0.9rem;
   box-sizing: border-box;
   margin-bottom: 16px;
-  text-transform: uppercase; /* Para que coincida con la confirmación */
+  text-transform: uppercase;
 }
 .reset-data-modal .confirmation-input:focus {
   border-color: var(--danger-color);
@@ -325,8 +338,12 @@
   .reset-data-modal .modal-content {
     padding: 16px;
   }
-  .reset-data-modal .action-group {
-    padding: 12px;
+  .video-scheduler-reset-modal__action-group {
+    /* Aplicar a la clase prefijada */
+    padding: 16px; /* Ajustar padding para móvil */
+  }
+  .video-scheduler-reset-modal__action-group h4 {
+    margin-bottom: 12px; /* Menos margen para el título en móvil */
   }
   .reset-data-modal .action-button {
     font-size: 0.85rem;
@@ -334,5 +351,15 @@
   }
   .reset-data-modal .modal-footer {
     padding: 12px 16px;
+  }
+
+  .video-scheduler-reset-modal__radio-label span {
+    font-size: 0.85rem;
+  }
+  .video-scheduler-reset-modal__radio-description {
+    font-size: 0.78rem;
+    padding-left: calc(
+      16px + 10px
+    ); /* Ajustar indentación para móvil si el gap es diferente */
   }
 }
