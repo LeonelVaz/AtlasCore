@@ -1,0 +1,175 @@
+/* ================================================
+   EVENT NOTES EXTENSION STYLES
+   ================================================ */
+
+.event-notes-section {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--bg-color-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+
+  &.refreshing {
+    opacity: 0.7;
+  }
+
+  &.collapsed {
+    .event-notes-header {
+      margin-bottom: 0;
+    }
+    .event-notes-chevron {
+      transform: rotate(0deg);
+    }
+  }
+
+  &:hover {
+    /* Del CSS original */
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .event-notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+
+    .event-notes-title-container {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      cursor: pointer;
+      flex: 1;
+
+      .event-notes-icon {
+        font-size: 18px;
+        color: var(--primary-color);
+      }
+      .event-notes-title-text {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+      .event-notes-chevron {
+        font-size: 18px;
+        color: var(--text-color-secondary);
+        transform: rotate(180deg);
+        transition: transform var(--transition-fast);
+      }
+    }
+
+    .event-notes-create-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: var(--border-radius-sm);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      transition: all var(--transition-fast);
+      margin-left: var(--spacing-sm);
+
+      &:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-1px);
+      }
+      .material-icons {
+        font-size: 14px;
+      }
+    }
+  }
+
+  .event-notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+
+    .event-notes-empty {
+      text-align: center;
+      padding: var(--spacing-md);
+      color: var(--text-color-secondary);
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .event-note-item {
+      padding: var(--spacing-sm);
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      animation: slideIn 0.3s ease-out; /* slideIn definido en global.css */
+
+      &:hover {
+        /* Del CSS original */
+        border-color: var(--primary-color);
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+      }
+      &:focus {
+        /* Del CSS original */
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+      }
+
+      .event-note-item-title {
+        font-weight: 500;
+        font-size: 13px;
+        color: var(--text-color);
+        margin-bottom: var(--spacing-xs);
+      }
+      .event-note-item-preview {
+        font-size: 12px;
+        color: var(--text-color-secondary);
+        line-height: 1.4;
+        margin-bottom: var(--spacing-xs);
+      }
+      .event-note-item-date {
+        font-size: 11px;
+        color: var(--text-color-secondary);
+        font-style: italic;
+      }
+    }
+  }
+
+  .event-notes-form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: var(--spacing-lg);
+
+    .event-notes-form-modal {
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: var(--border-radius-lg);
+      background-color: var(--modal-bg, var(--card-bg));
+      box-shadow: var(--shadow-xl);
+    }
+  }
+
+  @media (max-width: 768px) {
+    /* Del CSS original */
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+
+  @media (prefers-contrast: high) {
+    /* Del CSS original */
+    border-width: 2px;
+  }
+}

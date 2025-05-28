@@ -1,0 +1,440 @@
+/* ================================================
+   NOTE CARD STYLES
+   ================================================ */
+
+.note-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  max-height: var(--notes-card-max-height);
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+
+  &.hovered,
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: var(--notes-card-hover-transform);
+    border-color: var(--primary-color);
+
+    .note-actions {
+      opacity: 1;
+    }
+  }
+
+  &.editing {
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    transform: none;
+    min-height: 300px;
+    cursor: default;
+
+    .note-card-edit-title-input,
+    .note-card-edit-textarea-fallback {
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-sm);
+      padding: var(--spacing-sm);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      outline: none;
+      font-family: inherit;
+      transition: all var(--transition-fast);
+
+      &:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+      }
+    }
+    .note-card-edit-title-input {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+    }
+    .note-card-edit-textarea-fallback {
+      font-size: 14px;
+      margin-bottom: var(--spacing-md);
+      resize: vertical;
+      line-height: 1.5;
+      min-height: 120px;
+    }
+
+    .note-card-current-link {
+      background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+      border: 1px solid var(--primary-color);
+      border-radius: var(--border-radius-sm);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+      font-size: 12px;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      animation: slideDown 0.3s ease-out; /* slideDown definido en global.css */
+
+      .current-link-icon {
+        font-size: 14px;
+      }
+    }
+
+    .note-card-edit-actions {
+      display: flex;
+      gap: var(--spacing-sm);
+      justify-content: space-between;
+      align-items: center; /* Para alinear verticalmente el botón de link y el grupo save/cancel */
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-sm);
+      border-top: 1px solid var(--border-color);
+
+      button {
+        border: none;
+        border-radius: var(--border-radius-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-weight: 500;
+        box-shadow: var(--shadow-sm);
+
+        &:not(:disabled):hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
+        &:not(:disabled):active {
+          transform: translateY(0);
+        }
+        &:focus {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+        .material-icons {
+          font-size: 14px;
+        }
+      }
+
+      .note-card-edit-button-link {
+        background-color: var(--info-color);
+        color: white;
+        &:hover {
+          background-color: var(
+            --info-hover,
+            #1976d2
+          ); /* Fallback del CSS original */
+        }
+      }
+      .note-card-edit-save-cancel-group {
+        display: flex;
+        gap: var(--spacing-sm);
+
+        .note-card-edit-button-cancel {
+          background-color: transparent;
+          color: var(--text-color-secondary);
+          border: 1px solid var(--border-color);
+          &:hover {
+            background-color: var(--hover-color);
+            border-color: var(--text-color-secondary);
+          }
+        }
+        .note-card-edit-button-save {
+          background-color: var(--primary-color);
+          color: white;
+          &:disabled {
+            opacity: 0.5; /* 0.6 en create-note-form, unificar o mantener */
+            cursor: not-allowed;
+          }
+          &:not(:disabled):hover {
+            background-color: var(--primary-hover);
+          }
+        }
+      }
+    }
+    .note-card-edit-help-text {
+      font-size: 11px;
+      color: var(--text-color-secondary);
+      margin-top: var(--spacing-xs);
+      text-align: center;
+    }
+
+    /* Estilos RichTextEditor específicos para edición en tarjeta */
+    .note-rich-editor-edit {
+      /* Clase raíz de Atlas */
+      margin-bottom: var(--spacing-md);
+      .rich-text-editor {
+        /* Clase interna de Atlas */
+        border: var(--notes-rich-editor-border);
+        border-radius: var(--border-radius-md);
+        background-color: var(--input-bg);
+
+        &:focus-within {
+          border: var(--notes-rich-editor-focus);
+          box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+        }
+      }
+      .rich-editor-toolbar {
+        background-color: var(--bg-color-secondary);
+        border-bottom: 1px solid var(--border-color);
+        padding: var(--spacing-xs);
+        display: flex; /* Asegura que los botones se alineen */
+        flex-wrap: wrap; /* Para toolbar responsiva */
+        gap: 2px; /* Espacio entre botones de toolbar */
+        button {
+          color: var(--text-color);
+          background: transparent;
+          border: none;
+          border-radius: var(--border-radius-sm);
+          padding: var(--spacing-xs);
+          cursor: pointer;
+          transition: background-color var(--transition-fast);
+          &:hover {
+            background-color: var(--hover-color);
+          }
+        }
+      }
+      .rich-editor-content {
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        padding: var(--spacing-sm);
+        min-height: 120px;
+        border: none;
+        outline: none;
+        line-height: 1.6;
+      }
+    }
+  }
+
+  &.selected {
+    border: 2px solid var(--primary-color);
+    box-shadow: var(--shadow-lg);
+    animation: pulse 0.3s ease-in-out; /* pulse definido en global.css */
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .note-actions {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    display: flex;
+    gap: var(--spacing-xs);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 10;
+
+    .note-action-button {
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px; /* Para el icono */
+      transition: all var(--transition-fast);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+      &.edit {
+        background-color: var(--info-color);
+        color: white;
+      }
+      &.delete {
+        background-color: var(--danger-color);
+        color: white;
+      }
+      &:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      &:active {
+        transform: scale(0.95);
+      }
+      .material-icons {
+        font-size: 16px;
+      }
+      @media (prefers-contrast: high) {
+        border: 1px solid var(--text-color);
+      }
+    }
+  }
+
+  .note-card-title-section {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+
+    .note-card-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-color);
+      padding-right: var(--spacing-xl); /* Espacio para botones flotantes */
+      line-height: 1.4;
+      flex: 1;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+  }
+
+  .note-card-content-container {
+    flex: 1;
+    margin-bottom: var(--spacing-md);
+    overflow: hidden; /* Para que el contenido no desborde la tarjeta */
+
+    .note-content-viewer {
+      /* Del CSS original */
+      font-size: 14px;
+      line-height: 1.5;
+      max-height: 150px; /* Límite de altura para el preview */
+      overflow: hidden; /* Esconde el resto */
+      color: var(--text-color-secondary);
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin-top: 0.5em;
+        margin-bottom: 0.3em;
+        font-size: 1.1em !important;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+      p {
+        margin-bottom: 0.8em;
+      }
+      ul,
+      ol {
+        margin-bottom: 0.8em;
+        padding-left: 1.5em;
+      }
+      li {
+        margin-bottom: 0.3em;
+      }
+      blockquote {
+        margin: 0.5em 0;
+        padding: 0.5em 0.8em;
+        border-left: 3px solid var(--primary-color);
+        background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.05);
+        font-style: italic;
+        border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+      }
+      strong,
+      b {
+        font-weight: 600;
+        color: var(--text-color);
+      }
+      em,
+      i {
+        font-style: italic;
+      }
+      a {
+        color: var(--primary-color);
+        text-decoration: none;
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+    .note-card-content-fallback {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-color-secondary);
+      line-height: 1.5;
+      max-height: 150px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      line-clamp: 6;
+      -webkit-box-orient: vertical;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+  }
+
+  .note-card-metadata {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-color-secondary);
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-xs);
+    margin-top: auto; /* Empuja al fondo */
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    position: relative;
+
+    .note-card-dates {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      .note-card-modified-date {
+        font-size: 10px;
+        font-style: italic;
+      }
+    }
+    .note-card-event-indicator {
+      font-size: 20px;
+      color: var(--primary-color);
+      cursor: help;
+      transition: all var(--transition-fast);
+      animation: fadeIn 0.3s ease-in; /* fadeIn definido en global.css */
+
+      &:hover {
+        transform: scale(1.1);
+        color: var(--primary-hover);
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    /* Del CSS original */
+    .note-actions {
+      position: static; /* Cambia de absoluto a estático */
+      opacity: 1; /* Siempre visible */
+      justify-content: flex-end;
+      margin-bottom: var(--spacing-sm);
+      background-color: rgba(
+        var(--card-bg-rgb, 255, 255, 255),
+        0.9
+      ); /* Asume que var(--card-bg-rgb) está definido o usa fallback */
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+    }
+    .note-card-title {
+      /* Del CSS original, selector ajustado */
+      padding-right: 0;
+      margin-bottom: var(--spacing-sm);
+    }
+  }
+  @media (max-width: 480px) {
+    /* Del CSS original */
+    border-radius: var(--border-radius-sm);
+    .note-card-metadata {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--spacing-xs);
+    }
+    .note-card-event-indicator {
+      /* Del CSS original, selector ajustado */
+      font-size: 16px;
+    }
+  }
+  @media (prefers-contrast: high) {
+    /* Del CSS original */
+    border: 2px solid var(--text-color);
+  }
+}

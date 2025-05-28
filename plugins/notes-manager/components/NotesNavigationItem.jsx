@@ -1,59 +1,36 @@
-import React from 'react';
+import React from "react";
 
 function NotesNavigationItem(props) {
   const handleClick = () => {
-    // Usar onNavigate para navegar a la página de notas
     if (props.onNavigate) {
-      props.onNavigate(props.plugin.id, 'notes');
+      props.onNavigate(props.plugin.id, "notes");
     }
   };
-  
+
   return React.createElement(
-    'div',
+    "div",
     {
-      className: 'notes-navigation-item',
+      className: "notes-navigation-item",
       onClick: handleClick,
-      style: {
-        display: 'flex',
-        alignItems: 'center',
-        padding: 'var(--spacing-sm) var(--spacing-md)',
-        cursor: 'pointer',
-        borderRadius: 'var(--border-radius-md)',
-        transition: 'background-color var(--transition-fast)',
-        color: 'var(--text-color)',
-        backgroundColor: 'transparent'
-      },
-      onMouseEnter: (e) => {
-        e.target.style.backgroundColor = 'var(--hover-color)';
-      },
-      onMouseLeave: (e) => {
-        e.target.style.backgroundColor = 'transparent';
-      }
+      tabIndex: 0, // Para accesibilidad
     },
     [
       React.createElement(
-        'span',
-        { 
-          className: 'material-icons',
-          key: 'icon',
-          style: {
-            marginRight: 'var(--spacing-sm)',
-            fontSize: '20px'
-          }
+        "span",
+        {
+          className: "material-icons notes-navigation-item-icon",
+          key: "icon",
         },
-        'note'
+        "note"
       ),
       React.createElement(
-        'span',
-        { 
-          key: 'label',
-          style: {
-            fontSize: '14px',
-            fontWeight: '500'
-          }
+        "span",
+        {
+          key: "label",
+          className: "notes-navigation-item-label",
         },
-        'Notes'
-      )
+        "Notes"
+      ),
     ]
   );
 }

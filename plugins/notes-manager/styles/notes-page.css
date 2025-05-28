@@ -1,0 +1,255 @@
+/* ================================================
+   NOTES PAGE STYLES
+   ================================================ */
+
+.notes-page {
+  padding: var(--spacing-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+
+  .notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+
+    .notes-header-title-section {
+      .notes-header-title {
+        margin: 0;
+        color: var(--text-color);
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+
+        .notes-header-icon {
+          font-size: 32px;
+          color: var(--primary-color);
+        }
+      }
+      .notes-header-stats {
+        margin: var(--spacing-xs) 0 0 0;
+        color: var(--text-color-secondary);
+        font-size: 14px;
+        display: flex;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+      }
+    }
+
+    .notes-header-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      align-items: flex-end;
+
+      .create-note-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        transition: all var(--transition-fast);
+        box-shadow: var(--shadow-sm);
+
+        &:hover {
+          background-color: var(--primary-hover);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
+        &:active {
+          transform: translateY(0);
+        }
+        &:focus {
+          /* Del CSS original */
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+        .material-icons {
+          font-size: 18px;
+        }
+      }
+
+      .notes-search-container {
+        /* Del CSS original */
+        position: relative;
+        min-width: 250px;
+
+        .notes-search-input {
+          /* Del CSS original */
+          width: 100%;
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-md);
+          padding: var(--spacing-xs) var(--spacing-md);
+          padding-left: 40px;
+          font-size: 14px;
+          background-color: var(--input-bg);
+          color: var(--text-color);
+          transition: border-color var(--transition-fast);
+          outline: none;
+
+          &:focus {
+            /* Del CSS original, pero estaba duplicado, unificando */
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px
+              rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+            /* outline: 2px solid var(--primary-color); Ya cubierto por el de create-note-button */
+            /* outline-offset: 2px; */
+          }
+        }
+        .notes-search-icon {
+          /* Del CSS original */
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-color-secondary);
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  .richtext-info {
+    /* Del CSS original */
+    background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 13px;
+    color: var(--text-color);
+
+    .richtext-info-icon {
+      font-size: 16px;
+      color: var(--primary-color);
+    }
+    @media (prefers-contrast: high) {
+      /* Del CSS original */
+      border: 2px solid var(--primary-color);
+    }
+  }
+
+  .search-results-info {
+    /* Del CSS original */
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    color: var(--text-color-secondary);
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--notes-grid-min-width), 1fr)
+    );
+    gap: var(--spacing-lg);
+    /* El marginTop se maneja en el JSX basado en showCreateForm, o se puede añadir clase al notes-grid */
+    &.form-is-shown {
+      margin-top: var(--spacing-xl);
+    }
+    &:not(.form-is-shown) {
+      margin-top: var(--spacing-md);
+    }
+
+    .empty-state {
+      /* Del CSS original */
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: var(--spacing-xl) var(--spacing-md);
+      color: var(--text-color-secondary);
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      border: 2px dashed var(--border-color);
+
+      .empty-state-icon {
+        /* Del CSS original */
+        font-size: 64px;
+        opacity: 0.5;
+        margin-bottom: var(--spacing-md);
+        display: block;
+        color: var(--primary-color);
+      }
+      .empty-state-title {
+        /* Del CSS original */
+        margin: 0 0 var(--spacing-sm) 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+      .empty-state-message {
+        /* Del CSS original */
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-color-secondary);
+      }
+    }
+  }
+
+  /* Efecto de resaltado para nota seleccionada al navegar */
+  .note-highlight-effect {
+    transition: all 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease; /* Detallar transiciones */
+    transform: scale(1.05);
+    box-shadow: 0 8px 32px rgba(var(--primary-color-rgb, 45, 75, 148), 0.3);
+  }
+
+  @media (max-width: 1024px) {
+    /* Del CSS original */
+    .notes-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--spacing-md);
+    }
+  }
+
+  @media (max-width: 768px) {
+    /* Del CSS original */
+    padding: var(--spacing-md);
+    .notes-header {
+      flex-direction: column;
+      gap: var(--spacing-md);
+      align-items: flex-start;
+      .notes-header-title {
+        /* Del CSS original, selector ajustado */
+        font-size: 24px;
+      }
+    }
+    .notes-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+  }
+
+  @media (max-width: 480px) {
+    /* Del CSS original */
+    padding: var(--spacing-sm);
+    .notes-header {
+      .notes-header-title {
+        /* Del CSS original, selector ajustado */
+        font-size: 22px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+      }
+    }
+  }
+}
