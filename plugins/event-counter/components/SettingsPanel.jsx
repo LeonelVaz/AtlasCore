@@ -1,5 +1,7 @@
 import React from "react";
 
+// NO hay constantes TASK_STATUS ni STATUS_LABELS aquí
+
 function SettingsPanel(props) {
   const [settings, setSettings] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -7,9 +9,9 @@ function SettingsPanel(props) {
   const [activeTab, setActiveTab] = React.useState("appearance");
   const [previewCount, setPreviewCount] = React.useState(5);
 
-  // Cargar configuraciones iniciales
   React.useEffect(() => {
     try {
+      // Carga las settings del plugin "Contador de Eventos Pro"
       const currentSettings = props.plugin.publicAPI.getSettings();
       setSettings(currentSettings);
       setIsLoading(false);
@@ -22,13 +24,11 @@ function SettingsPanel(props) {
     }
   }, [props.plugin]);
 
-  // Función auxiliar para guardar configuraciones CON NOTIFICACIÓN FLOTANTE
   const saveSettings = async (newSettings) => {
     try {
       setSaving(true);
+      // Actualiza las settings del plugin "Contador de Eventos Pro"
       await props.plugin.publicAPI.updateSettings(newSettings);
-
-      // Mostrar notificación por 2 segundos
       setTimeout(() => setSaving(false), 2000);
     } catch (error) {
       console.error("[SettingsPanel Pro] Error al guardar:", error);
@@ -36,7 +36,6 @@ function SettingsPanel(props) {
     }
   };
 
-  // Manejadores de cambios
   const handleSettingChange = async (key, value) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
@@ -46,10 +45,7 @@ function SettingsPanel(props) {
   const handleNestedSettingChange = async (parentKey, childKey, value) => {
     const newSettings = {
       ...settings,
-      [parentKey]: {
-        ...settings[parentKey],
-        [childKey]: value,
-      },
+      [parentKey]: { ...settings[parentKey], [childKey]: value },
     };
     setSettings(newSettings);
     await saveSettings(newSettings);
@@ -62,7 +58,7 @@ function SettingsPanel(props) {
         ...settings.colorRanges,
         [rangeKey]: {
           ...settings.colorRanges[rangeKey],
-          [field]: field === "color" ? value : parseInt(value) || 0,
+          [field]: field === "color" ? value : parseInt(value, 10) || 0,
         },
       },
     };
@@ -70,7 +66,6 @@ function SettingsPanel(props) {
     await saveSettings(newSettings);
   };
 
-  // Aplicar preset
   const handleApplyPreset = async (presetId) => {
     try {
       await props.plugin.publicAPI.applyPreset(presetId);
@@ -81,11 +76,13 @@ function SettingsPanel(props) {
     }
   };
 
-  // Resetear configuración
   const handleReset = async () => {
     if (
-      confirm("¿Estás seguro de que quieres resetear toda la configuración?")
+      confirm(
+        "¿Estás seguro de que quieres resetear toda la configuración del Contador de Eventos?"
+      )
     ) {
+      // defaultSettings específicas para "Contador de Eventos Pro"
       const defaultSettings = {
         useMultipleColors: false,
         singleColor: "#4f46e5",
@@ -124,7 +121,6 @@ function SettingsPanel(props) {
     }
   };
 
-  // Vista de carga
   if (isLoading) {
     return React.createElement("div", { className: "settings-panel-loading" }, [
       React.createElement("div", {
@@ -135,6 +131,7 @@ function SettingsPanel(props) {
     ]);
   }
 
+  // Asegurarse que 'settings' (del event-counter) esté cargado antes de continuar
   if (!settings) {
     return React.createElement(
       "div",
@@ -143,11 +140,18 @@ function SettingsPanel(props) {
     );
   }
 
-  // Función para crear el preview del badge
+  // Preview para el "Contador de Eventos Pro"
   const createBadgePreview = () => {
+    // Defensa por si la API no es la esperada o settings no está listo
+    if (!props.plugin.publicAPI.getBadgeClasses || !settings) {
+      return React.createElement(
+        "div",
+        { key: "badge-preview-loading-or-error" },
+        "Cargando preview del badge..."
+      );
+    }
     const badgeClasses = props.plugin.publicAPI.getBadgeClasses(previewCount);
     const badgeStyles = props.plugin.publicAPI.getBadgeStyles(previewCount);
-
     return React.createElement(
       "div",
       { className: "badge-preview-container" },
@@ -169,19 +173,24 @@ function SettingsPanel(props) {
           "div",
           { key: "preview-controls", className: "badge-preview-controls" },
           [
-            React.createElement("label", { key: "label" }, "Vista previa:"),
+            React.createElement(
+              "label",
+              { key: "label-preview-slider" },
+              "Vista previa (Event Counter):"
+            ),
             React.createElement("input", {
-              key: "input",
+              key: "input-preview-slider",
               type: "range",
               min: "0",
               max: "20",
               value: previewCount,
-              onChange: (e) => setPreviewCount(parseInt(e.target.value)),
+              onChange: (e) =>
+                setPreviewCount(parseInt(e.target.value, 10) || 0),
               className: "preview-slider",
             }),
             React.createElement(
               "span",
-              { key: "value" },
+              { key: "value-preview-count" },
               previewCount + " eventos"
             ),
           ]
@@ -190,7 +199,7 @@ function SettingsPanel(props) {
     );
   };
 
-  // Pestañas del panel
+  // Pestañas solo para "Contador de Eventos Pro"
   const tabs = [
     { id: "appearance", label: "Apariencia", icon: "🎨" },
     { id: "colors", label: "Colores", icon: "🌈" },
@@ -203,7 +212,6 @@ function SettingsPanel(props) {
     "div",
     { className: "event-counter-settings-panel" },
     [
-      // Header del panel
       React.createElement(
         "div",
         { key: "header", className: "settings-header" },
@@ -220,61 +228,61 @@ function SettingsPanel(props) {
           ),
         ]
       ),
-
-      // CONTENEDOR PRINCIPAL CON LAYOUT HORIZONTAL
       React.createElement(
         "div",
         { key: "main-container", className: "settings-main-container" },
         [
-          // COLUMNA IZQUIERDA - Configuraciones
           React.createElement(
             "div",
             { key: "left-column", className: "settings-left-column" },
             [
-              // Presets rápidos
+              props.plugin.publicAPI.getAvailablePresets &&
+                React.createElement(
+                  "div",
+                  { key: "presets-section", className: "settings-section" },
+                  [
+                    React.createElement(
+                      "h4",
+                      { key: "title-presets" },
+                      "🎯 Presets Rápidos"
+                    ),
+                    React.createElement(
+                      "div",
+                      {
+                        key: "presets-grid",
+                        className: "presets-grid-horizontal",
+                      },
+                      props.plugin.publicAPI
+                        .getAvailablePresets()
+                        .map((preset) =>
+                          React.createElement(
+                            "button",
+                            {
+                              key: preset.id,
+                              className: "preset-button-compact",
+                              onClick: () => handleApplyPreset(preset.id),
+                              title: preset.description,
+                            },
+                            [
+                              React.createElement(
+                                "strong",
+                                { key: `preset-name-${preset.id}` },
+                                preset.name
+                              ),
+                              React.createElement(
+                                "small",
+                                { key: `preset-desc-${preset.id}` },
+                                preset.description
+                              ),
+                            ]
+                          )
+                        )
+                    ),
+                  ]
+                ),
               React.createElement(
                 "div",
-                { key: "presets-section", className: "settings-section" },
-                [
-                  React.createElement(
-                    "h4",
-                    { key: "title" },
-                    "🎯 Presets Rápidos"
-                  ),
-                  React.createElement(
-                    "div",
-                    { key: "presets", className: "presets-grid-horizontal" },
-                    props.plugin.publicAPI.getAvailablePresets().map((preset) =>
-                      React.createElement(
-                        "button",
-                        {
-                          key: preset.id,
-                          className: "preset-button-compact",
-                          onClick: () => handleApplyPreset(preset.id),
-                          title: preset.description,
-                        },
-                        [
-                          React.createElement(
-                            "strong",
-                            { key: "name" },
-                            preset.name
-                          ),
-                          React.createElement(
-                            "small",
-                            { key: "desc" },
-                            preset.description
-                          ),
-                        ]
-                      )
-                    )
-                  ),
-                ]
-              ),
-
-              // Navegación por tabs
-              React.createElement(
-                "div",
-                { key: "tabs", className: "settings-tabs-horizontal" },
+                { key: "tabs-nav", className: "settings-tabs-horizontal" },
                 tabs.map((tab) =>
                   React.createElement(
                     "button",
@@ -289,22 +297,27 @@ function SettingsPanel(props) {
                   )
                 )
               ),
-
-              // Contenido de las pestañas
               React.createElement(
                 "div",
-                { key: "tab-content", className: "tab-content-horizontal" },
+                {
+                  key: "tab-content-wrapper",
+                  className: "tab-content-horizontal",
+                },
                 [
-                  // PESTAÑA: APARIENCIA
                   activeTab === "appearance" &&
                     React.createElement(
                       "div",
-                      { key: "appearance", className: "tab-panel-horizontal" },
+                      {
+                        key: "appearance-tab",
+                        className: "tab-panel-horizontal",
+                      },
                       React.createElement(
                         "div",
-                        { className: "settings-grid-horizontal" },
+                        {
+                          key: "appearance-grid",
+                          className: "settings-grid-horizontal",
+                        },
                         [
-                          // Estilo del badge
                           React.createElement(
                             "div",
                             {
@@ -315,7 +328,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-style",
                                   className: "setting-label-compact",
                                 },
                                 "Estilo del Contador"
@@ -323,7 +336,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-style",
                                   value: settings.badgeStyle,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -362,8 +375,6 @@ function SettingsPanel(props) {
                               ),
                             ]
                           ),
-
-                          // Posición del badge
                           React.createElement(
                             "div",
                             {
@@ -374,7 +385,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-position",
                                   className: "setting-label-compact",
                                 },
                                 "Posición"
@@ -382,7 +393,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-position",
                                   value: settings.badgePosition,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -421,8 +432,6 @@ function SettingsPanel(props) {
                               ),
                             ]
                           ),
-
-                          // Tamaño del badge
                           React.createElement(
                             "div",
                             { key: "size", className: "setting-group-compact" },
@@ -430,7 +439,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-size",
                                   className: "setting-label-compact",
                                 },
                                 "Tamaño"
@@ -438,7 +447,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-size",
                                   value: settings.badgeSize,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -475,14 +484,11 @@ function SettingsPanel(props) {
                         ]
                       )
                     ),
-
-                  // PESTAÑA: COLORES
                   activeTab === "colors" &&
                     React.createElement(
                       "div",
-                      { key: "colors", className: "tab-panel-horizontal" },
+                      { key: "colors-tab", className: "tab-panel-horizontal" },
                       [
-                        // Modo de colores
                         React.createElement(
                           "div",
                           {
@@ -493,12 +499,12 @@ function SettingsPanel(props) {
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-color-mode",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-color-mode",
                                   type: "checkbox",
                                   checked: settings.useMultipleColors,
                                   onChange: (e) =>
@@ -509,15 +515,13 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-color-mode" },
                                   "Usar colores diferentes según cantidad"
                                 ),
                               ]
                             ),
                           ]
                         ),
-
-                        // Fondo transparente
                         React.createElement(
                           "div",
                           {
@@ -528,12 +532,12 @@ function SettingsPanel(props) {
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-transparent-bg",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-transparent-bg",
                                   type: "checkbox",
                                   checked: settings.transparentBackground,
                                   onChange: (e) =>
@@ -544,27 +548,25 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-transparent-bg" },
                                   "Fondo transparente (solo borde)"
                                 ),
                               ]
                             ),
                           ]
                         ),
-
-                        // Color único
                         !settings.useMultipleColors &&
                           React.createElement(
                             "div",
                             {
-                              key: "single-color",
+                              key: "single-color-group",
                               className: "setting-group-horizontal",
                             },
                             [
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-single-color",
                                   className: "setting-label-compact",
                                 },
                                 "Color del Contador"
@@ -572,12 +574,12 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "div",
                                 {
-                                  key: "color-input",
+                                  key: "color-input-single",
                                   className: "color-input-group-horizontal",
                                 },
                                 [
                                   React.createElement("input", {
-                                    key: "input",
+                                    key: "input-single-color",
                                     type: "color",
                                     value: settings.singleColor,
                                     onChange: (e) =>
@@ -590,7 +592,7 @@ function SettingsPanel(props) {
                                   React.createElement(
                                     "span",
                                     {
-                                      key: "preview",
+                                      key: "preview-single-color",
                                       className: "color-preview-badge-compact",
                                       style: {
                                         backgroundColor: settings.singleColor,
@@ -601,7 +603,7 @@ function SettingsPanel(props) {
                                   React.createElement(
                                     "code",
                                     {
-                                      key: "code",
+                                      key: "code-single-color",
                                       className: "color-code-compact",
                                     },
                                     settings.singleColor
@@ -610,67 +612,63 @@ function SettingsPanel(props) {
                               ),
                             ]
                           ),
-
-                        // Rangos de colores CON LAYOUT CORREGIDO
                         settings.useMultipleColors &&
                           React.createElement(
                             "div",
                             {
-                              key: "color-ranges",
+                              key: "color-ranges-section",
                               className: "color-ranges-section",
                             },
                             [
                               React.createElement(
                                 "h4",
                                 {
-                                  key: "title",
+                                  key: "title-color-ranges",
                                   className: "subsection-title-compact",
                                 },
                                 "Configuración de Rangos"
                               ),
-
-                              // Rango 1
                               React.createElement(
                                 "div",
                                 {
-                                  key: "range1",
+                                  key: "range1-config",
                                   className: "range-config-horizontal",
                                 },
                                 [
                                   React.createElement(
                                     "h5",
-                                    { key: "title" },
+                                    { key: "title-range1" },
                                     "Rango 1 (Pocos eventos)"
                                   ),
                                   React.createElement(
                                     "div",
                                     {
-                                      key: "controls",
+                                      key: "controls-range1",
                                       className: "range-controls-horizontal",
                                     },
                                     [
                                       React.createElement(
                                         "div",
                                         {
-                                          key: "inputs",
+                                          key: "inputs-range1",
                                           className: "range-inputs-horizontal",
                                         },
                                         [
                                           React.createElement(
                                             "div",
                                             {
-                                              key: "min",
+                                              key: "min-range1",
                                               className:
                                                 "range-input-horizontal",
                                             },
                                             [
                                               React.createElement(
                                                 "label",
-                                                { key: "label" },
+                                                { key: "label-min-range1" },
                                                 "Desde:"
                                               ),
                                               React.createElement("input", {
-                                                key: "input",
+                                                key: "input-min-range1",
                                                 type: "number",
                                                 min: "1",
                                                 value:
@@ -690,18 +688,18 @@ function SettingsPanel(props) {
                                           React.createElement(
                                             "div",
                                             {
-                                              key: "max",
+                                              key: "max-range1",
                                               className:
                                                 "range-input-horizontal",
                                             },
                                             [
                                               React.createElement(
                                                 "label",
-                                                { key: "label" },
+                                                { key: "label-max-range1" },
                                                 "Hasta:"
                                               ),
                                               React.createElement("input", {
-                                                key: "input",
+                                                key: "input-max-range1",
                                                 type: "number",
                                                 min: settings.colorRanges.range1
                                                   .min,
@@ -724,17 +722,17 @@ function SettingsPanel(props) {
                                       React.createElement(
                                         "div",
                                         {
-                                          key: "color",
+                                          key: "color-range1",
                                           className: "range-color-horizontal",
                                         },
                                         [
                                           React.createElement(
                                             "label",
-                                            { key: "label" },
+                                            { key: "label-color-range1" },
                                             "Color:"
                                           ),
                                           React.createElement("input", {
-                                            key: "input",
+                                            key: "input-color-range1",
                                             type: "color",
                                             value:
                                               settings.colorRanges.range1.color,
@@ -753,53 +751,51 @@ function SettingsPanel(props) {
                                   ),
                                 ]
                               ),
-
-                              // Rango 2
                               React.createElement(
                                 "div",
                                 {
-                                  key: "range2",
+                                  key: "range2-config",
                                   className: "range-config-horizontal",
                                 },
                                 [
                                   React.createElement(
                                     "h5",
-                                    { key: "title" },
+                                    { key: "title-range2" },
                                     "Rango 2 (Eventos moderados)"
                                   ),
                                   React.createElement(
                                     "div",
                                     {
-                                      key: "controls",
+                                      key: "controls-range2",
                                       className: "range-controls-horizontal",
                                     },
                                     [
                                       React.createElement(
                                         "div",
                                         {
-                                          key: "inputs",
+                                          key: "inputs-range2",
                                           className: "range-inputs-horizontal",
                                         },
                                         [
                                           React.createElement(
                                             "div",
                                             {
-                                              key: "min",
+                                              key: "min-range2",
                                               className:
                                                 "range-input-horizontal",
                                             },
                                             [
                                               React.createElement(
                                                 "label",
-                                                { key: "label" },
+                                                { key: "label-min-range2" },
                                                 "Desde:"
                                               ),
                                               React.createElement("input", {
-                                                key: "input",
+                                                key: "input-min-range2",
                                                 type: "number",
                                                 min:
-                                                  settings.colorRanges.range1
-                                                    .max + 1,
+                                                  (settings.colorRanges.range1
+                                                    .max || 0) + 1,
                                                 value:
                                                   settings.colorRanges.range2
                                                     .min,
@@ -817,18 +813,18 @@ function SettingsPanel(props) {
                                           React.createElement(
                                             "div",
                                             {
-                                              key: "max",
+                                              key: "max-range2",
                                               className:
                                                 "range-input-horizontal",
                                             },
                                             [
                                               React.createElement(
                                                 "label",
-                                                { key: "label" },
+                                                { key: "label-max-range2" },
                                                 "Hasta:"
                                               ),
                                               React.createElement("input", {
-                                                key: "input",
+                                                key: "input-max-range2",
                                                 type: "number",
                                                 min: settings.colorRanges.range2
                                                   .min,
@@ -851,17 +847,17 @@ function SettingsPanel(props) {
                                       React.createElement(
                                         "div",
                                         {
-                                          key: "color",
+                                          key: "color-range2",
                                           className: "range-color-horizontal",
                                         },
                                         [
                                           React.createElement(
                                             "label",
-                                            { key: "label" },
+                                            { key: "label-color-range2" },
                                             "Color:"
                                           ),
                                           React.createElement("input", {
-                                            key: "input",
+                                            key: "input-color-range2",
                                             type: "color",
                                             value:
                                               settings.colorRanges.range2.color,
@@ -880,53 +876,51 @@ function SettingsPanel(props) {
                                   ),
                                 ]
                               ),
-
-                              // Rango 3
                               React.createElement(
                                 "div",
                                 {
-                                  key: "range3",
+                                  key: "range3-config",
                                   className: "range-config-horizontal",
                                 },
                                 [
                                   React.createElement(
                                     "h5",
-                                    { key: "title" },
+                                    { key: "title-range3" },
                                     "Rango 3 (Muchos eventos)"
                                   ),
                                   React.createElement(
                                     "div",
                                     {
-                                      key: "controls",
+                                      key: "controls-range3",
                                       className: "range-controls-horizontal",
                                     },
                                     [
                                       React.createElement(
                                         "div",
                                         {
-                                          key: "inputs",
+                                          key: "inputs-range3",
                                           className: "range-inputs-horizontal",
                                         },
                                         [
                                           React.createElement(
                                             "div",
                                             {
-                                              key: "min",
+                                              key: "min-range3",
                                               className:
                                                 "range-input-horizontal",
                                             },
                                             [
                                               React.createElement(
                                                 "label",
-                                                { key: "label" },
+                                                { key: "label-min-range3" },
                                                 "Desde:"
                                               ),
                                               React.createElement("input", {
-                                                key: "input",
+                                                key: "input-min-range3",
                                                 type: "number",
                                                 min:
-                                                  settings.colorRanges.range2
-                                                    .max + 1,
+                                                  (settings.colorRanges.range2
+                                                    .max || 0) + 1,
                                                 value:
                                                   settings.colorRanges.range3
                                                     .min,
@@ -946,17 +940,17 @@ function SettingsPanel(props) {
                                       React.createElement(
                                         "div",
                                         {
-                                          key: "color",
+                                          key: "color-range3",
                                           className: "range-color-horizontal",
                                         },
                                         [
                                           React.createElement(
                                             "label",
-                                            { key: "label" },
+                                            { key: "label-color-range3" },
                                             "Color:"
                                           ),
                                           React.createElement("input", {
-                                            key: "input",
+                                            key: "input-color-range3",
                                             type: "color",
                                             value:
                                               settings.colorRanges.range3.color,
@@ -979,17 +973,20 @@ function SettingsPanel(props) {
                           ),
                       ]
                     ),
-
-                  // PESTAÑA: TIPOGRAFÍA
                   activeTab === "typography" &&
                     React.createElement(
                       "div",
-                      { key: "typography", className: "tab-panel-horizontal" },
+                      {
+                        key: "typography-tab",
+                        className: "tab-panel-horizontal",
+                      },
                       React.createElement(
                         "div",
-                        { className: "settings-grid-horizontal" },
+                        {
+                          key: "typography-grid",
+                          className: "settings-grid-horizontal",
+                        },
                         [
-                          // Familia de fuente
                           React.createElement(
                             "div",
                             {
@@ -1000,7 +997,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-font-family",
                                   className: "setting-label-compact",
                                 },
                                 "Familia de Fuente"
@@ -1008,7 +1005,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-font-family",
                                   value: settings.fontFamily,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -1047,8 +1044,6 @@ function SettingsPanel(props) {
                               ),
                             ]
                           ),
-
-                          // Tamaño de fuente
                           React.createElement(
                             "div",
                             {
@@ -1059,7 +1054,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-font-size",
                                   className: "setting-label-compact",
                                 },
                                 "Tamaño de Fuente"
@@ -1067,7 +1062,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-font-size",
                                   value: settings.fontSize,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -1106,8 +1101,6 @@ function SettingsPanel(props) {
                               ),
                             ]
                           ),
-
-                          // Peso de fuente
                           React.createElement(
                             "div",
                             {
@@ -1118,7 +1111,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-font-weight",
                                   className: "setting-label-compact",
                                 },
                                 "Peso de Fuente"
@@ -1126,7 +1119,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-font-weight",
                                   value: settings.fontWeight,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -1160,8 +1153,6 @@ function SettingsPanel(props) {
                               ),
                             ]
                           ),
-
-                          // Color de texto
                           React.createElement(
                             "div",
                             {
@@ -1172,7 +1163,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "label",
                                 {
-                                  key: "label",
+                                  key: "label-text-color",
                                   className: "setting-label-compact",
                                 },
                                 "Color del Texto"
@@ -1180,7 +1171,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "select",
+                                  key: "select-text-color",
                                   value: settings.textColor,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -1222,30 +1213,27 @@ function SettingsPanel(props) {
                         ]
                       )
                     ),
-
-                  // PESTAÑA: EFECTOS
                   activeTab === "effects" &&
                     React.createElement(
                       "div",
-                      { key: "effects", className: "tab-panel-horizontal" },
+                      { key: "effects-tab", className: "tab-panel-horizontal" },
                       [
-                        // Sombras
                         React.createElement(
                           "div",
                           {
-                            key: "shadow",
+                            key: "shadow-group",
                             className: "setting-group-horizontal",
                           },
                           [
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-shadow",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-shadow",
                                   type: "checkbox",
                                   checked: settings.showShadow,
                                   onChange: (e) =>
@@ -1256,7 +1244,7 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-shadow" },
                                   "Mostrar sombra (oscura)"
                                 ),
                               ]
@@ -1265,7 +1253,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "intensity",
+                                  key: "select-shadow-intensity",
                                   value: settings.shadowIntensity,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -1295,24 +1283,22 @@ function SettingsPanel(props) {
                               ),
                           ]
                         ),
-
-                        // RESPLANDOR (NUEVO)
                         React.createElement(
                           "div",
                           {
-                            key: "glow",
+                            key: "glow-group",
                             className: "setting-group-horizontal",
                           },
                           [
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-glow",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-glow",
                                   type: "checkbox",
                                   checked: settings.showGlow,
                                   onChange: (e) =>
@@ -1323,7 +1309,7 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-glow" },
                                   "Mostrar resplandor"
                                 ),
                               ]
@@ -1339,7 +1325,7 @@ function SettingsPanel(props) {
                                   React.createElement(
                                     "select",
                                     {
-                                      key: "color-type",
+                                      key: "select-glow-color-type",
                                       value: settings.glowColor,
                                       onChange: (e) =>
                                         handleSettingChange(
@@ -1371,7 +1357,7 @@ function SettingsPanel(props) {
                                   ),
                                   settings.glowColor === "custom" &&
                                     React.createElement("input", {
-                                      key: "custom-color",
+                                      key: "input-glow-custom-color",
                                       type: "color",
                                       value: settings.glowCustomColor,
                                       onChange: (e) =>
@@ -1384,7 +1370,7 @@ function SettingsPanel(props) {
                                   React.createElement(
                                     "select",
                                     {
-                                      key: "intensity",
+                                      key: "select-glow-intensity",
                                       value: settings.glowIntensity,
                                       onChange: (e) =>
                                         handleSettingChange(
@@ -1415,24 +1401,22 @@ function SettingsPanel(props) {
                               ),
                           ]
                         ),
-
-                        // Bordes
                         React.createElement(
                           "div",
                           {
-                            key: "border",
+                            key: "border-group",
                             className: "setting-group-horizontal",
                           },
                           [
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-border",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-border",
                                   type: "checkbox",
                                   checked: settings.showBorder,
                                   onChange: (e) =>
@@ -1443,7 +1427,7 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-border" },
                                   "Mostrar borde"
                                 ),
                               ]
@@ -1457,7 +1441,7 @@ function SettingsPanel(props) {
                                 },
                                 [
                                   React.createElement("input", {
-                                    key: "color",
+                                    key: "input-border-color",
                                     type: "color",
                                     value: settings.borderColor,
                                     onChange: (e) =>
@@ -1469,16 +1453,21 @@ function SettingsPanel(props) {
                                     title: "Color del borde",
                                   }),
                                   React.createElement("input", {
-                                    key: "width",
+                                    key: "input-border-width",
                                     type: "number",
                                     min: "1",
                                     max: "5",
-                                    value: settings.borderWidth,
-                                    onChange: (e) =>
+                                    value: settings.borderWidth || 1,
+                                    onChange: (e) => {
+                                      const val = parseInt(e.target.value, 10);
+                                      const finalVal = isNaN(val)
+                                        ? 1
+                                        : Math.max(1, Math.min(5, val));
                                       handleSettingChange(
                                         "borderWidth",
-                                        parseInt(e.target.value)
-                                      ),
+                                        finalVal
+                                      );
+                                    },
                                     className: "setting-number-input-compact",
                                     title: "Grosor del borde",
                                   }),
@@ -1486,24 +1475,22 @@ function SettingsPanel(props) {
                               ),
                           ]
                         ),
-
-                        // Animaciones
                         React.createElement(
                           "div",
                           {
-                            key: "animations",
+                            key: "animations-group",
                             className: "setting-group-horizontal",
                           },
                           [
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-animations",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-animations",
                                   type: "checkbox",
                                   checked: settings.enableAnimations,
                                   onChange: (e) =>
@@ -1514,7 +1501,7 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-animations" },
                                   "Habilitar animaciones"
                                 ),
                               ]
@@ -1523,7 +1510,7 @@ function SettingsPanel(props) {
                               React.createElement(
                                 "select",
                                 {
-                                  key: "animation-type",
+                                  key: "select-animation-type",
                                   value: settings.animationType,
                                   onChange: (e) =>
                                     handleSettingChange(
@@ -1557,24 +1544,22 @@ function SettingsPanel(props) {
                               ),
                           ]
                         ),
-
-                        // Efectos hover
                         React.createElement(
                           "div",
                           {
-                            key: "hover",
+                            key: "hover-group",
                             className: "setting-group-horizontal",
                           },
                           [
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-hover",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-hover",
                                   type: "checkbox",
                                   checked: settings.hoverEffect,
                                   onChange: (e) =>
@@ -1585,7 +1570,7 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-hover" },
                                   "Efectos al pasar el mouse"
                                 ),
                               ]
@@ -1594,14 +1579,14 @@ function SettingsPanel(props) {
                         ),
                       ]
                     ),
-
-                  // PESTAÑA: AVANZADO
                   activeTab === "advanced" &&
                     React.createElement(
                       "div",
-                      { key: "advanced", className: "tab-panel-horizontal" },
+                      {
+                        key: "advanced-tab",
+                        className: "tab-panel-horizontal",
+                      },
                       [
-                        // Opciones de visibilidad
                         React.createElement(
                           "h4",
                           {
@@ -1610,11 +1595,10 @@ function SettingsPanel(props) {
                           },
                           "Opciones de Visibilidad"
                         ),
-
                         React.createElement(
                           "div",
                           {
-                            key: "visibility-options",
+                            key: "visibility-options-grid",
                             className: "settings-grid-horizontal",
                           },
                           [
@@ -1628,12 +1612,12 @@ function SettingsPanel(props) {
                                 React.createElement(
                                   "label",
                                   {
-                                    key: "label",
+                                    key: "label-hide-zero",
                                     className: "checkbox-label-horizontal",
                                   },
                                   [
                                     React.createElement("input", {
-                                      key: "checkbox",
+                                      key: "checkbox-hide-zero",
                                       type: "checkbox",
                                       checked: settings.hideOnZero,
                                       onChange: (e) =>
@@ -1644,14 +1628,13 @@ function SettingsPanel(props) {
                                     }),
                                     React.createElement(
                                       "span",
-                                      { key: "text" },
+                                      { key: "text-hide-zero" },
                                       "Ocultar cuando no hay eventos"
                                     ),
                                   ]
                                 ),
                               ]
                             ),
-
                             React.createElement(
                               "div",
                               {
@@ -1662,12 +1645,12 @@ function SettingsPanel(props) {
                                 React.createElement(
                                   "label",
                                   {
-                                    key: "label",
+                                    key: "label-workdays-only",
                                     className: "checkbox-label-horizontal",
                                   },
                                   [
                                     React.createElement("input", {
-                                      key: "checkbox",
+                                      key: "checkbox-workdays-only",
                                       type: "checkbox",
                                       checked: settings.showOnlyWorkdays,
                                       onChange: (e) =>
@@ -1678,7 +1661,7 @@ function SettingsPanel(props) {
                                     }),
                                     React.createElement(
                                       "span",
-                                      { key: "text" },
+                                      { key: "text-workdays-only" },
                                       "Mostrar solo en días laborales"
                                     ),
                                   ]
@@ -1687,8 +1670,6 @@ function SettingsPanel(props) {
                             ),
                           ]
                         ),
-
-                        // CSS Personalizado
                         React.createElement(
                           "h4",
                           {
@@ -1697,23 +1678,22 @@ function SettingsPanel(props) {
                           },
                           "CSS Personalizado"
                         ),
-
                         React.createElement(
                           "div",
                           {
-                            key: "custom-css",
+                            key: "custom-css-group",
                             className: "setting-group-horizontal",
                           },
                           [
                             React.createElement(
                               "label",
                               {
-                                key: "label",
+                                key: "label-custom-css",
                                 className: "checkbox-label-horizontal",
                               },
                               [
                                 React.createElement("input", {
-                                  key: "checkbox",
+                                  key: "checkbox-custom-css",
                                   type: "checkbox",
                                   checked: settings.customCSSEnabled,
                                   onChange: (e) =>
@@ -1724,14 +1704,14 @@ function SettingsPanel(props) {
                                 }),
                                 React.createElement(
                                   "span",
-                                  { key: "text" },
+                                  { key: "text-custom-css" },
                                   "Habilitar CSS personalizado"
                                 ),
                               ]
                             ),
                             settings.customCSSEnabled &&
                               React.createElement("textarea", {
-                                key: "textarea",
+                                key: "textarea-custom-css",
                                 value: settings.customCSS,
                                 onChange: (e) =>
                                   handleSettingChange(
@@ -1747,18 +1727,20 @@ function SettingsPanel(props) {
                         ),
                       ]
                     ),
+                  // La pestaña TaskManager ya no se renderiza aquí porque fue eliminada de `tabs` y su lógica
                 ]
               ),
-
-              // Footer con acciones
               React.createElement(
                 "div",
-                { key: "footer", className: "settings-footer-horizontal" },
+                {
+                  key: "footer-actions",
+                  className: "settings-footer-horizontal",
+                },
                 [
                   React.createElement(
                     "button",
                     {
-                      key: "reset",
+                      key: "reset-btn",
                       onClick: handleReset,
                       className: "reset-button-horizontal",
                     },
@@ -1766,10 +1748,10 @@ function SettingsPanel(props) {
                   ),
                   React.createElement(
                     "div",
-                    { key: "info" },
+                    { key: "info-autosave" },
                     React.createElement(
                       "small",
-                      {},
+                      { key: "autosave-text" },
                       "Los cambios se guardan automáticamente"
                     )
                   ),
@@ -1777,8 +1759,6 @@ function SettingsPanel(props) {
               ),
             ]
           ),
-
-          // COLUMNA DERECHA - Vista previa
           React.createElement(
             "div",
             { key: "right-column", className: "settings-right-column" },
@@ -1792,18 +1772,27 @@ function SettingsPanel(props) {
                 [
                   React.createElement(
                     "h4",
-                    { key: "title" },
+                    { key: "title-preview" },
                     "🎯 Vista Previa"
                   ),
-                  createBadgePreview(),
+                  // El segundo hijo (condicional) del array de "preview-section"
+                  settings
+                    ? React.createElement(
+                        React.Fragment,
+                        { key: "badge-preview-content-wrapper" },
+                        createBadgePreview()
+                      )
+                    : React.createElement(
+                        "div",
+                        { key: "loading-preview-text" },
+                        "Cargando preview..."
+                      ),
                 ]
               ),
             ]
           ),
         ]
       ),
-
-      // NOTIFICACIÓN FLOTANTE DE GUARDADO
       isSaving &&
         React.createElement(
           "div",
@@ -1812,12 +1801,14 @@ function SettingsPanel(props) {
             className: "floating-save-notification",
           },
           [
-            React.createElement("span", { key: "icon" }, "💾"),
-            React.createElement("span", { key: "text" }, "Guardando..."),
+            React.createElement("span", { key: "icon-saving" }, "💾"),
+            React.createElement("span", { key: "text-saving" }, "Guardando..."),
           ]
         ),
     ]
   );
 }
+
+// ELIMINADO: Todo el código de TaskManagerPage, TaskItem, y TaskForm
 
 export default SettingsPanel;

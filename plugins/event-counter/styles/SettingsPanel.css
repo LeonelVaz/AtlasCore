@@ -14,7 +14,6 @@
   padding: var(--plugin-spacing-xl);
   margin: var(--plugin-spacing-lg) 0;
   box-shadow: var(--plugin-shadow-lg);
-  max-width: 1200px; /* Más ancho para layout horizontal */
   width: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     sans-serif;
