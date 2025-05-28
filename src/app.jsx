@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import CalendarMain from "./components/calendar/calendar-main";
 import SettingsPanel from "./components/settings/settings-panel";
-import Sidebar from "./components/ui/sidebar/sidebar";
+import Sidebar from "./components/ui/sidebar/sidebar"; // Asegúrate de que el nombre sea 'Sidebar' con S mayúscula
 import SidebarItem from "./components/ui/sidebar/sidebar-item";
 import WindowControls from "./components/ui/window-controls";
 import ConfigProvider from "./contexts/config-provider";
@@ -20,7 +20,7 @@ import eventBus from "./core/bus/event-bus";
 const APP_SECTIONS = {
   CALENDAR: { id: "calendar", label: "Calendario", icon: "calendar_today" },
   SETTINGS: { id: "settings", label: "Configuración", icon: "settings" },
-  PLUGIN: { id: "plugin", label: "Plugin", icon: "extension" },
+  PLUGIN: { id: "plugin", label: "Plugin", icon: "extension" }, // Usado para identificar la sección de plugins
 };
 
 /**
@@ -29,7 +29,7 @@ const APP_SECTIONS = {
 function AppContent() {
   const isElectron = isElectronEnv();
   const [activeSection, setActiveSection] = useState(APP_SECTIONS.CALENDAR.id);
-  const [currentPluginPage, setCurrentPluginPage] = useState(null);
+  const [currentPluginPage, setCurrentPluginPage] = useState(null); // { pluginId: '...', pageId: '...' }
   const [debuggerEnabled, setDebuggerEnabled] = useState(false);
   const dialogContext = useDialog(); // Obtener el contexto de diálogos
 
@@ -43,7 +43,6 @@ function AppContent() {
         );
         setDebuggerEnabled(enabled);
 
-        // También configurar logs detallados si están habilitados
         const logsEnabled = await storageService.get(
           STORAGE_KEYS.DEV_CONSOLE_LOGS_ENABLED,
           false
@@ -84,13 +83,10 @@ function AppContent() {
   useEffect(() => {
     const initPluginSystem = async () => {
       try {
-        // Inicializar con servicios que se proporcionarán a los plugins
         const services = {
-          // Incluir contexto de diálogos para plugins
           dialog: dialogContext,
         };
 
-        // Inicializar el sistema de plugins
         await pluginManager.initialize(services);
         console.log(
           "Sistema de plugins inicializado con soporte para diálogos"
@@ -98,7 +94,6 @@ function AppContent() {
       } catch (error) {
         console.error("Error al inicializar sistema de plugins:", error);
 
-        // Usar el sistema de diálogos personalizado para mostrar el error
         if (dialogContext) {
           dialogContext.showAlert(
             `Error al inicializar el sistema de plugins: ${error.message}`,
@@ -108,7 +103,6 @@ function AppContent() {
       }
     };
 
-    // Solo inicializar si tenemos el contexto de diálogos
     if (dialogContext) {
       initPluginSystem();
     }
@@ -116,7 +110,7 @@ function AppContent() {
 
   // Función para navegar a una página de plugin
   const handleNavigateToPluginPage = (pluginId, pageId) => {
-    setActiveSection(APP_SECTIONS.PLUGIN.id);
+    setActiveSection(APP_SECTIONS.PLUGIN.id); // Establece la sección activa a 'plugin'
     setCurrentPluginPage({ pluginId, pageId });
   };
 
@@ -130,10 +124,11 @@ function AppContent() {
         return <SettingsPanel />;
       case APP_SECTIONS.CALENDAR.id:
         return <CalendarMain />;
-      case APP_SECTIONS.PLUGIN.id:
+      case APP_SECTIONS.PLUGIN.id: // Si la sección activa es 'plugin'
         if (currentPluginPage) {
           return <PluginPages currentPluginPage={currentPluginPage} />;
         }
+        // Fallback si no hay página de plugin seleccionada pero la sección es 'plugin'
         return (
           <div className="plugin-error">
             No se ha seleccionado ninguna página de plugin.
@@ -153,26 +148,44 @@ function AppContent() {
 
         {isElectron && <WindowControls />}
       </header>
-
       <div className="app-main">
-        <Sidebar onPluginNavigate={handleNavigateToPluginPage}>
+        <Sidebar
+          onPluginNavigate={handleNavigateToPluginPage}
+          // Pasar información del estado activo al Sidebar
+          activeSectionId={activeSection}
+          activePluginId={
+            activeSection === APP_SECTIONS.PLUGIN.id
+              ? currentPluginPage?.pluginId
+              : null
+          }
+          activePageId={
+            activeSection === APP_SECTIONS.PLUGIN.id
+              ? currentPluginPage?.pageId
+              : null
+          }
+        >
           {/* Secciones estándar */}
           {sidebarSections.map((section) => (
             <SidebarItem
               key={section.id}
               icon={section.icon}
               label={section.label}
-              active={activeSection === section.id}
-              onClick={() => setActiveSection(section.id)}
+              active={activeSection === section.id} // El estado activo para secciones nativas se maneja aquí
+              onClick={() => {
+                setActiveSection(section.id);
+                if (section.id !== APP_SECTIONS.PLUGIN.id) {
+                  setCurrentPluginPage(null); // Limpiar página de plugin si se navega a una sección nativa
+                }
+              }}
             />
           ))}
         </Sidebar>
 
         <main className="app-content">{renderContent()}</main>
       </div>
-
       {/* Renderizar Event Debugger solo si está habilitado */}
-      <EventDebugger />
+      {debuggerEnabled && <EventDebugger />}{" "}
+      {/* Modificado para renderizar condicionalmente */}
     </div>
   );
 }

@@ -77,13 +77,15 @@ Esta sección te guiará desde cero para crear tu primer plugin funcional con na
 Crea la siguiente estructura de archivos:
 
 ```
+
 mi-primer-plugin/
 ├── components/
-│   ├── MiPluginNavItem.jsx
-│   └── MiPluginMainPage.jsx
+│ ├── MiPluginNavItem.jsx
+│ └── MiPluginMainPage.jsx
 ├── utils/
-│   └── constants.js
+│ └── constants.js
 └── index.js
+
 ```
 
 ### Paso 2: Archivo Principal (index.js)
@@ -141,12 +143,13 @@ export default {
 
     // Wrapper que inyecta dependencias al componente
     function NavigationWrapper(propsFromAtlas) {
+      // propsFromAtlas ahora incluirá activePagePluginId y activePageId
       return React.createElement(MiPluginNavItem, {
-        ...propsFromAtlas, // Props de Atlas (ej. onNavigate)
+        ...propsFromAtlas, // Props de Atlas (ej. onNavigate, activePagePluginId, activePageId)
         plugin: self, // Instancia del plugin
         core: self._core, // API de Core
-        pluginId: self.id, // ID del plugin
-        pageIdToNavigate: self._PAGE_ID, // ID de página para navegación
+        pluginId: self.id, // ID del plugin (ya incluido en propsFromAtlas, pero puede ser útil tenerlo explícito aquí)
+        pageIdToNavigate: self._PAGE_ID, // ID de página que este ítem debe abrir
       });
     }
 
@@ -216,22 +219,29 @@ export default {
 import React from "react";
 
 function MiPluginNavItem(props) {
-  // ⚠️ NAVEGACIÓN CRÍTICA: Usar exactamente el mismo pageId
+  const {
+    pluginId, // ID de este plugin, proporcionado por NavigationExtensions
+    onNavigate, // Función de navegación, proporcionada por NavigationExtensions
+    pageIdToNavigate, // Prop personalizada pasada desde el wrapper (index.js)
+    activePagePluginId, // ID del plugin activo globalmente, desde NavigationExtensions
+    activePageId, // ID de la página activa globalmente, desde NavigationExtensions
+  } = props;
+
   const handleClick = () => {
-    props.onNavigate(props.pluginId, props.pageIdToNavigate);
+    if (onNavigate && pageIdToNavigate) {
+      onNavigate(pluginId, pageIdToNavigate);
+    }
   };
 
-  // Determinar si el ítem está activo.
-  // Para este ejemplo, lo dejaremos simple. En un plugin real,
-  // necesitarías una lógica para determinar si la página actual
-  // coincide con pageIdToNavigate.
-  const isActive = false;
+  // 💡 NUEVA LÓGICA: Determinar si este ítem de navegación está activo
+  const isActive =
+    pluginId === activePagePluginId && pageIdToNavigate === activePageId;
 
   return React.createElement(
     "div",
     {
       // Clase raíz requerida por Atlas para ítems de navegación principal
-      className: `sidebar-item ${isActive ? "active" : ""}`,
+      className: `sidebar-item ${isActive ? "active" : ""}`, // Aplicar .active dinámicamente
       onClick: handleClick,
       title: "Ir a Mi Plugin", // Tooltip para accesibilidad
       style: { cursor: "pointer" }, // Añadir cursor para indicar clickeabilidad
@@ -273,29 +283,63 @@ export default MiPluginNavItem;
 import React from "react";
 
 function MiPluginMainPage(props) {
+  // props.pluginId y props.pageId son pasados desde el registro de la extensión
   return React.createElement(
     "div",
-    { className: "plugin-page", style: { padding: "20px" } },
+    {
+      className: "plugin-page",
+      style: {
+        padding: "var(--spacing-lg)",
+        color: "var(--text-color)", // Usar variables de tema
+      },
+    },
     [
-      React.createElement("h1", { key: "title" }, "Mi Primer Plugin"),
+      React.createElement(
+        "h1",
+        { key: "title", style: { marginBottom: "var(--spacing-md)" } },
+        "Página de Mi Primer Plugin"
+      ),
       React.createElement(
         "p",
         { key: "description" },
-        "¡Felicitaciones! Tu plugin está funcionando correctamente."
+        "¡Felicitaciones! Has navegado a la página de tu plugin."
       ),
-      React.createElement("div", { key: "info" }, [
-        React.createElement(
-          "h2",
-          { key: "info-title" },
-          "Información del Plugin:"
-        ),
-        React.createElement("p", { key: "plugin-id" }, `ID: ${props.pluginId}`),
-        React.createElement(
-          "p",
-          { key: "page-id" },
-          `Página ID: ${props.pageId}`
-        ),
-      ]),
+      React.createElement(
+        "div",
+        {
+          key: "info",
+          style: {
+            marginTop: "var(--spacing-lg)",
+            padding: "var(--spacing-md)",
+            backgroundColor: "var(--bg-color-secondary)",
+            borderRadius: "var(--border-radius-md)",
+          },
+        },
+        [
+          React.createElement(
+            "h2",
+            {
+              key: "info-title",
+              style: {
+                fontSize: "1.2rem",
+                color: "var(--primary-color)",
+                marginBottom: "var(--spacing-sm)",
+              },
+            },
+            "Información de la Página:"
+          ),
+          React.createElement(
+            "p",
+            { key: "plugin-id" },
+            `ID del Plugin: ${props.pluginId}`
+          ),
+          React.createElement(
+            "p",
+            { key: "page-id" },
+            `ID de esta Página: ${props.pageId}`
+          ), // props.pageId es pasado desde el registro en PLUGIN_PAGES
+        ]
+      ),
     ]
   );
 }
@@ -326,9 +370,10 @@ export const UI_CONSTANTS = {
 
 Si seguiste estos pasos correctamente:
 
-1.  **El plugin se carga**: Aparece en la lista de plugins de Atlas
-2.  **El item de navegación funciona**: Aparece en la navegación principal, se ve como los demás ítems y su texto se oculta al colapsar la barra lateral.
-3.  **La página se muestra**: Al hacer clic en el item de navegación, se muestra tu página principal
+1.  **El plugin se carga**: Aparece en la lista de plugins de Atlas.
+2.  **El ítem de navegación funciona**: Aparece en la navegación principal, se ve como los demás ítems y su texto se oculta al colapsar la barra lateral.
+3.  **La página se muestra**: Al hacer clic en el ítem de navegación, se muestra tu página principal.
+4.  **Estado activo**: El ítem de navegación de tu plugin ahora se resalta (aplicando la clase `.active`) cuando su página correspondiente está visible.
 
 ### Problemas Comunes en el Primer Plugin
 
@@ -346,6 +391,11 @@ Si seguiste estos pasos correctamente:
 
 **Causa**: Error de sintaxis o falta algún método obligatorio.
 **Solución**: Verifica que `init` y `cleanup` estén definidos y devuelvan `true`.
+
+#### Error: "El ítem de navegación del plugin no se resalta cuando está activo"
+
+**Causa**: Las props `activePagePluginId` o `activePageId` no se están comparando correctamente con el `pluginId` y `pageIdToNavigate` del componente de navegación.
+**Solución**: Revisa la lógica de `isActive` en tu componente de navegación (ej. `MiPluginNavItem.jsx`) para asegurarte de que las comparaciones son correctas. Verifica que las props están llegando correctamente desde `NavigationExtensions`.
 
 ## Estructura básica de un plugin
 
@@ -1077,6 +1127,8 @@ function _createComponentWrapper(ComponenteReal, extraProps = {}) {
   const self = this; // Preservar contexto del plugin
 
   return function ComponentWrapper(propsFromAtlas) {
+    // propsFromAtlas ahora puede incluir:
+    // - Para MAIN_NAVIGATION: activePagePluginId, activePageId
     return React.createElement(ComponenteReal, {
       ...propsFromAtlas, // Props que Atlas proporciona
       plugin: self, // Instancia del plugin
@@ -1133,7 +1185,7 @@ Estos elementos permiten a los usuarios acceder a las páginas principales de tu
 
   - **Elemento Raíz (Contenedor Principal del Ítem)**:
     - Debe tener la clase CSS `sidebar-item`.
-    - Opcionalmente, puede tener la clase `active` si el ítem representa la página actualmente visible (la lógica para determinar esto recae en el plugin o en cómo se gestione el estado de página activa globalmente).
+    - Opcionalmente, puede tener la clase `active` si el ítem representa la página actualmente visible.
   - **Icono**:
     - Dentro del elemento raíz, debe haber un `<span>` con la clase CSS `sidebar-item-icon`.
     - Para usar los iconos estándar de la aplicación (Material Icons), dentro de este `<span>`, incluye otro `<span>` con la clase CSS `material-icons` y el nombre del icono como contenido textual (ej: `"widgets"`).
@@ -1147,73 +1199,72 @@ Estos elementos permiten a los usuarios acceder a las páginas principales de tu
   - `pluginId` (string): El ID de tu plugin (el mismo que definiste en tus metadatos).
   - `extensionId` (string): Un ID único generado por Atlas para esta instancia específica de la extensión.
   - `onNavigate` (function): Una función que **debes** llamar para que Atlas navegue a la página de tu plugin. Esta función espera dos argumentos: `(pluginId, pageId)`.
+  - **💡 NUEVO: `activePagePluginId` (string | null)**: El ID del plugin cuya página está actualmente activa. Será `null` si la página activa no pertenece a un plugin.
+  - **💡 NUEVO: `activePageId` (string | null)**: El ID de la página del plugin que está actualmente activa. Será `null` si la página activa no pertenece a un plugin o no es una página de plugin.
 
 - **Manejo de la Navegación**:
-  - Debes definir un `pageId` (un string único y constante) para la página principal (o cada página navegable) de tu plugin.
-  - Al hacer clic en tu elemento de navegación, debes invocar la función `props.onNavigate(props.pluginId, TU_PAGE_ID_DEFINIDO)`.
-  - Es crucial que este `TU_PAGE_ID_DEFINIDO` sea el mismo que utilices al registrar el componente de tu página principal en la zona `PLUGIN_PAGES` (ver la sección [Páginas completas de plugin](#páginas-completas-de-plugin)).
 
-##### Ejemplo de Componente para `MAIN_NAVIGATION` (`MiPluginNavItem.jsx`):
+  - Debes definir un `pageId` (un string único y constante) para la página principal (o cada página navegable) de tu plugin. Este `pageId` se lo pasarás a tu componente de navegación a través del patrón Wrapper (ej. como `pageIdToNavigate`).
+  - Al hacer clic en tu elemento de navegación, debes invocar la función `props.onNavigate(props.pluginId, props.pageIdToNavigate)`.
+  - Es crucial que este `props.pageIdToNavigate` sea el mismo que utilices al registrar el componente de tu página principal en la zona `PLUGIN_PAGES` (ver la sección [Páginas completas de plugin](#páginas-completas-de-plugin)).
+
+- **Manejo del Estado Activo**:
+  - Dentro de tu componente de navegación (ej. `MiPluginNavItem.jsx`), puedes determinar si está activo comparando:
+    - `props.pluginId` (el ID de tu plugin) con `props.activePagePluginId`.
+    - `props.pageIdToNavigate` (el ID de la página que este ítem representa) con `props.activePageId`.
+  - Si ambas comparaciones son verdaderas, el ítem está activo.
+
+##### Ejemplo de Componente para `MAIN_NAVIGATION` (`MiPluginNavItem.jsx`) - ACTUALIZADO:
 
 ```javascript
 // plugins/mi-plugin/components/MiPluginNavItem.jsx
 import React from "react"; // Siempre importa React en archivos .jsx
 
 function MiPluginNavItem(props) {
-  // props.pluginId y props.onNavigate son proporcionados por Atlas.
-  // props.pageIdToNavigate es una prop personalizada que debes pasar
-  // a través del Patrón Wrapper desde tu plugin (ver sección de registro).
+  const {
+    pluginId, // ID de este plugin
+    onNavigate,
+    pageIdToNavigate, // Prop personalizada pasada desde el wrapper (index.js)
+    activePagePluginId, // ID del plugin activo globalmente
+    activePageId, // ID de la página activa globalmente
+  } = props;
 
   const handleClick = () => {
-    if (props.onNavigate && props.pageIdToNavigate) {
-      props.onNavigate(props.pluginId, props.pageIdToNavigate);
+    if (onNavigate && pageIdToNavigate) {
+      onNavigate(pluginId, pageIdToNavigate);
     } else {
-      // Es buena práctica loguear si faltan props esenciales
       console.warn(
-        `[${props.pluginId}] Navegación no posible: 'onNavigate' o 'pageIdToNavigate' no definidos en props.`
+        `[${pluginId}] Navegación no posible: 'onNavigate' o 'pageIdToNavigate' no definidos.`
       );
     }
   };
 
-  // Determinar si el ítem está activo.
-  // Atlas no pasa explícitamente una prop 'active' a los ítems de plugin.
-  // Si necesitas esta funcionalidad, deberás implementarla basándote en el
-  // estado global de la aplicación (si es accesible) o gestionarlo internamente.
-  // const isActive = tuLogicaParaDeterminarSiEstaActivo;
-  const isActive = false; // Simplificado para el ejemplo
+  // 💡 NUEVA LÓGICA para determinar si este ítem de navegación está activo
+  const isActive =
+    pluginId === activePagePluginId && pageIdToNavigate === activePageId;
 
   return React.createElement(
     "div",
     {
-      className: `sidebar-item ${isActive ? "active" : ""}`, // Clase raíz
+      className: `sidebar-item ${isActive ? "active" : ""}`, // Aplicar .active dinámicamente
       onClick: handleClick,
-      title: "Ir a Mi Plugin", // Tooltip para accesibilidad y usabilidad
-      style: { cursor: "pointer" }, // Es buena práctica añadir esto para indicar que es clickeable
+      title: "Ir a Mi Plugin", // Tooltip
+      style: { cursor: "pointer" },
     },
     [
-      // Contenedor del icono
       React.createElement(
         "span",
-        {
-          className: "sidebar-item-icon", // Clase para el icono
-          key: "plugin-nav-icon", // React key
-        },
-        // Icono (usando Material Icons)
+        { className: "sidebar-item-icon", key: "icon" },
         React.createElement(
           "span",
-          { className: "material-icons" }, // Clase para iconos de Material Design
-          "extension" // Reemplaza con el nombre del Material Icon deseado
-          // o usa un emoji directamente como texto aquí.
+          { className: "material-icons" },
+          "extension" // Icono de ejemplo
         )
       ),
-      // Contenedor de la etiqueta (texto)
       React.createElement(
         "span",
-        {
-          className: "sidebar-item-label", // CLASE CRÍTICA para el colapso de texto
-          key: "plugin-nav-label", // React key
-        },
-        "Mi Plugin" // El texto de tu elemento de navegación
+        { className: "sidebar-item-label", key: "label" },
+        "Mi Plugin" // Etiqueta
       ),
     ]
   );
@@ -1222,7 +1273,7 @@ function MiPluginNavItem(props) {
 export default MiPluginNavItem;
 ```
 
-**Nota sobre el Registro**: Recuerda utilizar el [Patrón Wrapper](#patrón-wrapper-para-componentes) al registrar este `MiPluginNavItem` para inyectarle props como `pageIdToNavigate`.
+**Nota sobre el Registro**: Recuerda utilizar el [Patrón Wrapper](#patrón-wrapper-para-componentes) al registrar este `MiPluginNavItem` para inyectarle props como `pageIdToNavigate` y para que reciba las props automáticas como `activePagePluginId` y `activePageId`.
 
 #### 2. Widgets o Paneles en la Barra Lateral (Zona: `CALENDAR_SIDEBAR` u otras)
 
@@ -1498,8 +1549,13 @@ const PAGE_ID = "mi-pagina-principal";
 
 // Componente de página
 function MainPage(props) {
+  // props.pageId será pasado aquí por el registro de la extensión
   return React.createElement("div", { className: "plugin-page" }, [
-    React.createElement("h1", { key: "title" }, "Mi Plugin"),
+    React.createElement(
+      "h1",
+      { key: "title" },
+      "Mi Plugin - Página: " + props.pageId
+    ),
     React.createElement(
       "p",
       { key: "content" },
@@ -1508,13 +1564,12 @@ function MainPage(props) {
   ]);
 }
 
-// Registrar navegación
+// Registrar navegación (ver sección de Integración Visual en la Barra Lateral para un ejemplo completo)
 const navWrapper = this._createComponentWrapper(MiPluginNavItem, {
-  // Asegúrate de usar tu componente
   pageIdToNavigate: PAGE_ID, // Pasar el pageId como prop
 });
 
-this._navigationExtensionId = core.ui.registerExtension(
+this._extensionIds.navigation = core.ui.registerExtension(
   this.id,
   core.ui.getExtensionZones().MAIN_NAVIGATION,
   navWrapper,
@@ -1524,14 +1579,14 @@ this._navigationExtensionId = core.ui.registerExtension(
 // ⚠️ REGISTRO CRUCIAL: pageId DEBE estar en props
 const pageWrapper = this._createComponentWrapper(MainPage);
 
-this._pageExtensionId = core.ui.registerExtension(
+this._extensionIds.page = core.ui.registerExtension(
   this.id,
   core.ui.getExtensionZones().PLUGIN_PAGES,
   pageWrapper,
   {
     order: 100,
     props: {
-      pageId: PAGE_ID, // ¡OBLIGATORIO!
+      pageId: PAGE_ID, // ¡OBLIGATORIO! Este pageId es el que Atlas usa para mostrar tu página
     },
   }
 );
@@ -3856,7 +3911,10 @@ export default {
       const handleClick = () => {
         props.onNavigate(props.pluginId, props.pageIdToNavigate);
       };
-      const isActive = false; // Lógica de activación si es necesaria
+      // 💡 Actualizado para usar las nuevas props y determinar el estado activo
+      const isActive =
+        props.pluginId === props.activePagePluginId &&
+        props.pageIdToNavigate === props.activePageId;
 
       return React.createElement(
         "div",
@@ -4366,15 +4424,15 @@ export default {
 
     // Componente React para el ítem de navegación
     function TaskManagerNavItem(props) {
-      // props.pluginId, props.onNavigate son pasados por Atlas
-      // props.pageIdToNavigate es pasado por el _createComponentWrapper
       const handleClick = () => {
         if (props.onNavigate && props.pageIdToNavigate) {
           props.onNavigate(props.pluginId, props.pageIdToNavigate);
         }
       };
-      // Lógica para estado activo (simplificada)
-      const isActive = false; // props.currentPageId === props.pageIdToNavigate; (requeriría currentPageId de Atlas)
+      // 💡 Actualizado para usar las nuevas props y determinar el estado activo
+      const isActive =
+        props.pluginId === props.activePagePluginId &&
+        props.pageIdToNavigate === props.activePageId;
 
       return React.createElement(
         "div",

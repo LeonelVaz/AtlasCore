@@ -1,26 +1,35 @@
+// Dirección: notes-manager\components\NotesNavigationItem.jsx
 import React from "react";
 
 function NotesNavigationItem(props) {
+  // Desestructuramos las props necesarias, incluyendo las nuevas para el estado activo
+  const { onNavigate, plugin, activePagePluginId, activePageId } = props;
+
+  // El ID de la página a la que este ítem de navegación dirige.
+  // En tu plugin, NotesPage se registra con pageId: "notes".
+  const pageIdToNavigate = "notes";
+
   const handleClick = () => {
-    // props.plugin.id es el id de tu plugin ("simple-notes")
-    // "notes" es el pageId que has definido para tu página de notas.
-    // Esto parece correcto y coincide con cómo registras tu página.
-    if (props.onNavigate) {
-      props.onNavigate(props.plugin.id, "notes");
+    if (onNavigate) {
+      // Usamos plugin.id (el ID de este plugin) y pageIdToNavigate
+      onNavigate(plugin.id, pageIdToNavigate);
+    } else {
+      console.warn(
+        `[${plugin.id || "NotesNavigationItem"}] 'onNavigate' no está definido.`
+      );
     }
   };
 
-  // Determinar si el ítem está activo.
-  // Atlas no pasa explícitamente una prop 'active'. Si necesitas esta
-  // funcionalidad, deberías implementarla basándote en el estado global
-  // de la aplicación o gestionarlo internamente.
-  // Por ahora, lo dejamos como false.
-  const isActive = false;
+  // Lógica para determinar si este ítem de navegación está activo
+  // Compara el ID del plugin actual y el ID de la página a la que navega
+  // con los IDs activos globales proporcionados por Atlas.
+  const isActive =
+    plugin.id === activePagePluginId && pageIdToNavigate === activePageId;
 
   return React.createElement(
     "div",
     {
-      // 1. Clase raíz REQUERIDA por Atlas para ítems de navegación principal
+      // Aplicar la clase 'active' dinámicamente
       className: `sidebar-item ${isActive ? "active" : ""}`,
       onClick: handleClick,
       tabIndex: 0, // Para accesibilidad
@@ -28,21 +37,20 @@ function NotesNavigationItem(props) {
       style: { cursor: "pointer" }, // Indica que es clickeable
     },
     [
-      // 2. Contenedor del icono REQUERIDO
+      // Contenedor del icono
       React.createElement(
         "span",
         {
           className: "sidebar-item-icon", // Clase REQUERIDA para el icono
           key: "notes-nav-icon",
         },
-        // Para usar Material Icons (si "note" es un nombre de icono válido)
         React.createElement(
           "span",
           { className: "material-icons" }, // Clase para iconos de Material Design
-          "note" // El nombre del Material Icon (o un emoji si prefieres)
+          "note" // El nombre del Material Icon
         )
       ),
-      // 3. Contenedor de la etiqueta (texto) REQUERIDO
+      // Contenedor de la etiqueta (texto)
       React.createElement(
         "span",
         {
