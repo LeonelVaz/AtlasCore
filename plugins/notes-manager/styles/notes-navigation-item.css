@@ -1,0 +1,14 @@
+/* ================================================
+   NOTES NAVIGATION ITEM STYLES
+   ================================================ */
+
+.notes-navigation-item {
+  &:hover {
+    background-color: var(--hover-color) !important;
+  }
+
+  &:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
