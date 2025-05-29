@@ -1,11 +1,11 @@
 # Atlas
 
-<img src="https://github.com/user-attachments/assets/0535c384-c878-41ca-b062-4d0a73a7b48f" alt="Logo Atlas" width="300">
-
 ![Versión](https://img.shields.io/badge/versión-0.3.0-blue)
 ![Estado](https://img.shields.io/badge/estado-En%20Desarrollo%20Activo-green)
 ![Electron](https://img.shields.io/badge/Electron-^33.2.1-9cf)
 ![React](https://img.shields.io/badge/React-^18.3.1-61DAFB)
+
+<img src="https://github.com/user-attachments/assets/0535c384-c878-41ca-b062-4d0a73a7b48f" alt="Logo Atlas" width="300">
 
 ## Descripción
 
