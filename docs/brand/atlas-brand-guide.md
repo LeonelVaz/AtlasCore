@@ -8,15 +8,15 @@ Atlas es una plataforma de gestión del tiempo modular, potente y personalizable
 
 ## 2. Logotipo
 
-### 2.1. Logotipo Principal (`logo.png` y `logo-white.png`)
+### 2.1. Logotipo Principal (`logo.ico` y `logo-white.png`)
 
 - **Descripción:** El logotipo principal de Atlas consiste en las letras estilizadas "AT". La fragmentación presente en ambas letras, especialmente los cortes en la "T", simboliza la **modularidad** y la **interconexión** de los componentes de la aplicación. Las letras se presentan una al lado de la otra, manteniendo su individualidad pero formando un conjunto cohesivo.
 - **Archivos:**
-  - `logo.png`: Muestra las letras "AT" en color blanco sobre el fondo azul oscuro principal de la marca.
+  - `logo.ico`: Muestra las letras "AT" en color blanco sobre el fondo azul oscuro principal de la marca.
   - `logo-white.png`: Muestra las letras "AT" en color blanco con fondo transparente. Esta es la versión preferida para usar sobre fondos oscuros o de color dentro de la aplicación y en materiales de marketing.
 - **Uso Preferido:**
   - `logo-white.png`: Para el encabezado de la aplicación (como se ve en `src/app.jsx`), sobre fondos de los temas oscuros, o cuando se necesite contraste sobre un fondo de color.
-  - `logo.png`: Para contextos donde se necesite el logo con su fondo de marca característico (ej. avatares de redes sociales, algunos materiales impresos).
+  - `logo.ico`: Para contextos donde se necesite el logo con su fondo de marca característico (ej. avatares de redes sociales, algunos materiales impresos).
 
 ### 2.2. Variaciones del Logotipo
 
