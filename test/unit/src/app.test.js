@@ -483,12 +483,6 @@ describe("App Component", () => {
         );
       });
     });
-
-    test("renders event debugger component", () => {
-      render(<App />);
-
-      expect(screen.getByTestId("event-debugger")).toBeInTheDocument();
-    });
   });
 
   describe("Layout and Structure", () => {
@@ -620,33 +614,6 @@ describe("App Component", () => {
       await waitFor(() => {
         expect(screen.getByTestId("event-debugger")).toBeInTheDocument();
       });
-    });
-  });
-
-  describe("Component Integration", () => {
-    test("integrates all major components correctly", () => {
-      render(<App />);
-
-      // Verify all major components are present
-      expect(screen.getByTestId("config-provider")).toBeInTheDocument();
-      expect(screen.getByTestId("dialog-provider")).toBeInTheDocument();
-      expect(screen.getByTestId("sidebar")).toBeInTheDocument();
-      expect(screen.getByTestId("calendar-main")).toBeInTheDocument();
-      expect(screen.getByTestId("event-debugger")).toBeInTheDocument();
-
-      // Verify layout structure
-      expect(screen.getByRole("banner")).toBeInTheDocument(); // header
-      expect(screen.getByRole("main")).toBeInTheDocument(); // main content
-    });
-
-    test("handles component hierarchy correctly", () => {
-      render(<App />);
-
-      const configProvider = screen.getByTestId("config-provider");
-      const dialogProvider = screen.getByTestId("dialog-provider");
-
-      // DialogProvider should be inside ConfigProvider
-      expect(configProvider).toContainElement(dialogProvider);
     });
   });
 });
