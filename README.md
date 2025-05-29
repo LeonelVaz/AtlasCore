@@ -1,8 +1,3 @@
-## 1. `README.md` (Actualizado)
-
-Tomaré como base el `README.md` que me proporcionaste y lo actualizaré con la información de la v0.3.0, destacando las nuevas funcionalidades y el progreso.
-
-````markdown
 # Atlas
 
 ![Versión](https://img.shields.io/badge/versión-0.2.0-blue)
@@ -64,6 +59,7 @@ Para ejecutar Atlas en modo desarrollo (aplicación web en el navegador):
 ```bash
 npm run dev
 ```
+
 ````
 
 Para ejecutar con Electron (aplicación de escritorio en modo desarrollo):
@@ -170,3 +166,4 @@ Si estás interesado en utilizar AtlasCore para fines comerciales que puedan ent
 ---
 
 © 2025 Dino Leonel Vazquez Ledesma. Todos los derechos reservados bajo los términos de la licencia especificada.
+````
