@@ -1,237 +1,169 @@
-Añadir a este documento las referencias a:
+# Stage 4: Robustez, Gestión Avanzada y Fundamentos de Internacionalización (Versión 0.4.0 Propuesta)
 
-date-time-standardization.md y plugin-permissions-enhancements.md
+**Enfoque Principal:** Fortalecer la estabilidad del núcleo de Atlas, mejorar la gestión de datos y permisos, integrar funcionalidades de seguridad avanzadas del sandbox, y sentar las bases para la internacionalización y capacidades de Progressive Web App (PWA). Además, se introducirían nuevos plugins esenciales para expandir la utilidad de la plataforma.
 
+---
 
-# Stage 4 - Robustez y Plugins Esenciales (Versión 0.4.0)
+## Componentes Clave a Desarrollar / Mejorar
 
-**Enfoque**: Ampliar las capacidades del sistema y mejorar la gestión de datos
+### 1. Sistema Avanzado de Administración y Monitoreo
 
-**Componentes a desarrollar:**
-1. **Sistema de administración y monitoreo**
-   - Panel de administración desplegable
-   - Visor integrado de logs de la aplicación
-   - Componente ErrorBoundary para captura de errores
+- **Objetivo:** Proporcionar a los administradores y desarrolladores herramientas mejoradas para el diagnóstico y mantenimiento de la aplicación.
+- **Funcionalidades:**
+  - **Panel de Administración Mejorado:** Evolucionar el actual "Panel de Desarrolladores" para incluir:
+    - Visor integrado de logs de la aplicación (no solo de eventos, sino logs generales del sistema y plugins).
+    - Estadísticas de rendimiento y uso de recursos más detalladas (integrando y exponiendo mejor los datos de `plugin-resource-monitor.js`).
+  - **Componente `ErrorBoundary` Global:** Implementar un `ErrorBoundary` de React a nivel raíz de la aplicación para capturar errores de renderizado en cualquier parte de la UI, mostrando un mensaje amigable al usuario y facilitando el reporte de errores.
+  - **Diagnóstico de Plugins:** Mejorar la información disponible sobre el estado, errores y uso de recursos de cada plugin en el "Panel de Plugins".
 
-2. **Exportación e importación de datos**
-   - Funcionalidad de exportación por módulos y rango de fechas
-   - Importación con validación y resolución de conflictos
-   - Integración con sistema de archivos nativo en Electron
+### 2. Gestión Robusta de Datos: Exportación e Importación
 
-3. **Configuración básica de PWA (Progressive Web App)**
-   - Creación y configuración inicial del archivo manifest.json con:
-     - Información básica de la aplicación (nombre, descripción corta)
-     - Configuración de iconos en diferentes tamaños
-     - Definición de colores de tema y fondo
-     - Configuración de orientación y modo de visualización
-   - Implementación de un Service Worker mínimo para:
-     - Caché básica de recursos estáticos (HTML, CSS, JS)
-     - Funcionalidad offline básica para acceder a la última sesión
-     - Estrategia de actualización cuando hay conectividad
-   - Configuración de metadatos de instalación en index.html
-   - Esta configuración sienta las bases para la implementación completa prevista en la versión 1.0.0
+- **Objetivo:** Permitir a los usuarios realizar copias de seguridad completas de sus datos de Atlas y restaurarlos, así como facilitar la migración entre instalaciones.
+- **Funcionalidades:**
+  - **Exportación Selectiva y Completa:**
+    - Opción para exportar todos los datos de la aplicación (configuración, eventos del calendario, datos de todos los plugins) en un formato consolidado (ej. JSON).
+    - (Potencial) Posibilidad de exportar datos por módulo o plugin específico.
+    - (Potencial) Opción para filtrar por rango de fechas para datos temporales (ej. eventos del calendario).
+  - **Importación con Validación:**
+    - Funcionalidad para importar un archivo de datos previamente exportado.
+    - Validación de la estructura y versión del archivo importado.
+    - Estrategias para la resolución de conflictos (ej. omitir, sobrescribir, fusionar si es posible).
+  - **Integración con Sistema de Archivos Nativo (Electron):** Utilizar diálogos nativos de guardado/apertura de archivos para una mejor experiencia en la versión de escritorio.
+  - **Seguridad en la Exportación/Importación:** Considerar opciones para encriptar los datos exportados si contienen información sensible.
 
-4. **Plugin: Task Tracker**
-   - Implementación del plugin de tareas
-   - Integración bidireccional con eventos del calendario
-   - Vistas de tablero Kanban y lista
+### 3. Estandarización del Manejo de Fechas y Horas y Configuración de Zona Horaria
 
-5. **Plugin: Reminder System**
-   - Sistema de recordatorios para eventos
-   - Notificaciones nativas (escritorio) y en aplicación (web)
-   - Configuración personalizada de alertas
+- **Objetivo:** Asegurar la consistencia y precisión en el manejo de todas las fechas y horas dentro de Atlas y sus plugins, y dar control al usuario sobre su zona horaria.
+- **Funcionalidades:**
+  - Adopción interna de UTC para almacenamiento y lógica.
+  - Conversión a la zona horaria local del usuario (o preferida) solo en la capa de visualización.
+  - Implementación de una configuración de usuario para seleccionar explícitamente una zona horaria preferida.
+- **Referencia:** Ver documento detallado [`date-time-standardization.md`](./date-time-standardization.md) para la estrategia completa.
 
-6. **Estructura básica de internacionalización**
-   - Implementación de la estructura base del sistema de i18n
-   - Preparación de componentes core para internacionalización
-   - Configuración inicial y pruebas básicas
+### 4. Integración Completa de Funcionalidades Avanzadas del Sandbox
 
-**Criterios de finalización:**
-- Sistema completo de administración y diagnóstico
-- Funcionalidades robustas de importación/exportación de datos
-- Dos nuevos plugins (Task Tracker y Reminder System) completamente funcionales
-- Estructura base para la internacionalización implementada
-- Configuración básica para soporte futuro de PWA implementada
-- Mayor estabilidad general del sistema
+- **Objetivo:** Activar y utilizar todas las capacidades de seguridad del `plugin-sandbox.js` para mejorar la protección contra comportamientos no deseados de los plugins.
+- **Funcionalidades:**
+  - Integración activa de `createDOMProxy` para la manipulación segura del DOM por parte de los plugins.
+  - Activación y prueba de la protección de objetos globales de JavaScript en niveles de seguridad altos.
+  - Revisión y ajuste de las reglas de análisis estático para alinearlas con las APIs seguras expuestas por `coreAPI`.
+- **Referencia:** Ver documento detallado [`integration-of-advanced-sandbox-features.md`](./integration-of-advanced-sandbox-features.md) para la estrategia completa.
 
-## Estructura de archivos al finalizar la Stage 4
+### 5. Mejoras en el Sistema de Gestión de Permisos de Plugins
+
+- **Objetivo:** Implementar la persistencia de las decisiones de permisos, permitir la revocación y la reconsideración de permisos.
+- **Funcionalidades:**
+  - Guardar y restaurar el estado de los permisos (aprobados, denegados/revocados) entre sesiones.
+  - Interfaz de usuario para que los administradores/usuarios puedan revocar permisos ya concedidos.
+  - Interfaz para revisar y potencialmente aprobar permisos previamente denegados.
+- **Referencia:** Ver documento detallado [`plugin-permissions-enhancements.md`](./plugin-permissions-enhancements.md) para la estrategia completa.
+
+### 6. Fundamentos de Internacionalización (i18n)
+
+- **Objetivo:** Preparar la aplicación y su arquitectura para el soporte multilingüe.
+- **Funcionalidades:**
+  - Implementación de la estructura básica del sistema de i18n (directorios, configuración inicial de la librería `i18next`).
+  - Extracción de cadenas de texto de los componentes principales del Core a archivos de recursos de idioma (inicialmente para `es` y `en`).
+  - Preparación de la API Core y del sistema de plugins para que los plugins puedan registrar y utilizar sus propias traducciones.
+  - Configuración inicial para la detección de idioma y (potencialmente) un selector básico de idioma en la configuración.
+- **Referencia:** Ver documento detallado [`internationalization.md`](./internationalization.md) para la arquitectura y guía de implementación.
+
+### 7. Configuración Inicial de Progressive Web App (PWA)
+
+- **Objetivo:** Sentar las bases para que Atlas pueda ser instalable y ofrecer una experiencia offline básica como PWA.
+- **Funcionalidades:**
+  - Creación y configuración del archivo `manifest.json` con información básica de la aplicación (nombre, descripción, iconos, colores tema, modo de visualización).
+  - Implementación de un Service Worker mínimo para caché básica de recursos estáticos (HTML, CSS, JS principales) y una estrategia de "network falling back to cache" o "cache first" para funcionalidad offline básica.
+  - Inclusión de metadatos necesarios en `index.html` para la instalación de PWA.
+  - _(Nota: La funcionalidad PWA completa, incluyendo sincronización offline avanzada, se planificaría para versiones posteriores, potencialmente v1.0.0)._
+
+### 8. Plugin Esencial: Task Tracker (Seguimiento de Tareas)
+
+- **Objetivo:** Implementar un plugin robusto para la gestión de tareas.
+- **Funcionalidades Clave:**
+  - Creación, edición, eliminación de tareas con detalles (descripción, fecha de vencimiento, prioridad, estado, tags).
+  - Vistas flexibles: lista de tareas y tablero Kanban personalizable.
+  - Integración opcional y configurable con los eventos del calendario de Atlas (sincronización de tareas con fechas de vencimiento).
+- **Referencia:** Ver documento conceptual [`task-tracker.md`](./plugins/task-tracker.md) para la visión detallada.
+
+### 9. Plugin Esencial: Reminder System (Sistema de Recordatorios)
+
+- **Objetivo:** Implementar un sistema de notificaciones y recordatorios para eventos.
+- **Funcionalidades Clave:**
+  - Configuración de múltiples recordatorios por evento (ej. 1 hora antes, 15 mins antes).
+  - Notificaciones nativas (Electron) y notificaciones web.
+  - Opciones de posponer (snooze) y descartar recordatorios.
+  - Preferencias de notificación personalizables por el usuario.
+- **Referencia:** Ver documento conceptual [`reminder-system.md`](./plugins/reminder-system.md) para la visión detallada.
+
+---
+
+## Criterios de Finalización para la Stage 4 (v0.4.0)
+
+- Sistema de administración con visor de logs y ErrorBoundary funcional.
+- Capacidad de exportar e importar todos los datos de la aplicación (Core y plugins) de forma fiable.
+- Manejo de fechas y horas estandarizado en UTC internamente, con visualización localizada y opción de configuración de zona horaria por el usuario.
+- Funcionalidades avanzadas del sandbox (protección DOM, objetos globales) integradas y operativas según el nivel de seguridad.
+- Sistema de permisos de plugins con persistencia, revocación y reconsideración implementados.
+- Estructura base de internacionalización funcional, con el Core de Atlas y los plugins principales mostrando textos extraídos de archivos de recursos (al menos para `es` y `en`).
+- Configuración básica de PWA (`manifest.json`, Service Worker simple para caché offline básica) implementada.
+- Los plugins "Task Tracker" y "Reminder System" desarrollados, funcionales y bien integrados.
+- Aumento continuo de la cobertura de pruebas y mejora de la estabilidad general del sistema.
+- Documentación actualizada para todas las nuevas funcionalidades y cambios arquitectónicos.
+
+---
+
+## Estructura de Archivos Prevista al Finalizar la Stage 4 (Adiciones/Cambios Notables)
 
 ```
-atlas-core/
-├── package.json
-├── vite.config.js
-├── index.html
-├── electron/                        # Configuración para la app de escritorio mejorada
-│   ├── main.js                      # Proceso principal de Electron
-│   ├── preload.js                   # Script de precarga mejorado
-│   └── window-manager.js            # Gestión de ventanas completa
-│
+
+AtlasCore/
+├── ... (sin cambios mayores en la raíz)
 ├── public/
-│   ├── favicon.ico
-│   └── assets/
-│       ├── fonts/                   # Fuentes para los temas
-│       └── images/                  # Imágenes para la UI
-│
-├── src/
-│   ├── index.jsx                    # Punto de entrada principal
-│   ├── app.jsx                      # Componente raíz con providers y error boundaries
-│   │
-│   ├── core/                        # Núcleo de la aplicación
-│   │   ├── bus/                     # Sistema de bus de eventos
-│   │   │   ├── event-bus.js         # Implementación mejorada
-│   │   │   └── events.js            # Eventos completos del sistema
-│   │   │
-│   │   ├── module/                  # Sistema de registro de módulos
-│   │   │   ├── module-registry.js   # Registro de módulos
-│   │   │   └── module-utils.js      # Utilidades para módulos
-│   │   │
-│   │   └── config/                  # Configuración global
-│   │       ├── app-config.js        # Configuración de la app
-│   │       └── constants.js         # Constantes globales
-│   │
-│   ├── services/                    # Servicios de la aplicación
-│   │   ├── storage-service.js       # Abstracción de almacenamiento mejorada
-│   │   ├── import-export-service.js # Servicio de importación/exportación
-│   │   ├── log-service.js           # Servicio de logging
-│   │   └── theme-service.js         # Servicio de gestión de temas
-│   │
-│   ├── components/                  # Componentes de la aplicación
-│   │   ├── calendar/                # Componentes del calendario
-│   │   │   ├── calendar-main.jsx    # Componente principal mejorado
-│   │   │   ├── day-view.jsx         # Vista de día mejorada
-│   │   │   ├── week-view.jsx        # Vista de semana mejorada
-│   │   │   ├── event-item.jsx       # Elemento de evento con interacciones avanzadas
-│   │   │   ├── time-grid.jsx        # Rejilla temporal con escalas
-│   │   │   ├── time-slot.jsx        # Franja horaria personalizable
-│   │   │   ├── snap-control.jsx  # Control de imán
-│   │   │   └── event-form.jsx       # Formulario de eventos avanzado
-│   │   │
-│   │   ├── admin/                   # Componentes de administración
-│   │   │   ├── admin-panel.jsx      # Panel de administración
-│   │   │   ├── log-viewer.jsx       # Visor de logs
-│   │   │   └── error-display.jsx    # Visualizador de errores
-│   │   │
-│   │   ├── ui/                      # Componentes de UI reutilizables
-│   │   │   ├── button.jsx           # Botón personalizado
-│   │   │   ├── dialog.jsx           # Diálogo moderno
-│   │   │   ├── toast.jsx            # Notificaciones toast
-│   │   │   ├── dropdown.jsx         # Menú desplegable
-│   │   │   ├── error-boundary.jsx   # Captura de errores React
-│   │   │   └── theme-selector.jsx   # Selector de temas
-│   │   │
-│   │   └── settings/                # Componentes de configuración
-│   │       ├── settings-panel.jsx   # Panel de configuración completo
-│   │       ├── time-scale-config.jsx # Configuración de escala de tiempo
-│   │       ├── theme-config.jsx     # Configuración de temas
-│   │       └── export-import-panel.jsx # Panel de exportación/importación
-│   │
-│   ├── contexts/                    # Contextos de React
-│   │   ├── calendar-context.jsx     # Contexto del calendario
-│   │   ├── theme-context.jsx        # Contexto de temas
-│   │   ├── settings-context.jsx     # Contexto de configuraciones
-│   │   └── admin-context.jsx        # Contexto de administración
-│   │
-│   ├── hooks/                       # Hooks personalizados
-│   │   ├── use-calendar-events.jsx  # Hook para eventos del calendario
-│   │   ├── use-time-grid.jsx        # Hook para rejilla temporal
-│   │   ├── use-event-drag.jsx       # Hook para arrastrar eventos
-│   │   ├── use-event-form.jsx    # Hook para formulario de eventos
-│   │   ├── use-calendar-navigation.jsx # Hook para navegación en el calendario
-│   │   ├── use-event-resize.jsx     # Hook para redimensionar eventos
-│   │   ├── use-theme.jsx            # Hook para gestión de temas
-│   │   └── use-ui-utils.jsx         # Hook para utilidades UI
-│   │
-│   ├── utils/                       # Utilidades
-│   │   ├── date-utils.js            # Utilidades de fechas
-│   │   ├── time-utils.js            # Utilidades de tiempo
-│   │   ├── debug-utils.js        # Utilidades de depuración
-│   │   ├── event-utils.js           # Utilidades para eventos
-│   │   ├── theme-utils.js           # Utilidades para temas
-│   │   ├── storage-utils.js         # Utilidades de almacenamiento
-│   │   └── validation-utils.js      # Utilidades de validación
-│   │
-│   ├── styles/                      # Estilos
-│   │   ├── index.css                # Estilos globales
-│   │   ├── app.css                  # Estilos para app.jsx
-│   │   ├── variables.css            # Variables CSS globales
-│   │   ├── themes/                  # Archivos de temas
-│   │   │   ├── light.css            # Tema claro
-│   │   │   ├── dark.css             # Tema oscuro
-│   │   │   └── purple-night.css     # Tema púrpura nocturno
-│   │   │
-│   │   ├── components/              # Estilos de componentes
-│   │   │   ├── calendar.css         # Estilos del calendario
-│   │   │   ├── events.css           # Estilos de eventos
-│   │   │   ├── settings.css         # Estilos de configuración
-│   │   │   └── admin.css            # Estilos de administración
-│   │   │
-│   │   └── calendar/                # Estilos específicos del calendario
-│   │       └── calendar-main.css    # Estilos para calendar-main.jsx
-│   │
-│   └── plugins/                     # Sistema de plugins extendido
-│       ├── plugin-loader.js         # Cargador de plugins mejorado
-│       ├── plugin-registry.js       # Registro de plugins avanzado
-│       │
-│       ├── notes-manager/           # Plugin de notas mejorado
-│       │   ├── index.js             # Punto de entrada del plugin
-│       │   ├── components/          # Componentes del plugin
-│       │   │   ├── notes-list.jsx   # Lista de notas
-│       │   │   ├── note-editor.jsx  # Editor de notas
-│       │   │   └── notes-panel.jsx  # Panel principal
-│       │   ├── contexts/
-│       │   │   └── notes-context.jsx # Contexto de notas
-│       │   ├── utils/
-│       │   │   └── notes-utils.js   # Utilidades específicas
-│       │   ├── styles/
-│       │   │   └── notes.css        # Estilos específicos del plugin
-│       │   └── README.md            # Documentación del plugin
-│       │
-│       ├── task-tracker/            # Plugin de seguimiento de tareas
-│       │   ├── index.js             # Punto de entrada del plugin
-│       │   ├── components/          # Componentes del plugin
-│       │   │   ├── task-board.jsx   # Vista de tablero Kanban
-│       │   │   ├── task-list.jsx    # Vista de lista de tareas
-│       │   │   ├── task-item.jsx    # Componente de tarea individual
-│       │   │   └── task-form.jsx    # Formulario para crear/editar tareas
-│       │   ├── contexts/
-│       │   │   └── task-context.jsx # Contexto global de tareas
-│       │   ├── utils/
-│       │   │   ├── task-utils.js    # Utilidades específicas
-│       │   │   └── task-to-event.js # Conversión entre tareas y eventos
-│       │   ├── styles/
-│       │   │   └── tasks.css        # Estilos específicos
-│       │   └── README.md            # Documentación
-│       │
-│       └── reminder-system/         # Plugin de recordatorios
-│           ├── index.js             # Punto de entrada del plugin
-│           ├── components/          # Componentes del plugin
-│           │   ├── reminder-settings.jsx # Configuración de recordatorios
-│           │   ├── notification-panel.jsx # Panel de notificaciones
-│           │   └── reminder-form.jsx # Formulario para crear recordatorios
-│           ├── services/
-│           │   ├── notification-service.js # Servicio de notificaciones
-│           │   └── scheduler-service.js # Programación de recordatorios
-│           ├── utils/
-│           │   └── reminder-utils.js # Utilidades específicas
-│           ├── styles/
-│           │   └── reminders.css    # Estilos específicos
-│           └── README.md            # Documentación
-│
-└── docs/                            # Documentación del proyecto
-    ├── dev/                         # Documentación para desarrolladores
-    │   ├── atlas-overview.md        # Visión general de Atlas
-    │   ├── atlas-stages.md          # Stages de desarrollo
-    │   ├── commands.md              # Comandos útiles
-    │   └── stages/                  # Documentación detallada por Stages
-    │       ├── stage-1.md           # Documentación de la Stage 1
-    │       ├── stage-2.md           # Documentación de la Stage 2
-    │       ├── stage-3.md           # Documentación de la Stage 3
-    │       └── stage-4.md           # Documentación de la Stage 4
-    │
-    └── brand-assets/                # Recursos de marca
-        ├── logos/                   # Logos de la aplicación
-        │   └── atlas-logo.svg       # Logo SVG principal
-        │
-        └── documentation/           # Documentación de marca
-            └── atlas-brand-guide.md # Guía de identidad de marca
+│ └── manifest.json # NUEVO (para PWA)
+│ └── service-worker.js # NUEVO (para PWA, o en src y compilado a public)
+├── plugins/
+│ ├── task-tracker/ # NUEVO PLUGIN
+│ │ ├── index.js
+│ │ ├── components/
+│ │ ├── services/ (si aplica)
+│ │ ├── locales/
+│ │ │ ├── es/tasks.json
+│ │ │ └── en/tasks.json
+│ │ └── ...
+│ ├── reminder-system/ # NUEVO PLUGIN
+│ │ ├── index.js
+│ │ ├── components/
+│ │ ├── services/
+│ │ ├── locales/
+│ │ │ ├── es/reminders.json
+│ │ │ └── en/reminders.json
+│ │ └── ...
+│ └── (otros plugins existentes)
+│ └── locales/ # Carpetas de locales añadidas a plugins existentes
+│ ├── es/plugin-nombre.json
+│ └── en/plugin-nombre.json
+└── src/
+├── components/
+│ └── admin/ # NUEVO (o renombrado desde debug)
+│ ├── AdminPanel.jsx
+│ ├── LogViewer.jsx
+│ └── ErrorBoundary.jsx
+│ └── ui/
+│ └── TimezoneSelector.jsx # NUEVO (para configuración de zona horaria)
+├── i18n/ # NUEVO DIRECTORIO
+│ ├── index.js # Configuración de i18next
+│ └── locales/ # Archivos de traducción (es/, en/)
+│ ├── es/common.json
+│ ├── es/calendar.json
+│ ├── es/settings.json
+│ └── ...
+├── services/
+│ └── i18n-service.js # (Potencial) Servicio para i18n si es necesario
+├── utils/
+│ └── timezone-utils.js # NUEVO (para manejo de zonas horarias)
+└── ... (otros archivos pueden ser modificados para i18n y manejo de fechas)
+
 ```
+
+_(Esta estructura es una estimación y podría variar según las decisiones de implementación específicas)._
