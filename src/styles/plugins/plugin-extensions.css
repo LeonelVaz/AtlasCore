@@ -1,0 +1,91 @@
+/* Estilos para extensiones de plugins */
+
+/* Contenedor de extensiones */
+.plugin-extension-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Elementos individuales de extensión */
+.plugin-extension-item {
+  width: 100%;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+/* Animación de entrada para extensiones */
+.plugin-extension-item {
+  animation: extensionFadeIn 0.3s ease-in-out;
+}
+
+@keyframes extensionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para errores en extensiones */
+.plugin-extension-error {
+  padding: 10px;
+  margin: 8px 0;
+  background-color: rgba(var(--danger-color-rgb), 0.1);
+  border-left: 3px solid var(--color-alarm-red);
+  border-radius: 4px;
+}
+
+.plugin-extension-error-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--color-alarm-red);
+}
+
+.plugin-extension-error-message {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+/* Extensiones en la barra lateral */
+.sidebar-extensions {
+  margin-top: 10px;
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+.sidebar-extensions .plugin-extension-item {
+  margin-bottom: 5px;
+}
+
+/* Extensiones en la configuración */
+.settings-extensions {
+  padding: 20px;
+  background-color: var(--color-calendar-header);
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.settings-extensions-empty {
+  padding: 15px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  background-color: var(--bg-color-secondary);
+  border-radius: 6px;
+}
+
+.settings-extensions-note {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .settings-extensions {
+    padding: 15px;
+  }
+}

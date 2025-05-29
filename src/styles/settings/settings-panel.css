@@ -1,0 +1,89 @@
+/* settings-panel.css (optimizado) */
+.settings-panel {
+  display: flex;
+  height: 100%;
+  background-color: var(--color-background);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.settings-sidebar {
+  width: 220px;
+  background-color: var(--color-calendar-header);
+  border-right: 1px solid var(--color-border);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-title {
+  padding: 0 20px;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  color: var(--color-atlas-blue);
+}
+
+.settings-sections {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Iconos y texto en panel de configuración */
+.settings-sections .sidebar-item-icon .material-icons {
+  font-size: 20px;
+  color: var(--color-text);
+  transition: color 0.2s;
+}
+
+.settings-sections .sidebar-item.active .sidebar-item-icon .material-icons,
+.settings-sections .sidebar-item.active .sidebar-item-label {
+  color: var(--color-atlas-blue);
+}
+
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--color-background);
+}
+
+.settings-placeholder {
+  padding: 30px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.settings-placeholder h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  .settings-panel {
+    flex-direction: column;
+  }
+
+  .settings-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 15px 0;
+  }
+
+  .settings-title {
+    margin-bottom: 10px;
+  }
+
+  .settings-sections {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 0 10px;
+  }
+
+  .settings-sections .sidebar-item {
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+}

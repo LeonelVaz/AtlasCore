@@ -1,202 +1,155 @@
+// src/utils/time-utils.js
+
 /**
  * Utilidades para manejar operaciones relacionadas con tiempo
  */
 
 /**
- * Formatea el tiempo de un evento para mostrar
- * @param {Object} event - Evento con propiedades start y end
- * @returns {string} Hora formateada
+ * Formatea el tiempo de un evento para mostrar (ej. "10:00 - 11:30")
+ * Utiliza la configuración regional del navegador para el formato de hora.
+ * @param {object} event - El objeto del evento, debe tener event.start y event.end como cadenas ISO o Date.
+ * @returns {string} - El tiempo formateado o un string vacío si hay error.
  */
 export function formatEventTime(event) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end) {
-      throw new Error('Evento sin propiedades start/end');
-    }
-    
+    if (!event?.start || !event?.end) return "";
+
     const start = new Date(event.start);
     const end = new Date(event.end);
-    
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
-    
-    return `${start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - 
-            ${end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return "";
+
+    // Usar es-ES como locale por defecto si se desea un formato específico,
+    // o undefined para usar el locale del navegador.
+    const options = { hour: "2-digit", minute: "2-digit", hour12: false }; // Formato 24h
+    return `${start.toLocaleTimeString(
+      "es-ES",
+      options
+    )} - ${end.toLocaleTimeString("es-ES", options)}`;
   } catch (error) {
-    console.error('Error al formatear hora del evento:', error);
-    return '';
+    console.error("Error al formatear hora del evento:", error);
+    return "";
   }
 }
 
 /**
- * Calcula la duración de un evento en minutos
- * @param {Object} event - Evento con propiedades start y end
- * @returns {number} Duración en minutos
+ * Calcula la duración de un evento en minutos.
+ * @param {object} event - El objeto del evento, con event.start y event.end.
+ * @returns {number} - Duración en minutos, o 60 por defecto si hay error.
  */
 export function calculateEventDuration(event) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end) {
-      throw new Error('Evento sin propiedades start/end');
-    }
-    
+    if (!event?.start || !event?.end) return 60;
+
     const start = new Date(event.start);
     const end = new Date(event.end);
-    
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
-    
-    return (end - start) / (1000 * 60); // Duración en minutos
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 60;
+
+    const durationMs = end.getTime() - start.getTime();
+    return Math.round(durationMs / (1000 * 60)); // Redondear a minutos enteros
   } catch (error) {
-    console.error('Error al calcular duración del evento:', error);
-    return 60; // Valor por defecto: 1 hora
+    console.error("Error al calcular duración del evento:", error);
+    return 60;
   }
 }
 
 /**
- * Verifica si un evento continúa hasta el siguiente día
- * @param {Object} event - Evento con propiedades start y end
- * @returns {boolean} Verdadero si continúa al siguiente día
+ * Verifica si un evento continúa hasta el siguiente día UTC.
+ * Compara los componentes de fecha UTC de inicio y fin.
+ * @param {object} event - El objeto del evento, con event.start y event.end.
+ * @returns {boolean} - True si el día UTC de fin es posterior al día UTC de inicio.
  */
 export function eventContinuesToNextDay(event) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end) {
-      throw new Error('Evento sin propiedades start/end');
-    }
-    
+    if (!event?.start || !event?.end) return false;
+
     const start = new Date(event.start);
     const end = new Date(event.end);
-    
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
-    
-    return start.getDate() !== end.getDate() || 
-           start.getMonth() !== end.getMonth() || 
-           start.getFullYear() !== end.getFullYear();
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+
+    // Compara el día, mes y año en UTC
+    return (
+      start.getUTCDate() !== end.getUTCDate() ||
+      start.getUTCMonth() !== end.getUTCMonth() ||
+      start.getUTCFullYear() !== end.getUTCFullYear()
+    );
   } catch (error) {
-    console.error('Error al verificar continuidad del evento:', error);
+    console.error("Error al verificar continuidad del evento:", error);
     return false;
   }
 }
 
 /**
- * Verifica si un evento continúa desde el día anterior
- * @param {Object} event - Evento con propiedades start y end
- * @param {Date} currentDate - Fecha actual del calendario
- * @returns {boolean} Verdadero si continúa desde el día anterior
+ * Verifica si un evento continúa desde el día anterior, comparando días UTC.
+ * @param {object} event - El objeto del evento, con event.start.
+ * @param {Date|string} currentDate - La fecha actual contra la cual comparar.
+ * @returns {boolean} - True si el día UTC de inicio del evento es anterior al día UTC de currentDate.
  */
 export function eventContinuesFromPrevDay(event, currentDate) {
   try {
-    // Verificar que event y sus propiedades existen
-    if (!event || !event.start || !event.end || !currentDate) {
-      throw new Error('Evento sin propiedades necesarias o fecha actual no válida');
-    }
-    
+    if (!event?.start || !currentDate) return false; // No necesitamos event.end para esta lógica
+
     const start = new Date(event.start);
-    
-    // Verificar que las fechas son válidas
-    if (isNaN(start.getTime()) || isNaN(currentDate.getTime())) {
-      throw new Error('Fechas inválidas');
-    }
-    
-    // Resetear hora a medianoche para comparar solo fechas
-    const currentDay = new Date(currentDate);
-    currentDay.setHours(0, 0, 0, 0);
-    
-    const startDay = new Date(start);
-    startDay.setHours(0, 0, 0, 0);
-    
-    return startDay.getTime() < currentDay.getTime();
+    const current = new Date(currentDate);
+
+    if (isNaN(start.getTime()) || isNaN(current.getTime())) return false;
+
+    // Para comparar solo las fechas (ignorando la hora),
+    // creamos nuevas fechas UTC representando el inicio de cada día UTC.
+    const startDayUTC = Date.UTC(
+      start.getUTCFullYear(),
+      start.getUTCMonth(),
+      start.getUTCDate()
+    );
+    const currentDayUTC = Date.UTC(
+      current.getUTCFullYear(),
+      current.getUTCMonth(),
+      current.getUTCDate()
+    );
+
+    return startDayUTC < currentDayUTC;
   } catch (error) {
-    console.error('Error al verificar continuidad desde día anterior:', error);
+    console.error("Error al verificar continuidad desde día anterior:", error);
     return false;
   }
 }
 
 /**
- * Ajusta un tiempo al valor de snap más cercano
- * @param {Date} time - Tiempo a ajustar
- * @param {number} snapMinutes - Minutos de snap (15, 30, etc.)
- * @returns {Date} Tiempo ajustado
+ * Ajusta un objeto Date al intervalo de snap más cercano en minutos.
+ * Los segundos y milisegundos se establecen a 0.
+ * @param {Date} time - El objeto Date a ajustar.
+ * @param {number} snapMinutes - El intervalo de snap en minutos (ej. 15, 30).
+ * @returns {Date} - Un nuevo objeto Date ajustado, o el original si snapMinutes es inválido.
  */
 export function snapTimeToInterval(time, snapMinutes) {
-  // Si no hay snap, devolver el tiempo original
-  if (!snapMinutes || snapMinutes <= 0) {
+  if (!snapMinutes || typeof snapMinutes !== "number" || snapMinutes <= 0)
     return time;
-  }
-  
+
   try {
-    // Verificar que time es válido
-    if (!time || isNaN(time.getTime())) {
-      throw new Error('Tiempo inválido');
-    }
-    
-    // Usar directamente el objeto time para mantener cualquier modificación
-    // que se le haya hecho (importante para los tests)
-    const result = time;
-    
-    // Detectar si estamos en una situación de test: verificar si setMinutes ha sido modificada
-    // Esta es una técnica específica para pasar el test que está fallando
-    let isTestEnvironment = false;
-    try {
-      const original = Date.prototype.setMinutes;
-      isTestEnvironment = result.setMinutes !== original;
-    } catch (e) {
-      // Ignorar cualquier error aquí
-    }
-    
-    // Si parece que estamos en un entorno de prueba con setMinutes modificado,
-    // forzamos un error para que sea capturado
-    if (isTestEnvironment) {
-      try {
-        // Intentar llamar a setMinutes para provocar el error que espera el test
-        result.setMinutes(result.getMinutes());
-      } catch (err) {
-        throw new Error(`Error al modificar el tiempo: ${err.message}`);
-      }
-      return result;
-    }
-    
-    // Lógica normal para producción
+    if (!time || !(time instanceof Date) || isNaN(time.getTime())) return time;
+
+    const result = new Date(time.getTime()); // Crear una copia para no mutar el original
     const minutes = result.getMinutes();
     const remainder = minutes % snapMinutes;
-    
+
     if (remainder === 0) {
-      // Incluso si no necesitamos ajustar, intentamos resetear los segundos/ms
-      // para capturar cualquier posible error
-      try {
-        result.setSeconds(0);
-        result.setMilliseconds(0);
-      } catch (err) {
-        throw new Error(`Error al ajustar segundos o milisegundos: ${err.message}`);
-      }
+      result.setSeconds(0, 0);
       return result;
     }
-    
-    // Calcular el nuevo valor de minutos
-    const roundedMinutes = remainder < snapMinutes / 2 
-      ? minutes - remainder 
-      : minutes + (snapMinutes - remainder);
-    
-    try {
-      // Aplicar los cambios
-      result.setMinutes(roundedMinutes);
-      result.setSeconds(0);
-      result.setMilliseconds(0);
-    } catch (err) {
-      throw new Error(`Error al ajustar el tiempo: ${err.message}`);
-    }
-    
+
+    // Redondear al múltiplo de snapMinutes más cercano
+    // Si está más cerca del siguiente intervalo, suma; si no, resta el remanente.
+    const roundedMinutes =
+      remainder < snapMinutes / 2
+        ? minutes - remainder
+        : minutes + (snapMinutes - remainder);
+
+    result.setMinutes(roundedMinutes, 0, 0); // setMinutes maneja el desbordamiento a horas
     return result;
   } catch (error) {
-    console.error('Error al hacer snap del tiempo:', error);
-    return time;
+    console.error("Error al hacer snap del tiempo:", error);
+    return time; // Devolver el original en caso de error
   }
 }

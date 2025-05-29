@@ -1,0 +1,268 @@
+/* custom-dialog.css (corregido para usar variables de tema de Atlas) */
+
+/* Overlay del diálogo */
+.custom-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-dialog-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-index-modal);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.custom-dialog-overlay.visible {
+  opacity: 1;
+}
+
+/* Contenedor del diálogo */
+.custom-dialog {
+  background-color: var(--color-dialog-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform var(--transition-normal);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.custom-dialog-overlay.visible .custom-dialog {
+  transform: scale(1);
+}
+
+/* Encabezado */
+.custom-dialog-header {
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm)
+    var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-dialog-header);
+}
+
+.custom-dialog-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-dialog-title);
+  font-family: var(--font-family-heading);
+}
+
+/* Cuerpo del diálogo */
+.custom-dialog-body {
+  padding: var(--spacing-lg);
+  background-color: var(--color-dialog-body);
+}
+
+.custom-dialog-message {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  word-wrap: break-word;
+}
+
+/* Input para prompt */
+.custom-dialog-input-container {
+  margin-top: var(--spacing-md);
+}
+
+.custom-dialog-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem;
+  font-family: var(--font-family-body);
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.custom-dialog-input:focus {
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 2px var(--color-dialog-input-shadow);
+}
+
+/* Pie del diálogo */
+.custom-dialog-footer {
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg)
+    var(--spacing-lg);
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  background-color: var(--color-dialog-footer);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Botones */
+.custom-dialog-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 80px;
+  font-family: var(--font-family-body);
+}
+
+.custom-dialog-button-primary {
+  background-color: var(--color-button-primary-bg);
+  color: var(--color-button-primary-text);
+}
+
+.custom-dialog-button-primary:hover {
+  background-color: var(--color-button-primary-hover);
+}
+
+.custom-dialog-button-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-dialog-input-shadow);
+}
+
+.custom-dialog-button-secondary {
+  background-color: var(--color-button-secondary-bg);
+  color: var(--color-button-secondary-text);
+  border: 1px solid var(--color-border);
+}
+
+.custom-dialog-button-secondary:hover {
+  background-color: var(--color-button-secondary-hover);
+}
+
+.custom-dialog-button-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Variantes por tipo de diálogo */
+.custom-dialog-alert .custom-dialog-footer {
+  justify-content: center;
+}
+
+.custom-dialog-alert .custom-dialog-button-primary {
+  min-width: 100px;
+}
+
+/* Estados de error */
+.custom-dialog-error .custom-dialog-header {
+  border-color: var(--danger-color);
+}
+
+.custom-dialog-error .custom-dialog-title {
+  color: var(--danger-color);
+}
+
+.custom-dialog-error .custom-dialog-message {
+  background-color: var(--color-dialog-error-bg);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid var(--danger-color);
+}
+
+/* Estados de advertencia */
+.custom-dialog-warning .custom-dialog-header {
+  border-color: var(--warning-color);
+}
+
+.custom-dialog-warning .custom-dialog-title {
+  color: var(--warning-color);
+}
+
+/* Estados de información */
+.custom-dialog-info .custom-dialog-header {
+  border-color: var(--info-color);
+}
+
+.custom-dialog-info .custom-dialog-title {
+  color: var(--info-color);
+}
+
+/* Estados de éxito */
+.custom-dialog-success .custom-dialog-header {
+  border-color: var(--success-color);
+}
+
+.custom-dialog-success .custom-dialog-title {
+  color: var(--success-color);
+}
+
+/* Animaciones de entrada y salida */
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes dialogFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+}
+
+.custom-dialog-overlay.visible .custom-dialog {
+  animation: dialogFadeIn var(--transition-normal) ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .custom-dialog {
+    width: 95%;
+    margin: var(--spacing-lg);
+    max-width: none;
+  }
+
+  .custom-dialog-header {
+    padding: var(--spacing-md);
+  }
+
+  .custom-dialog-body {
+    padding: var(--spacing-md);
+  }
+
+  .custom-dialog-footer {
+    padding: var(--spacing-md);
+    flex-direction: column-reverse;
+  }
+
+  .custom-dialog-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-dialog {
+    width: 100%;
+    margin: var(--spacing-sm);
+    border-radius: var(--border-radius-md);
+  }
+
+  .custom-dialog-title {
+    font-size: 1rem;
+  }
+
+  .custom-dialog-message {
+    font-size: 0.8125rem;
+  }
+}

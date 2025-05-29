@@ -1,0 +1,243 @@
+/* ================================================
+   NOTES PAGE STYLES
+   ================================================ */
+
+.notes-page {
+  padding: var(--spacing-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+
+  .notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+
+    .notes-header-title-section {
+      .notes-header-title {
+        margin: 0;
+        color: var(--text-color);
+        font-size: 32px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+
+        .notes-header-icon {
+          font-size: 32px;
+          color: var(--primary-color);
+        }
+      }
+      .notes-header-stats {
+        margin: var(--spacing-xs) 0 0 0;
+        color: var(--text-color-secondary);
+        font-size: 14px;
+        display: flex;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+      }
+    }
+
+    .notes-header-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+      align-items: flex-end;
+
+      .create-note-button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius-md);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        transition: all var(--transition-fast);
+        box-shadow: var(--shadow-sm);
+
+        &:hover {
+          background-color: var(--primary-hover);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
+        &:active {
+          transform: translateY(0);
+        }
+        &:focus {
+          outline: 2px solid var(--primary-color);
+          outline-offset: 2px;
+        }
+        .material-icons {
+          font-size: 18px;
+        }
+      }
+
+      .notes-search-container {
+        position: relative;
+        min-width: 250px;
+
+        .notes-search-input {
+          width: 100%;
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-md);
+          padding: var(--spacing-xs) var(--spacing-md);
+          padding-left: 40px;
+          font-size: 14px;
+          background-color: var(--input-bg);
+          color: var(--text-color);
+          transition: border-color var(--transition-fast);
+          outline: none;
+
+          &:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px
+              rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+          }
+        }
+        .notes-search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-color-secondary);
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  .richtext-info {
+    background-color: rgba(var(--primary-color-rgb, 45, 75, 148), 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 13px;
+    color: var(--text-color);
+
+    .richtext-info-icon {
+      font-size: 16px;
+      color: var(--primary-color);
+    }
+    @media (prefers-contrast: high) {
+      border: 2px solid var(--primary-color);
+    }
+  }
+
+  .search-results-info {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    font-size: 14px;
+    color: var(--text-color-secondary);
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--notes-manager-grid-min-width), 1fr) /* Actualizado */
+    );
+    gap: var(--spacing-lg);
+    &.form-is-shown {
+      margin-top: var(--spacing-xl);
+    }
+    &:not(.form-is-shown) {
+      margin-top: var(--spacing-md);
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: var(--spacing-xl) var(--spacing-md);
+      color: var(--text-color-secondary);
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      border: 2px dashed var(--border-color);
+
+      .empty-state-icon {
+        font-size: 64px;
+        opacity: 0.5;
+        margin-bottom: var(--spacing-md);
+        display: block;
+        color: var(--primary-color);
+      }
+      .empty-state-title {
+        margin: 0 0 var(--spacing-sm) 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+      .empty-state-message {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-color-secondary);
+      }
+    }
+  }
+
+  /* Efecto de resaltado para nota seleccionada al navegar */
+  /* Este estilo es aplicado por NotesPage.jsx dinámicamente */
+  .note-highlight-effect {
+    /* La animación 'notesManagerPulse' está definida en index.css */
+    animation: notesManagerPulse 0.5s ease-in-out 2 alternate; /* Aplicar animación pulse */
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    /* El escalado y la sombra se pueden manejar mejor con la animación pulse directamente
+         o puedes mantenerlos si deseas un estado base diferente antes/después de la animación.
+         Por ahora, la animación 'notesManagerPulse' ya incluye un escalado.
+      */
+    /* transform: scale(1.02); /* Se puede ajustar o quitar si la animación lo maneja */
+    box-shadow: 0 6px 20px rgba(var(--primary-color-rgb, 45, 75, 148), 0.25);
+    border: 2px solid var(--primary-color); /* Asegurar un borde visible */
+  }
+
+  @media (max-width: 1024px) {
+    .notes-grid {
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--spacing-md);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-md);
+    .notes-header {
+      flex-direction: column;
+      gap: var(--spacing-md);
+      align-items: flex-start;
+      .notes-header-title {
+        font-size: 24px;
+      }
+    }
+    .notes-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-md);
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: var(--spacing-sm);
+    .notes-header {
+      .notes-header-title {
+        font-size: 22px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+      }
+    }
+  }
+}

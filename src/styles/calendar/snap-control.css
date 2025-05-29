@@ -1,6 +1,4 @@
-/* Estilos para el control de snap (imán) */
-
-/* Contenedor principal */
+/* snap-control.css (optimizado) */
 .snap-control-container {
   display: flex;
   align-items: center;
@@ -8,23 +6,39 @@
   position: relative;
 }
 
-/* Botón de toggle */
+.snap-control-toggle,
+.snap-value-indicator {
+  background-color: transparent;
+  color: var(--color-button-secondary-text);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
 .snap-control-toggle {
-  background-color: #f0f0f0;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
   border-radius: 4px 0 0 4px;
   padding: 6px 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.snap-control-toggle.active {
+.snap-value-indicator {
+  border-radius: 0 4px 4px 0;
+  padding: 6px 8px;
+  font-size: 13px;
+  min-width: 36px;
+  text-align: center;
+}
+
+.snap-control-toggle.active,
+.snap-value-indicator.active {
   background-color: var(--color-atlas-blue);
-  color: white;
+  color: var(--color-button-active-text);
+}
+
+.snap-value-indicator:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .snap-icon {
@@ -32,95 +46,80 @@
   font-weight: bold;
 }
 
-/* Indicador de valor */
-.snap-value-indicator {
-  background-color: #f0f0f0;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-  border-left: none;
-  border-radius: 0 4px 4px 0;
-  padding: 6px 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  min-width: 36px;
-  text-align: center;
-}
-
-.snap-control-toggle.active + .snap-value-indicator {
-  background-color: #e0e0e0;
-  color: var(--color-text);
-}
-
-.snap-value-indicator:hover {
-  background-color: #e0e0e0;
-}
-
-/* Menú de opciones */
 .snap-options-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: white;
+  background-color: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-  width: 180px;
+  box-shadow: 0 3px 8px var(--color-shadow);
+  width: 140px;
   z-index: 100;
   margin-top: 4px;
   overflow: hidden;
+  font-size: 0.85rem;
 }
 
 .snap-option {
-  padding: 8px 12px;
+  padding: 6px 10px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s;
+  color: var(--color-text);
 }
 
 .snap-option:hover {
-  background-color: #f5f5f5;
+  background-color: var(--color-calendar-slot-hover);
 }
 
 .snap-option.selected {
-  background-color: #e3f2fd;
+  background-color: var(--color-sidebar-active);
   color: var(--color-atlas-blue);
   font-weight: 500;
 }
 
-/* Sección de valor personalizado */
 .snap-custom-section {
-  padding: 8px 12px;
+  padding: 6px;
   border-top: 1px solid var(--color-border);
 }
 
 .snap-custom-input {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .snap-custom-input input {
-  width: 50px;
-  padding: 4px;
-  margin-right: 8px;
+  width: 40px;
+  padding: 3px 4px;
+  margin-right: 4px;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+
+.snap-custom-input span {
+  font-size: 0.8rem;
 }
 
 .snap-apply-custom {
   width: 100%;
-  padding: 4px 0;
+  padding: 3px 0;
   background-color: var(--color-atlas-blue);
-  color: white;
+  color: var(--color-button-active-text);
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
+  font-size: 0.85rem;
 }
 
 .snap-apply-custom:hover {
-  background-color: #1A3A7D;
+  background-color: var(--color-button-primary-hover);
 }
 
-/* Estado activo durante arrastre con snap */
+/* Transiciones durante snap */
 .snap-active .calendar-time-slot,
 .snap-active .day-view-hour-slot {
-  transition: background-color 0.05s ease;
+  transition: background-color 0.05s;
 }

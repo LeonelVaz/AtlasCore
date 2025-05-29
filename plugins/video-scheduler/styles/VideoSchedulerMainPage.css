@@ -1,0 +1,269 @@
+/* video-scheduler/styles/VideoSchedulerMainPage.css */
+
+/* Reset y contenedor principal */
+.video-scheduler-page {
+  font-family: var(
+    --font-family-body,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif
+  );
+  color: var(--text-color);
+  background: var(--bg-color);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  line-height: 1.5;
+  min-height: 100%;
+
+  /* Wrapper principal limpio - SIN SCROLL y sin height fijo */
+  .video-scheduler-main-content-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    padding: 0;
+    overflow: visible; /* Permitir que el contenido se expanda */
+    position: relative;
+
+    /* Header minimalista y elegante */
+    .page-header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 32px;
+      background: var(--bg-color);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+
+      .month-navigation {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 300;
+        color: var(--text-color);
+        letter-spacing: -0.02em;
+        text-transform: capitalize;
+        min-width: 235px;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      button {
+        background: transparent;
+        color: var(--text-color-secondary);
+        border: 1px solid var(--border-color);
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.875rem;
+        font-weight: 400;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        &:hover {
+          color: var(--text-color);
+          border-color: var(--secondary-color);
+        }
+      }
+
+      /* Acciones globales */
+      .video-scheduler-global-actions {
+        display: flex;
+        gap: 12px;
+
+        .global-action-button {
+          background: transparent;
+          color: var(--text-color-secondary);
+          padding: 8px 16px;
+          border-radius: 6px;
+          border: 1px solid var(--border-color);
+          cursor: pointer;
+          font-size: 0.875rem;
+          font-weight: 500;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+
+          &:hover {
+            background: var(--primary-hover);
+            color: var(--text-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(var(--primary-color-rgb), 0.3);
+            border: 1px solid var(--border-color);
+          }
+
+          .material-icons {
+            font-family: "Material Icons";
+            font-weight: normal;
+            font-style: normal;
+            font-size: 23px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: "liga";
+            vertical-align: middle;
+          }
+        }
+      }
+    }
+
+    /* Contenedor del calendario - SIN OVERFLOW, altura automática */
+    .calendar-container {
+      flex: 1;
+      overflow: visible;
+      height: auto;
+
+      /* Tabla principal - diseño ultra limpio SIN HEIGHT FIJO */
+      .calendar-grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+        background: var(--bg-color);
+
+        thead {
+          background: var(--bg-color);
+          display: table-header-group;
+        }
+        tbody {
+          display: table-row-group;
+        }
+        tr {
+          display: flex;
+          width: 100%;
+        }
+
+        /* Headers ultra minimalistas */
+        th {
+          padding: 20px 16px;
+          border: none;
+          border-bottom: 1px solid var(--border-color);
+          font-size: 0.75rem;
+          font-weight: 500;
+          color: var(--text-color-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          text-align: center;
+          background: var(--bg-color);
+          box-sizing: border-box;
+
+          /* Distribución de columnas elegante */
+          &:nth-child(1) {
+            width: 8%;
+          }
+          &:nth-child(2) {
+            width: 23%;
+          }
+          &:nth-child(3) {
+            width: 23%;
+          }
+          &:nth-child(4) {
+            width: 23%;
+          }
+          &:nth-child(5) {
+            width: 11%;
+          }
+          &:nth-child(6) {
+            width: 12%;
+          }
+        }
+
+        td {
+          padding: 0;
+          border: none;
+          border-bottom: 1px solid
+            var(--border-color-secondary, var(--border-color));
+          border-right: 1px solid
+            var(--border-color-secondary, var(--border-color));
+          text-align: center;
+          vertical-align: top;
+          height: 80px;
+          background: var(--bg-color);
+          box-sizing: border-box;
+
+          /* Distribución de columnas para celdas */
+          &:nth-child(1) {
+            width: 8%;
+          }
+          &:nth-child(2) {
+            width: 23%;
+          }
+          &:nth-child(3) {
+            width: 23%;
+          }
+          &:nth-child(4) {
+            width: 23%;
+          }
+          &:nth-child(5) {
+            width: 11%;
+          }
+          &:nth-child(6) {
+            width: 12%;
+          }
+        }
+
+        .calendar-row {
+          display: table;
+          width: 100%;
+          table-layout: fixed;
+          &:hover {
+            .video-scheduler-slot-cell,
+            .video-scheduler-summary-cell {
+              background-color: var(
+                --bg-color-tertiary,
+                var(--bg-color-secondary)
+              ) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Mensaje de carga */
+  .loading-message-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-color-secondary);
+    font-style: italic;
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 1024px) {
+    .video-scheduler-main-content-wrapper .page-header-controls {
+      padding: 16px 20px;
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+    .video-scheduler-main-content-wrapper .calendar-container .calendar-grid {
+      th {
+        padding: 16px 12px;
+        font-size: 0.6875rem;
+      }
+      td {
+        height: 70px;
+      }
+    }
+  }
+}

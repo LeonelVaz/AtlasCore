@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import Button from './button';
+import React, { useEffect, useRef } from "react";
+import PropTypes from "prop-types";
+import Button from "./button";
 
 /**
  * Componente de diálogo modal
- * 
+ *
  * @param {Object} props - Propiedades del componente
  * @param {boolean} props.isOpen - Si el diálogo está abierto
  * @param {Function} props.onClose - Función para cerrar el diálogo
@@ -21,9 +21,9 @@ function Dialog({
   title,
   children,
   onConfirm,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar',
-  className = '',
+  confirmText = "Confirmar",
+  cancelText = "Cancelar",
+  className = "",
   ...rest
 }) {
   const dialogRef = useRef(null);
@@ -35,30 +35,30 @@ function Dialog({
         onClose();
       }
     };
-    
+
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
   // Manejar tecla Escape
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
-    
+
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     }
-    
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
@@ -67,16 +67,12 @@ function Dialog({
 
   return (
     <div className="ui-dialog-overlay" data-testid="dialog-overlay">
-      <div 
-        ref={dialogRef}
-        className={`ui-dialog ${className}`}
-        {...rest}
-      >
+      <div ref={dialogRef} className={`ui-dialog ${className}`} {...rest}>
         {title && (
           <div className="ui-dialog-header">
             <h3 className="ui-dialog-title">{title}</h3>
-            <button 
-              className="ui-dialog-close" 
+            <button
+              className="ui-dialog-close"
               onClick={onClose}
               aria-label="Cerrar"
             >
@@ -84,25 +80,17 @@ function Dialog({
             </button>
           </div>
         )}
-        
-        <div className="ui-dialog-body">
-          {children}
-        </div>
-        
+
+        <div className="ui-dialog-body">{children}</div>
+
         <div className="ui-dialog-footer">
           {onConfirm && (
-            <Button 
-              variant="primary" 
-              onClick={onConfirm}
-            >
+            <Button variant="primary" onClick={onConfirm}>
               {confirmText}
             </Button>
           )}
-          
-          <Button 
-            variant="secondary" 
-            onClick={onClose}
-          >
+
+          <Button variant="secondary" onClick={onClose}>
             {cancelText}
           </Button>
         </div>
@@ -119,7 +107,7 @@ Dialog.propTypes = {
   onConfirm: PropTypes.func,
   confirmText: PropTypes.string,
   cancelText: PropTypes.string,
-  className: PropTypes.string
+  className: PropTypes.string,
 };
 
 export default Dialog;

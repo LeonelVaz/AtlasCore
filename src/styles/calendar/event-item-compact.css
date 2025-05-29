@@ -1,0 +1,50 @@
+/* event-item-compact.css (optimizado) */
+.time-scale-compact .calendar-event {
+  padding: 2px 4px;
+  font-size: 0.75rem;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  min-height: 18px;
+}
+
+.time-scale-compact .event-title {
+  margin-bottom: 0;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.time-scale-compact .event-time {
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+
+.time-scale-compact .event-resize-handle {
+  height: 6px;
+}
+
+.time-scale-compact .calendar-event.continues-next-day::after,
+.time-scale-compact .calendar-event.continues-from-prev-day::before {
+  font-size: 8px;
+}
+
+.time-scale-compact .calendar-cell {
+  border: 1px solid var(--color-calendar-grid-border);
+}
+
+/* Micro eventos */
+.time-scale-compact .calendar-event.micro-event {
+  padding: 1px 3px;
+}
+
+.time-scale-compact .calendar-event.micro-event .event-time {
+  display: none;
+}
+
+/* Etiquetas de hora */
+.time-scale-compact .calendar-time,
+.time-scale-compact .day-view-hour-label {
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

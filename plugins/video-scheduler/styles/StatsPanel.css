@@ -1,0 +1,476 @@
+/* video-scheduler/styles/StatsPanel.css */
+
+/* Panel principal de estadísticas avanzado - MODAL CENTRADO */
+.video-scheduler-stats-panel {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(100vh - 50px);
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+  padding: 20px;
+  box-sizing: border-box;
+
+  /* Contenido del panel avanzado - MODAL CENTRADO CON HEADER INTEGRADO */
+  .stats-panel-content {
+    background: var(--bg-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: calc(100% - 16%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    /* Encabezado integrado del panel - DENTRO DEL MODAL */
+    .stats-panel-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-color-secondary);
+      flex-shrink: 0;
+      border-radius: 12px 12px 0 0;
+      position: relative;
+
+      .stats-panel-title-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+
+        .month-nav-button {
+          background: transparent;
+          border: 1px solid var(--border-color);
+          color: white; /* Assuming icons are font-based and need color */
+          width: 40px;
+          height: 40px;
+          border-radius: 25%; /* Original was 50%, Atlas has 25% on some similar buttons */
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          font-weight: 600; /* if icon is text, otherwise not needed */
+          transition: all 0.2s ease;
+          box-shadow: var(--shadow-sm);
+
+          &:hover {
+            background: transparent; /* original: var(--hover-color) */
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+          }
+
+          .material-icons {
+            font-family: "Material Icons";
+            font-weight: normal;
+            font-style: normal;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: "liga";
+          }
+        }
+
+        h2 {
+          margin: 0;
+          font-size: 1.6rem;
+          font-weight: 400;
+          color: var(--text-color);
+          min-width: 450px;
+          text-align: center;
+          white-space: nowrap;
+        }
+      }
+
+      .stats-panel-close {
+        position: absolute;
+        right: 28px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        color: var(--text-color-secondary);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.2s ease;
+        &:hover {
+          background: var(--hover-color);
+          color: var(--danger-color);
+          border-color: var(--danger-color);
+          transform: rotate(90deg);
+        }
+      }
+    }
+
+    /* Sistema de pestañas */
+    .stats-tab-buttons-container {
+      display: flex;
+      background: var(--bg-color-secondary);
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+
+      .stats-tab {
+        background: transparent;
+        border: none;
+        padding: 18px 24px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-color-secondary);
+        transition: all 0.2s ease;
+        border-bottom: 3px solid transparent;
+        /* display: flex; /* moved to button content if needed */
+        align-items: center;
+        gap: 8px;
+
+        &:hover {
+          color: var(--text-color);
+          background: var(--hover-color);
+        }
+        &.active {
+          color: var(--primary-color);
+          border-bottom-color: var(--primary-color);
+          background: rgba(var(--primary-color-rgb), 0.03);
+        }
+        .material-icons {
+          font-family: "Material Icons";
+          font-weight: normal;
+          font-style: normal;
+          font-size: 20px;
+          line-height: 1;
+          letter-spacing: normal;
+          text-transform: none;
+          display: inline-block;
+          white-space: nowrap;
+          word-wrap: normal;
+          direction: ltr;
+          -webkit-font-smoothing: antialiased;
+          text-rendering: optimizeLegibility;
+          -moz-osx-font-smoothing: grayscale;
+          font-feature-settings: "liga";
+          margin-right: 8px;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    /* Contenedor del contenido activo de pestañas - AREA DE SCROLL */
+    .active-tab-content-container {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg-color);
+
+      .charts-content,
+      .compare-content {
+        padding: 28px;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 28px;
+
+        .simple-bar-chart,
+        .income-chart {
+          background: var(--bg-color-secondary);
+          border-radius: 8px;
+          padding: 20px;
+          border: 1px solid var(--border-color);
+
+          h5 {
+            margin: 0 0 16px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+          }
+        }
+        .simple-bar-chart .chart-bars {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          .chart-bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            .chart-bar-container {
+              position: relative;
+              height: 32px;
+              background: rgba(var(--border-color-rgb), 0.2);
+              border-radius: 4px;
+              overflow: hidden;
+              .chart-bar {
+                height: 100%;
+                background: linear-gradient(
+                  90deg,
+                  var(--primary-color),
+                  var(--primary-hover)
+                );
+                transition: width 0.3s ease;
+                border-radius: 4px;
+                min-width: 2px;
+              }
+              .chart-bar-label {
+                position: absolute;
+                left: 8px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: white;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+              }
+            }
+          }
+        }
+        .income-chart .income-pie-chart {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          .pie-segment {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            &.paid {
+              background: rgba(var(--success-color-rgb), 0.1);
+              border-left: 4px solid var(--success-color);
+              color: var(--success-color);
+              span:last-child {
+                color: var(--success-color);
+              }
+            }
+            &.pending {
+              background: rgba(var(--warning-color-rgb), 0.1);
+              border-left: 4px solid var(--warning-color);
+              color: var(--warning-color);
+              span:last-child {
+                color: var(--warning-color);
+              }
+            }
+          }
+        }
+      }
+
+      .compare-content {
+        .compare-controls {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 24px;
+          padding: 16px;
+          background: var(--bg-color-secondary);
+          border-radius: 8px;
+          border: 1px solid var(--border-color);
+          label {
+            font-weight: 500;
+            color: var(--text-color);
+          }
+          input[type="month"] {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 0.875rem;
+          }
+        }
+        .comparison-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+          gap: 28px;
+          .comparison-section {
+            background: var(--bg-color-secondary);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            h4 {
+              margin: 0 0 16px 0;
+              font-size: 1rem;
+              font-weight: 600;
+              color: var(--text-color);
+              text-align: center;
+            }
+            .comparison-items {
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              .comparison-item {
+                display: grid;
+                grid-template-columns: auto 1fr auto auto auto auto;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 12px;
+                background: var(--bg-color);
+                border-radius: 6px;
+                border: 1px solid var(--border-color);
+                .diff {
+                  font-weight: 600;
+                  font-size: 0.875rem;
+                  padding: 2px 8px;
+                  border-radius: 4px;
+                  text-align: right;
+                  &.positive {
+                    color: var(--success-color);
+                    background: rgba(var(--success-color-rgb), 0.1);
+                  }
+                  &.negative {
+                    color: var(--danger-color);
+                    background: rgba(var(--danger-color-rgb), 0.1);
+                  }
+                  &.neutral {
+                    color: var(--text-color-secondary);
+                    background: rgba(var(--border-color-rgb), 0.1);
+                  }
+                }
+              }
+            }
+            .total-income-comparison {
+              display: flex;
+              flex-direction: column;
+              gap: 16px;
+              align-items: center;
+              .month-income {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                padding: 16px;
+                border-radius: 8px;
+                border: 2px solid var(--border-color);
+                min-width: 200px;
+                &.current {
+                  border-color: var(--primary-color);
+                  background: rgba(var(--primary-color-rgb), 0.05);
+                  span:last-child {
+                    color: var(--primary-color);
+                  }
+                }
+                &.compare {
+                  border-color: var(--text-color-secondary);
+                  background: rgba(var(--text-color-secondary-rgb), 0.05);
+                  span:last-child {
+                    color: var(--text-color-secondary);
+                  }
+                }
+                span:first-child {
+                  /* Label del mes */
+                  font-size: 0.875rem;
+                  font-weight: 500;
+                  color: var(--text-color-secondary);
+                  text-transform: uppercase;
+                }
+                span:last-child {
+                  /* Monto */
+                  font-size: 1.25rem;
+                  font-weight: 700;
+                }
+              }
+              .income-difference {
+                margin-top: 8px;
+                .diff {
+                  font-size: 1rem;
+                  font-weight: 600;
+                  padding: 8px 16px;
+                  border-radius: 8px;
+                }
+              }
+            }
+          }
+        }
+        &.loading-compare {
+          /* loading state */
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px;
+          color: var(--text-color-secondary);
+          font-style: italic;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .stats-panel-content .active-tab-content-container {
+      .charts-grid,
+      .compare-content .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .stats-panel-content {
+      .stats-panel-header {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 12px;
+        .stats-panel-title-section {
+          flex-direction: column;
+          gap: 10px;
+          h2 {
+            font-size: 1.3rem;
+            min-width: auto;
+          }
+          .month-nav-button {
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+          }
+        }
+      }
+      .stats-tab-buttons-container {
+        flex-direction: row;
+        overflow-x: auto;
+        .stats-tab {
+          padding: 14px 16px;
+          font-size: 0.85rem;
+          white-space: nowrap;
+        }
+      }
+      .active-tab-content-container,
+      .active-tab-content-container .charts-content,
+      .active-tab-content-container .compare-content {
+        padding: 20px;
+      }
+      .active-tab-content-container
+        .compare-content
+        .comparison-grid
+        .comparison-section
+        .comparison-items
+        .comparison-item {
+        grid-template-columns: auto 1fr;
+        gap: 6px;
+        .diff {
+          grid-column: 1 / -1;
+          text-align: right;
+          margin-top: 4px;
+        }
+      }
+    }
+  }
+}

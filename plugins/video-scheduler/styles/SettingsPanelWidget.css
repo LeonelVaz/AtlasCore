@@ -1,0 +1,109 @@
+/* video-scheduler/styles/SettingsPanelWidget.css */
+
+.video-scheduler-settings-widget {
+  padding: var(--spacing-lg, 20px);
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: var(--border-radius-lg, 8px);
+  background-color: var(--card-bg, #ffffff);
+  color: var(--text-color, #333333);
+  margin-bottom: var(--spacing-lg, 20px);
+}
+
+.video-scheduler-settings-widget.loading {
+  color: var(--text-color-secondary, #757575);
+  font-style: italic;
+}
+
+.video-scheduler-settings-widget .widget-title {
+  color: var(--text-color, #333333);
+  font-size: 1.125rem; /* 18px */
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: var(--spacing-md, 15px);
+  padding-bottom: var(--spacing-sm, 10px);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.video-scheduler-settings-widget .setting-group {
+  margin-bottom: var(--spacing-lg, 20px);
+}
+
+.video-scheduler-settings-widget .setting-label {
+  display: block;
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  color: var(--text-color-secondary, #757575);
+  margin-bottom: var(--spacing-xs, 5px);
+}
+
+.video-scheduler-settings-widget .setting-select,
+.video-scheduler-settings-widget .setting-button {
+  width: 100%;
+  padding: var(--spacing-sm, 10px) var(--spacing-md, 12px);
+  border-radius: var(--border-radius-md, 6px);
+  border: 1px solid var(--border-color, #cccccc);
+  background-color: var(--input-bg, #f9f9f9);
+  color: var(--text-color, #333333);
+  font-size: 0.9375rem; /* 15px */
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.video-scheduler-settings-widget .setting-select:focus,
+.video-scheduler-settings-widget .setting-button:focus {
+  border-color: var(--primary-color, #007bff);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb, 0, 123, 255), 0.2);
+}
+
+.video-scheduler-settings-widget .setting-select:disabled,
+.video-scheduler-settings-widget .setting-button:disabled {
+  background-color: var(--bg-color-secondary, #eeeeee);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.video-scheduler-settings-widget .setting-button {
+  background-color: var(--primary-color, #007bff);
+  color: var(--color-button-primary-text, white);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.video-scheduler-settings-widget .setting-button:hover:not(:disabled) {
+  background-color: var(--primary-hover, #0056b3);
+}
+
+.video-scheduler-settings-widget .setting-description {
+  font-size: 0.8125rem; /* 13px */
+  color: var(--text-color-secondary, #757575);
+  margin-top: var(--spacing-xs, 5px);
+  line-height: 1.4;
+}
+
+.video-scheduler-settings-widget .feedback-message {
+  padding: var(--spacing-sm, 10px);
+  margin-top: var(--spacing-md, 15px);
+  border-radius: var(--border-radius-md, 6px);
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.video-scheduler-settings-widget .feedback-message.success {
+  background-color: var(--success-bg, #d4edda);
+  color: var(--success-text, #155724);
+  border: 1px solid var(--success-color, #c3e6cb);
+}
+
+.video-scheduler-settings-widget .feedback-message.error {
+  background-color: var(--danger-bg, #f8d7da);
+  color: var(--danger-text, #721c24);
+  border: 1px solid var(--danger-color, #f5c6cb);
+}
+
+.video-scheduler-settings-widget .feedback-message.info {
+  background-color: var(--info-bg, #d1ecf1);
+  color: var(--info-text, #0c5460);
+  border: 1px solid var(--info-color, #bee5eb);
+}

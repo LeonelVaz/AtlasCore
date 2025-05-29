@@ -1,0 +1,250 @@
+/* Estilos para el gestor de repositorios */
+
+.repository-manager {
+  width: 100%;
+  padding: 0 0 20px 0;
+}
+
+.repository-manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.repository-manager-header h2 {
+  margin: 0;
+  color: var(--color-heading);
+}
+
+.repository-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.repositories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.repository-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background-color: var(--bg-color-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  transition: background-color 0.2s ease;
+}
+
+.repository-item.enabled {
+  background-color: var(--bg-color-secondary);
+}
+
+.repository-item.disabled {
+  background-color: var(--bg-color-tertiary);
+  opacity: 0.8;
+}
+
+.repository-item.official {
+  border-left: 3px solid var(--color-atlas-blue);
+}
+
+.repository-info {
+  flex: 1;
+}
+
+.repository-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.repository-name {
+  font-weight: 600;
+  color: var(--color-heading);
+  font-size: 1.1rem;
+}
+
+.repository-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.repository-badge.official-badge {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.repository-description {
+  margin: 5px 0 10px;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.repository-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary);
+}
+
+.repository-url {
+  font-family: monospace;
+  padding: 2px 4px;
+  background: var(--bg-color-tertiary);
+  border-radius: 3px;
+}
+
+.repository-last-sync {
+  font-style: italic;
+}
+
+.repository-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repositories-loading {
+  text-align: center;
+  padding: 30px;
+  color: var(--color-text-secondary);
+}
+
+.repositories-empty {
+  text-align: center;
+  padding: 30px;
+  background: var(--bg-color-secondary);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+}
+
+.error-message {
+  background-color: rgba(229, 57, 53, 0.1);
+  border-left: 3px solid var(--color-alarm-red);
+  padding: 10px 15px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.error-message p {
+  margin: 0;
+  color: var(--color-alarm-red);
+}
+
+/* Formularios */
+.add-repository-form,
+.edit-repository-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-field label {
+  font-weight: 500;
+  color: var(--color-heading);
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--bg-color-input);
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.delete-repository-confirm {
+  padding: 10px 0;
+}
+
+.warning-text {
+  color: var(--color-alarm-red);
+  font-weight: 500;
+  margin: 15px 0;
+}
+
+/* Información de repositorios en mini */
+.repositories-info {
+  margin: 15px 0;
+  padding: 15px;
+  background: var(--bg-color-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.repositories-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: var(--color-heading);
+}
+
+.repositories-list-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.repository-item-mini {
+  flex: 1 1 300px;
+  min-width: 250px;
+  max-width: 400px;
+  padding: 10px;
+  background: var(--bg-color-tertiary);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+
+.repository-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.repository-badge.official {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.repository-badge.community {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.repository-item-info {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}

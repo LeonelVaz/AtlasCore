@@ -1,7 +1,11 @@
-/* Índice de estilos del calendario */
-@import './calendar-main.css';
-@import './time-grid.css';
-@import './event-item.css';
-@import './day-view.css';
-@import './week-view.css';
-@import './snap-control.css';
+/* styles/calendar/index.css (optimizado) */
+@import "./calendar-main.css";
+@import "./time-grid.css";
+@import "./event-item.css";
+@import "./event-item-compact.css";
+@import "./day-view.css";
+@import "./week-view.css";
+@import "./snap-control.css";
+@import "./time-slots.css";
+@import "./event-decorators.css";
+@import "./event-form.css";

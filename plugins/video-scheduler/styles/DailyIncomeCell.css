@@ -1,0 +1,137 @@
+/* video-scheduler/styles/DailyIncomeCell.css */
+
+.video-scheduler-income-cell {
+  vertical-align: middle;
+  text-align: center;
+  padding: 12px 8px !important; /* !important puede ser necesario para anular estilos de tabla genéricos */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  background-color: var(--bg-color); /* Fondo base general de la celda */
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-left: 1px solid var(--border-color) !important; /* Borde izquierdo específico */
+
+  position: relative; /* Necesario para el posicionamiento absoluto del pseudo-elemento ::before */
+  z-index: 0; /* Establece un contexto de apilamiento para que z-index: -1 en ::before funcione */
+
+  /* Hover general para celdas que no tienen un estado específico o como fallback */
+  /* Si los estados específicos (empty, pending, paid) tienen sus propios hovers con !important, */
+  /* este hover general solo se aplicará si esos hovers específicos no existen o no usan !important. */
+  &:hover {
+    background-color: var(
+      --hover-color
+    ) !important; /* Usar !important si es necesario para anular estilos base de <td> */
+  }
+
+  &.income-empty {
+    color: var(--text-color-secondary);
+    opacity: 0.6; /* Opacidad para el contenido de la celda (texto, icono "+") */
+
+    /* El fondo de la celda .income-empty se vuelve transparente, el pseudo-elemento se encargará del color */
+    background-color: transparent !important; /* Anula el --bg-color y el --hover-color general */
+
+    /* Pseudo-elemento para aplicar el color de fondo con opacidad */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(
+        --bg-color-secondary
+      ); /* Color de fondo deseado para empty */
+      opacity: 0.5; /* Opacidad deseada para el fondo de empty (ej: 50%) */
+      z-index: -1; /* Coloca el pseudo-elemento detrás del contenido de la celda */
+      border-radius: inherit; /* Hereda border-radius si la celda lo tiene */
+      transition: background-color 0.2s ease, opacity 0.2s ease; /* Transición para el pseudo-elemento */
+    }
+
+    .income-amount-text::before {
+      content: "+ ";
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    /* Hover específico para .income-empty */
+    &:hover {
+      /* La celda principal sigue transparente, solo modificamos el pseudo-elemento */
+      background-color: transparent !important; /* Mantenemos transparente para que se vea el ::before */
+
+      &::before {
+        /* Color de fondo del pseudo-elemento en hover */
+        background-color: var(
+          --empty-hover-color,
+          var(--hover-color)
+        ); /* Usa un color específico para hover de empty o el general */
+        opacity: 0.7; /* Opacidad del fondo en hover (ej: 70%), puede ser diferente al estado normal */
+      }
+
+      /* Opcional: Si quieres cambiar el color/opacidad del texto en hover también */
+      /* color: var(--primary-color); */
+      /* opacity: 1; */
+    }
+  }
+
+  &.income-pending {
+    background: var(
+      --warning-color
+    ) !important; /* Fondo directo, sin pseudo-elemento para opacidad */
+    color: white !important;
+    border-radius: 4px;
+    /* margin: 2px; Si se usa, asegurarse que el padding de la celda lo acomode o quitarlo */
+    /* No necesita z-index: -1 porque el fondo es opaco */
+
+    &:hover {
+      /* Ejemplo para oscurecer un color HSL. Ajusta si tus variables son diferentes. */
+      background: hsl(
+        var(--warning-color-hsl-h, 40),
+        calc(var(--warning-color-hsl-s, 100%) - 10%),
+        calc(var(--warning-color-hsl-l, 50%) - 5%)
+      ) !important;
+      /* O si tienes una variable de hover: */
+      /* background: var(--warning-hover-color) !important; */
+    }
+  }
+
+  &.income-paid {
+    background: var(
+      --success-color
+    ) !important; /* Fondo directo, sin pseudo-elemento para opacidad */
+    color: white !important;
+    border-radius: 4px;
+    /* margin: 2px; */
+
+    &:hover {
+      background: hsl(
+        var(--success-color-hsl-h, 120),
+        calc(var(--success-color-hsl-s, 60%) - 10%),
+        calc(var(--success-color-hsl-l, 40%) - 5%)
+      ) !important;
+      /* O si tienes una variable de hover: */
+      /* background: var(--success-hover-color) !important; */
+    }
+  }
+
+  .income-content-wrapper {
+    /* Aseguramos que el contenido esté por encima del pseudo-elemento ::before */
+    position: relative;
+    z-index: 1; /* Por encima de z-index: -1 del ::before */
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+
+    .income-amount-text {
+      font-weight: 600;
+      font-size: 0.8125rem;
+    }
+
+    .income-payer-text {
+      font-size: 0.6875rem;
+      opacity: 0.9; /* Opacidad solo para este texto */
+    }
+  }
+}

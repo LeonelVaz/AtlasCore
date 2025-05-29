@@ -1,0 +1,5 @@
+# .gitkeep
+
+Este archivo existe para mantener la estructura de directorios
+cuando no hay plugins instalados. La carpeta de plugins debe
+existir para que el sistema funcione correctamente.

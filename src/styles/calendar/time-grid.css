@@ -1,5 +1,4 @@
-/* Estilos para la rejilla temporal del calendario */
-
+/* time-grid.css (optimizado) */
 .calendar-grid {
   flex: 1;
   display: flex;
@@ -8,12 +7,14 @@
   position: relative;
   z-index: 1;
   min-height: 600px;
+  background-color: var(--color-calendar-grid);
 }
 
 .calendar-row {
   display: flex;
-  min-height: 60px;
   width: 100%;
+  position: relative;
+  overflow: visible !important;
 }
 
 .calendar-header-row {
@@ -21,77 +22,97 @@
   top: 0;
   z-index: 10;
   min-height: auto;
-  background-color: #f5f5f5;
-  border-bottom: 2px solid var(--color-border);
+  background-color: var(--color-calendar-header);
+  border-bottom: 2px solid var(--color-calendar-grid-border);
 }
 
 .calendar-cell {
   flex: 1;
-  border-right: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-calendar-grid-border);
+  border-bottom: 1px solid var(--color-calendar-grid-border);
   padding: var(--spacing-xs);
   position: relative;
+  background-color: var(--color-calendar-grid);
 }
 
 .calendar-time-header {
-  flex: 0 0 60px;
-  border-right: 2px solid var(--color-border);
+  flex: 0 0 80px;
+  border-right: 2px solid var(--color-calendar-grid-border);
+  background-color: var(--color-calendar-header);
 }
 
 .calendar-day-header {
   padding: var(--spacing-sm);
   text-align: center;
   font-weight: 500;
-  text-transform: capitalize;
+  background-color: var(--color-calendar-header);
+  color: var(--color-calendar-day-header);
 }
 
 .calendar-time {
-  flex: 0 0 60px;
+  flex: 0 0 80px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: var(--spacing-xs);
+  align-items: center;
   font-size: 0.8rem;
-  color: var(--color-structure-gray);
-  border-right: 2px solid var(--color-border);
+  color: var(--color-calendar-time-label);
+  border-right: 2px solid var(--color-calendar-grid-border);
+  background-color: var(--color-calendar-header);
+  padding: 0;
 }
 
 .calendar-time-slot {
   position: relative;
-  height: 60px;
-  min-height: 60px;
   padding: 0;
-  overflow: visible; /* Importante para permitir que los eventos se arrastren fuera */
-  background-color: white;
+  overflow: visible;
+  background-color: var(--color-calendar-grid);
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
 
 .calendar-time-slot:hover {
-  background-color: #f0f7ff;
+  background-color: var(--color-calendar-slot-hover);
 }
 
-/* Estilos para interacciones de arrastre */
+/* Día actual */
+.calendar-day-today {
+  background-color: var(--color-calendar-today);
+}
+
+/* Estados de arrastre */
 .drag-target-active {
   background-color: rgba(41, 98, 255, 0.15) !important;
   box-shadow: inset 0 0 0 2px rgba(41, 98, 255, 0.5);
-  transition: none !important; /* Sin transición para feedback inmediato */
+  transition: none !important;
   position: relative;
-  z-index: 5; /* Mayor z-index para que esté por encima de otras celdas pero por debajo del evento */
+  z-index: 5;
 }
 
-/* Cuando se está arrastrando, desactivar hovers en celdas no objetivo */
 body.dragging-active .calendar-time-slot:hover:not(.drag-target-active) {
-  background-color: inherit; /* Vuelve al color original */
+  background-color: inherit;
 }
 
-/* Responsive */
+/* Límite de eventos */
+.exceed-limit {
+  background-color: rgba(229, 57, 53, 0.1);
+}
+
+.exceed-limit-slot {
+  background-color: rgba(229, 57, 53, 0.15);
+  border: 1px dashed rgba(229, 57, 53, 0.5);
+}
+
+.calendar-event.cannot-place {
+  opacity: 0.6 !important;
+  border: 1px dashed rgba(229, 57, 53, 0.8);
+}
+
 @media (max-width: 768px) {
   .calendar-time-header,
   .calendar-time {
-    flex: 0 0 40px;
+    flex: 0 0 50px;
   }
-  
+
   .calendar-day-header {
     font-size: 0.8rem;
     padding: var(--spacing-xs);

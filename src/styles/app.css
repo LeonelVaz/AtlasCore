@@ -1,24 +1,48 @@
-/**
- * Estilos para el componente principal App
- */
-
- .app-container {
+/* app.css (optimizado) */
+.app-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 0 16px;
+  background-color: var(--topbar-bg);
+  color: var(--topbar-text);
+  box-shadow: 0 2px 4px var(--color-shadow);
+  height: var(--header-height);
+  z-index: var(--z-index-header);
+}
+
+.app-header.draggable {
+  -webkit-app-region: drag;
+}
+
+.app-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
 .app-content {
   flex: 1;
-  overflow: auto;
   padding: 16px;
-  background-color: #f9f9f9;
+  overflow: auto;
+  background-color: var(--color-background);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .app-content {
     padding: 8px;
+  }
+
+  .app-main {
+    position: relative;
   }
 }

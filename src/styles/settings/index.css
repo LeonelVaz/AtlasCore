@@ -1,0 +1,8 @@
+/* settings/index.css (optimizado) */
+@import "./settings-panel.css";
+@import "./theme-config.css";
+@import "./time-scale-config.css";
+@import "./calendar-config.css";
+@import "./plugins-panel.css";
+@import "./security-panel.css";
+@import "./developer-panel.css";

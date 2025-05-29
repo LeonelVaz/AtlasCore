@@ -1,44 +1,14 @@
-/* Importar fuentes */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap');
-
-/* Importar estilos por categoría */
-@import './ui/index.css';
-@import './calendar/index.css';
-@import './app.css';
-@import './header-controls.css';  /* Importación del nuevo archivo CSS */
-
-/**
- * Estilos globales para la aplicación Atlas
- */
-
-:root {
-  /* Colores principales según la guía de marca */
-  --color-atlas-blue: #2D4B94;    /* Azul Atlas - confiabilidad y estabilidad */
-  --color-modular-green: #26A69A; /* Verde Modular - adaptabilidad y crecimiento */
-  --color-structure-gray: #546E7A; /* Gris Estructura - elementos de soporte */
-  --color-insight-yellow: #FFB300; /* Amarillo Perspicacia - análisis e insights */
-  --color-custom-purple: #7E57C2; /* Púrpura Personalización */
-  
-  /* Colores de interfaz */
-  --color-background: #FFFFFF;
-  --color-text: #333333;
-  --color-border: #E0E0E0;
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  
-  /* Espaciado */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-  
-  /* Fuentes */
-  --font-family-heading: 'Montserrat', sans-serif;
-  --font-family-body: 'Inter', sans-serif;
-  --font-family-mono: 'Fira Mono', monospace;
-}
-
-/* El resto del archivo sigue igual... */
+/* index.css (optimizado) */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Fira+Mono&display=swap");
+@import "./settings/index.css";
+@import "./ui/index.css";
+@import "./calendar/index.css";
+@import "./app.css";
+@import "./header-controls.css";
+@import "./variables.css";
+@import "themes/index.css";
+@import "./plugins/index.css";
+@import "./debug/event-debugger.css";
 
 * {
   box-sizing: border-box;
@@ -46,7 +16,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   font-family: var(--font-family-body);
@@ -62,13 +33,20 @@ html, body {
   flex-direction: column;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-family-heading);
   font-weight: 600;
   margin-bottom: var(--spacing-md);
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   font-family: var(--font-family-body);
   padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
@@ -76,7 +54,9 @@ input, select, textarea {
   width: 100%;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: 2px solid var(--color-atlas-blue);
   border-color: var(--color-atlas-blue);
 }
@@ -89,7 +69,6 @@ input:focus, select:focus, textarea:focus {
   padding: 0 var(--spacing-md);
 }
 
-/* Accesibilidad */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -99,10 +78,10 @@ input:focus, select:focus, textarea:focus {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  border-width: 0;
+  border: 0;
 }
 
-/* Estilos para formularios */
+/* Formularios */
 .form-group {
   margin-bottom: var(--spacing-md);
 }

@@ -1,0 +1,820 @@
+/* ==========================================================================
+   Contador de Eventos Pro - Archivo Principal de Estilos CORREGIDO
+   Plugin: contador-eventos-dia v2.0.0
+   ========================================================================== */
+
+/* Importar estilos de componentes (deben estar al principio y fuera de cualquier anidamiento) */
+@import "EventCounterBadge.css";
+@import "SettingsPanel.css";
+
+/* ==========================================================================
+   Variables CSS globales del plugin EXPANDIDAS (permanecen en :root)
+   ========================================================================== */
+
+:root {
+  /* Colores base del plugin */
+  --plugin-primary: #4f46e5;
+  --plugin-success: #10b981;
+  --plugin-info: #06b6d4;
+  --plugin-warning: #f59e0b;
+  --plugin-danger: #ef4444;
+
+  /* Gradientes para efectos modernos */
+  --plugin-gradient-primary: linear-gradient(135deg, #4f46e5, #7c3aed);
+  --plugin-gradient-success: linear-gradient(135deg, #10b981, #059669);
+  --plugin-gradient-warning: linear-gradient(135deg, #f59e0b, #d97706);
+  --plugin-gradient-danger: linear-gradient(135deg, #ef4444, #dc2626);
+
+  /* Espaciado específico del plugin */
+  --plugin-spacing-xs: 4px;
+  --plugin-spacing-sm: 8px;
+  --plugin-spacing-md: 12px;
+  --plugin-spacing-lg: 16px;
+  --plugin-spacing-xl: 24px;
+  --plugin-spacing-2xl: 32px;
+
+  /* Transiciones MEJORADAS */
+  --plugin-transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --plugin-transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --plugin-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --plugin-transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Sombras del plugin MEJORADAS (SIEMPRE OSCURAS) */
+  --plugin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --plugin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
+  --plugin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+  --plugin-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+
+  /* SOMBRAS ESPECÍFICAS PARA BADGES (NUEVO) */
+  --plugin-badge-shadow-light: 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  --plugin-badge-shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.25),
+    0 2px 4px rgba(0, 0, 0, 0.15);
+  --plugin-badge-shadow-strong: 0 8px 16px rgba(0, 0, 0, 0.35),
+    0 4px 8px rgba(0, 0, 0, 0.25);
+
+  /* EFECTOS DE RESPLANDOR (NUEVO) */
+  --plugin-glow-light: 0 0 8px;
+  --plugin-glow-medium: 0 0 12px;
+  --plugin-glow-strong: 0 0 20px;
+  --plugin-glow-intense: 0 0 20px, 0 0 40px;
+
+  /* Radios de borde */
+  --plugin-radius-sm: 4px;
+  --plugin-radius-md: 6px;
+  --plugin-radius-lg: 8px;
+  --plugin-radius-xl: 12px;
+  --plugin-radius-2xl: 16px;
+  --plugin-radius-full: 9999px;
+
+  /* Z-index específicos */
+  --plugin-z-badge: 10;
+  --plugin-z-modal: 1000;
+  --plugin-z-tooltip: 1100;
+  --plugin-z-notification: 1200;
+
+  /* VARIABLES PARA TIPOGRAFÍAS (NUEVO) */
+  --plugin-font-system: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+  --plugin-font-inter: "Inter", var(--plugin-font-system);
+  --plugin-font-roboto: "Roboto", var(--plugin-font-system);
+  --plugin-font-poppins: "Poppins", var(--plugin-font-system);
+  --plugin-font-mono: "SF Mono", "Monaco", "Cascadia Code", "Roboto Mono",
+    Consolas, monospace;
+
+  /* Tamaños de fuente escalables */
+  --plugin-text-xs: 10px;
+  --plugin-text-sm: 12px;
+  --plugin-text-md: 14px;
+  --plugin-text-lg: 16px;
+  --plugin-text-xl: 18px;
+
+  /* Pesos de fuente */
+  --plugin-font-light: 300;
+  --plugin-font-normal: 400;
+  --plugin-font-medium: 500;
+  --plugin-font-semibold: 600;
+  --plugin-font-bold: 700;
+  --plugin-font-black: 900;
+}
+
+/* ==========================================================================
+   Animaciones globales del plugin (permanecen en el nivel superior)
+   ========================================================================== */
+
+@keyframes plugin-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@keyframes plugin-pulse-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px currentColor);
+  }
+}
+
+@keyframes plugin-bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-slide-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-slide-down {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-slide-left {
+  from {
+    transform: translateX(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-slide-right {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes plugin-scale-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes plugin-scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* ANIMACIONES DE RESPLANDOR (NUEVO) */
+@keyframes plugin-glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+}
+
+@keyframes plugin-glow-wave {
+  0% {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  25% {
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+  75% {
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+  100% {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+}
+
+/* ANIMACIONES COMBINADAS (NUEVO) */
+@keyframes plugin-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes plugin-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(1deg);
+  }
+  75% {
+    transform: rotate(-1deg);
+  }
+}
+
+@keyframes spin {
+  /* Este ya estaba en SettingsPanel, se puede unificar */
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ==========================================================================
+   Utilidades globales del plugin EXPANDIDAS (permanecen en nivel superior,
+   ya que son utilidades generales del plugin, no específicas de un componente)
+   ========================================================================== */
+
+.plugin-transition {
+  transition: var(--plugin-transition-normal);
+}
+
+.plugin-transition-fast {
+  transition: var(--plugin-transition-fast);
+}
+
+.plugin-transition-slow {
+  transition: var(--plugin-transition-slow);
+}
+
+.plugin-transition-bounce {
+  transition: var(--plugin-transition-bounce);
+}
+
+.plugin-shadow {
+  box-shadow: var(--plugin-shadow-md);
+}
+
+.plugin-shadow-lg {
+  box-shadow: var(--plugin-shadow-lg);
+}
+
+.plugin-text-shadow {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* UTILIDADES DE RESPLANDOR (NUEVO) */
+.plugin-glow-light {
+  filter: drop-shadow(var(--plugin-glow-light) currentColor);
+}
+
+.plugin-glow-medium {
+  filter: drop-shadow(var(--plugin-glow-medium) currentColor);
+}
+
+.plugin-glow-strong {
+  filter: drop-shadow(var(--plugin-glow-strong) currentColor);
+}
+
+.plugin-glow-intense {
+  filter: drop-shadow(var(--plugin-glow-intense) currentColor);
+}
+
+/* UTILIDADES DE GRADIENTES (NUEVO) */
+.plugin-bg-gradient-primary {
+  background: var(--plugin-gradient-primary);
+}
+
+.plugin-bg-gradient-success {
+  background: var(--plugin-gradient-success);
+}
+
+.plugin-bg-gradient-warning {
+  background: var(--plugin-gradient-warning);
+}
+
+.plugin-bg-gradient-danger {
+  background: var(--plugin-gradient-danger);
+}
+
+/* ==========================================================================
+   Clases base para accesibilidad MEJORADAS
+   ========================================================================== */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.plugin-focus-visible:focus-visible {
+  outline: 2px solid var(--primary-color, var(--plugin-primary));
+  outline-offset: 2px;
+  border-radius: var(--plugin-radius-sm);
+}
+
+/* Mejora para elementos interactivos */
+.plugin-interactive {
+  cursor: pointer;
+  transition: var(--plugin-transition-fast);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Estados de carga globales MEJORADOS
+   ========================================================================== */
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: 50%;
+  border-top-color: var(--primary-color, var(--plugin-primary));
+  animation: spin 1s ease-in-out infinite;
+}
+
+.loading-spinner-large {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}
+
+.loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Estados de carga con resplandor */
+.loading-glow {
+  animation: plugin-glow-pulse 2s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   SISTEMA DE NOTIFICACIONES (NUEVO)
+   ========================================================================== */
+
+.plugin-notification {
+  position: fixed;
+  z-index: var(--plugin-z-notification);
+  padding: var(--plugin-spacing-md) var(--plugin-spacing-lg);
+  border-radius: var(--plugin-radius-lg);
+  font-size: var(--plugin-text-sm);
+  font-weight: var(--plugin-font-semibold);
+  box-shadow: var(--plugin-shadow-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: plugin-slide-up 0.3s ease-out;
+
+  /* Modificadores de tipo */
+  &.plugin-notification-success {
+    background: var(--plugin-gradient-success);
+    color: white;
+  }
+
+  &.plugin-notification-warning {
+    background: var(--plugin-gradient-warning);
+    color: white;
+  }
+
+  &.plugin-notification-danger {
+    background: var(--plugin-gradient-danger);
+    color: white;
+  }
+
+  &.plugin-notification-info {
+    background: linear-gradient(135deg, var(--plugin-info), #0891b2);
+    color: white;
+  }
+
+  /* Posiciones de notificaciones */
+  &.plugin-notification-top-right {
+    top: var(--plugin-spacing-lg);
+    right: var(--plugin-spacing-lg);
+  }
+
+  &.plugin-notification-bottom-right {
+    bottom: var(--plugin-spacing-lg);
+    right: var(--plugin-spacing-lg);
+  }
+
+  &.plugin-notification-bottom-center {
+    bottom: var(--plugin-spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* ==========================================================================
+   SISTEMA DE BADGES MEJORADO (NUEVO)
+   ========================================================================== */
+
+.plugin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: var(--plugin-text-xs);
+  font-weight: var(--plugin-font-semibold);
+  border-radius: var(--plugin-radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+
+  /* Modificadores de tipo */
+  &.plugin-badge-primary {
+    background: var(--plugin-primary);
+    color: white;
+  }
+
+  &.plugin-badge-success {
+    background: var(--plugin-success);
+    color: white;
+  }
+
+  &.plugin-badge-warning {
+    background: var(--plugin-warning);
+    color: white;
+  }
+
+  &.plugin-badge-danger {
+    background: var(--plugin-danger);
+    color: white;
+  }
+
+  &.plugin-badge-outline {
+    background: transparent;
+    border: 1px solid currentColor;
+  }
+}
+
+/* ==========================================================================
+   Mejoras responsive globales EXPANDIDAS (permanecen en :root o @media global)
+   ========================================================================== */
+
+@media (max-width: 1200px) {
+  :root {
+    --plugin-spacing-xl: 20px;
+    --plugin-spacing-2xl: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --plugin-spacing-xs: 3px;
+    --plugin-spacing-sm: 6px;
+    --plugin-spacing-md: 10px;
+    --plugin-spacing-lg: 14px;
+    --plugin-spacing-xl: 18px;
+    --plugin-spacing-2xl: 24px;
+
+    /* Tamaños de fuente más pequeños en móvil */
+    --plugin-text-xs: 9px;
+    --plugin-text-sm: 11px;
+    --plugin-text-md: 13px;
+    --plugin-text-lg: 15px;
+    --plugin-text-xl: 17px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --plugin-spacing-xs: 2px;
+    --plugin-spacing-sm: 4px;
+    --plugin-spacing-md: 8px;
+    --plugin-spacing-lg: 12px;
+    --plugin-spacing-xl: 16px;
+    --plugin-spacing-2xl: 20px;
+  }
+
+  .plugin-interactive:hover {
+    transform: none; /* Deshabilitar hover en móvil */
+  }
+}
+
+/* ==========================================================================
+   Soporte para preferencias del usuario EXPANDIDO (global)
+   ========================================================================== */
+
+/* Movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .loading-spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
+
+  .plugin-interactive:hover {
+    transform: none !important;
+  }
+
+  .plugin-glow-pulse,
+  .plugin-glow-wave,
+  .loading-glow {
+    animation: none !important;
+    filter: none !important;
+  }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+  :root {
+    --plugin-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+    --plugin-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --plugin-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.6);
+    --plugin-shadow-xl: 0 16px 24px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Aplicado a cualquier .plugin-badge, anidado o no */
+  .plugin-badge {
+    border: 2px solid currentColor !important;
+  }
+
+  /* Aplicado a cualquier .plugin-notification, anidado o no */
+  .plugin-notification {
+    border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+/* Tema oscuro automático */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --plugin-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --plugin-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --plugin-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
+    --plugin-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Reduce transparencia en dispositivos de baja potencia */
+@media (prefers-reduced-transparency: reduce) {
+  .loading-shimmer,
+  .plugin-notification,
+  /* Esta clase es específica de EventCounterBadge.css,
+     pero si se usa globalmente, la regla aquí es correcta.
+     Si es sólo para el badge, ya está cubierta en EventCounterBadge.css */
+  .badge-transparent-bg {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ==========================================================================
+   UTILIDADES DE DESARROLLO Y DEPURACIÓN EXPANDIDAS (global)
+   ========================================================================== */
+
+.debug-plugin * {
+  outline: 1px dashed rgba(255, 0, 0, 0.3) !important;
+
+  &:hover {
+    outline-color: rgba(255, 0, 0, 0.8) !important;
+    background-color: rgba(255, 255, 0, 0.1) !important;
+  }
+}
+
+.debug-performance {
+  outline: 2px solid #00ff00 !important;
+  background: rgba(0, 255, 0, 0.1) !important;
+}
+
+.debug-slow {
+  outline: 2px solid #ff9900 !important;
+  background: rgba(255, 153, 0, 0.1) !important;
+}
+
+.debug-error {
+  outline: 2px solid #ff0000 !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* ==========================================================================
+   UTILIDADES DE LAYOUT (NUEVO) (global)
+   ========================================================================== */
+
+.plugin-flex {
+  display: flex;
+}
+
+.plugin-flex-col {
+  flex-direction: column;
+}
+
+.plugin-flex-center {
+  align-items: center;
+  justify-content: center;
+}
+
+.plugin-flex-between {
+  justify-content: space-between;
+}
+
+.plugin-flex-around {
+  justify-content: space-around;
+}
+
+.plugin-grid {
+  display: grid;
+}
+
+.plugin-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.plugin-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.plugin-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.plugin-gap-sm {
+  gap: var(--plugin-spacing-sm);
+}
+
+.plugin-gap-md {
+  gap: var(--plugin-spacing-md);
+}
+
+.plugin-gap-lg {
+  gap: var(--plugin-spacing-lg);
+}
+
+/* ==========================================================================
+   UTILIDADES DE TIPOGRAFÍA (NUEVO) (global)
+   ========================================================================== */
+
+.plugin-text-xs {
+  font-size: var(--plugin-text-xs);
+}
+
+.plugin-text-sm {
+  font-size: var(--plugin-text-sm);
+}
+
+.plugin-text-md {
+  font-size: var(--plugin-text-md);
+}
+
+.plugin-text-lg {
+  font-size: var(--plugin-text-lg);
+}
+
+.plugin-text-xl {
+  font-size: var(--plugin-text-xl);
+}
+
+.plugin-font-light {
+  font-weight: var(--plugin-font-light);
+}
+
+.plugin-font-normal {
+  font-weight: var(--plugin-font-normal);
+}
+
+.plugin-font-medium {
+  font-weight: var(--plugin-font-medium);
+}
+
+.plugin-font-semibold {
+  font-weight: var(--plugin-font-semibold);
+}
+
+.plugin-font-bold {
+  font-weight: var(--plugin-font-bold);
+}
+
+.plugin-font-black {
+  font-weight: var(--plugin-font-black);
+}
+
+/* ==========================================================================
+   CLASES DE APLICACIÓN CONDICIONAL (NUEVO) (global)
+   ========================================================================== */
+
+.plugin-show-on-hover {
+  opacity: 0;
+  transition: var(--plugin-transition-fast);
+
+  &:hover {
+    opacity: 1;
+  }
+}
+/* Para el caso de un trigger padre */
+.plugin-hover-trigger:hover .plugin-show-on-hover {
+  opacity: 1;
+}
+
+.plugin-hide-on-mobile {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .plugin-hide-on-mobile {
+    display: none !important;
+  }
+}
+
+.plugin-show-on-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .plugin-show-on-mobile {
+    display: block !important;
+  }
+}

@@ -1,0 +1,300 @@
+/* Estilos para el marketplace de plugins */
+
+.plugin-marketplace {
+  width: 100%;
+  padding: 0 0 20px 0;
+}
+
+.marketplace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.marketplace-header h2 {
+  margin: 0;
+  color: var(--color-heading);
+}
+
+.marketplace-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+.search-container {
+  position: relative;
+  min-width: 240px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  padding-left: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--bg-color-input);
+  color: var(--color-text);
+  font-size: 0.95rem;
+}
+
+.search-container::before {
+  content: "🔍";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+}
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.sort-select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--bg-color-input);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.plugins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.plugin-card {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background-color: var(--bg-color-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  height: 100%;
+  min-height: 180px;
+}
+
+.plugin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.plugin-card.installed {
+  border-left: 3px solid var(--color-success);
+}
+
+.plugin-card.has-update {
+  border-left: 3px solid var(--color-warning);
+}
+
+.plugin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.plugin-name {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--color-heading);
+}
+
+.repository-badge {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.repository-badge.official {
+  background-color: var(--color-atlas-blue);
+  color: white;
+}
+
+.repository-badge.community {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.plugin-description {
+  flex: 1;
+  margin: 0 0 15px 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.plugin-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+}
+
+.plugin-author,
+.plugin-version,
+.plugin-downloads {
+  display: inline-block;
+}
+
+.plugin-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.status-badge {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.installed {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.status-badge.update {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.marketplace-loading {
+  text-align: center;
+  padding: 30px;
+  color: var(--color-text-secondary);
+}
+
+.plugins-empty {
+  text-align: center;
+  padding: 30px;
+  background: var(--bg-color-secondary);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+}
+
+/* Detalles del plugin */
+.plugin-details {
+  padding: 10px 0;
+}
+
+.plugin-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.plugin-detail-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--color-heading);
+}
+
+.plugin-detail-version {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.plugin-detail-description {
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.plugin-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  padding: 10px;
+  background: var(--bg-color-tertiary);
+  border-radius: 6px;
+}
+
+.meta-item {
+  display: flex;
+  gap: 5px;
+}
+
+.meta-label {
+  font-weight: 500;
+  color: var(--color-heading);
+}
+
+.plugin-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.plugin-tag {
+  padding: 3px 8px;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.plugin-detail-compatibility,
+.plugin-detail-repository {
+  margin-bottom: 20px;
+}
+
+.plugin-detail-compatibility h4,
+.plugin-detail-repository h4 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: var(--color-heading);
+}
+
+.compatibility-item,
+.repository-info {
+  display: flex;
+  gap: 10px;
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+.compatibility-label {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  min-width: 180px;
+}
+
+.plugin-detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 30px;
+}
