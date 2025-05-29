@@ -5,6 +5,8 @@ Tomaré como base el `README.md` que me proporcionaste y lo actualizaré con la 
 ````markdown
 # Atlas
 
+![Versión](https://img.shields.io/badge/versión-0.2.0-blue)
+
 ![Versión](https://img.shields.io/badge/versión-0.3.0-blue)
 ![Estado](https://img.shields.io/badge/estado-En%20Desarrollo%20Activo-green)
 ![Electron](https://img.shields.io/badge/Electron-^33.2.1-9cf)
