@@ -1,7 +1,5 @@
 # Atlas
 
-![Versión](https://img.shields.io/badge/versión-0.2.0-blue)
-
 ![Versión](https://img.shields.io/badge/versión-0.3.0-blue)
 ![Estado](https://img.shields.io/badge/estado-En%20Desarrollo%20Activo-green)
 ![Electron](https://img.shields.io/badge/Electron-^33.2.1-9cf)
@@ -59,8 +57,6 @@ Para ejecutar Atlas en modo desarrollo (aplicación web en el navegador):
 ```bash
 npm run dev
 ```
-
-````
 
 Para ejecutar con Electron (aplicación de escritorio en modo desarrollo):
 
@@ -166,4 +162,7 @@ Si estás interesado en utilizar AtlasCore para fines comerciales que puedan ent
 ---
 
 © 2025 Dino Leonel Vazquez Ledesma. Todos los derechos reservados bajo los términos de la licencia especificada.
-````
+
+```
+
+```
