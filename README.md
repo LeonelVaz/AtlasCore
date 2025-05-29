@@ -162,7 +162,3 @@ Si estás interesado en utilizar AtlasCore para fines comerciales que puedan ent
 ---
 
 © 2025 Dino Leonel Vazquez Ledesma. Todos los derechos reservados bajo los términos de la licencia especificada.
-
-```
-
-```
