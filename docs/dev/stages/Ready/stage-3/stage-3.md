@@ -1,230 +1,401 @@
-# Stage 3 - Personalización y Primeros Plugins (Versión 0.3.0)
+# Stage 3 - Personalización, Plugins y Seguridad Avanzada (Versión 0.3.0)
 
-**Enfoque**: Implementar el sistema de temas y los primeros plugins básicos
+**Enfoque**: Implementar un sistema de temas robusto, escalas de tiempo y horarios personalizables, un sistema de plugins completo con seguridad avanzada, herramientas de desarrollo, y los primeros plugins funcionales con UI rica.
 
 **Componentes a desarrollar:**
-1. **Sistema de temas**
-   - Implementación de temas base (Claro, Oscuro)
-   - Sistema de variables CSS para personalización
-   - Panel de configuración de apariencia básico
-   - Implementación de temas adicionales (Púrpura Nocturno, Atlas Dark Blue, Deep Ocean)
-   - Aplicación dinámica de temas sin recarga de página
-   - Persistencia de preferencias de tema
 
-2. **Sistema de escalas de tiempo**
-   - Configuración de densidad visual (píxeles por minuto)
-   - Interfaz para gestionar escala con previsualización
-   - Cálculo automático de tamaños y posiciones según escala
-   - Escalas predefinidas (Compacta, Estándar, Cómoda, Espaciosa)
-   - Creación de escalas personalizadas con altura configurable
-   - Persistencia de preferencias de escala
+1.  **Sistema de Temas Avanzado**
 
-3. **Personalización de horarios**
-   - Implementación de franjas horarias personalizadas
-   - Editor de franjas temporales
-   - Visualización diferenciada por tipo de franja
-   - Creación de tiempos intermedios con botón + entre franjas
-   - Diferenciación visual por tipo y duración de franja
-   - Validación inteligente de tiempos según escala actual
+    - Implementación de temas base (Claro, Oscuro) y adicionales (Atlas Dark Blue, Púrpura Nocturno, Deep Ocean).
+    - Sistema de variables CSS para personalización completa.
+    - Panel de configuración de apariencia para seleccionar temas.
+    - Aplicación dinámica de temas sin recarga de página.
+    - Persistencia de preferencias de tema.
 
-4. **Sistema de plugins**
-   - Estructura de plugins básica
-   - Sistema de carga dinámica de plugins
-   - Registro de plugins y gestión de dependencias
-   - API para extensiones de interfaz de usuario
-   - Sistema de eventos para comunicación entre plugins
-   - Gestión de permisos y seguridad de plugins
+2.  **Sistema de Escalas de Tiempo y Franjas Horarias Personalizables**
 
-5. **Primer plugin: Notas**
-   - Implementación del plugin de notas vinculadas a fechas/eventos
-   - Integración completa con el calendario principal
-   - Editor de texto enriquecido para notas
-   - Vinculación de notas con eventos específicos
-   - Visualización de notas en la vista de eventos
+    - Configuración de densidad visual del calendario (píxeles por minuto/hora).
+    - Interfaz para gestionar escalas de tiempo con previsualización en tiempo real.
+    - Escalas predefinidas (Compacta, Estándar, Cómoda, Espaciosa) y creación de escalas personalizadas.
+    - Editor para crear y eliminar franjas horarias personalizadas (ej. 15, 30, 45 minutos).
+    - Visualización diferenciada y creación de tiempos intermedios directamente en la rejilla.
+    - Persistencia de configuraciones de escala y franjas.
 
-6. **Segundo plugin: Contador de Eventos**
-   - Implementación de contador visual de eventos por día
-   - Actualización en tiempo real al crear, mover o eliminar eventos
-   - Interfaz limpia integrada con el estilo de Atlas
-   - Visualización de badges en los headers de días con eventos
+3.  **Sistema de Plugins Completo y API Core Mejorada**
 
-7. **Panel de Desarrolladores**
-   - Implementación de panel de configuración para desarrolladores
-   - Sistema de depuración con Event Debugger
-   - Monitoreo de eventos del sistema en tiempo real
-   - Herramientas para pruebas y diagnóstico
-   - Logs detallados en consola configurables
-   - Visualización de estadísticas de eventos
+    - Estructura de plugins robusta con carga dinámica.
+    - Registro de plugins, gestión de dependencias y resolución de conflictos.
+    - **API Core para Plugins Avanzada:**
+      - Acceso a almacenamiento persistente.
+      - Sistema de eventos para comunicación entre plugins y con el núcleo.
+      - API para extensiones de interfaz de usuario.
+      - API para comunicación directa entre plugins (llamada de métodos y canales).
+      - API de diálogos personalizados (`alert`, `confirm`, `prompt`) para plugins.
+      - Acceso a componentes UI reutilizables del núcleo (ej. `RichTextEditor`, `RichTextViewer`).
 
-8. **Sistema de Seguridad para Plugins**
-   - Implementación de sandbox para ejecución aislada de plugins
-   - Sistema de permisos granular para plugins
-   - Detección y prevención de código malicioso
-   - Monitoreo de recursos utilizados por plugins
-   - Niveles de seguridad configurables (bajo, normal, alto)
-   - Auditoría de actividades de plugins
+4.  **Sistema de UI Extensible Avanzado**
+
+    - Componente `ExtensionPoint` para renderizar extensiones dinámicamente.
+    - **Zonas de Extensión Nuevas y Mejoradas:**
+      - `MAIN_NAVIGATION`: Permite a los plugins añadir ítems a la barra de navegación principal.
+      - `PLUGIN_PAGES`: Permite a los plugins definir y renderizar sus propias páginas completas.
+      - `SETTINGS_PANEL`: Permite a los plugins añadir sus propios paneles de configuración.
+      - `CALENDAR_SIDEBAR`: Para widgets y herramientas en la barra lateral del calendario.
+      - Extensiones específicas del calendario: `CALENDAR_DAY_HEADER`, `CALENDAR_HOUR_CELL`, `EVENT_DETAIL_VIEW`, `EVENT_FORM`.
+
+5.  **Sistema de Diálogos Personalizado**
+
+    - Implementación de diálogos modales personalizados (`alert`, `confirm`, `prompt`) que reemplazan los nativos.
+    - Contexto de React para gestión centralizada de diálogos.
+    - Interceptor para diálogos globales, asegurando consistencia en web y Electron.
+    - API de diálogos disponible para los plugins.
+
+6.  **Panel de Desarrolladores y Herramientas de Depuración**
+
+    - Implementación de un panel de configuración avanzado para desarrolladores.
+    - **Event Debugger Avanzado:**
+      - Panel flotante para monitoreo en tiempo real de todos los eventos del sistema.
+      - Visualización de estadísticas de eventos (total, por categoría).
+      - Configuraciones rápidas (logs detallados, monitor de rendimiento futuro).
+      - Herramientas de depuración (Test Manual, Limpiar Consola, Información del Sistema).
+    - Logs detallados en consola configurables desde el panel.
+
+7.  **Sistema de Seguridad para Plugins Avanzado**
+
+    - **Sandbox para Ejecución Aislada:** Ejecución segura del código de plugins.
+    - **Sistema de Permisos Granular:** Declaración y verificación de permisos.
+    - **Detección de Código Malicioso:** Análisis estático y monitoreo de comportamiento.
+    - **Monitoreo de Recursos:** Seguimiento del uso de CPU, memoria y otras operaciones por plugin.
+    - **Niveles de Seguridad Configurables (LOW, NORMAL, HIGH):** Impactan permisos, límites y monitoreo.
+    - **Auditoría de Seguridad:** Registro detallado de actividades de plugins y eventos de seguridad.
+    - **Gestión de Seguridad en UI:**
+      - `SecurityPanel.jsx`: Panel central en configuración.
+      - `AuditDashboard.jsx`: Visualización de logs de auditoría.
+      - `PermissionsManager.jsx`: Gestión de permisos de plugins.
+      - `ThreatsDashboard.jsx`: Visualización de amenazas detectadas.
+    - Lista negra de plugins.
+
+8.  **Marketplace de Plugins, Gestión de Repositorios y Actualizaciones**
+
+    - **Interfaz de Marketplace (`PluginMarketplace.jsx`):**
+      - Buscar, ver detalles, instalar y desinstalar plugins.
+    - **Gestión de Repositorios (`RepositoryManager.jsx`):**
+      - Añadir, editar, eliminar y sincronizar repositorios de plugins.
+    - **Gestión de Actualizaciones (`UpdateManager.jsx`):**
+      - Verificar y aplicar actualizaciones para plugins instalados.
+    - **Núcleo de Distribución:**
+      - `plugin-package-manager.js`: Empaquetado e instalación.
+      - `plugin-repository-manager.js`: Manejo de fuentes de plugins.
+      - `plugin-update-manager.js`: Lógica de actualizaciones.
+      - `plugin-integrity-checker.js`: Verificación de integridad de paquetes.
+
+9.  **Plugin: Gestor de Notas Avanzado (notes-manager)**
+
+    - **Vinculación Completa con Eventos del Calendario:**
+      - Crear notas desde el menú contextual de eventos.
+      - Visualizar notas asociadas en los detalles del evento.
+      - Selector de eventos para vincular/desvincular notas.
+      - Sincronización automática de títulos de eventos.
+    - **Editor de Texto Enriquecido:**
+      - Integración con `RichTextEditor` y `RichTextViewer` de Atlas Core.
+      - Soporte para formato (negrita, cursiva, listas, enlaces, imágenes, citas, etc.).
+    - **Navegación y Página Dedicada:** Ítem en la navegación principal y página completa para gestión de notas.
+    - **Funcionalidades Adicionales:** Búsqueda inteligente (títulos, contenido, eventos vinculados), estadísticas de notas.
+
+10. **Plugin: Contador de Eventos Pro (event-counter)**
+
+    - Contador visual de eventos por día en el calendario.
+    - **Personalización Extrema:**
+      - Estilos de badge (redondeado, circular, cuadrado, minimalista).
+      - Posición y tamaño del badge.
+      - Colores dinámicos (único o por rangos según cantidad de eventos).
+      - Tipografía avanzada (familia, tamaño, peso, color).
+      - Efectos visuales: sombras, resplandor (glow), bordes.
+      - Fondo transparente.
+      - Animaciones de aparición y efectos hover.
+    - **Opciones Avanzadas:** Ocultar con cero eventos, mostrar solo en días laborales, CSS personalizado.
+    - Presets de configuración y vista previa en tiempo real.
+
+11. **Plugin: Planificador de Videos (video-scheduler)**
+    - **Sistema de Estados Detallado:** Estados principales (Pendiente, Vacío, Desarrollo, Producción, Publicado), sub-estados (Grabando, Editando, etc.) y estados apilables (Duda, Alerta) con representación visual mediante emojis.
+    - **Gestión de Ingresos Diarios:** Registro de montos, selección de moneda, pagador y estado de pago.
+    - **Configuración de Monedas y Tasas de Cambio:** Definición de moneda principal del usuario y tasas de conversión para ingresos en otras divisas.
+    - **Calendario Mensual Específico:** Interfaz principal para planificar videos en slots horarios (7am, 15pm, 22pm).
+    - **Formularios Dedicados:** Para edición de detalles de video, ingresos diarios, adición en lote de videos.
+    - **Panel de Estadísticas Avanzado:** Vista general del mes, gráficos, comparación entre meses para videos e ingresos.
+    - **Funcionalidades de Gestión de Datos:** Importación/exportación de todos los datos del plugin, reseteo de datos (mes actual o total).
+    - **Integración Completa:** Ítem de navegación, página principal y widget en el panel de configuración de Atlas.
 
 **Criterios de finalización:**
-- Sistema de temas completamente funcional
-- Personalización de escalas temporales y franjas horarias
-- Sistema de plugins funcional con API documentada
-- Plugins de Notas y Contador de Eventos integrados y funcionales
-- Panel de configuración para gestionar las nuevas opciones
 
-## Estructura de archivos al finalizar la Stage 3
+- Sistema de temas y personalización de UI completamente funcional.
+- Configuración de escalas temporales y franjas horarias operativas.
+- Sistema de plugins robusto, seguro y con API documentada.
+- Plugins de Notas, Contador de Eventos y Planificador de Videos integrados, funcionales y con buen rendimiento.
+- Panel de configuración de Atlas extendido para gestionar todas las nuevas opciones.
+- Panel de Desarrolladores con herramientas de depuración funcionales.
+- Sistema de Seguridad para Plugins operativo y configurable.
+- Funcionalidades de Marketplace, Repositorios y Actualizaciones implementadas y probadas.
+- Documentación actualizada para reflejar la nueva arquitectura y funcionalidades.
+- Cobertura de pruebas unitarias superior al 80% para el núcleo de la aplicación.
+
+## Estructura de archivos de la Aplicación Principal (`src`) al finalizar Stage 3
 
 ```
+
 atlas-core/
-├── package.json
-├── vite.config.js
-├── index.html
-├── electron/                     # Configuración para la app de escritorio
-│   ├── main.js                   # Proceso principal de Electron mejorado
-│   ├── preload.js                # Script de precarga para Electron
-│   └── window-manager.js         # Gestión de ventanas
+├── ... (archivos raíz como package.json, vite.config.js)
+├── electron/ # Configuración para la app de escritorio
+│ ├── main.js
+│ ├── preload.js
+│ └── window-manager.js
 │
 ├── public/
-│   ├── favicon.ico
-│   └── assets/
-│       └── fonts/                # Fuentes para los temas
+│ ├── favicon.ico
+│ └── logo-white.png # Logo para la UI
 │
 ├── src/
-│   ├── index.jsx                 # Punto de entrada principal
-│   ├── app.jsx                   # Componente raíz con ThemeProvider
-│   │
-│   ├── core/                     # Núcleo de la aplicación
-│   │   ├── bus/                  # Sistema de bus de eventos
-│   │   │   ├── event-bus.js      # Implementación mejorada
-│   │   │   └── events.js         # Más eventos definidos
-│   │   │
-│   │   ├── modules/               # Sistema de registro de módulos
-│   │   │   ├── module-registry.js # Registro de módulos
-│   │   │   └── calendar-module.js
-│   │   │
-│   │   └── config/               # Configuración global
-│   │       ├── app-config.js     # Configuración de la app
-│   │       └── constants.js      # Constantes globales
-│   │
-│   ├── services/                 # Servicios de la aplicación
-│   │   ├── storage-service.js    # Abstracción de almacenamiento
-│   │   ├── theme-service.js      # Servicio de gestión de temas
-│   │   └── time-scale-service.js # Servicio de escalas de tiempo
-│   │
-│   ├── components/               # Componentes de la aplicación
-│   │   ├── calendar/             # Componentes del calendario
-│   │   │   ├── calendar-main.jsx # Componente principal mejorado
-│   │   │   ├── day-view.jsx      # Vista de día
-│   │   │   ├── week-view.jsx     # Vista de semana mejorada
-│   │   │   ├── event-item.jsx    # Elemento de evento con interacciones
-│   │   │   ├── time-grid.jsx     # Rejilla temporal con escalas
-│   │   │   ├── time-slot.jsx     # Franja horaria personalizable
-│   │   │   ├── snap-control.jsx  # Control de imán
-│   │   │   └── event-form.jsx    # Formulario de eventos mejorado
-│   │   │
-│   │   ├── ui/                   # Componentes de UI reutilizables
-│   │   │   ├── button.jsx        # Botón personalizado
-│   │   │   ├── dialog.jsx        # Diálogo moderno
-│   │   │   ├── dropdown.jsx      # Menú desplegable
-│   │   │   └── theme-selector.jsx # Selector de temas
-│   │   │
-│   │   ├── settings/             # Componentes de configuración
-│   │   │   ├── settings-panel.jsx # Panel de configuración
-│   │   │   ├── time-scale-config.jsx # Configuración de escala de tiempo
-│   │   │   ├── time-slot-editor.jsx # Editor de franjas horarias
-│   │   │   └── theme-config.jsx  # Configuración de temas
-│   │   │
-│   │   └── plugin-extension/     # Sistema de extensiones para plugins
-│   │       ├── extension-point.jsx # Punto de extensión genérico
-│   │       ├── navigation-extensions.jsx # Extensiones de navegación
-│   │       └── plugin-pages.jsx  # Páginas completas de plugins
-│   │
-│   ├── contexts/                 # Contextos de React
-│   │   ├── calendar-context.jsx  # Contexto del calendario
-│   │   ├── theme-context.jsx     # Contexto de temas
-│   │   ├── time-scale-context.jsx # Contexto de escalas de tiempo
-│   │   └── settings-context.jsx  # Contexto de configuraciones
-│   │
-│   ├── hooks/                    # Hooks personalizados
-│   │   ├── use-calendar-events.jsx # Hook para eventos del calendario
-│   │   ├── use-time-grid.jsx     # Hook para rejilla temporal
-│   │   ├── use-event-drag.jsx    # Hook para arrastrar eventos
-│   │   ├── use-event-form.jsx    # Hook para formulario de eventos
-│   │   ├── use-calendar-navigation.jsx # Hook para navegación en el calendario
-│   │   ├── use-event-resize.jsx  # Hook para redimensionar eventos
-│   │   ├── use-time-scale.jsx    # Hook para gestión de escalas de tiempo
-│   │   └── use-theme.jsx         # Hook para gestión de temas
-│   │
-│   ├── utils/                    # Utilidades
-│   │   ├── date-utils.js         # Utilidades de fechas
-│   │   ├── time-utils.js         # Utilidades de tiempo
-│   │   ├── debug-utils.js        # Utilidades de depuración
-│   │   ├── event-utils.js        # Utilidades para eventos
-│   │   ├── theme-utils.js        # Utilidades para temas
-│   │   └── storage-utils.js      # Utilidades de almacenamiento
-│   │
-│   └── styles/                   # Estilos
-│       ├── index.css             # Estilos globales
-│       ├── app.css               # Estilos para app.jsx
-│       ├── variables.css         # Variables CSS globales
-│       ├── themes/               # Archivos de temas
-│       │   ├── light.css         # Tema claro
-│       │   ├── dark.css          # Tema oscuro
-│       │   ├── atlas-dark-blue.css # Tema Atlas azul oscuro
-│       │   ├── deep-ocean.css    # Tema océano profundo
-│       │   └── purple-night.css  # Tema púrpura nocturno
-│       │
-│       ├── components/           # Estilos de componentes
-│       │   ├── calendar.css      # Estilos del calendario
-│       │   ├── events.css        # Estilos de eventos
-│       │   └── settings.css      # Estilos de configuración
-│       │
-│       └── calendar/             # Estilos específicos del calendario
-│           ├── calendar-main.css # Estilos para calendar-main.jsx
-│           └── time-slots.css    # Estilos para franjas horarias
-│    
+│ ├── index.jsx # Punto de entrada principal de React
+│ ├── app.jsx # Componente raíz de la aplicación
+│ │
+│ ├── components/
+│ │ ├── calendar/ # Componentes principales del calendario
+│ │ │ ├── calendar-main.jsx
+│ │ │ ├── day-view.jsx
+│ │ │ ├── event-form.jsx
+│ │ │ ├── event-item.jsx
+│ │ │ ├── snap-control.jsx
+│ │ │ ├── time-grid.jsx
+│ │ │ ├── time-slot.jsx
+│ │ │ └── week-view.jsx
+│ │ │
+│ │ ├── debug/ # Componentes de depuración
+│ │ │ └── event-debugger.jsx
+│ │ │
+│ │ ├── plugin-extension/ # Componentes para el sistema de extensión de UI
+│ │ │ ├── extension-point.jsx
+│ │ │ ├── navigation-extensions.jsx
+│ │ │ ├── plugin-pages.jsx
+│ │ │ ├── settings-extensions.jsx
+│ │ │ └── sidebar-extensions.jsx
+│ │ │
+│ │ ├── security/ # Dashboards y componentes de UI para seguridad
+│ │ │ ├── audit-dashboard.jsx
+│ │ │ ├── permissions-manager.jsx
+│ │ │ └── threats-dashboard.jsx
+│ │ │
+│ │ ├── settings/ # Componentes para el panel de configuración
+│ │ │ ├── calendar-config.jsx
+│ │ │ ├── developer-panel.jsx
+│ │ │ ├── plugin-marketplace.jsx
+│ │ │ ├── plugins-panel.jsx
+│ │ │ ├── repository-manager.jsx
+│ │ │ ├── security-panel.jsx
+│ │ │ ├── settings-panel.jsx
+│ │ │ ├── theme-config.jsx
+│ │ │ ├── time-scale-config.jsx
+│ │ │ ├── time-slot-editor.jsx
+│ │ │ └── update-manager.jsx
+│ │ │
+│ │ └── ui/ # Componentes de UI reutilizables
+│ │ ├── button.jsx
+│ │ ├── dialog-system/ # Sistema de diálogos personalizados
+│ │ │ └── custom-dialog.jsx
+│ │ ├── dialog.jsx
+│ │ ├── rich-text/ # Componentes de texto enriquecido
+│ │ │ ├── index.js
+│ │ │ ├── rich-text-editor.jsx
+│ │ │ └── rich-text-viewer.jsx
+│ │ ├── sidebar/
+│ │ │ ├── sidebar-item.jsx
+│ │ │ └── sidebar.jsx
+│ │ └── window-controls.jsx # Controles de ventana para Electron
+│ │
+│ ├── config/ # Archivos de configuración del núcleo
+│ │ └── plugin-config.js # Configuración de plugins (ahora en src)
+│ │
+│ ├── contexts/ # Contextos de React
+│ │ ├── config-provider.jsx # Proveedor unificado de contextos de configuración
+│ │ ├── dialog-context.jsx
+│ │ ├── theme-context.jsx
+│ │ └── time-scale-context.jsx
+│ │
+│ ├── core/ # Lógica central de Atlas
+│ │ ├── bus/
+│ │ │ ├── event-bus.js
+│ │ │ └── events.js
+│ │ │
+│ │ ├── config/
+│ │ │ └── constants.js # Constantes globales (movido a core/config)
+│ │ │
+│ │ ├── modules/
+│ │ │ ├── calendar-module.js
+│ │ │ └── module-registry.js
+│ │ │
+│ │ └── plugins/ # Lógica del sistema de plugins
+│ │ ├── core-api.js
+│ │ ├── plugin-api-registry.js
+│ │ ├── plugin-communication.js
+│ │ ├── plugin-compatibility.js
+│ │ ├── plugin-dependency-resolver.js
+│ │ ├── plugin-error-handler.js
+│ │ ├── plugin-events.js
+│ │ ├── plugin-integrity-checker.js
+│ │ ├── plugin-loader.js
+│ │ ├── plugin-manager.js
+│ │ ├── plugin-package-manager.js
+│ │ ├── plugin-permission-checker.js
+│ │ ├── plugin-registry.js
+│ │ ├── plugin-repository-manager.js
+│ │ ├── plugin-resource-monitor.js
+│ │ ├── plugin-sandbox.js
+│ │ ├── plugin-security-audit.js
+│ │ ├── plugin-security-manager.js
+│ │ ├── plugin-storage.js
+│ │ ├── plugin-update-manager.js
+│ │ ├── plugin-validator.js
+│ │ └── ui-extension-manager.js
+│ │
+│ ├── hooks/ # Hooks personalizados de React
+│ │ ├── use-calendar-events.jsx
+│ │ ├── use-calendar-navigation.jsx
+│ │ ├── use-event-drag.jsx
+│ │ ├── use-event-form.jsx
+│ │ ├── use-event-resize.jsx
+│ │ ├── use-theme.jsx
+│ │ ├── use-time-grid.jsx
+│ │ └── use-time-scale.jsx
+│ │
+│ ├── services/ # Servicios globales de la aplicación
+│ │ ├── storage-service.js
+│ │ ├── theme-service.js
+│ │ └── time-scale-service.js
+│ │
+│ ├── styles/ # Estilos CSS
+│ │ ├── app.css
+│ │ ├── calendar/ # ... (estilos del calendario)
+│ │ ├── debug/ # ... (estilos de depuración)
+│ │ ├── header-controls.css
+│ │ ├── index.css # Principal de estilos
+│ │ ├── plugins/ # ... (estilos relacionados con plugins)
+│ │ ├── settings/ # ... (estilos de configuración)
+│ │ ├── themes/ # ... (archivos de temas)
+│ │ ├── ui/ # ... (estilos de componentes UI)
+│ │ └── variables.css
+│ │
+│ └── utils/ # Funciones de utilidad
+│ ├── date-utils.js
+│ ├── debug-utils.js
+│ ├── dialog-interceptor.js # Interceptor de diálogos
+│ ├── electron-detector.js # Detector de entorno Electron
+│ ├── event-utils.js
+│ ├── module-utils.js
+│ └── time-utils.js
 │
-├── docs/                         # Documentación del proyecto
-│   ├── dev/                      # Documentación para desarrolladores
-│   │   ├── atlas-overview.md     # Visión general de Atlas
-│   │   ├── atlas-stages.md       # Stages de desarrollo
-│   │   ├── commands.md           # Comandos útiles
-│   │   ├── plugins/              # Documentación detallada de plugins
-│   │   │   ├── notes-manager.md  # Documentación del plugin de notas
-│   │   │   └── event-counter.md  # Documentación del plugin de contador
-│   │   └── stages/               # Documentación detallada por Stages
-│   │       ├── stage-1.md        # Documentación de la Stage 1
-│   │       ├── stage-2.md        # Documentación de la Stage 2
-│   │       └── stage-3.md        # Documentación de la Stage 3
-│   │
-│   └── brand-assets/             # Recursos de marca
-│       ├── logos/                # Logos de la aplicación
-│       │   └── atlas-logo.svg    # Logo SVG principal
-│       │
-│        └── documentation/        # Documentación de marca
-│           └── atlas-brand-guide.md # Guía de identidad de marca
+├── plugins/ # Carpeta contenedora de plugins
+│ ├── event-counter/ # (Estructura detallada más abajo)
+│ ├── notes-manager/ # (Estructura detallada más abajo)
+│ ├── video-scheduler/ # (Estructura detallada más abajo)
+│ └── README.md # Guía para la carpeta de plugins
 │
-└── plugins/                  # Sistema de plugins
-    ├── plugin-loader.js      # Cargador de plugins
-    ├── plugin-registry.js    # Registro de plugins
-    ├── plugin-api-registry.js # Registro de APIs para plugins
-    ├── plugin-events.js      # Sistema de eventos para plugins
-    │
-    ├── notes-manager/        # Plugin de notas
-    │   ├── index.js          # Punto de entrada del plugin
-    │   ├── components/       # Componentes del plugin
-    │   │   ├── notes-list.jsx # Lista de notas
-    │   │   ├── note-editor.jsx # Editor de notas
-    │   │   ├── notes-panel.jsx # Panel principal
-    │   │   ├── event-notes-extension.jsx # Vista de notas en eventos
-    │   │   └── event-selector.jsx # Selector de eventos
-    │   ├── contexts/
-    │   │   └── notes-context.jsx # Contexto de notas
-    │   ├── utils/
-    │   │   └── notes-utils.js # Utilidades específicas
-    │   ├── styles/
-    │   │   └── notes.css     # Estilos específicos del plugin
-    │   └── README.md         # Documentación del plugin
-    │
-    └── event-counter/        # Plugin de contador de eventos
-        ├── index.js          # Punto de entrada del plugin
-        └── README.md         # Documentación del plugin
+└── docs/ # Documentación del proyecto
+
+```
+
+## Estructura Detallada de los Plugins (en `atlas-core/plugins/`)
+
+A continuación, se detalla la estructura interna de cada uno de los plugins principales desarrollados o significativamente actualizados en esta etapa.
+
+### 1. Plugin: Contador de Eventos Pro (`event-counter`)
+
+```
+
+plugins/
+└── event-counter/
+├── index.js # Lógica principal del plugin y API pública
+├── components/
+│ ├── EventCounterBadge.jsx # Componente UI del badge contador
+│ └── SettingsPanel.jsx # Panel de configuración del plugin
+├── styles/
+│ ├── index.css # Importa los otros CSS del plugin
+│ ├── EventCounterBadge.css # Estilos para el badge
+│ └── SettingsPanel.css # Estilos para el panel de configuración
+├── docs/
+│ └── guia-plugin-atlas.md # (Este es el archivo que estamos editando, lo incluyo por completitud)
+└── README.md # Documentación específica del plugin
+
+```
+
+### 2. Plugin: Gestor de Notas (`notes-manager`)
+
+```
+
+plugins/
+└── notes-manager/
+├── index.js # Lógica principal, API y registro de extensiones
+├── components/
+│ ├── NotesNavigationItem.jsx # Ítem para la barra de navegación principal
+│ ├── NotesPage.jsx # Página principal para ver y gestionar notas
+│ ├── NoteCard.jsx # Componente para mostrar una nota individual
+│ ├── CreateNoteForm.jsx # Formulario para crear/editar notas (con RichText)
+│ ├── EventNotesExtension.jsx # Componente para mostrar notas en detalles de evento
+│ └── EventSelector.jsx # Modal para seleccionar un evento a vincular
+├── styles/
+│ ├── index.css # Importa todos los CSS del plugin
+│ ├── notes-page.css # Estilos para la página principal
+│ ├── note-card.css # Estilos para las tarjetas de nota
+│ ├── create-note-form.css # Estilos para el formulario de creación/edición
+│ ├── event-notes-extension.css # Estilos para la extensión en detalles de evento
+│ └── event-selector.css # Estilos para el modal selector de eventos
+└── README.md # Documentación del plugin de notas
+
+```
+
+### 3. Plugin: Planificador de Videos (`video-scheduler`)
+
+```
+
+plugins/
+└── video-scheduler/
+├── index.js # Lógica principal, API y registro de extensiones
+├── components/
+│ ├── VideoSchedulerNavItem.jsx # Ítem para la barra de navegación principal
+│ ├── VideoSchedulerMainPage.jsx# Página principal del calendario de videos
+│ ├── DayCell.jsx # Celda para mostrar el día del mes
+│ ├── VideoSlotCell.jsx # Celda para un slot de video (con inputs y estados)
+│ ├── DaySummaryCell.jsx # Celda de resumen de estados del día
+│ ├── DailyIncomeCell.jsx # Celda para mostrar ingresos del día
+│ ├── StatusSelector.jsx # Popup para seleccionar estado del video
+│ ├── DailyIncomeForm.jsx # Popup para añadir/editar ingresos
+│ ├── VideoForm.jsx # Modal para editar detalles extendidos del video
+│ ├── BulkAddForm.jsx # Modal para añadir videos en lote
+│ ├── CurrencyRateForm.jsx # Modal para configurar monedas y tasas
+│ ├── StatsPanel.jsx # Modal/Panel avanzado de estadísticas
+│ ├── StatsOverviewPanel.jsx # Componente para la vista general de estadísticas
+│ ├── SettingsPanelWidget.jsx # Widget para el panel de configuración de Atlas
+│ ├── ImportExportModal.jsx # Modal para importar/exportar datos
+│ └── ResetDataModal.jsx # Modal para resetear datos del plugin
+├── utils/
+│ └── constants.js # Constantes específicas del plugin (estados, emojis, etc.)
+├── styles/
+│ ├── index.css # Importa todos los CSS del plugin
+│ ├── VideoSchedulerMainPage.css
+│ ├── DayCell.css
+│ ├── VideoSlotCell.css
+│ ├── DaySummaryCell.css
+│ ├── DailyIncomeCell.css
+│ ├── StatusSelector.css
+│ ├── DailyIncomeForm.css
+│ ├── StatsPanel.css
+│ ├── StatsOverviewPanel.css
+│ ├── BulkAddForm.css
+│ ├── CurrencyRateForm.css
+│ ├── VideoForm.css
+│ ├── SettingsPanelWidget.css
+│ ├── ImportExportModal.css
+│ └── ResetDataModal.css
+├── docs/
+│ ├── STATUS_SYSTEM.md # Documentación del sistema de estados de video
+│ └── VIDEO_SCHEDULER_UX_VISION.md # Visión de diseño UX
+└── README.md # Documentación general del plugin
+```
