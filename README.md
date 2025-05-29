@@ -1,7 +1,3 @@
-¡Entendido! Vamos a actualizar el `README.md` principal y el `CHANGELOG.md` para reflejar el estado actual de Atlas v0.3.0.
-
----
-
 ## 1. `README.md` (Actualizado)
 
 Tomaré como base el `README.md` que me proporcionaste y lo actualizaré con la información de la v0.3.0, destacando las nuevas funcionalidades y el progreso.
