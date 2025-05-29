@@ -1,265 +1,285 @@
-# Comandos Útiles para Desarrollo
+# Comandos Útiles para Desarrollo en Atlas Core
 
-## Node
+Esta guía recopila los comandos NPM y Git más utilizados durante el desarrollo del proyecto Atlas.
 
-### Listar procesos
-```bash
-tasklist /FI "IMAGENAME eq node.exe"
-```
+## Scripts NPM (Definidos en `package.json`)
 
-### Eliminar procesos
-```bash
-taskkill /F /IM node.exe
-```
+### Desarrollo
 
-### Eliminar la caché de npm
-```bash
-npm cache clean --force
-```
+- **Iniciar el servidor de desarrollo Vite (para la interfaz web):**
 
-### Reinstalar las dependencias
-```bash
-npm install
-```
+  ```bash
+  npm run dev
+  ```
 
-### Iniciar el servidor de desarrollo
-```bash
-npm start
-```
+  La aplicación estará disponible generalmente en `http://localhost:3000`.
 
-## Git
+- **Iniciar la aplicación Electron en modo desarrollo (con interfaz web):**
+  ```bash
+  npm run electron:dev
+  ```
+  Este comando ejecuta `npm run dev` y `electron .` concurrentemente.
 
-### Ver el estado actual
-```bash
-git status
-```
+### Compilación (Build)
 
-### Ver los cambios específicos en archivos
-```bash
-git diff
-```
+- **Construir la interfaz web para producción:**
 
-### Añadir todos los archivos modificados para el próximo commit
-```bash
-git add .
-```
+  ```bash
+  npm run build
+  ```
 
-### Añadir un archivo específico
-```bash
-git add ruta/al/archivo.js
-```
+  Los archivos optimizados se generan en la carpeta `dist/`.
 
-### Crear un commit con mensaje
-```bash
-git commit -m "Mensaje descriptivo"
-```
+- **Previsualizar la build de producción localmente:**
 
-### Subir cambios al repositorio remoto
-```bash
-git push origin main
-```
+  ```bash
+  npm run preview
+  ```
 
-### Obtener los últimos cambios del repositorio
-```bash
-git pull origin main
-```
+  Levanta un servidor local para ver el contenido de `dist/`.
 
-### Ver etiquetas existentes
-```bash
-git tag
-```
+- **Construir la aplicación Electron para producción:**
+  ```bash
+  npm run electron:build
+  ```
+  Este comando primero ejecuta `npm run build` (para la UI) y luego usa `electron-builder` para empaquetar la aplicación para tu plataforma actual. Los artefactos se encuentran en `dist_electron/`.
 
-### Crear una etiqueta anotada para versiones
-```bash
-git tag -a v0.1.0 -m "Descripción de la versión 0.1.0"
-```
+### Testing
 
-### Subir etiquetas al repositorio
-```bash
-git push origin v0.1.0    # Para una etiqueta específica
-git push origin --tags    # Para todas las etiquetas nuevas
-```
+- **Ejecutar todas las pruebas unitarias (Jest):**
 
-## Cambiar a otra rama
-```bash
-git checkout nombre_de_la_rama
-```
+  ```bash
+  npm test
+  ```
 
-# Volver a rama principal
-```bash
-git checkout main
-```
+- **Ejecutar pruebas en modo "watch" (se re-ejecutan al guardar cambios):**
 
-# Crear una nueva rama
+  ```bash
+  npm run test:watch
+  ```
 
-## Asegúrate de estar en main y tenerlo actualizado
-```bash
-git checkout main
-git pull origin main
-```
-## Crea la nueva rama
-```bash
-git checkout -b feature/nuevos-componentes-calendario-stage2
-```
-## Confirma que estás en la nueva rama
-```bash
-git status
-```
-# Sube la nueva rama al repositorio remoto
-```bash
-git push -u origin feature/nuevos-componentes-calendario-stage2
-```
+- **Generar reporte de cobertura de pruebas:**
 
-# Hacer coincidir la rama con main
-```bash
-git checkout feature/nuevos-componentes-calendario-stage2
-git reset --hard main
-```
+  ```bash
+  npm run test:coverage
+  ```
 
-## Vite (Desarrollo Frontend)
+  El reporte se genera en la carpeta `coverage/`.
 
-### Iniciar el servidor de desarrollo
-```bash
-npm run dev
-```
+- **Ejecutar solo las pruebas del directorio `test/unit`:**
 
-### Construir para producción
-```bash
-npm run build
-```
+  ```bash
+  npm run test:unit
+  ```
 
-### Previsualizar la build
-```bash
-npm run preview
-```
+- **Limpiar la caché de Jest:**
+  ```bash
+  npm run test:clear
+  ```
 
-## Electron (Aplicación de Escritorio)
+### Linting
 
-### Iniciar la aplicación Electron en modo desarrollo
-```bash
-npm run electron-dev
-```
+- **Verificar el formato del código (ESLint) en archivos JS/JSX de `src/`:**
 
-### Construir la aplicación Electron para producción
-```bash
-npm run electron-build
-```
+  ```bash
+  npm run lint
+  ```
 
-### Empaquetar la aplicación para diferentes plataformas
-```bash
-# Windows
-npm run package-win
+- **Arreglar automáticamente problemas de formato (ESLint):**
+  ```bash
+  npm run lint:fix
+  ```
 
-# macOS
-npm run package-mac
+## Comandos Generales de Node.js y npm
 
-# Linux
-npm run package-linux
-```
+- **Instalar/Reinstalar todas las dependencias del proyecto:**
 
-## Testing
+  ```bash
+  npm install
+  ```
 
-### Ejecutar todas las pruebas
-```bash
-npm test
-```
+- **Limpiar la caché de npm (útil si hay problemas con dependencias):**
 
-### Ejecutar pruebas con cobertura
-```bash
-npm run test:coverage
-```
+  ```bash
+  npm cache clean --force
+  ```
 
-### Ejecutar pruebas específicas
-```bash
-npm test -- -t "nombre del test"
-```
+- **Verificar dependencias desactualizadas:**
 
-## Misceláneos
+  ```bash
+  npm outdated
+  ```
 
-### Verificar formato de código
-```bash
-npm run lint
-```
+- **Actualizar dependencias (según `package.json`):**
 
-### Arreglar problemas de formato automáticamente
-```bash
-npm run lint:fix
-```
+  ```bash
+  npm update
+  ```
 
-### Generar documentación API
-```bash
-npm run docs
-```
+- **Listar procesos Node.js (Windows):**
 
-### Verificar dependencias y actualizaciones
-```bash
-npm outdated
-```
+  ```bash
+  tasklist /FI "IMAGENAME eq node.exe"
+  ```
 
-### Actualizar todas las dependencias
-```bash
-npm update
-```
+- **Terminar todos los procesos Node.js (Windows):**
+  ```bash
+  taskkill /F /IM node.exe
+  ```
 
-### Iniciar servidor de documentación
-```bash
-npm run docs:serve
-```
+## Comandos Git Esenciales
 
-# Solución de Problemas Comunes
+### Estado y Cambios
 
-## Problemas con dependencias
+- **Ver el estado actual del repositorio (archivos modificados, por confirmar, etc.):**
 
-Si encuentras errores después de actualizar dependencias o clonar el repositorio:
+  ```bash
+  git status
+  ```
 
-```bash
-# Borrar node_modules y reinstalar
-rm -rf node_modules
-npm install
+- **Ver los cambios específicos realizados en los archivos (diferencias):**
+  ```bash
+  git diff
+  # Para ver diferencias de un archivo específico:
+  # git diff ruta/al/archivo.js
+  ```
 
-# Si es necesario, borrar también el lockfile
-rm package-lock.json
-npm install
-```
+### Confirmar Cambios (Commits)
 
-## Errores de puertos en desarrollo
+- **Añadir todos los archivos modificados y nuevos al área de preparación (staging):**
 
-Si el puerto 3000 está ocupado:
+  ```bash
+  git add .
+  ```
 
-```bash
-# Encontrar el proceso que usa el puerto
-# En Windows
-netstat -ano | findstr :3000
+- **Añadir un archivo específico al staging:**
 
-# En macOS/Linux
-lsof -i :3000
+  ```bash
+  git add ruta/al/archivo.js
+  ```
 
-# Terminar el proceso (Windows, donde PID es el ID de proceso)
-taskkill /F /PID PID
-```
+- **Crear un commit con los cambios en staging y un mensaje descriptivo:**
+  ```bash
+  git commit -m "feat: Añadida nueva funcionalidad X"
+  # (Se recomienda seguir convenciones de commits, ej. Conventional Commits)
+  ```
 
-## Plugins no disponibles
+### Ramas (Branches)
 
-Si los plugins no aparecen correctamente:
+- **Listar todas las ramas locales (la activa marcada con \*):**
 
-```bash
-# Verificar la estructura de carpetas
-ls -la plugins/
+  ```bash
+  git branch
+  ```
 
-# Reconstruir el sistema de plugins
-npm run rebuild-plugins
-```
+- **Cambiar a otra rama existente:**
 
-## Errores en build de Electron
+  ```bash
+  git checkout nombre_de_la_rama
+  ```
 
-En caso de problemas al construir la versión Electron:
+- **Crear una nueva rama y cambiarse a ella:**
 
-```bash
-# Limpiar caché y reconstruir módulos nativos
-npm run electron-rebuild
+  ```bash
+  git checkout -b nombre-nueva-rama
+  # Ejemplo: git checkout -b feature/nueva-interfaz-calendario
+  ```
 
-# Verificar configuración específica de plataforma
-npm run electron-config-check
-```
+- **Volver a la rama de desarrollo principal (asumiendo que es `feature/development`):**
 
-Estos comandos cubren las operaciones más comunes en el desarrollo del proyecto Atlas y proporcionan soluciones a problemas frecuentes durante el proceso de desarrollo.
+  ```bash
+  git checkout feature/development
+  ```
+
+- **Fusionar cambios de otra rama a la actual:**
+
+  ```bash
+  # Estando en la rama destino (ej. feature/development)
+  git merge nombre-rama-a-fusionar
+  ```
+
+- **Eliminar una rama local (después de fusionada):**
+  ```bash
+  git branch -d nombre_rama_a_eliminar
+  ```
+
+### Repositorio Remoto (ej. GitHub)
+
+- **Subir los commits de tu rama local al repositorio remoto (ej. `origin`):**
+
+  ```bash
+  git push origin nombre-tu-rama
+  # Para la rama principal de desarrollo:
+  # git push origin feature/development
+  ```
+
+- **Obtener los últimos cambios del repositorio remoto y fusionarlos a tu rama local:**
+
+  ```bash
+  git pull origin nombre-rama-actual
+  # Usualmente para feature/development:
+  # git pull origin feature/development
+  ```
+
+- **Clonar un repositorio existente:**
+  ```bash
+  git clone URL_DEL_REPOSITORIO
+  ```
+
+### Tags y Releases (Ver también `guide-versions.md`)
+
+- **Listar todas las etiquetas (tags) existentes:**
+
+  ```bash
+  git tag
+  ```
+
+- **Crear una etiqueta anotada (recomendado para versiones):**
+
+  ```bash
+  git tag -a v0.3.0 -m "Release v0.3.0 - Personalización y Plugins"
+  ```
+
+- **Subir una etiqueta específica al repositorio remoto:**
+
+  ```bash
+  git push origin v0.3.0
+  ```
+
+- **Subir todas las etiquetas nuevas al repositorio remoto:**
+  ```bash
+  git push origin --tags
+  ```
+
+### Revertir y Resetear (Usar con precaución)
+
+- **Deshacer cambios en un archivo (antes de `git add`):**
+
+  ```bash
+  git checkout -- ruta/al/archivo.js
+  ```
+
+- **Quitar un archivo del staging (después de `git add` pero antes de `commit`):**
+
+  ```bash
+  git reset HEAD ruta/al/archivo.js
+  ```
+
+- **Revertir el último commit (crea un nuevo commit que deshace los cambios):**
+
+  ```bash
+  git revert HEAD
+  ```
+
+- **Resetear la rama local a un commit específico de `main` (¡Descarta cambios locales no commiteados!):**
+  ```bash
+  # Estando en tu rama (ej. feature/mi-rama)
+  git fetch origin
+  git reset --hard origin/main
+  # (Esto hará que tu rama local sea idéntica a origin/main)
+  ```
+
+---
+
+Estos comandos cubren las operaciones más comunes. Consulta la [documentación de Git](https://git-scm.com/doc) y [npm](https://docs.npmjs.com/) para más detalles.
+Recuerda seguir el flujo de trabajo de Git definido en `docs/guide-versions.md`.
