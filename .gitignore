@@ -1,6 +1,8 @@
 node_modules/
-package-lock.json
 other/
 coverage/
-resultado.log
 borrador/
+dist_electron/
+dist/
+
+package-lock.json
